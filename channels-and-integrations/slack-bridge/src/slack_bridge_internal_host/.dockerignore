@@ -1,0 +1,8 @@
+.github
+.vscode
+.git
+.gitignore
+.env
+.env.example
+README.md
+AGENTS.md

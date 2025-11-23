@@ -1,0 +1,250 @@
+basePath: /
+definitions:
+  requests.FinishAgentCreationRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      signer:
+        type: string
+    type: object
+  requests.FinishAgentImportationRequest:
+    properties:
+      agentCollectionAddress:
+        type: string
+      agentCollectionTokenId:
+        type: integer
+    type: object
+  requests.PairProposalToAgentRequest:
+    properties:
+      collectionAddress:
+        type: string
+      proposalId:
+        type: integer
+    type: object
+  requests.RemoveAgentFromProposalRequest:
+    properties:
+      collectionAddress:
+        type: string
+      proposalId:
+        type: integer
+    type: object
+  requests.UpdateAgentMissionRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      newMission:
+        type: string
+    type: object
+  requests.UpdateAgentOwnerRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      newOwner:
+        type: string
+    type: object
+  requests.UpsertAgentImageRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      key:
+        type: string
+      newValue:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the API documentation for the Orchestrator SC Sync.
+  title: Orchestrator SC Sync Host
+  version: "1.0"
+paths:
+  /agent/finish-creation:
+    post:
+      consumes:
+      - application/json
+      description: Marks the agent creation process as complete
+      parameters:
+      - description: info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.FinishAgentCreationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Finish agent creation
+      tags:
+      - sc-sync
+  /agent/finish-importation:
+    post:
+      consumes:
+      - application/json
+      description: Marks the external agent importation as complete
+      parameters:
+      - description: info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.FinishAgentImportationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Finish agent importation
+      tags:
+      - sc-sync
+  /agent/pair-proposal-to-agent:
+    post:
+      consumes:
+      - application/json
+      description: Links a proposal with an agent
+      parameters:
+      - description: pairing
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PairProposalToAgentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Pair proposal to agent
+      tags:
+      - sc-sync
+  /agent/remove-from-proposal:
+    post:
+      consumes:
+      - application/json
+      description: Detaches an agent from a proposal
+      parameters:
+      - description: info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RemoveAgentFromProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Remove agent from proposal
+      tags:
+      - sc-sync
+  /agent/update-agent-mission:
+    post:
+      consumes:
+      - application/json
+      description: Updates the mission details of an agent
+      parameters:
+      - description: mission
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateAgentMissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update agent mission
+      tags:
+      - sc-sync
+  /agent/update-agent-owner:
+    post:
+      consumes:
+      - application/json
+      description: Updates the ownership of an agent
+      parameters:
+      - description: owner info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateAgentOwnerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update agent owner
+      tags:
+      - sc-sync
+  /agent/upsert-image:
+    post:
+      consumes:
+      - application/json
+      description: Uploads or updates the agent image
+      parameters:
+      - description: image
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpsertAgentImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Upsert agent image
+      tags:
+      - sc-sync
+swagger: "2.0"

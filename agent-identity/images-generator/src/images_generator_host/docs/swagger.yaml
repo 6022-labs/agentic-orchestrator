@@ -1,0 +1,72 @@
+basePath: /
+definitions:
+  responses.GenerateImagesResponse:
+    properties:
+      images:
+        additionalProperties:
+          items:
+            type: integer
+          type: array
+        type: object
+    type: object
+info:
+  contact: {}
+  description: This is the API for the orchestrator images generator host.
+  title: Orchestrator images generator Host API
+  version: "1.0"
+paths:
+  /generate-images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Generates images based on the request payload
+      parameters:
+      - description: Base image file
+        in: formData
+        name: baseImageBytes
+        type: file
+      - in: formData
+        name: baseImageMimeType
+        type: string
+      - in: formData
+        name: creator
+        type: string
+      - in: formData
+        name: ensDomain
+        type: string
+      - in: formData
+        name: name
+        type: string
+      - in: formData
+        name: originEnsDomain
+        type: string
+      - in: formData
+        name: originGeneration
+        type: integer
+      - in: formData
+        name: role
+        type: string
+      - in: formData
+        name: stars
+        type: integer
+      - collectionFormat: csv
+        in: formData
+        items:
+          type: string
+        name: wallets
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GenerateImagesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Generate images
+      tags:
+      - images
+swagger: "2.0"

@@ -1,0 +1,192 @@
+package repositories
+
+import (
+	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/db_clients"
+	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
+	"github.com/google/uuid"
+)
+
+type AgentRepository struct {
+	*AbstractRepository[models.Agent]
+	client db_clients.DatabaseClientInterface
+}
+
+func NewAgentRepository(client db_clients.DatabaseClientInterface) *AgentRepository {
+	abstractRepository := NewAbstractRepository[models.Agent](client)
+
+	return &AgentRepository{
+		client:             client,
+		AbstractRepository: abstractRepository,
+	}
+}
+
+func (r *AgentRepository) Remove(agent *models.Agent) error {
+	tx := r.client.GetDB().Delete(agent)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (r *AgentRepository) GetAll() ([]*models.Agent, error) {
+	agents := []*models.Agent{}
+
+	tx := r.client.GetDB().Find(&agents)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agents, nil
+}
+
+func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+	agents := []*models.Agent{}
+
+	db := r.client.GetDB().Model(&models.Agent{})
+
+	if params.IsInternal != nil {
+		db = db.Where("is_internal = ?", *params.IsInternal)
+	}
+
+	if params.ElementsPerPage != nil {
+		offset := 0
+		if params.Page != nil && *params.Page > 0 {
+			offset = int((*params.Page - 1) * *params.ElementsPerPage)
+		}
+		db = db.Offset(offset).Limit(int(*params.ElementsPerPage))
+	}
+
+	sortDirection := "asc"
+	if params.SortDirection != nil {
+		sortDirection = *params.SortDirection
+	}
+
+	sortBy := "created_at"
+	if params.SortBy != nil {
+		sortBy = *params.SortBy
+	}
+
+	db = db.Order(sortBy + " " + sortDirection)
+
+	tx := db.Find(&agents)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agents, nil
+}
+
+func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (uint, error) {
+	var count int64
+
+	db := r.client.GetDB().Model(&models.Agent{})
+
+	if params.IsInternal != nil {
+		db = db.Where("is_internal = ?", *params.IsInternal)
+	}
+
+	tx := db.Count(&count)
+	if tx.Error != nil {
+		return 0, tx.Error
+	}
+
+	return uint(count), nil
+}
+
+func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
+	entity := new(models.Agent)
+	tx := r.client.GetDB().First(entity, id)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return entity, nil
+}
+
+func (r *AgentRepository) GetByWalletAddress(walletAddress string) (*models.Agent, error) {
+	agent := &models.Agent{}
+
+	tx := r.client.GetDB().Where("wallet_address ILIKE ?", walletAddress).First(agent)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
+	agent := &models.Agent{}
+
+	tx := r.client.GetDB().Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).First(agent)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) GetByEnsDomain(ensDomain string) (*models.Agent, error) {
+	agent := &models.Agent{}
+
+	tx := r.client.GetDB().Where("ens_domain = ?", ensDomain).First(agent)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent, error) {
+	agents := []*models.Agent{}
+
+	tx := r.client.GetDB().Where("ens_domain IN ?", ensDomains).Find(&agents)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agents, nil
+}
+
+func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress string, walletAddress string) (*models.Agent, error) {
+	agent := &models.Agent{}
+
+	tx := r.client.GetDB().Where(
+		"collection_token_id IS NULL AND collection_address = ? AND wallet_address = ?",
+		collectionAddress,
+		walletAddress,
+	).First(agent)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error) {
+	agent := &models.Agent{}
+
+	tx := r.client.GetDB().Where(
+		"collection_token_id IS NULL AND collection_address = ? AND proposal_id = ?",
+		collectionAddress,
+		proposalId,
+	).First(agent)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) ExistsByCollectionAddressAndCollectionTokenId(address string, tokenId uint64) (bool, error) {
+	var count int64
+
+	tx := r.client.GetDB().Model(&models.Agent{}).Where("collection_address = ? AND collection_token_id = ?", address, tokenId).Count(&count)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+
+	return count > 0, nil
+}

@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "postgres": {
+      "Name": "agentic-ai-orchestrator-db",
+      "Group": "Servers",
+      "Port": 5432,
+      "Username": "postgres",
+      "Host": "db",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "agentic-ai-orchestrator"
+    }
+  }
+}

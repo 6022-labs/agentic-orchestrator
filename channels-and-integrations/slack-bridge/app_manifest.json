@@ -1,0 +1,91 @@
+{
+  "display_information": {
+    "name": "6022"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "6022",
+      "always_online": false
+    },
+    "slash_commands": [
+      {
+        "command": "/add-agent",
+        "url": "https://<BRIDGE DOMAIN>/command-handler/add-agent-to-channel",
+        "description": "Add a agent to the channel",
+        "usage_hint": "[collection address] [token ID]",
+        "should_escape": false
+      },
+      {
+        "command": "/remove-agent",
+        "url": "https://<BRIDGE DOMAIN>/command-handler/remove-agent-from-channel",
+        "description": "Remove a agent from the channel",
+        "usage_hint": "[collection address] [token ID]",
+        "should_escape": false
+      },
+      {
+        "command": "/list-agents",
+        "url": "https://<BRIDGE DOMAIN>/command-handler/list-agents-in-channel",
+        "description": "List all agents in the channel",
+        "should_escape": false
+      },
+      {
+        "command": "/verify-wallet-ownership",
+        "url": "https://<BRIDGE DOMAIN>/command-handler/verify-wallet-ownership",
+        "description": "Verify wallet ownership",
+        "should_escape": false
+      },
+      {
+        "command": "/pair-slack-user-to-human-agent",
+        "url": "https://<BRIDGE DOMAIN>/command-handler/pair-slack-user-to-human-agent",
+        "description": "Pair a Slack user to a human agent",
+        "usage_hint": "[slack user id] [collection address] [token ID]",
+        "should_escape": false
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "channels:join",
+        "channels:read",
+        "chat:write",
+        "chat:write.customize",
+        "chat:write.public",
+        "commands",
+        "files:read",
+        "groups:history",
+        "groups:read",
+        "groups:write",
+        "im:history",
+        "links:read",
+        "links:write",
+        "metadata.message:read",
+        "mpim:history",
+        "mpim:read",
+        "users.profile:read",
+        "users:read",
+        "users:read.email",
+        "im:read",
+        "im:write",
+        "mpim:write"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://<BRIDGE DOMAIN>/event-handler",
+      "bot_events": [
+        "channel_created",
+        "message.channels",
+        "message.groups",
+        "message.im",
+        "message.mpim"
+      ]
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}
