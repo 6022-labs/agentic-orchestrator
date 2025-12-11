@@ -19,6 +19,7 @@ type AnthropicMessagesStandardChatCompletionRequesterInterface interface {
 		hasDirectAccessToMcp bool,
 		llmConnection *models.LLMConnection,
 		messages []orchestrator_agent_llm_connector_http_inference_models.ExternalAnthropicMessagesStandardMessage,
+		systems []orchestrator_agent_llm_connector_http_inference_models.ExternalAnthropicMessagesStandardRequestSystem,
 		mcpConnections []*models.MCPConnection,
 	) (*string, error)
 }
@@ -46,9 +47,14 @@ func (r *AnthropicMessagesStandardChatCompletionRequester) ChatCompletion(
 	hasDirectAccessToMcp bool,
 	llmConnection *models.LLMConnection,
 	messages []orchestrator_agent_llm_connector_http_inference_models.ExternalAnthropicMessagesStandardMessage,
+	systems []orchestrator_agent_llm_connector_http_inference_models.ExternalAnthropicMessagesStandardRequestSystem,
 	mcpConnections []*models.MCPConnection,
 ) (*string, error) {
-	externalRequest := orchestrator_agent_llm_connector_http_inference_models.NewExternalAnthropicMessagesStandardRequest(llmConnection.Model, messages)
+	externalRequest := orchestrator_agent_llm_connector_http_inference_models.NewExternalAnthropicMessagesStandardRequest(
+		llmConnection.Model,
+		messages,
+		systems,
+	)
 
 	alreadyAddedMcps := make(map[string]bool)
 
@@ -145,6 +151,7 @@ func (r *AnthropicMessagesStandardChatCompletionRequester) ChatCompletion(
 			hasDirectAccessToMcp,
 			llmConnection,
 			messages,
+			systems,
 			mcpConnections,
 		)
 	}

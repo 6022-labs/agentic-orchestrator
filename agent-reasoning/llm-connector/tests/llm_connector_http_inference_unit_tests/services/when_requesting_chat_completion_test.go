@@ -408,9 +408,10 @@ func TestWhenRequestingChatCompletion(t *testing.T) {
 					suite.anthropicSettings.HasDirectAccessToMcp(),
 					llmConnection,
 					gomock.Any(),
+					gomock.Any(),
 					nil,
 				).
-				DoAndReturn(func(_, _ string, _ bool, _ *models.LLMConnection, externalMessages []external_models.ExternalAnthropicMessagesStandardMessage, _ []*models.MCPConnection) (*string, error) {
+				DoAndReturn(func(_, _ string, _ bool, _ *models.LLMConnection, externalMessages []external_models.ExternalAnthropicMessagesStandardMessage, _ []external_models.ExternalAnthropicMessagesStandardRequestSystem, _ []*models.MCPConnection) (*string, error) {
 					assert.Equal(t, len(messages), len(externalMessages))
 					for i, message := range messages {
 						assert.Equal(t, message.Role, externalMessages[i].Role)

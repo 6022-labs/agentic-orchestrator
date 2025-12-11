@@ -200,7 +200,8 @@ func (r *ChatCompletionRequester) completeUsingAppropriateStandard(
 	}
 
 	if platformSettings.PlatformAPI() == settings.PlatformAPIAnthropicMessagesStandard {
-		inputs := orchestrator_agent_llm_connector_http_inference_models.NewExternalAnthropicMessagesStandardRequestMessagesFromChatCompletionMessages(messages)
+		inputs := orchestrator_agent_llm_connector_http_inference_models.NewExternalAnthropicMessagesStandardMessagesFromChatCompletionMessages(messages)
+		systems := orchestrator_agent_llm_connector_http_inference_models.NewExternalAnthropicMessagesStandardRequestSystemsFromChatCompletionMessages(messages)
 
 		if apiKey == nil {
 			return nil, fmt.Errorf("api key is required for Anthropic Messages Standard")
@@ -212,6 +213,7 @@ func (r *ChatCompletionRequester) completeUsingAppropriateStandard(
 			platformSettings.HasDirectAccessToMcp(),
 			llmConnection,
 			inputs,
+			systems,
 			mcpConnections,
 		)
 	}

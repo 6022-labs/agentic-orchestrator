@@ -1,5 +1,7 @@
 package models
 
+import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/models"
+
 type ExternalAnthropicMessagesStandardMessage struct {
 	// Common fields
 	Role    string                                            `json:"role"`
@@ -42,4 +44,33 @@ type ExternalAnthropicMessagesStandardMessageContent struct {
 
 	// `container_upload` fields
 	FileId *string `json:"file_id,omitempty"`
+}
+
+func NewExternalAnthropicMessagesStandardMessageFromChatCompletionMessage(
+	message *models.ChatCompletionMessage,
+) ExternalAnthropicMessagesStandardMessage {
+	return ExternalAnthropicMessagesStandardMessage{
+		Role: message.Role,
+		Content: []ExternalAnthropicMessagesStandardMessageContent{
+			{
+				Type: "text",
+				Text: &message.Content,
+			},
+		},
+	}
+}
+
+func NewExternalAnthropicMessagesStandardMessagesFromChatCompletionMessages(
+	messages []*models.ChatCompletionMessage,
+) []ExternalAnthropicMessagesStandardMessage {
+	inputs := make([]ExternalAnthropicMessagesStandardMessage, 0, len(messages))
+	for _, message := range messages {
+		if message.Role != "user" && message.Role != "assistant" {
+			continue
+		}
+
+		inputs = append(inputs, NewExternalAnthropicMessagesStandardMessageFromChatCompletionMessage(message))
+	}
+
+	return inputs
 }

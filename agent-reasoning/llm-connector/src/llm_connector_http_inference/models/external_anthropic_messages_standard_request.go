@@ -14,6 +14,7 @@ type ExternalAnthropicMessagesStandardRequest struct {
 	MaxTokens uint   `json:"max_tokens"`
 
 	Tools      []ExternalAnthropicMessagesStandardRequestTool      `json:"tools,omitempty"`
+	System     []ExternalAnthropicMessagesStandardRequestSystem    `json:"system,omitempty"`
 	Messages   []ExternalAnthropicMessagesStandardMessage          `json:"messages,omitempty"`
 	McpServers []ExternalAnthropicMessagesStandardRequestMCPServer `json:"mcp_servers,omitempty"`
 }
@@ -30,6 +31,11 @@ type ExternalAnthropicMessagesStandardRequestToolInputSchema struct {
 	Properties ExternalToolInputSchemaProperties `json:"properties"`
 }
 
+type ExternalAnthropicMessagesStandardRequestSystem struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
 type ExternalAnthropicMessagesStandardRequestMCPServer struct {
 	Type               string  `json:"type"`
 	Url                string  `json:"url"`
@@ -40,34 +46,35 @@ type ExternalAnthropicMessagesStandardRequestMCPServer struct {
 func NewExternalAnthropicMessagesStandardRequest(
 	model string,
 	messages []ExternalAnthropicMessagesStandardMessage,
+	system []ExternalAnthropicMessagesStandardRequestSystem,
 ) *ExternalAnthropicMessagesStandardRequest {
 	return &ExternalAnthropicMessagesStandardRequest{
 		Model:     model,
 		MaxTokens: 32000,
 		Messages:  messages,
+		System:    system,
 	}
 }
 
-func NewExternalAnthropicMessagesStandardRequestMessageFromChatCompletionMessage(
+func NewExternalAnthropicMessagesStandardRequestSystemFromChatCompletionMessage(
 	message *models.ChatCompletionMessage,
-) ExternalAnthropicMessagesStandardMessage {
-	return ExternalAnthropicMessagesStandardMessage{
-		Role: message.Role,
-		Content: []ExternalAnthropicMessagesStandardMessageContent{
-			{
-				Type: "text",
-				Text: &message.Content,
-			},
-		},
+) ExternalAnthropicMessagesStandardRequestSystem {
+	return ExternalAnthropicMessagesStandardRequestSystem{
+		Type: "text",
+		Text: message.Content,
 	}
 }
 
-func NewExternalAnthropicMessagesStandardRequestMessagesFromChatCompletionMessages(
+func NewExternalAnthropicMessagesStandardRequestSystemsFromChatCompletionMessages(
 	messages []*models.ChatCompletionMessage,
-) []ExternalAnthropicMessagesStandardMessage {
-	inputs := make([]ExternalAnthropicMessagesStandardMessage, 0, len(messages))
+) []ExternalAnthropicMessagesStandardRequestSystem {
+	inputs := make([]ExternalAnthropicMessagesStandardRequestSystem, 0, len(messages))
 	for _, message := range messages {
-		inputs = append(inputs, NewExternalAnthropicMessagesStandardRequestMessageFromChatCompletionMessage(message))
+		if message.Role != "system" {
+			continue
+		}
+
+		inputs = append(inputs, NewExternalAnthropicMessagesStandardRequestSystemFromChatCompletionMessage(message))
 	}
 
 	return inputs

@@ -96,7 +96,7 @@ func TestWhenRequestingAnthropicMessagesStandardChatCompletion(t *testing.T) {
 			suite := WhenRequestingAnthropicMessagesStandardChatCompletionBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, nil)
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, nil, nil)
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -127,7 +127,7 @@ func TestWhenRequestingAnthropicMessagesStandardChatCompletion(t *testing.T) {
 			suite := WhenRequestingAnthropicMessagesStandardChatCompletionBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, []*models.MCPConnection{mcpConnection})
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, nil, []*models.MCPConnection{mcpConnection})
 			assert.Nil(t, result)
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, fmt.Sprintf("failed to fetch MCP tools for connection '%s'", mcpConnection.Name))
@@ -254,7 +254,7 @@ func TestWhenRequestingAnthropicMessagesStandardChatCompletion(t *testing.T) {
 			suite := WhenRequestingAnthropicMessagesStandardChatCompletionBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, []*models.MCPConnection{mcpConnection})
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, nil, []*models.MCPConnection{mcpConnection})
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
 				assert.Equal(t, expectedContent, *result)

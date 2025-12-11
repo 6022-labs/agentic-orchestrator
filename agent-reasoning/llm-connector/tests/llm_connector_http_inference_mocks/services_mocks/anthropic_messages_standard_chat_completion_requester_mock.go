@@ -42,16 +42,16 @@ func (m *MockAnthropicMessagesStandardChatCompletionRequesterInterface) EXPECT()
 }
 
 // ChatCompletion mocks base method.
-func (m *MockAnthropicMessagesStandardChatCompletionRequesterInterface) ChatCompletion(baseUrl, apiKey string, hasDirectAccessToMcp bool, llmConnection *models.LLMConnection, messages []models0.ExternalAnthropicMessagesStandardMessage, mcpConnections []*models.MCPConnection) (*string, error) {
+func (m *MockAnthropicMessagesStandardChatCompletionRequesterInterface) ChatCompletion(baseUrl, apiKey string, hasDirectAccessToMcp bool, llmConnection *models.LLMConnection, messages []models0.ExternalAnthropicMessagesStandardMessage, systems []models0.ExternalAnthropicMessagesStandardRequestSystem, mcpConnections []*models.MCPConnection) (*string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatCompletion", baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, mcpConnections)
+	ret := m.ctrl.Call(m, "ChatCompletion", baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, systems, mcpConnections)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatCompletion indicates an expected call of ChatCompletion.
-func (mr *MockAnthropicMessagesStandardChatCompletionRequesterInterfaceMockRecorder) ChatCompletion(baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, mcpConnections any) *gomock.Call {
+func (mr *MockAnthropicMessagesStandardChatCompletionRequesterInterfaceMockRecorder) ChatCompletion(baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, systems, mcpConnections any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatCompletion", reflect.TypeOf((*MockAnthropicMessagesStandardChatCompletionRequesterInterface)(nil).ChatCompletion), baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, mcpConnections)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatCompletion", reflect.TypeOf((*MockAnthropicMessagesStandardChatCompletionRequesterInterface)(nil).ChatCompletion), baseUrl, apiKey, hasDirectAccessToMcp, llmConnection, messages, systems, mcpConnections)
 }
