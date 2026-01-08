@@ -47,12 +47,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [jwt, setJwt] = React.useState<string | null>(() =>
     localStorage.getItem("jwt")
   );
+  const expirationTimeout = React.useRef<number | null>(null);
+
+  const clearExpirationTimeout = () => {
+    if (expirationTimeout.current != null) {
+      window.clearTimeout(expirationTimeout.current);
+      expirationTimeout.current = null;
+    }
+  };
+
+  const signIn = React.useCallback((token: string) => {
+    localStorage.setItem("jwt", token);
+    setJwt(token);
+  }, []);
+
+  const signOut = React.useCallback(() => {
+    clearExpirationTimeout();
+    localStorage.removeItem("jwt");
+    setJwt(null);
+    setUser(null);
+  }, []);
 
   React.useEffect(() => {
-    if (jwt) {
-      setUser(extractUserData(jwt));
+    clearExpirationTimeout();
+
+    if (!jwt) {
+      setUser(null);
+      return undefined;
     }
-  }, [jwt]);
+
+    const decoded = extractUserData(jwt);
+    setUser(decoded);
+
+    if (!decoded?.exp) {
+      return undefined;
+    }
+
+    const now = Date.now();
+    const expiresAtMs = decoded.exp * 1000;
+
+    if (expiresAtMs <= now) {
+      signOut();
+      return undefined;
+    }
+
+    const delayMs = expiresAtMs - now;
+    expirationTimeout.current = window.setTimeout(signOut, delayMs);
+
+    return () => clearExpirationTimeout();
+  }, [jwt, signOut]);
 
   React.useEffect(() => {
     const isLoginRoute = location.pathname === "/login";
@@ -79,17 +122,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jwt, location]);
-
-  const signIn = (token: string) => {
-    localStorage.setItem("jwt", token);
-    setJwt(token);
-  };
-
-  const signOut = () => {
-    localStorage.removeItem("jwt");
-    setJwt(null);
-    setUser(null);
-  };
 
   return (
     <AuthContext.Provider value={{ user, jwt, signIn, signOut }}>
