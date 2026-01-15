@@ -175,6 +175,7 @@ func (cs *ExpertComputeStrategy) processContextNotFoundPrompt(
 		WithParam([]string{"ContextKeys"}, keysWithoutContextDiscoveryKeys, nil).
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
+		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
 		WithParam([]string{"LatestRequest", "Author"}, latestRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		WithParam([]string{"InitialRequest", "Author"}, initialRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		Build()
@@ -217,6 +218,7 @@ func (cs *ExpertComputeStrategy) addSystemPrompt(
 		WithBase(computeContext.PromptParameters).
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
+		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
 		WithParam([]string{"LatestRequest", "Author"}, latestRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		WithParam([]string{"InitialRequest", "Author"}, initialRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		Build()
@@ -255,6 +257,7 @@ func (cs *ExpertComputeStrategy) processContextFoundPrompt(
 		WithParam([]string{"ContextKey"}, agentContext.Key, nil).
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
+		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
 		WithParam([]string{"LatestRequest", "Author"}, latestRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		WithParam([]string{"InitialRequest", "Author"}, initialRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		Build()

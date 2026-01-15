@@ -148,6 +148,7 @@ func (cs *CloneComputeStrategy) addSystemPrompt(
 		WithBase(computeContext.PromptParameters).
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
+		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
 		WithParam([]string{"LatestRequest", "Author"}, latestRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		WithParam([]string{"InitialRequest", "Author"}, initialRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		Build()
@@ -174,20 +175,21 @@ func (cs *CloneComputeStrategy) addSystemPrompt(
 
 func (cs *CloneComputeStrategy) processDefaultPrompt(
 	agent *models.Agent,
-	context *ComputeContext,
+	computeContext *ComputeContext,
 	messages []*models.AgentContextMessage,
 	latestRequest *models.AgentContextMessage,
 	initialRequest *models.AgentContextMessage,
 ) (*string, []*models.AgentContextMessage, error) {
 	cs.logger.Debug("Processing default prompt",
 		zap.String("agentId", agent.ID.String()),
-		zap.String("conversationContext.Id", context.ConversationContext.Id),
+		zap.String("conversationContext.Id", computeContext.ConversationContext.Id),
 	)
 
 	promptParameterBuilder := cs.promptParametersBuilderFactory.Create()
 	promptParameters, err := promptParameterBuilder.
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
+		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
 		WithParam([]string{"LatestRequest", "Author"}, latestRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		WithParam([]string{"InitialRequest", "Author"}, initialRequest.Author, interfaces.PromptParameterTypePotentialAgent.ToPointer()).
 		Build()
@@ -204,7 +206,7 @@ func (cs *CloneComputeStrategy) processDefaultPrompt(
 		CreatedAt:      time.Now(),
 		Content:        *defaultPrompt,
 		Author:         "", // Author of the prompt is not the agent
-		ConversationId: &context.ConversationContext.Id,
+		ConversationId: &computeContext.ConversationContext.Id,
 		Role:           enums.AgentContextMessageRoleUser,
 		Platform:       enums.AgentContextMessagePlatformNone,
 	})
@@ -218,7 +220,7 @@ func (cs *CloneComputeStrategy) processDefaultPrompt(
 		CreatedAt:      time.Now(),
 		Author:         agent.EnsDomain,
 		Content:        *defaultPromptCompletion,
-		ConversationId: &context.ConversationContext.Id,
+		ConversationId: &computeContext.ConversationContext.Id,
 		Platform:       enums.AgentContextMessagePlatformNone,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
