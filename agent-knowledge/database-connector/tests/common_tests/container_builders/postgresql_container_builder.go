@@ -116,10 +116,6 @@ func (b *PostgresContainerBuilder) DropDatabase(dbName string) {
 		}
 	}
 	log.Printf("Database %s dropped", dbName)
-
-	if len(b.databases) == 0 {
-		b.stop()
-	}
 }
 
 func (b *PostgresContainerBuilder) GetHost() string {

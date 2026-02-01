@@ -107,9 +107,4 @@ func DestroySQLServerDatabase(dbName string) {
 	}
 
 	log.Printf("Database %s dropped", dbName)
-
-	// Stop the container if no more databases are in use
-	if len(sqlServerDatabases) == 0 {
-		stopSQLServer()
-	}
 }

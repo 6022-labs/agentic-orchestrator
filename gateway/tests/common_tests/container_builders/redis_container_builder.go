@@ -87,9 +87,4 @@ func CloseRedisConnection(client *redis.Client) {
 	}
 
 	log.Printf("Redis client removed from tracking")
-
-	// Stop the container if no more connections are in use
-	if len(redisConnections) == 0 {
-		stopRedis()
-	}
 }

@@ -111,8 +111,4 @@ func DestroyMySQLDatabase(dbName string) {
 	}
 
 	log.Printf("Database %s dropped", dbName)
-
-	if len(mysqlDatabases) == 0 {
-		stopMySQL()
-	}
 }

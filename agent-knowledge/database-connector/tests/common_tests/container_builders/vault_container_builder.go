@@ -116,9 +116,4 @@ func CloseVaultConnection(client *vault.Client) {
 	}
 
 	log.Printf("Vault client removed from tracking")
-
-	// Stop the container if no more databases are in use
-	if len(vaultConnections) == 0 {
-		stopVault()
-	}
 }

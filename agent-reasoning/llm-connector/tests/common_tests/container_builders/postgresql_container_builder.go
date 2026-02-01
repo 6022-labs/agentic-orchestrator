@@ -111,8 +111,4 @@ func DestroyPostgreSQLDatabase(dbName string) {
 	}
 
 	log.Printf("Database %s dropped", dbName)
-
-	if len(postgresDatabases) == 0 {
-		stopPostgres()
-	}
 }
