@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -18,7 +17,7 @@ type WhenGeneratingAgentAnimatedSVGTestingSuiteSuite struct {
 }
 
 func WhenGeneratingAgentAnimatedSVGBeforeEach() WhenGeneratingAgentAnimatedSVGTestingSuiteSuite {
-	imagePath := "../../../src/orchestrator_dapp_api/images/nft_mark.png"
+	imagePath := "../../../src/images_generator_host/images/nft_mark.png"
 	agentImageGenerationSettings := &settings.AgentImageGenerationSettings{
 		ImageMarkPath: &imagePath,
 	}
@@ -77,22 +76,6 @@ func TestWhenGeneratingDefaultImage(t *testing.T) {
 		assert.Contains(t, string(result), "<svg")
 		assert.Contains(t, string(result), params.Name)
 		assert.Contains(t, string(result), base64.StdEncoding.EncodeToString(params.BaseImageBytes))
-
-		// Copy result into file:///Users/pierrefourny/Downloads/test.svg
-		file, err := os.Create("/Users/pierrefourny/Downloads/test.svg")
-		if err != nil {
-			t.Fatalf("Failed to create file: %v", err)
-		}
-		defer file.Close()
-		_, err = file.Write(result)
-		if err != nil {
-			t.Fatalf("Failed to write to file: %v", err)
-		}
-		// Close the file after writing
-		err = file.Close()
-		if err != nil {
-			t.Fatalf("Failed to close file: %v", err)
-		}
 	})
 
 	t.Run("Should handle empty border colors gracefully", func(t *testing.T) {
