@@ -23,8 +23,9 @@ func ConfigureServer(container *dig.Container) {
 
 func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName: hostSettings.AppName,
-		Network: "tcp",
+		AppName:   hostSettings.AppName,
+		Network:   "tcp",
+		BodyLimit: hostSettings.BodyLimitBytes,
 	})
 }
 

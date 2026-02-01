@@ -35,7 +35,8 @@ func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	}
 
 	return fiber.New(fiber.Config{
-		AppName: hostSettings.AppName,
+		AppName:   hostSettings.AppName,
+		BodyLimit: hostSettings.BodyLimitBytes,
 	})
 }
 
