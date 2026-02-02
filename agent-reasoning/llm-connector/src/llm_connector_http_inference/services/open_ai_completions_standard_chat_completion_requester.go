@@ -50,7 +50,7 @@ func (r *OpenAICompletionsStandardChatCompletionRequester) ChatCompletion(
 	mcpsToolsAsFunc := make(map[*models.MCPConnection][]*interfaces.McpTool)
 
 	for _, mcpConnection := range mcpConnections {
-		mcpTools, err := r.mcpRequester.ListTools(mcpConnection)
+		mcpTools, err := r.mcpRequester.ListTools(llmConnection.AgentID.String(), mcpConnection)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch MCP tools for connection '%s': %w", mcpConnection.Name, err)
 		}
@@ -66,7 +66,7 @@ func (r *OpenAICompletionsStandardChatCompletionRequester) ChatCompletion(
 		zap.String("agentId", llmConnection.AgentID.String()),
 	)
 
-	response, err := r.openAICompletionsClient.ChatCompletion(baseUrl, apiKey, externalRequest)
+	response, err := r.openAICompletionsClient.ChatCompletion(baseUrl, apiKey, llmConnection.AgentID.String(), externalRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (r *OpenAICompletionsStandardChatCompletionRequester) ChatCompletion(
 				return nil, fmt.Errorf("failed to parse tool call arguments: %w", err)
 			}
 
-			toolResult, err := r.mcpRequester.CallTool(relatedMcpConnection, mcpTool, parsedArguments)
+			toolResult, err := r.mcpRequester.CallTool(llmConnection.AgentID.String(), relatedMcpConnection, mcpTool, parsedArguments)
 			if err != nil {
 				return nil, fmt.Errorf("failed to call tool from MCP: %w", err)
 			}

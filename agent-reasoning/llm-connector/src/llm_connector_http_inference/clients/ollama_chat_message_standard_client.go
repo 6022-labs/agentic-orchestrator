@@ -17,7 +17,7 @@ const (
 )
 
 type OllamaChatMessageStandardClientInterface interface {
-	ChatMessage(baseUrl string, request *models.ExternalOllamaChatMessageStandardRequest) (*models.ExternalOllamaChatMessageStandardResponse, error)
+	ChatMessage(baseUrl, agentId string, request *models.ExternalOllamaChatMessageStandardRequest) (*models.ExternalOllamaChatMessageStandardResponse, error)
 }
 
 type OllamaChatMessageStandardClient struct {
@@ -39,37 +39,52 @@ func NewOllamaChatMessageStandardClient(params newOllamaChatMessageStandardClien
 	}
 }
 
-func (c *OllamaChatMessageStandardClient) ChatMessage(baseUrl string, request *models.ExternalOllamaChatMessageStandardRequest) (*models.ExternalOllamaChatMessageStandardResponse, error) {
+func (c *OllamaChatMessageStandardClient) ChatMessage(baseUrl, agentId string, request *models.ExternalOllamaChatMessageStandardRequest) (*models.ExternalOllamaChatMessageStandardResponse, error) {
 	url := fmt.Sprintf("%s%s", baseUrl, OLLAMA_CHAT_MESSAGE_ENDPOINT)
 
 	// Convert the request to JSON
 	requestBody, err := json.Marshal(request)
 	if err != nil {
+		c.logger.Error("Failed to marshal Ollama Chat Message request",
+			zap.String("agentId", agentId),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(requestBody))
 	if err != nil {
+		c.logger.Error("Failed to create Ollama Chat Message HTTP request",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	c.logger.Debug("Ollama Chat Message request",
+	c.logger.Info("Sending Ollama Chat Message request",
+		zap.String("agentId", agentId),
 		zap.String("url", url),
-		zap.String("request.model", request.Model),
-		zap.Any("request.tools", request.Tools),
+		zap.String("model", request.Model),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		c.logger.Error("Failed to send Ollama Chat Message request",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode > 299 {
 		respBody, _ := io.ReadAll(resp.Body)
-		c.logger.Warn("Ollama Chat Message failed response",
+		c.logger.Error("Ollama Chat Message request failed with error status",
+			zap.String("agentId", agentId),
 			zap.String("url", url),
 			zap.Int("status_code", resp.StatusCode),
 			zap.ByteString("response_body", respBody),
@@ -77,8 +92,19 @@ func (c *OllamaChatMessageStandardClient) ChatMessage(baseUrl string, request *m
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
+	c.logger.Info("Ollama Chat Message request completed successfully",
+		zap.String("agentId", agentId),
+		zap.String("url", url),
+		zap.Int("status_code", resp.StatusCode),
+	)
+
 	var response models.ExternalOllamaChatMessageStandardResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		c.logger.Error("Failed to decode Ollama Chat Message response",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 

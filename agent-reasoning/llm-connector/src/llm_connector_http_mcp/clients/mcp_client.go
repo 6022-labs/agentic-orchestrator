@@ -21,8 +21,8 @@ const (
 )
 
 type McpClientInterface interface {
-	ListTools(mcpServerUrl string, headers map[string]string) (*models.JsonRPCResponse[models.ExternalMcpToolsResponse], error)
-	CallTool(mcpServerUrl string, toolName string, input map[string]any, headers map[string]string) (*models.JsonRPCResponse[json.RawMessage], error)
+	ListTools(mcpServerUrl, agentId string, headers map[string]string) (*models.JsonRPCResponse[models.ExternalMcpToolsResponse], error)
+	CallTool(mcpServerUrl, agentId, toolName string, input map[string]any, headers map[string]string) (*models.JsonRPCResponse[json.RawMessage], error)
 }
 
 type McpClient struct {
@@ -46,7 +46,7 @@ func NewMcpClient(
 	}
 }
 
-func (c *McpClient) ListTools(mcpServerUrl string, headers map[string]string) (*models.JsonRPCResponse[models.ExternalMcpToolsResponse], error) {
+func (c *McpClient) ListTools(mcpServerUrl, agentId string, headers map[string]string) (*models.JsonRPCResponse[models.ExternalMcpToolsResponse], error) {
 	requestBody, err := json.Marshal(models.JsonRPCRequest{
 		JSONRPC: "2.0",
 		ID:      1,
@@ -54,11 +54,20 @@ func (c *McpClient) ListTools(mcpServerUrl string, headers map[string]string) (*
 		Params:  map[string]any{},
 	})
 	if err != nil {
+		c.logger.Error("Failed to marshal MCP list tools request",
+			zap.String("agentId", agentId),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to marshal MCP list tools request: %w", err)
 	}
 
 	req, err := http.NewRequest(http.MethodPost, mcpServerUrl, bytes.NewReader(requestBody))
 	if err != nil {
+		c.logger.Error("Failed to create MCP list tools HTTP request",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to create MCP list tools request: %w", err)
 	}
 
@@ -68,17 +77,26 @@ func (c *McpClient) ListTools(mcpServerUrl string, headers map[string]string) (*
 		req.Header.Set(key, value)
 	}
 
-	c.logger.Debug("Sending MCP list tools request", zap.String("url", mcpServerUrl))
+	c.logger.Info("Sending MCP list tools request",
+		zap.String("agentId", agentId),
+		zap.String("url", mcpServerUrl),
+	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		c.logger.Error("Failed to execute MCP list tools request",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to execute MCP list tools request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode > http.StatusPartialContent {
 		respBody, _ := io.ReadAll(resp.Body)
-		c.logger.Warn("MCP list tools returned unexpected status code",
+		c.logger.Error("MCP list tools request failed with error status",
+			zap.String("agentId", agentId),
 			zap.String("url", mcpServerUrl),
 			zap.Int("status_code", resp.StatusCode),
 			zap.ByteString("response_body", respBody),
@@ -87,15 +105,26 @@ func (c *McpClient) ListTools(mcpServerUrl string, headers map[string]string) (*
 		return nil, fmt.Errorf("unexpected MCP list tools status code: %d", resp.StatusCode)
 	}
 
+	c.logger.Info("MCP list tools request completed successfully",
+		zap.String("agentId", agentId),
+		zap.String("url", mcpServerUrl),
+		zap.Int("status_code", resp.StatusCode),
+	)
+
 	rpcResponse, err := decodeRPCResponse[models.ExternalMcpToolsResponse](c.logger, resp)
 	if err != nil {
+		c.logger.Error("Failed to decode MCP list tools response",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to decode MCP list tools response: %w", err)
 	}
 
 	return rpcResponse, nil
 }
 
-func (c *McpClient) CallTool(mcpServerUrl string, toolName string, input map[string]any, headers map[string]string) (*models.JsonRPCResponse[json.RawMessage], error) {
+func (c *McpClient) CallTool(mcpServerUrl, agentId, toolName string, input map[string]any, headers map[string]string) (*models.JsonRPCResponse[json.RawMessage], error) {
 	requestBody, err := json.Marshal(models.JsonRPCRequest{
 		JSONRPC: "2.0",
 		ID:      1,
@@ -106,11 +135,22 @@ func (c *McpClient) CallTool(mcpServerUrl string, toolName string, input map[str
 		},
 	})
 	if err != nil {
+		c.logger.Error("Failed to marshal MCP call tool request",
+			zap.String("agentId", agentId),
+			zap.String("tool", toolName),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to marshal MCP call tool request: %w", err)
 	}
 
 	req, err := http.NewRequest(http.MethodPost, mcpServerUrl, bytes.NewReader(requestBody))
 	if err != nil {
+		c.logger.Error("Failed to create MCP call tool HTTP request",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.String("tool", toolName),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to create MCP call tool request: %w", err)
 	}
 
@@ -120,18 +160,30 @@ func (c *McpClient) CallTool(mcpServerUrl string, toolName string, input map[str
 		req.Header.Set(key, value)
 	}
 
-	c.logger.Debug("Sending MCP call tool request", zap.String("url", mcpServerUrl), zap.String("tool", toolName))
+	c.logger.Info("Sending MCP call tool request",
+		zap.String("agentId", agentId),
+		zap.String("url", mcpServerUrl),
+		zap.String("tool", toolName),
+	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		c.logger.Error("Failed to execute MCP call tool request",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.String("tool", toolName),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to execute MCP call tool request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode > http.StatusPartialContent {
 		respBody, _ := io.ReadAll(resp.Body)
-		c.logger.Warn("MCP call tool returned unexpected status code",
+		c.logger.Error("MCP call tool request failed with error status",
+			zap.String("agentId", agentId),
 			zap.String("url", mcpServerUrl),
+			zap.String("tool", toolName),
 			zap.Int("status_code", resp.StatusCode),
 			zap.ByteString("response_body", respBody),
 		)
@@ -139,8 +191,21 @@ func (c *McpClient) CallTool(mcpServerUrl string, toolName string, input map[str
 		return nil, fmt.Errorf("unexpected MCP call tool status code: %d", resp.StatusCode)
 	}
 
+	c.logger.Info("MCP call tool request completed successfully",
+		zap.String("agentId", agentId),
+		zap.String("url", mcpServerUrl),
+		zap.String("tool", toolName),
+		zap.Int("status_code", resp.StatusCode),
+	)
+
 	rpcResponse, err := decodeRPCResponse[json.RawMessage](c.logger, resp)
 	if err != nil {
+		c.logger.Error("Failed to decode MCP call tool response",
+			zap.String("agentId", agentId),
+			zap.String("url", mcpServerUrl),
+			zap.String("tool", toolName),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to decode MCP call tool response: %w", err)
 	}
 

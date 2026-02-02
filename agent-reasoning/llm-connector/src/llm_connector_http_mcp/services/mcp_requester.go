@@ -19,12 +19,12 @@ func NewMCPRequester(client clients.McpClientInterface) *MCPRequester {
 	}
 }
 
-func (r *MCPRequester) ListTools(mcpConnection *models.MCPConnection) ([]*interfaces.McpTool, error) {
+func (r *MCPRequester) ListTools(agentId string, mcpConnection *models.MCPConnection) ([]*interfaces.McpTool, error) {
 	if mcpConnection == nil {
 		return nil, fmt.Errorf("MCP connection is nil")
 	}
 
-	result, err := r.client.ListTools(mcpConnection.Url, mcpConnection.HeaderAuth)
+	result, err := r.client.ListTools(mcpConnection.Url, agentId, mcpConnection.HeaderAuth)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list MCP tools: %w", err)
 	}
@@ -36,6 +36,7 @@ func (r *MCPRequester) ListTools(mcpConnection *models.MCPConnection) ([]*interf
 }
 
 func (r *MCPRequester) CallTool(
+	agentId string,
 	mcpConnection *models.MCPConnection,
 	tool *interfaces.McpTool,
 	toolInput map[string]any,
@@ -49,7 +50,7 @@ func (r *MCPRequester) CallTool(
 
 	fixedInput := r.fixToolInputBySchema(tool, toolInput)
 
-	result, err := r.client.CallTool(mcpConnection.Url, tool.Name, fixedInput, mcpConnection.HeaderAuth)
+	result, err := r.client.CallTool(mcpConnection.Url, agentId, tool.Name, fixedInput, mcpConnection.HeaderAuth)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call MCP tool '%s': %w", tool.Name, err)
 	}

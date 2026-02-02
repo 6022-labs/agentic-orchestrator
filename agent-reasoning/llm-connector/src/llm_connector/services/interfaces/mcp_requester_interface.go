@@ -25,8 +25,9 @@ type ToolInputSchemeProperty struct {
 }
 
 type McpRequesterInterface interface {
-	ListTools(mcpConnection *models.MCPConnection) ([]*McpTool, error)
+	ListTools(agentId string, mcpConnection *models.MCPConnection) ([]*McpTool, error)
 	CallTool(
+		agentId string,
 		mcpConnection *models.MCPConnection,
 		tool *McpTool,
 		toolInput map[string]any,

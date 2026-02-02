@@ -17,7 +17,7 @@ const (
 )
 
 type AmazonBedrockConverseStandardClientInterface interface {
-	Messages(baseUrl, apiKey string, request *models.ExternalAmazonBedrockConverseStandardRequest) (*models.ExternalAmazonBedrockConverseStandardResponse, error)
+	Messages(baseUrl, apiKey, agentId string, request *models.ExternalAmazonBedrockConverseStandardRequest) (*models.ExternalAmazonBedrockConverseStandardResponse, error)
 }
 
 type AmazonBedrockConverseStandardClient struct {
@@ -39,39 +39,54 @@ func NewAmazonBedrockConverseStandardClient(params newAmazonBedrockConverseStand
 	}
 }
 
-func (c *AmazonBedrockConverseStandardClient) Messages(baseUrl, apiKey string, request *models.ExternalAmazonBedrockConverseStandardRequest) (*models.ExternalAmazonBedrockConverseStandardResponse, error) {
+func (c *AmazonBedrockConverseStandardClient) Messages(baseUrl, apiKey, agentId string, request *models.ExternalAmazonBedrockConverseStandardRequest) (*models.ExternalAmazonBedrockConverseStandardResponse, error) {
 	endpoint := fmt.Sprintf(AMAZON_BEDROCK_CONVERSE_ENDPOINT_TEMPLATE, request.ModelId)
 	url := fmt.Sprintf("%s%s", baseUrl, endpoint)
 
 	// Convert the request to JSON
 	requestBody, err := json.Marshal(request)
 	if err != nil {
+		c.logger.Error("Failed to marshal Amazon Bedrock Converse request",
+			zap.String("agentId", agentId),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(requestBody))
 	if err != nil {
+		c.logger.Error("Failed to create Amazon Bedrock Converse HTTP request",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	c.logger.Debug("Amazon Bedrock Converse Messages request",
+	c.logger.Info("Sending Amazon Bedrock Converse request",
+		zap.String("agentId", agentId),
 		zap.String("url", url),
-		zap.String("request.modelId", request.ModelId),
-		zap.Any("request.toolConfig", request.ToolConfig),
+		zap.String("modelId", request.ModelId),
 	)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		c.logger.Error("Failed to send Amazon Bedrock Converse request",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode > 299 {
 		respBody, _ := io.ReadAll(resp.Body)
-		c.logger.Warn("Amazon Bedrock Converse Messages failed response",
+		c.logger.Error("Amazon Bedrock Converse request failed with error status",
+			zap.String("agentId", agentId),
 			zap.String("url", url),
 			zap.Int("status_code", resp.StatusCode),
 			zap.ByteString("response_body", respBody),
@@ -79,8 +94,19 @@ func (c *AmazonBedrockConverseStandardClient) Messages(baseUrl, apiKey string, r
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
+	c.logger.Info("Amazon Bedrock Converse request completed successfully",
+		zap.String("agentId", agentId),
+		zap.String("url", url),
+		zap.Int("status_code", resp.StatusCode),
+	)
+
 	var response models.ExternalAmazonBedrockConverseStandardResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		c.logger.Error("Failed to decode Amazon Bedrock Converse response",
+			zap.String("agentId", agentId),
+			zap.String("url", url),
+			zap.Error(err),
+		)
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
