@@ -4,21 +4,17 @@ import (
 	"fmt"
 
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 )
 
 type SlackAgentRepository struct {
-	processingSettings *settings.ProcessingSettings
 	AbstractRepository[models.SlackAgent]
 }
 
 func NewSlackAgentRepository(
-	processingSettings *settings.ProcessingSettings,
 	client *slack_bridge_db.DatabaseClient,
 ) *SlackAgentRepository {
 	return &SlackAgentRepository{
-		processingSettings: processingSettings,
 		AbstractRepository: *NewAbstractRepository[models.SlackAgent](client),
 	}
 }
@@ -49,14 +45,14 @@ func (r *SlackAgentRepository) GetByEnsDomain(ensDomain string) (*models.SlackAg
 	return &entity, nil
 }
 
-func (r *SlackAgentRepository) GetNextAgentToProcess() (*models.SlackAgent, error) {
+func (r *SlackAgentRepository) GetNextAgentToProcess(processingInterval uint64) (*models.SlackAgent, error) {
 	var entity models.SlackAgent
 	err := r.client.
 		Where("is_processing = ?", false).
 		Where(
 			fmt.Sprintf(
 				"last_processed_at IS NULL OR last_processed_at < NOW() - INTERVAL '%d seconds'",
-				r.processingSettings.AgentProcessingInterval,
+				processingInterval,
 			),
 		).
 		Order("last_processed_at ASC").

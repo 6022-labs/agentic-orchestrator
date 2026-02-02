@@ -17,12 +17,12 @@ type IconImageGeneratorInterface interface {
 
 type IconImageGenerator struct {
 	agentSVGImage                AgentSVGImageInterface
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings
+	agentImageGenerationSettings *settings.ImageGenerationSettings
 }
 
 func NewIconImageGenerator(
 	agentSVGImage AgentSVGImageInterface,
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings,
+	agentImageGenerationSettings *settings.ImageGenerationSettings,
 ) *IconImageGenerator {
 	return &IconImageGenerator{
 		agentSVGImage:                agentSVGImage,

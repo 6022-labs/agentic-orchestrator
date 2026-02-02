@@ -5,6 +5,6 @@ import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-inte
 type SlackThreadRepositoryInterface interface {
 	Save(entity *models.SlackThread) (*models.SlackThread, error)
 	GetByIdAndChannelId(id string, channelId string) (*models.SlackThread, error)
-	GetProcessableThreadsForAgent(agent *models.SlackAgent) ([]*models.SlackThread, error)
+	GetProcessableThreadsForAgent(agent *models.SlackAgent, facilitatorTickInterval uint64) ([]*models.SlackThread, error)
 	ConcludeThreadsByChannelId(channelId string) error
 }

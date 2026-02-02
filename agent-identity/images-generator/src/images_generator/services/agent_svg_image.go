@@ -35,11 +35,11 @@ type AgentSVGImageInterface interface {
 }
 
 type AgentSVGImage struct {
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings
+	agentImageGenerationSettings *settings.ImageGenerationSettings
 }
 
 func NewAgentSVGImage(
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings,
+	agentImageGenerationSettings *settings.ImageGenerationSettings,
 ) *AgentSVGImage {
 	return &AgentSVGImage{
 		agentImageGenerationSettings: agentImageGenerationSettings,

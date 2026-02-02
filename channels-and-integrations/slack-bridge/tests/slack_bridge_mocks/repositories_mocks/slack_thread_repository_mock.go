@@ -70,18 +70,18 @@ func (mr *MockSlackThreadRepositoryInterfaceMockRecorder) GetByIdAndChannelId(id
 }
 
 // GetProcessableThreadsForAgent mocks base method.
-func (m *MockSlackThreadRepositoryInterface) GetProcessableThreadsForAgent(agent *models.SlackAgent) ([]*models.SlackThread, error) {
+func (m *MockSlackThreadRepositoryInterface) GetProcessableThreadsForAgent(agent *models.SlackAgent, facilitatorTickInterval uint64) ([]*models.SlackThread, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProcessableThreadsForAgent", agent)
+	ret := m.ctrl.Call(m, "GetProcessableThreadsForAgent", agent, facilitatorTickInterval)
 	ret0, _ := ret[0].([]*models.SlackThread)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetProcessableThreadsForAgent indicates an expected call of GetProcessableThreadsForAgent.
-func (mr *MockSlackThreadRepositoryInterfaceMockRecorder) GetProcessableThreadsForAgent(agent any) *gomock.Call {
+func (mr *MockSlackThreadRepositoryInterfaceMockRecorder) GetProcessableThreadsForAgent(agent, facilitatorTickInterval any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProcessableThreadsForAgent", reflect.TypeOf((*MockSlackThreadRepositoryInterface)(nil).GetProcessableThreadsForAgent), agent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProcessableThreadsForAgent", reflect.TypeOf((*MockSlackThreadRepositoryInterface)(nil).GetProcessableThreadsForAgent), agent, facilitatorTickInterval)
 }
 
 // Save mocks base method.

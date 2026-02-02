@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -45,14 +44,9 @@ func WhenConcludingThreadsByChannelIdBeforeEach() *WhenConcludingThreadsByChanne
 		panic(err)
 	}
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval: 20,
-		FacilitatorTickInterval: 30,
-	}
+	sut := repositories.NewSlackThreadRepository(dbClient)
 
-	sut := repositories.NewSlackThreadRepository(processingSettings, dbClient)
-
-	slackAgentRepository := repositories.NewSlackAgentRepository(processingSettings, dbClient)
+	slackAgentRepository := repositories.NewSlackAgentRepository(dbClient)
 	slackChannelRepository := repositories.NewSlackChannelRepository(dbClient)
 
 	return &WhenConcludingThreadsByChannelIdTestingSuite{

@@ -12,24 +12,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGeneratingAgentAnimatedSVGTestingSuiteSuite struct {
+type WhenGeneratingDefaultImageTestingSuiteSuite struct {
 	sut *services.DefaultImageGenerator
 }
 
-func WhenGeneratingAgentAnimatedSVGBeforeEach() WhenGeneratingAgentAnimatedSVGTestingSuiteSuite {
+func WhenGeneratingDefaultImageBeforeEach() WhenGeneratingDefaultImageTestingSuiteSuite {
 	imagePath := "../../../src/images_generator_host/images/nft_mark.png"
-	agentImageGenerationSettings := &settings.AgentImageGenerationSettings{
+	imageGenerationSettings := &settings.ImageGenerationSettings{
 		ImageMarkPath: &imagePath,
 	}
 
 	sut := services.NewDefaultImageGenerator(
 		services.NewAgentSVGImage(
-			agentImageGenerationSettings,
+			imageGenerationSettings,
 		),
-		agentImageGenerationSettings,
+		imageGenerationSettings,
 	)
 
-	return WhenGeneratingAgentAnimatedSVGTestingSuiteSuite{
+	return WhenGeneratingDefaultImageTestingSuiteSuite{
 		sut: sut,
 	}
 }
@@ -65,7 +65,7 @@ func TestWhenGeneratingDefaultImage(t *testing.T) {
 	t.Run("Should generate a valid SVG image", func(t *testing.T) {
 		t.Parallel()
 
-		basics := WhenGeneratingAgentAnimatedSVGBeforeEach()
+		basics := WhenGeneratingDefaultImageBeforeEach()
 
 		params := generateValidGenerateImageParams()
 
@@ -81,7 +81,7 @@ func TestWhenGeneratingDefaultImage(t *testing.T) {
 	t.Run("Should handle empty border colors gracefully", func(t *testing.T) {
 		t.Parallel()
 
-		basics := WhenGeneratingAgentAnimatedSVGBeforeEach()
+		basics := WhenGeneratingDefaultImageBeforeEach()
 
 		params := generateValidGenerateImageParams()
 

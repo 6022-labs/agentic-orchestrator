@@ -3,7 +3,6 @@ package repositories_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -43,12 +42,7 @@ func WhenGettingSlackThreadByIdAndChannelIdBeforeEach() *WhenGettingSlackThreadB
 		panic(err)
 	}
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval: 20,
-		FacilitatorTickInterval: 30,
-	}
-
-	sut := repositories.NewSlackThreadRepository(processingSettings, dbClient)
+	sut := repositories.NewSlackThreadRepository(dbClient)
 	slackChannelRepository := repositories.NewSlackChannelRepository(dbClient)
 
 	return &WhenGettingSlackThreadByIdAndChannelIdTestingSuite{

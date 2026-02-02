@@ -3,7 +3,6 @@ package repositories_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -43,14 +42,9 @@ func WhenRemovingAgentFromChannelBeforeEach() *WhenRemovingAgentFromChannelTesti
 		panic(err)
 	}
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval: 20,
-		FacilitatorTickInterval: 30,
-	}
-
 	sut := repositories.NewSlackChannelRepository(dbClient)
 
-	slackAgentRepository := repositories.NewSlackAgentRepository(processingSettings, dbClient)
+	slackAgentRepository := repositories.NewSlackAgentRepository(dbClient)
 
 	return &WhenRemovingAgentFromChannelTestingSuite{
 		sut: sut,

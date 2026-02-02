@@ -11,6 +11,7 @@ import (
 	orchestrator_sc_sync_mvc_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_mvc/configurations"
 	orchestrator_vault_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/configurations"
 
+	"github.com/spf13/viper"
 	"go.uber.org/dig"
 )
 
@@ -18,6 +19,7 @@ func ConfigureDI() *dig.Container {
 	container := dig.New()
 
 	container.Provide(orchestrator_sc_sync_host_settings.NewHostSettings)
+	container.Provide(viper.GetViper)
 
 	orchestrator_configurations.AddOrchestratorConfiguration(container)
 	orchestrator_db_configurations.AddOrchestratorDbConfiguration(container)

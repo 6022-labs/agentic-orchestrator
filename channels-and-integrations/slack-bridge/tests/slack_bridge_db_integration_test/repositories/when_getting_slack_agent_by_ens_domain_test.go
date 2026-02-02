@@ -40,7 +40,7 @@ func WhenGettingSlackAgentByEnsDomainBeforeEach() *WhenGettingSlackAgentByEnsDom
 		panic(err)
 	}
 
-	sut := repositories.NewSlackAgentRepository(nil, dbClient)
+	sut := repositories.NewSlackAgentRepository(dbClient)
 
 	return &WhenGettingSlackAgentByEnsDomainTestingSuite{
 		dbName:   dbName,

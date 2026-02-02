@@ -4,23 +4,32 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const DatabaseSettingsKey = "database"
+
 type DatabaseSettings struct {
-	Url string
+	Url string `mapstructure:"url"`
 }
 
 func NewOrchestratorDatabaseSettings(
 	logger *zap.Logger,
+	v *viper.Viper,
 ) *DatabaseSettings {
-	databaseUrl := os.Getenv("DATABASE_URL")
-
-	if len(strings.TrimSpace(databaseUrl)) == 0 {
-		logger.Fatal("please set your DATABASE_URL value in your environment")
+	if val, ok := os.LookupEnv("DATABASE__URL"); ok {
+		v.Set(DatabaseSettingsKey+".url", val)
 	}
 
-	return &DatabaseSettings{
-		Url: databaseUrl,
+	var settings DatabaseSettings
+	if err := v.UnmarshalKey(DatabaseSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal database settings", zap.Error(err))
 	}
+
+	if len(strings.TrimSpace(settings.Url)) == 0 {
+		logger.Fatal("please set your database.url value in your configuration")
+	}
+
+	return &settings
 }

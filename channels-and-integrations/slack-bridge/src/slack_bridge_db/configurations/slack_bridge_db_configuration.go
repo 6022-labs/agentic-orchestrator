@@ -60,7 +60,7 @@ func AddSlackBridgeDbConfiguration(container *dig.Container) {
 
 	// Settings
 	err = container.Provide(
-		settings.NewOrchestratorSlackBridgeDatabaseSettings,
+		settings.NewDatabaseSettings,
 	)
 	if err != nil {
 		panic(err)

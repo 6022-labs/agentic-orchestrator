@@ -1,5 +1,7 @@
 package settings
 
+const AmazonBedrockSettingsKey = "amazon_bedrock"
+
 type AmazonBedrockSettings struct {
 }
 

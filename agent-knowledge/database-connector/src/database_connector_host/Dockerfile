@@ -25,10 +25,10 @@ COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/migrations/mysql/*.sql /migrations/database_connector_db_agent/mysql/
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/migrations/mariadb/*.sql /migrations/database_connector_db_agent/mariadb/
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/migrations/postgres/*.sql /migrations/database_connector_db_agent/postgres/
-ENV AGENT_MIGRATIONS_FOLDER_PATH=/migrations/database_connector_db_agent
+ENV AGENT_MIGRATIONS__FOLDER_PATH=/migrations/database_connector_db_agent
 
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_orchestrator/migrations/*.sql /migrations/database_connector_db_orchestrator/
-ENV ORCHESTRATOR_MIGRATIONS_FOLDER_PATH=/migrations/database_connector_db_orchestrator
+ENV ORCHESTRATOR_MIGRATIONS__FOLDER_PATH=/migrations/database_connector_db_orchestrator
 
 EXPOSE 8000
 

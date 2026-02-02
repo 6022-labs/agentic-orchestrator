@@ -4,57 +4,64 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const SlackSettingsKey = "slack"
+
 type SlackSettings struct {
-	AppId                 string
-	ApiBaseURL            string
-	ClientSecret          string
-	BotToken              string
-	SigningSecret         string
-	AcceptedChannelPrefix string
+	AppId                 string `mapstructure:"app_id"`
+	ApiBaseURL            string `mapstructure:"api_base_url"`
+	ClientSecret          string `mapstructure:"client_secret"`
+	BotToken              string `mapstructure:"bot_token"`
+	SigningSecret         string `mapstructure:"signing_secret"`
+	AcceptedChannelPrefix string `mapstructure:"accepted_channel_prefix"`
 }
 
-func NewSlackSettings(logger *zap.Logger) *SlackSettings {
-	slackAppId := os.Getenv("SLACK_APP_ID")
-	if len(strings.TrimSpace(slackAppId)) == 0 {
-		logger.Fatal("SLACK_APP_ID is not set")
+func NewSlackSettings(logger *zap.Logger, v *viper.Viper) *SlackSettings {
+	v.SetDefault(SlackSettingsKey+".api_base_url", "https://slack.com")
+	v.SetDefault(SlackSettingsKey+".accepted_channel_prefix", "ai")
+
+	if val, ok := os.LookupEnv("SLACK__APP_ID"); ok {
+		v.Set(SlackSettingsKey+".app_id", val)
+	}
+	if val, ok := os.LookupEnv("SLACK__API_BASE_URL"); ok {
+		v.Set(SlackSettingsKey+".api_base_url", val)
+	}
+	if val, ok := os.LookupEnv("SLACK__CLIENT_SECRET"); ok {
+		v.Set(SlackSettingsKey+".client_secret", val)
+	}
+	if val, ok := os.LookupEnv("SLACK__SIGNING_SECRET"); ok {
+		v.Set(SlackSettingsKey+".signing_secret", val)
+	}
+	if val, ok := os.LookupEnv("SLACK__BOT_TOKEN"); ok {
+		v.Set(SlackSettingsKey+".bot_token", val)
+	}
+	if val, ok := os.LookupEnv("SLACK__ACCEPTED_CHANNEL_PREFIX"); ok {
+		v.Set(SlackSettingsKey+".accepted_channel_prefix", val)
 	}
 
-	slackApiBaseURL := os.Getenv("SLACK_API_BASE_URL")
-	if len(strings.TrimSpace(slackApiBaseURL)) == 0 {
-		logger.Info("SLACK_API_BASE_URL is not set, using default")
-		slackApiBaseURL = "https://slack.com"
+	var settings SlackSettings
+	if err := v.UnmarshalKey(SlackSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal slack settings", zap.Error(err))
 	}
 
-	slackClientSecret := os.Getenv("SLACK_CLIENT_SECRET")
-	if len(strings.TrimSpace(slackClientSecret)) == 0 {
-		logger.Fatal("SLACK_CLIENT_SECRET is not set")
+	if len(strings.TrimSpace(settings.AppId)) == 0 {
+		logger.Fatal("please set your slack.app_id value in your configuration")
 	}
 
-	slackSigningSecret := os.Getenv("SLACK_SIGNING_SECRET")
-	if len(strings.TrimSpace(slackSigningSecret)) == 0 {
-		logger.Fatal("SLACK_SIGNING_SECRET is not set")
+	if len(strings.TrimSpace(settings.ClientSecret)) == 0 {
+		logger.Fatal("please set your slack.client_secret value in your configuration")
 	}
 
-	slackBotToken := os.Getenv("SLACK_BOT_TOKEN")
-	if len(strings.TrimSpace(slackBotToken)) == 0 {
-		logger.Fatal("SLACK_BOT_TOKEN is not set")
+	if len(strings.TrimSpace(settings.SigningSecret)) == 0 {
+		logger.Fatal("please set your slack.signing_secret value in your configuration")
 	}
 
-	acceptedChannelPrefix := os.Getenv("ACCEPTED_CHANNEL_PREFIX")
-	if len(strings.TrimSpace(acceptedChannelPrefix)) == 0 {
-		logger.Info("ACCEPTED_CHANNEL_PREFIX is not set, using default 'ai'")
-		acceptedChannelPrefix = "ai"
+	if len(strings.TrimSpace(settings.BotToken)) == 0 {
+		logger.Fatal("please set your slack.bot_token value in your configuration")
 	}
 
-	return &SlackSettings{
-		AppId:                 slackAppId,
-		BotToken:              slackBotToken,
-		ApiBaseURL:            slackApiBaseURL,
-		ClientSecret:          slackClientSecret,
-		SigningSecret:         slackSigningSecret,
-		AcceptedChannelPrefix: acceptedChannelPrefix,
-	}
+	return &settings
 }

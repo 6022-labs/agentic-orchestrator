@@ -2,43 +2,50 @@ package settings
 
 import (
 	"os"
-	"strconv"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const RedisSettingsKey = "redis"
+
 type RedisSettings struct {
-	DB       int64
-	Host     string
-	Password string
+	DB       int64  `mapstructure:"db"`
+	Host     string `mapstructure:"host"`
+	Password string `mapstructure:"password"`
 }
 
-func NewRedisSettings(logger *zap.Logger) *RedisSettings {
-	redisHost := os.Getenv("REDIS_HOST")
-	if len(strings.TrimSpace(redisHost)) == 0 {
-		logger.Fatal("please set your REDIS_HOST value in your environment")
+func NewRedisSettings(logger *zap.Logger, v *viper.Viper) *RedisSettings {
+	v.SetDefault(RedisSettingsKey+".db", int64(0))
+
+	if val, ok := os.LookupEnv("REDIS__HOST"); ok {
+		v.Set(RedisSettingsKey+".host", val)
+	}
+	if val, ok := os.LookupEnv("REDIS__PASSWORD"); ok {
+		v.Set(RedisSettingsKey+".password", val)
+	}
+	if val, ok := os.LookupEnv("REDIS__DB"); ok {
+		v.Set(RedisSettingsKey+".db", val)
 	}
 
-	redisPassword := os.Getenv("REDIS_PASSWORD")
-	if len(strings.TrimSpace(redisPassword)) == 0 {
+	var settings RedisSettings
+	if err := v.UnmarshalKey(RedisSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal redis settings", zap.Error(err))
+	}
+
+	if len(strings.TrimSpace(settings.Host)) == 0 {
+		logger.Fatal("please set your redis.host value in your configuration")
+	}
+
+	if len(strings.TrimSpace(settings.Password)) == 0 {
 		logger.Warn("redis password is not set")
 	}
 
-	strRedisDB := os.Getenv("REDIS_DB")
-	if len(strings.TrimSpace(strRedisDB)) == 0 {
-		logger.Warn("redis db is not set, using default value 0")
-		strRedisDB = "0"
+	if settings.DB < 0 {
+		logger.Warn("invalid redis.db value, defaulting to 0")
+		settings.DB = 0
 	}
 
-	redisDB, err := strconv.ParseInt(strRedisDB, 10, 64)
-	if err != nil {
-		logger.Fatal("Error, your REDIS_DB value is not a valid number")
-	}
-
-	return &RedisSettings{
-		DB:       redisDB,
-		Host:     redisHost,
-		Password: redisPassword,
-	}
+	return &settings
 }

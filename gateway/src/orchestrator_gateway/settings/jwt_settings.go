@@ -2,39 +2,42 @@ package settings
 
 import (
 	"os"
-	"strconv"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const JwtSettingsKey = "jwt"
+
 type JwtSettings struct {
-	Hash       string
-	LivingTime int
+	Hash       string `mapstructure:"hash"`
+	LivingTime int    `mapstructure:"living_time"`
 }
 
 func NewJwtSettings(
 	logger *zap.Logger,
+	v *viper.Viper,
 ) *JwtSettings {
-	jwtHash := os.Getenv("JWT_HASH")
-	jwtLivingTimeStr := os.Getenv("JWT_LIVING_TIME")
-
-	if len(strings.TrimSpace(jwtHash)) == 0 {
-		logger.Fatal("Error, please set your JWT_HASH value in your environment")
+	if val, ok := os.LookupEnv("JWT__HASH"); ok {
+		v.Set(JwtSettingsKey+".hash", val)
+	}
+	if val, ok := os.LookupEnv("JWT__LIVING_TIME"); ok {
+		v.Set(JwtSettingsKey+".living_time", val)
 	}
 
-	if len(strings.TrimSpace(jwtLivingTimeStr)) == 0 {
-		logger.Fatal("Error, please set your JWT_LIVING_TIME value in your environment")
+	var settings JwtSettings
+	if err := v.UnmarshalKey(JwtSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal jwt settings", zap.Error(err))
 	}
 
-	jwtLivingTime, err := strconv.Atoi(jwtLivingTimeStr)
-
-	if err != nil {
-		logger.Fatal("Error, JWT_LIVING_TIME is not a number.")
+	if len(strings.TrimSpace(settings.Hash)) == 0 {
+		logger.Fatal("please set your jwt.hash value in your configuration")
 	}
 
-	return &JwtSettings{
-		Hash:       jwtHash,
-		LivingTime: jwtLivingTime,
+	if settings.LivingTime <= 0 {
+		logger.Fatal("please set your jwt.living_time value in your configuration")
 	}
+
+	return &settings
 }

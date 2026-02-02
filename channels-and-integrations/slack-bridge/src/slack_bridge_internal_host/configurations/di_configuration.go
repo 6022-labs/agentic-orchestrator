@@ -1,8 +1,6 @@
 package configurations
 
 import (
-	"go.uber.org/dig"
-
 	orchestrator_slack_bridge_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/configurations"
 	slack_bridge_db_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/configurations"
 	orchestrator_slack_bridge_http_orchestrator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/configurations"
@@ -12,12 +10,16 @@ import (
 	orchestrator_slack_bridge_internal_mvc_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc/configurations"
 	orchestrator_slack_bridge_redis_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
 	orchestrator_slack_bridge_vault_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_vault/configurations"
+
+	"github.com/spf13/viper"
+	"go.uber.org/dig"
 )
 
 func ConfigureDI() *dig.Container {
 	container := dig.New()
 
 	container.Provide(orchestrator_slack_bridge_internal_host_settings.NewHostSettings)
+	container.Provide(viper.GetViper)
 
 	orchestrator_slack_bridge_configurations.AddSlackBridgeConfiguration(container)
 	slack_bridge_db_configurations.AddSlackBridgeDbConfiguration(container)

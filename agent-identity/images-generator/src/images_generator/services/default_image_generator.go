@@ -13,12 +13,12 @@ type DefaultImageGeneratorInterface interface {
 
 type DefaultImageGenerator struct {
 	agentSVGImage                AgentSVGImageInterface
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings
+	agentImageGenerationSettings *settings.ImageGenerationSettings
 }
 
 func NewDefaultImageGenerator(
 	agentSVGImage AgentSVGImageInterface,
-	agentImageGenerationSettings *settings.AgentImageGenerationSettings,
+	agentImageGenerationSettings *settings.ImageGenerationSettings,
 ) *DefaultImageGenerator {
 	return &DefaultImageGenerator{
 		agentSVGImage:                agentSVGImage,

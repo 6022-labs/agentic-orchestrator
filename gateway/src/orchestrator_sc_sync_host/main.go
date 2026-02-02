@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -18,6 +20,18 @@ import (
 // @BasePath /
 func main() {
 	godotenv.Load(".env")
+
+	viper.SetConfigName("appsettings")
+	viper.SetConfigType("json")
+	viper.AddConfigPath(".")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		var configNotFound viper.ConfigFileNotFoundError
+		if !errors.As(err, &configNotFound) {
+			panic(err)
+		}
+	}
 
 	container := configurations.ConfigureDI()
 	configurations.ConfigureLogging(container)
@@ -33,7 +47,7 @@ func main() {
 		}
 	})
 
-	err := container.Invoke(func(logger *zap.Logger, synchronizeAllAgentCollections use_cases.SynchronizeAllAgentCollectionsInterface) error {
+	err = container.Invoke(func(logger *zap.Logger, synchronizeAllAgentCollections use_cases.SynchronizeAllAgentCollectionsInterface) error {
 		logger.Info("Synchronizing all agent collections...")
 		return synchronizeAllAgentCollections.Synchronize()
 	})

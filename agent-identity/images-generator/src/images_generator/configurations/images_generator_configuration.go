@@ -9,7 +9,7 @@ import (
 
 func AddImagesGeneratorConfiguration(container *dig.Container) {
 	// Settings
-	err := container.Provide(settings.NewAgentImageGenerationSettings)
+	err := container.Provide(settings.NewImageGenerationSettings)
 	if err != nil {
 		panic(err)
 	}

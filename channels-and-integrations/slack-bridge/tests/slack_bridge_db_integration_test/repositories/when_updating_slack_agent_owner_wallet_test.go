@@ -40,7 +40,7 @@ func WhenUpdatingSlackAgentOwnerWalletBeforeEach() *WhenUpdatingSlackAgentOwnerW
 		panic(err)
 	}
 
-	sut := repositories.NewSlackAgentRepository(nil, dbClient)
+	sut := repositories.NewSlackAgentRepository(dbClient)
 
 	return &WhenUpdatingSlackAgentOwnerWalletTestingSuite{
 		dbName:   dbName,

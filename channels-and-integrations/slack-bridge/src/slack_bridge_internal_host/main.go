@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,18 +12,31 @@ import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
 func main() {
 	godotenv.Load(".env")
 
+	viper.SetConfigName("appsettings")
+	viper.SetConfigType("json")
+	viper.AddConfigPath(".")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		var configNotFound viper.ConfigFileNotFoundError
+		if !errors.As(err, &configNotFound) {
+			panic(err)
+		}
+	}
+
 	container := configurations.ConfigureDI()
 	configurations.ConfigureLogging(container)
 	configurations.ConfigureServer(container)
 	configurations.ConfigureDatabase(container)
 
-	err := container.Invoke(func(
+	err = container.Invoke(func(
 		app *fiber.App,
 		logger *zap.Logger,
 		hostSettings *settings.HostSettings,

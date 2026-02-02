@@ -4,22 +4,31 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const OrchestratorSettingsKey = "orchestrator"
+
 type OrchestratorSettings struct {
-	ApiBaseUrl string
+	ApiBaseUrl string `mapstructure:"api_base_url"`
 }
 
-func NewOrchestratorSettings(logger *zap.Logger) *OrchestratorSettings {
-	apiBaseUrl := os.Getenv("ORCHESTRATOR_API_BASE_URL")
-	if len(strings.TrimSpace(apiBaseUrl)) == 0 {
-		logger.Fatal("ORCHESTRATOR_API_BASE_URL is not set")
+func NewOrchestratorSettings(logger *zap.Logger, v *viper.Viper) *OrchestratorSettings {
+	if val, ok := os.LookupEnv("ORCHESTRATOR__API_BASE_URL"); ok {
+		v.Set(OrchestratorSettingsKey+".api_base_url", val)
 	}
 
-	apiBaseUrl = strings.TrimSuffix(apiBaseUrl, "/")
-
-	return &OrchestratorSettings{
-		ApiBaseUrl: apiBaseUrl,
+	var settings OrchestratorSettings
+	if err := v.UnmarshalKey(OrchestratorSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal orchestrator settings", zap.Error(err))
 	}
+
+	if len(strings.TrimSpace(settings.ApiBaseUrl)) == 0 {
+		logger.Fatal("please set your orchestrator.api_base_url value in your configuration")
+	}
+
+	settings.ApiBaseUrl = strings.TrimSuffix(settings.ApiBaseUrl, "/")
+
+	return &settings
 }

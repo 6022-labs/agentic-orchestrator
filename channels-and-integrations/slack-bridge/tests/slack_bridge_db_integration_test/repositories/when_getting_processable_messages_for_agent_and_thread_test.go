@@ -6,7 +6,6 @@ import (
 
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -53,15 +52,9 @@ func WhenGettingProcessableMessagesForAgentAndThreadBeforeEach() *WhenGettingPro
 
 	sut := repositories.NewSlackMessageRepository(dbClient)
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval:                     0,
-		ConversationForceConcludeByFacilitatorAfter: 0,
-		FacilitatorTickInterval:                     0,
-	}
-
 	slackUserRepository := repositories.NewSlackUserRepository(dbClient)
-	slackAgentRepository := repositories.NewSlackAgentRepository(processingSettings, dbClient)
-	slackThreadRepository := repositories.NewSlackThreadRepository(processingSettings, dbClient)
+	slackAgentRepository := repositories.NewSlackAgentRepository(dbClient)
+	slackThreadRepository := repositories.NewSlackThreadRepository(dbClient)
 	slackChannelRepository := repositories.NewSlackChannelRepository(dbClient)
 
 	return &WhenGettingProcessableMessagesForAgentAndThreadTestingSuite{

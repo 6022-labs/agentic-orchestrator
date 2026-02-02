@@ -40,7 +40,7 @@ func WhenUpdatingSlackAgentIconImageCidBeforeEach() *WhenUpdatingSlackAgentIconI
 		panic(err)
 	}
 
-	sut := repositories.NewSlackAgentRepository(nil, dbClient)
+	sut := repositories.NewSlackAgentRepository(dbClient)
 
 	return &WhenUpdatingSlackAgentIconImageCidTestingSuite{
 		dbName:   dbName,

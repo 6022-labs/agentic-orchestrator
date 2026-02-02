@@ -13,14 +13,15 @@ import (
 type WhenCreatingOrchestratorSlackBridgeDbClientTestSuite struct {
 	dbName string
 
-	orchestratorDatabaseSettings *settings.OrchestratorSlackBridgeDatabaseSettings
-	sut                          *factories.DatabaseClientFactory
+	databaseSettings *settings.DatabaseSettings
+
+	sut *factories.DatabaseClientFactory
 }
 
 func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrchestratorSlackBridgeDbClientTestSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
-	orchestratorDatabaseSettings := &settings.OrchestratorSlackBridgeDatabaseSettings{
+	databaseSettings := &settings.DatabaseSettings{
 		Url: connectionString,
 	}
 	migrationsSettings := &settings.MigrationsSettings{
@@ -30,13 +31,13 @@ func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrches
 	sut := factories.NewDatabaseClientFactory(
 		zap.NewNop(),
 		migrationsSettings,
-		orchestratorDatabaseSettings,
+		databaseSettings,
 	)
 
 	return &WhenCreatingOrchestratorSlackBridgeDbClientTestSuite{
-		sut:                          sut,
-		dbName:                       dbName,
-		orchestratorDatabaseSettings: orchestratorDatabaseSettings,
+		sut:              sut,
+		dbName:           dbName,
+		databaseSettings: databaseSettings,
 	}
 }
 

@@ -1,0 +1,55 @@
+package settings_test
+
+import (
+	"testing"
+
+	vault_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/settings"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+)
+
+func TestWhenLoadingVaultSettings(t *testing.T) {
+	t.Run("Given settings provided through viper", func(t *testing.T) {
+		v := viper.New()
+		v.Set("vault", map[string]any{
+			"address":          "http://127.0.0.1:8200",
+			"token":            "token",
+			"kv_v1_mount_path": "secret",
+		})
+
+		settings := vault_settings.NewVaultSettings(zap.NewNop(), v)
+
+		assert.NotNil(t, settings)
+		assert.Equal(t, "http://127.0.0.1:8200", settings.Address)
+		assert.Equal(t, "token", settings.Token)
+		t.Run("Given settings provided through env", func(t *testing.T) {
+			t.Setenv("VAULT__ADDRESS", "http://env:8200")
+			t.Setenv("VAULT__TOKEN", "env-token")
+			t.Setenv("VAULT__KV_V1_MOUNT_PATH", "env-secret")
+
+			v := viper.New()
+			settings := vault_settings.NewVaultSettings(zap.NewNop(), v)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "http://env:8200", settings.Address)
+			assert.Equal(t, "env-token", settings.Token)
+			assert.Equal(t, "env-secret", settings.KvV1MountPath)
+		})
+		assert.Equal(t, "secret", settings.KvV1MountPath)
+	})
+
+	t.Run("Given settings provided through env", func(t *testing.T) {
+		t.Setenv("VAULT__ADDRESS", "http://env:8200")
+		t.Setenv("VAULT__TOKEN", "env-token")
+		t.Setenv("VAULT__KV_V1_MOUNT_PATH", "env-secret")
+
+		v := viper.New()
+		settings := vault_settings.NewVaultSettings(zap.NewNop(), v)
+
+		assert.NotNil(t, settings)
+		assert.Equal(t, "http://env:8200", settings.Address)
+		assert.Equal(t, "env-token", settings.Token)
+		assert.Equal(t, "env-secret", settings.KvV1MountPath)
+	})
+}

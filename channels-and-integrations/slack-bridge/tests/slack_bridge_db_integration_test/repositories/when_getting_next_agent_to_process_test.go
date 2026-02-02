@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -21,7 +20,6 @@ type WhenGettingNextAgentToProcessTestingSuite struct {
 
 	dbClient *slack_bridge_db.DatabaseClient
 
-	processingSettings     *settings.ProcessingSettings
 	slackThreadRepository  *repositories.SlackThreadRepository
 	slackChannelRepository *repositories.SlackChannelRepository
 
@@ -48,13 +46,8 @@ func WhenGettingNextAgentToProcessBeforeEach() *WhenGettingNextAgentToProcessTes
 		panic(err)
 	}
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval: 20,
-		FacilitatorTickInterval: 30,
-	}
-
-	sut := repositories.NewSlackAgentRepository(processingSettings, dbClient)
-	slackThreadRepository := repositories.NewSlackThreadRepository(processingSettings, dbClient)
+	sut := repositories.NewSlackAgentRepository(dbClient)
+	slackThreadRepository := repositories.NewSlackThreadRepository(dbClient)
 	slackChannelRepository := repositories.NewSlackChannelRepository(dbClient)
 
 	return &WhenGettingNextAgentToProcessTestingSuite{
@@ -63,7 +56,6 @@ func WhenGettingNextAgentToProcessBeforeEach() *WhenGettingNextAgentToProcessTes
 		dbName:   dbName,
 		dbClient: dbClient,
 
-		processingSettings:     processingSettings,
 		slackThreadRepository:  slackThreadRepository,
 		slackChannelRepository: slackChannelRepository,
 	}
@@ -85,7 +77,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			suite := WhenGettingNextAgentToProcessBeforeEach()
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
-			agent, err := suite.sut.GetNextAgentToProcess()
+			agent, err := suite.sut.GetNextAgentToProcess(20)
 
 			assert.Equal(t, gorm.ErrRecordNotFound, err)
 			assert.Nil(t, agent)
@@ -108,7 +100,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			_, err := suite.sut.Save(agent)
 			assert.NoError(t, err)
 
-			nextAgent, err := suite.sut.GetNextAgentToProcess()
+			nextAgent, err := suite.sut.GetNextAgentToProcess(20)
 
 			assert.Equal(t, gorm.ErrRecordNotFound, err)
 			assert.Nil(t, nextAgent)
@@ -125,7 +117,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			agent1 := model_builders.NewSlackAgentBuilder().
-				WithCollectionTokenId(1).
+				WithCollectionTokenId(20).
 				WithIsProcessing(false).
 				WithLastProcessedAt(time.Now().UTC().Add(-time.Second * 40)).
 				Build()
@@ -142,7 +134,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			_, err = suite.sut.Save(agent2)
 			assert.NoError(t, err)
 
-			nextAgent, err := suite.sut.GetNextAgentToProcess()
+			nextAgent, err := suite.sut.GetNextAgentToProcess(20)
 			assert.NoError(t, err)
 
 			assert.Equal(t, agent1.CollectionTokenId, nextAgent.CollectionTokenId)

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	db_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
@@ -21,7 +20,6 @@ type WhenGettingProcessableThreadsForAgentTestingSuite struct {
 	dbName   string
 	dbClient *slack_bridge_db.DatabaseClient
 
-	processingSettings     *settings.ProcessingSettings
 	slackUserRepository    *repositories.SlackUserRepository
 	slackAgentRepository   *repositories.SlackAgentRepository
 	slackMessageRepository *repositories.SlackMessageRepository
@@ -50,15 +48,10 @@ func WhenGettingProcessableThreadsForAgentBeforeEach() *WhenGettingProcessableTh
 		panic(err)
 	}
 
-	processingSettings := &settings.ProcessingSettings{
-		AgentProcessingInterval: 20,
-		FacilitatorTickInterval: 30,
-	}
-
-	sut := repositories.NewSlackThreadRepository(processingSettings, dbClient)
+	sut := repositories.NewSlackThreadRepository(dbClient)
 
 	slackUserRepository := repositories.NewSlackUserRepository(dbClient)
-	slackAgentRepository := repositories.NewSlackAgentRepository(processingSettings, dbClient)
+	slackAgentRepository := repositories.NewSlackAgentRepository(dbClient)
 	slackMessageRepository := repositories.NewSlackMessageRepository(dbClient)
 	slackChannelRepository := repositories.NewSlackChannelRepository(dbClient)
 
@@ -68,7 +61,6 @@ func WhenGettingProcessableThreadsForAgentBeforeEach() *WhenGettingProcessableTh
 		dbName:   dbName,
 		dbClient: dbClient,
 
-		processingSettings:     processingSettings,
 		slackUserRepository:    slackUserRepository,
 		slackAgentRepository:   slackAgentRepository,
 		slackMessageRepository: slackMessageRepository,
@@ -96,7 +88,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 			agent, err := suite.slackAgentRepository.Save(agent)
 			assert.NoError(t, err)
 
-			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent)
+			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent, 30)
 
 			assert.NoError(t, err)
 			assert.Empty(t, processableThreads)
@@ -124,7 +116,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 			_, err = suite.slackChannelRepository.AddAgent(channel, agent)
 			assert.NoError(t, err)
 
-			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent)
+			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent, 30)
 
 			assert.NoError(t, err)
 			assert.Empty(t, processableThreads)
@@ -160,7 +152,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 			_, err = suite.sut.Save(thread)
 			assert.NoError(t, err)
 
-			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent)
+			processableThreads, err := suite.sut.GetProcessableThreadsForAgent(agent, 30)
 
 			assert.NoError(t, err)
 			assert.Empty(t, processableThreads)
@@ -218,7 +210,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Len(t, processableThreads, 1)
@@ -259,8 +251,8 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.sut.Save(slackThread)
 				assert.NoError(t, err)
 
-				interval := suite.processingSettings.FacilitatorTickInterval
-				interval += 1
+				baseInterval := uint64(30)
+				interval := baseInterval + 1
 
 				message := model_builders.NewSlackMessageBuilder().
 					WithId(model_builders.GenerateSlackMessageID(time.Now().Add(-time.Duration(interval) * time.Second))).
@@ -273,7 +265,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, baseInterval)
 
 				assert.NoError(t, err)
 				assert.Len(t, processableThreads, 1)
@@ -324,7 +316,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Empty(t, processableThreads)
@@ -386,7 +378,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Len(t, processableThreads, 1)
@@ -451,7 +443,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Len(t, processableThreads, 1)
@@ -537,7 +529,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message2)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Len(t, processableThreads, 1)
@@ -598,7 +590,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(message)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Empty(t, processableThreads)
@@ -672,7 +664,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(secondMessage)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 				assert.NoError(t, err)
 
 				assert.Len(t, processableThreads, 1)
@@ -735,7 +727,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(secondMessage)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Empty(t, processableThreads)
@@ -805,7 +797,7 @@ func TestWhenGettingProcessableThreadsForAgent(t *testing.T) {
 				_, err = suite.slackMessageRepository.Save(secondMessage)
 				assert.NoError(t, err)
 
-				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent)
+				processableThreads, err := suite.sut.GetProcessableThreadsForAgent(slackAgent, 30)
 
 				assert.NoError(t, err)
 				assert.Empty(t, processableThreads)

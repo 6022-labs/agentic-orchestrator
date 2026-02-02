@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/services/interfaces"
+	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/settings"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -23,6 +24,7 @@ type SlackThreadProcessorDaemon struct {
 	processingAgentsWg sync.WaitGroup
 
 	logger                *zap.Logger
+	processingSettings    *settings.ProcessingSettings
 	slackThreadProcessor  interfaces.SlackThreadProcessorInterface
 	slackAgentRepository  repositories.SlackAgentRepositoryInterface
 	slackThreadRepository repositories.SlackThreadRepositoryInterface
@@ -30,6 +32,7 @@ type SlackThreadProcessorDaemon struct {
 
 func NewSlackThreadProcessorDaemon(
 	logger *zap.Logger,
+	processingSettings *settings.ProcessingSettings,
 	slackThreadProcessor interfaces.SlackThreadProcessorInterface,
 	slackAgentRepository repositories.SlackAgentRepositoryInterface,
 	slackThreadRepository repositories.SlackThreadRepositoryInterface,
@@ -38,6 +41,7 @@ func NewSlackThreadProcessorDaemon(
 
 	return &SlackThreadProcessorDaemon{
 		logger:                logger,
+		processingSettings:    processingSettings,
 		slackThreadProcessor:  slackThreadProcessor,
 		slackAgentRepository:  slackAgentRepository,
 		slackThreadRepository: slackThreadRepository,
@@ -84,7 +88,7 @@ func (p *SlackThreadProcessorDaemon) runLoop() {
 }
 
 func (p *SlackThreadProcessorDaemon) processNextAgent() {
-	agent, err := p.slackAgentRepository.GetNextAgentToProcess()
+	agent, err := p.slackAgentRepository.GetNextAgentToProcess(p.processingSettings.AgentProcessingInterval)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		p.logger.Error("Failed to fetch next agent to process threads", zap.Error(err))
 		return
@@ -121,7 +125,7 @@ func (p *SlackThreadProcessorDaemon) processThreadsForAgent(agent *models.SlackA
 		}
 	}()
 
-	threads, err := p.slackThreadRepository.GetProcessableThreadsForAgent(agent)
+	threads, err := p.slackThreadRepository.GetProcessableThreadsForAgent(agent, p.processingSettings.FacilitatorTickInterval)
 	if err != nil {
 		p.logger.Error("Failed to fetch processable threads for agent",
 			zap.String("agentEnsDomain", agent.EnsDomain),

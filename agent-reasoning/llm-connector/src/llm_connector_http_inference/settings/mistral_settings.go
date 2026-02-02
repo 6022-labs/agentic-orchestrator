@@ -2,28 +2,29 @@ package settings
 
 import (
 	"os"
-	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const MistralSettingsKey = "mistral"
+
 type MistralSettings struct {
-	BaseUrl string
+	BaseUrl string `mapstructure:"base_url"`
 }
 
-func NewMistralSettings(logger *zap.Logger) *MistralSettings {
-	baseUrl := os.Getenv("MISTRAL_BASE_URL")
-	if len(strings.TrimSpace(baseUrl)) == 0 {
-		baseUrl = "https://api.mistral.ai"
-
-		logger.Info("MISTRAL_BASE_URL is not set, using default base URL",
-			zap.String("defaultBaseUrl", baseUrl),
-		)
+func NewMistralSettings(logger *zap.Logger, v *viper.Viper) *MistralSettings {
+	v.SetDefault(MistralSettingsKey+".base_url", "https://api.mistral.ai")
+	if val, ok := os.LookupEnv("MISTRAL__BASE_URL"); ok {
+		v.Set(MistralSettingsKey+".base_url", val)
 	}
 
-	return &MistralSettings{
-		BaseUrl: baseUrl,
+	var settings MistralSettings
+	if err := v.UnmarshalKey(MistralSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal mistral settings", zap.Error(err))
 	}
+
+	return &settings
 }
 
 func (s *MistralSettings) GetBaseUrl() string {

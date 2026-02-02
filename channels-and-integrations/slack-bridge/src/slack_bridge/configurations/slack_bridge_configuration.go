@@ -14,11 +14,6 @@ func AddSlackBridgeConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewProcessingSettings)
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(settings.NewOrchestratorSlackBridgeSettings)
 	if err != nil {
 		panic(err)

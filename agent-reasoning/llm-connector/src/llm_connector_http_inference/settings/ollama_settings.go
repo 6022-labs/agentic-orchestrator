@@ -1,5 +1,7 @@
 package settings
 
+const OllamaSettingsKey = "ollama"
+
 type OllamaSettings struct {
 }
 

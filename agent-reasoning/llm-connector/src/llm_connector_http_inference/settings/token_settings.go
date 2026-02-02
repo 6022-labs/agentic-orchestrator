@@ -1,35 +1,33 @@
 package settings
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const TokenSettingsKey = "token"
+
 type TokenSettings struct {
-	MaxTokensPerRequest uint
+	MaxTokensPerRequest uint `mapstructure:"max_tokens_per_request"`
 }
 
-func NewTokenSettings(
-	logger *zap.Logger,
-) *TokenSettings {
-	maxTokensPerRequestStr := os.Getenv("MAX_TOKENS_PER_REQUEST")
-	if len(strings.TrimSpace(maxTokensPerRequestStr)) == 0 {
-		defaultMaxTokens := "100000"
-		logger.Info("MAX_TOKENS_PER_REQUEST is not set, using default settings", zap.String("default", defaultMaxTokens))
-		maxTokensPerRequestStr = defaultMaxTokens
+func NewTokenSettings(logger *zap.Logger, v *viper.Viper) *TokenSettings {
+	v.SetDefault(TokenSettingsKey+".max_tokens_per_request", uint(100000))
+	if val, ok := os.LookupEnv("TOKEN__MAX_TOKENS_PER_REQUEST"); ok {
+		v.Set(TokenSettingsKey+".max_tokens_per_request", val)
 	}
 
-	var maxTokensPerRequest uint
-	_, err := fmt.Sscanf(maxTokensPerRequestStr, "%d", &maxTokensPerRequest)
-	if err != nil {
-		logger.Warn("Invalid MAX_TOKENS_PER_REQUEST value, using default of 100000", zap.String("value", maxTokensPerRequestStr))
-		maxTokensPerRequest = 100000
+	var settings TokenSettings
+	if err := v.UnmarshalKey(TokenSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal token settings", zap.Error(err))
 	}
 
-	return &TokenSettings{
-		MaxTokensPerRequest: maxTokensPerRequest,
+	if settings.MaxTokensPerRequest == 0 {
+		logger.Info("token.max_tokens_per_request is not set, using default value", zap.Uint("value", 100000))
+		settings.MaxTokensPerRequest = uint(v.GetUint(TokenSettingsKey + ".max_tokens_per_request"))
 	}
+
+	return &settings
 }

@@ -3,21 +3,17 @@ package repositories
 import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 )
 
 type SlackThreadRepository struct {
-	processingSettings *settings.ProcessingSettings
 	AbstractRepository[models.SlackThread]
 }
 
 func NewSlackThreadRepository(
-	processingSettings *settings.ProcessingSettings,
 	client *slack_bridge_db.DatabaseClient,
 ) *SlackThreadRepository {
 	return &SlackThreadRepository{
-		processingSettings: processingSettings,
 		AbstractRepository: *NewAbstractRepository[models.SlackThread](client),
 	}
 }
@@ -34,7 +30,7 @@ func (r *SlackThreadRepository) GetByIdAndChannelId(id string, channelId string)
 	return &thread, nil
 }
 
-func (r *SlackThreadRepository) GetProcessableThreadsForAgent(agent *models.SlackAgent) ([]*models.SlackThread, error) {
+func (r *SlackThreadRepository) GetProcessableThreadsForAgent(agent *models.SlackAgent, facilitatorTickInterval uint64) ([]*models.SlackThread, error) {
 	query := r.client.GetDB().Model(&models.SlackThread{}).
 		Joins("JOIN slack_channels ON slack_threads.channel_id = slack_channels.id").
 		Joins("JOIN slack_channel_agents ON slack_channels.id = slack_channel_agents.slack_channel_id").
@@ -61,7 +57,7 @@ func (r *SlackThreadRepository) GetProcessableThreadsForAgent(agent *models.Slac
 		query = query.Where(
 			"COALESCE((?), 0) < (EXTRACT(EPOCH FROM NOW()) - ?)",
 			facilitatorMessagesSubquery,
-			r.processingSettings.FacilitatorTickInterval,
+			facilitatorTickInterval,
 		)
 	} else if agent.Role == enums.AgentRoleHuman {
 		// Check if human agent has been mentioned since his latest message or if physical human posted a message

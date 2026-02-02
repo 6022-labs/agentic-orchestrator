@@ -3,13 +3,22 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/services"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/services/interfaces"
+	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/settings"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"go.uber.org/dig"
 )
 
 func AddSlackBridgeInternalConfiguration(container *dig.Container) {
-	// Services
+	// Settings
 	err := container.Provide(
+		settings.NewProcessingSettings,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Services
+	err = container.Provide(
 		services.NewSlackThreadProcessor,
 		dig.As(new(interfaces.SlackThreadProcessorInterface)),
 	)

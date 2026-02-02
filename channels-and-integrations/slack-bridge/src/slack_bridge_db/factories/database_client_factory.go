@@ -9,13 +9,13 @@ import (
 type DatabaseClientFactory struct {
 	logger                                  *zap.Logger
 	migrationsSettings                      *settings.MigrationsSettings
-	orchestratorSlackBridgeDatabaseSettings *settings.OrchestratorSlackBridgeDatabaseSettings
+	orchestratorSlackBridgeDatabaseSettings *settings.DatabaseSettings
 }
 
 func NewDatabaseClientFactory(
 	logger *zap.Logger,
 	migrationsSettings *settings.MigrationsSettings,
-	orchestratorSlackBridgeDatabaseSettings *settings.OrchestratorSlackBridgeDatabaseSettings,
+	orchestratorSlackBridgeDatabaseSettings *settings.DatabaseSettings,
 ) *DatabaseClientFactory {
 	return &DatabaseClientFactory{
 		logger:                                  logger,

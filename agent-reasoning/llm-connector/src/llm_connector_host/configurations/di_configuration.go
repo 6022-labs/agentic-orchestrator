@@ -8,6 +8,8 @@ import (
 	orchestrator_agent_llm_connector_http_mcp_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_http_mcp/configurations"
 	orchestrator_agent_llm_connector_mvc_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_mvc/configurations"
 	orchestrator_agent_llm_connector_vault_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/configurations"
+
+	"github.com/spf13/viper"
 	"go.uber.org/dig"
 )
 
@@ -15,6 +17,7 @@ func ConfigureDI() *dig.Container {
 	container := dig.New()
 
 	container.Provide(orchestrator_agent_llm_connector_host_settings.NewHostSettings)
+	container.Provide(viper.GetViper)
 
 	orchestrator_agent_llm_connector_configuration.AddLLMConnectorConfiguration(container)
 	orchestrator_agent_llm_connector_db_configuration.AddLLMConnectorDbConfiguration(container)

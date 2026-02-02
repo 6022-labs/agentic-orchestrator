@@ -71,18 +71,18 @@ func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) GetByEnsDomain(ensDomai
 }
 
 // GetNextAgentToProcess mocks base method.
-func (m *MockSlackAgentRepositoryInterface) GetNextAgentToProcess() (*models.SlackAgent, error) {
+func (m *MockSlackAgentRepositoryInterface) GetNextAgentToProcess(processingInterval uint64) (*models.SlackAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNextAgentToProcess")
+	ret := m.ctrl.Call(m, "GetNextAgentToProcess", processingInterval)
 	ret0, _ := ret[0].(*models.SlackAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNextAgentToProcess indicates an expected call of GetNextAgentToProcess.
-func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) GetNextAgentToProcess() *gomock.Call {
+func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) GetNextAgentToProcess(processingInterval any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAgentToProcess", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).GetNextAgentToProcess))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAgentToProcess", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).GetNextAgentToProcess), processingInterval)
 }
 
 // Save mocks base method.

@@ -2,28 +2,29 @@ package settings
 
 import (
 	"os"
-	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
+const OpenAISettingsKey = "openai"
+
 type OpenAISettings struct {
-	BaseUrl string
+	BaseUrl string `mapstructure:"base_url"`
 }
 
-func NewOpenAISettings(logger *zap.Logger) *OpenAISettings {
-	baseUrl := os.Getenv("OPENAI_BASE_URL")
-	if len(strings.TrimSpace(baseUrl)) == 0 {
-		baseUrl = "https://api.openai.com"
-
-		logger.Info("OPENAI_BASE_URL is not set, using default base URL",
-			zap.String("defaultBaseUrl", baseUrl),
-		)
+func NewOpenAISettings(logger *zap.Logger, v *viper.Viper) *OpenAISettings {
+	v.SetDefault(OpenAISettingsKey+".base_url", "https://api.openai.com")
+	if val, ok := os.LookupEnv("OPENAI__BASE_URL"); ok {
+		v.Set(OpenAISettingsKey+".base_url", val)
 	}
 
-	return &OpenAISettings{
-		BaseUrl: baseUrl,
+	var settings OpenAISettings
+	if err := v.UnmarshalKey(OpenAISettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal openai settings", zap.Error(err))
 	}
+
+	return &settings
 }
 
 func (s *OpenAISettings) GetBaseUrl() string {

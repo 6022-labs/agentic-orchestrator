@@ -140,7 +140,7 @@ services:
     environment:
       - API_PORT=5000
       - APP_NAME=Orchestrator-Images-Generator
-      - AGENT_IMAGE_GENERATION_IMAGE_MARK_PATH=/images/nft_mark.png
+      - IMAGE_GENERATION_IMAGE_MARK_PATH=/images/nft_mark.png
     networks:
       orchestrator-network:
 
