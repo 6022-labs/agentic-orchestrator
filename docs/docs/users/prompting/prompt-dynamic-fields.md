@@ -580,4 +580,4 @@ reflect: indirection through nil pointer to embedded struct field
 - [Facilitator Prompts](./facilitator-prompts.md) — Using variables in facilitator prompts
 - [Expert Prompts](./expert-prompts.md) — Using variables in expert prompts
 - [Prompt Writing Guide](./prompt-writing-guide.md) — Best practices
-- [Prompt Variables (Agent Knowledge)](../agent-knowledge/intro.md) — Technical reference
+- [Prompt Variables (Agent Knowledge)](../agent/agent-knowledge/intro.md) — Technical reference

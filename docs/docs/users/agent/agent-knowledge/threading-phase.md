@@ -110,7 +110,7 @@ Once the context primary key is identified and locked:
 
 ## Configuration
 
-Detailed configuration of key detection, prompt design, and MCP integration is covered in the **[Agent Prompting](../prompting/intro.md)** section.
+Detailed configuration of key detection, prompt design, and MCP integration is covered in the **[Agent Prompting](../agent-prompting/intro.md)** section.
 
 ---
 
@@ -129,5 +129,5 @@ Without proper threading, agents cannot distinguish between different customers,
 ## Related Documentation
 
 - [Context Primary Keys](./context-primary-keys.md) - Creating and managing keys
-- [Agent Prompting](../prompting/intro.md) - Configuring key detection and prompts
+- [Agent Prompting](../agent-prompting/intro.md) - Configuring key detection and prompts
 - [Memory Strategies](./memory-strategies.md) - How memory is populated for a locked context

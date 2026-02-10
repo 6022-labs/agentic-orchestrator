@@ -1,0 +1,8 @@
+{
+  "label": "Agent Control",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Complete guide to creating, configuring, and managing AI agents in the 6022 Agentic Teams framework"
+  }
+}

@@ -137,7 +137,7 @@ Common issues and solutions are covered in:
 
 ## Related Documentation
 
-- [Agent Knowledge](../agent-knowledge/intro.md) — Memory and context management
+- [Agent Knowledge](../agent/agent-knowledge/intro.md) — Memory and context management
 - [Prompt Variables](./prompt-dynamic-fields) — Dynamic variables reference
 
 ---

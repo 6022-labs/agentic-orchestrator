@@ -35,8 +35,8 @@ Agent Knowledge encompasses everything an agent "knows" and "remembers" across c
 
 ### For Developers
 
-- [API Endpoints Reference](../../developers/api-reference/intro.md#endpoints)
-- [Bulk key creation](../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
+- [API Endpoints Reference](../../../developers/api-reference/intro.md#endpoints)
+- [Bulk key creation](../../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
 
 ### For Business Users
 

@@ -466,4 +466,4 @@ Step 6: Deploy Twin
 
 - [Agent Types](./agent-types.md) — All agent types overview
 - [Conversation Flow](./conversation-flow.md) — Restart mechanics
-- [Memory Hydration](../agent-knowledge/memory-hydration.md) — Pre-loading twin knowledge
+- [Memory Hydration](../agent/agent-knowledge/memory-hydration.md) — Pre-loading twin knowledge

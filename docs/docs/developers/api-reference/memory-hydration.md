@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # Memory Hydration API
 
-Use this guide when you need to preload agent memory with synthetic conversations. It complements the conceptual overview in the [user documentation](../../users/agent-knowledge/memory-hydration.md).
+Use this guide when you need to preload agent memory with synthetic conversations. It complements the conceptual overview in the [user documentation](../../users/agent/agent-knowledge/memory-hydration.md).
 
 ## Prerequisites
 
@@ -163,4 +163,4 @@ for batch in hydration_batches:
 - **Use roles intentionally:** keep `user` for inbound facts and `agent` for stored knowledge
 - **Version knowledge:** append update messages rather than overwriting to maintain audit trails
 
-For the human-friendly explanation of why hydration matters, see the [user documentation](../../users/agent-knowledge/memory-hydration.md).
+For the human-friendly explanation of why hydration matters, see the [user documentation](../../users/agent/agent-knowledge/memory-hydration.md).

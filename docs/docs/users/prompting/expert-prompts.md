@@ -526,7 +526,7 @@ Expert prompts work with the memory system:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-See [Agent Knowledge](../agent-knowledge/intro.md) for memory management details.
+See [Agent Knowledge](../agent/agent-knowledge/intro.md) for memory management details.
 
 ---
 
@@ -535,4 +535,4 @@ See [Agent Knowledge](../agent-knowledge/intro.md) for memory management details
 - [Agent Types](./agent-types.md) — Understanding expert role
 - [Conversation Flow](./conversation-flow.md) — Threading phase details
 - [Dynamic Fields Reference](./prompt-dynamic-fields) — All template variables with code snippets
-- [Context Primary Keys](../agent-knowledge/context-primary-keys.md) — Key design
+- [Context Primary Keys](../agent/agent-knowledge/context-primary-keys.md) — Key design

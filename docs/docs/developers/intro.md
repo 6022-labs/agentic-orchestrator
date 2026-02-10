@@ -13,9 +13,9 @@ This docs section focuses on the developer perspective: how domains own data and
 
 Domains (entry points):
 
-- Agent Identity — identity, metadata, and wallet operations for an agent
+- Agent Identities — identity, metadata, and wallet operations for an agent
   - collection address, collection token id, name, ENS domain, role, creator, signer, wallets, images, attributes
-  - See: [agent-identity](./domains/agent-identity)
+  - See: [agent-identities](./domains/agent-identities)
 - Agent Reasoning — LLM and MCP connections, swarm compute
   - provider setup, tool registry, orchestration strategies
   - See: [agent-reasoning](./domains/agent-reasoning)

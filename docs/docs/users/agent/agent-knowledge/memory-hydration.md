@@ -61,7 +61,7 @@ Before you ask engineering to hydrate memory, gather:
 
 1. **The context primary keys** that should receive the knowledge
 2. **The conversation snippets** you want the agent to "remember"
-3. **The responsible developer** who can run the API calls (share the [Memory Hydration API guide](../../developers/api-reference/memory-hydration.md))
+3. **The responsible developer** who can run the API calls (share the [Memory Hydration API guide](../../../developers/api-reference/memory-hydration.md))
 
 ---
 
@@ -141,6 +141,97 @@ Shape the agent's personality and approach:
 
 // Message 2
 { "message": "Understood. I will approach all complaints with empathy and understanding, acknowledging the customer's frustration before offering solutions.", "role": "agent" }
+```
+
+---
+
+## Complete Example (Python)
+
+```python
+import requests
+
+# Configuration
+BASE_URL = "https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app"
+AGENT_ADDRESS = "0x0bd248B276b7Ba8E9E4A94df8dd73CFe9dD2E18a"
+AGENT_TOKEN_ID = "2"
+CONTEXT_KEY = "Article-15"  # Must already exist
+JWT = "your_jwt_token_here"
+
+headers = {
+    "Authorization": f"Bearer {JWT}",
+    "Content-Type": "application/json"
+}
+
+def add_memory(message: str, role: str):
+    """Add a message to agent memory."""
+    url = f"{BASE_URL}/agent/{AGENT_ADDRESS}/{AGENT_TOKEN_ID}/context/{CONTEXT_KEY}/message"
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json={"message": message, "role": role}
+    )
+
+    if response.status_code in [200, 201]:
+        print(f"✅ Added {role} message")
+    else:
+        print(f"❌ Error: {response.text}")
+
+    return response
+
+# Hydrate with GDPR knowledge
+add_memory(
+    "I need you to remember the key points of GDPR Article 15 - Right of Access. "
+    "Data subjects have the right to: obtain confirmation of processing, access their data, "
+    "know the purposes, categories, recipients, retention period, and their rights.",
+    "user"
+)
+
+add_memory(
+    "I have noted the key provisions of GDPR Article 15. I will apply these when handling "
+    "data subject access requests: confirm processing, provide data copy, explain purposes, "
+    "list categories and recipients, state retention period, and inform of their rights "
+    "including rectification, erasure, and lodging complaints.",
+    "agent"
+)
+
+print("✅ Memory hydration complete")
+```
+
+---
+
+## Bulk Hydration
+
+For large-scale knowledge injection, structure your content as a list of messages:
+
+```python
+hydration_data = [
+    # Customer C45653
+    {
+        "context_key": "C45653",
+        "messages": [
+            {"role": "user", "message": "Customer Albert Kali, contract C45653, VIP status, prefers email contact."},
+            {"role": "agent", "message": "Noted: Albert Kali (C45653) is a VIP customer with email preference."},
+        ]
+    },
+    # Customer C78901
+    {
+        "context_key": "C78901",
+        "messages": [
+            {"role": "user", "message": "Customer Marie Dubois, contract C78901, standard tier, phone contact preferred."},
+            {"role": "agent", "message": "Noted: Marie Dubois (C78901) is standard tier, prefers phone calls."},
+        ]
+    },
+]
+
+for item in hydration_data:
+    context_key = item["context_key"]
+
+    # First ensure the context primary key exists
+    # (See Context Primary Keys doc for create_context function)
+
+    for msg in item["messages"]:
+        add_memory_to_context(context_key, msg["message"], msg["role"])
 ```
 
 ---

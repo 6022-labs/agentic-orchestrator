@@ -79,8 +79,8 @@ Define a clear pattern for your context primary keys to enable validation:
 
 Consider your expected volume:
 
-- Small scale (< 1,00 keys): Manual creation via UI is practical
-- Medium scale (1,00 - 50,000 keys): Use API with scripts
+- Small scale (< 100 keys): Manual creation via UI is practical
+- Medium scale (100 - 50,000 keys): Use API with scripts
 
 ---
 
@@ -104,7 +104,7 @@ The interface also allows you to:
 
 ### Method 2: Automations (Ask Engineering)
 
-Need to import thousands of keys or sync them from an external system? Share your requirements with a developer and point them to the [Programmatic Context Primary Keys guide](../../developers/api-reference/context-primary-keys.md).
+Need to import thousands of keys or sync them from an external system? Share your requirements with a developer and point them to the [Programmatic Context Primary Keys guide](../../../developers/api-reference/context-primary-keys.md).
 
 Provide them with:
 
@@ -167,7 +167,25 @@ MCP servers are accessible during threading, enabling:
 
 **Via UI:** Actions → Manage contexts → Browse with pagination
 
-**Need an export or sync job?** Forward the request to engineering along with a link to the [developer automation guide](../../developers/api-reference/context-primary-keys.md#rest-endpoints).
+**Via API:**
+
+```http
+GET /agent/{agentCollectionAddress}/{agentTokenId}/contexts/keys
+```
+
+### Database Direct Access
+
+For advanced operations, administrators can access the PostgreSQL database:
+
+```sql
+-- View all contexts for an agent
+SELECT * FROM agent_contexts WHERE agent_id = 'agent-uuid';
+
+-- Count context primary keys
+SELECT COUNT(*) FROM agent_contexts WHERE agent_id = 'agent-uuid';
+```
+
+**Note:** Direct database access is strongly discouraged and should only be used in exceptional cases for troubleshooting.
 
 ---
 
