@@ -107,3 +107,13 @@ Temporary Items
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/dotenv,macos,sonarqube,visualstudiocode,go,git
+
+### Delve ###
+__debug_bin*
+
+### AppSettings ###
+appsettings*
+!appsettings*.Example.json
+
+### Skill Creator ###
+*.skill
