@@ -8,17 +8,17 @@ import (
 )
 
 type OrchestratorPrivateKeyFetcher struct {
-	vaultSecretStorage              interfaces.VaultSecretStorageInterface
-	orchestratorSlackBridgeSettings *settings.OrchestratorSlackBridgeSettings
+	vaultSecretStorage   interfaces.VaultSecretStorageInterface
+	orchestratorSettings *settings.OrchestratorSettings
 }
 
 func NewOrchestratorPrivateKeyFetcher(
 	vaultSecretStorage interfaces.VaultSecretStorageInterface,
-	orchestratorSlackBridgeSettings *settings.OrchestratorSlackBridgeSettings,
+	orchestratorSettings *settings.OrchestratorSettings,
 ) *OrchestratorPrivateKeyFetcher {
 	return &OrchestratorPrivateKeyFetcher{
-		vaultSecretStorage:              vaultSecretStorage,
-		orchestratorSlackBridgeSettings: orchestratorSlackBridgeSettings,
+		vaultSecretStorage:   vaultSecretStorage,
+		orchestratorSettings: orchestratorSettings,
 	}
 }
 
@@ -34,5 +34,5 @@ func (f *OrchestratorPrivateKeyFetcher) FetchPrivateKey() (*string, error) {
 }
 
 func (f *OrchestratorPrivateKeyFetcher) getOrchestratorPrivateKeyPath() string {
-	return fmt.Sprintf("orchestrator/%s/private_key", f.orchestratorSlackBridgeSettings.PublicKey)
+	return fmt.Sprintf("orchestrator/%s/private_key", f.orchestratorSettings.PublicKey)
 }

@@ -10,26 +10,26 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestWhenLoadingOrchestratorSlackBridgeSettings(t *testing.T) {
+func TestWhenLoadingOrchestratorSettings(t *testing.T) {
 	address := "0x0000000000000000000000000000000000000001"
 
 	t.Run("Given settings provided through viper", func(t *testing.T) {
 		v := viper.New()
-		v.Set("orchestrator_slack_bridge", map[string]any{
+		v.Set("orchestrator", map[string]any{
 			"public_key": address,
 		})
 
-		settings := orchestrator_settings.NewOrchestratorSlackBridgeSettings(zap.NewNop(), v)
+		settings := orchestrator_settings.NewOrchestratorSettings(zap.NewNop(), v)
 
 		assert.NotNil(t, settings)
 		assert.True(t, common.HexToAddress(address) == settings.PublicKey)
 	})
 
 	t.Run("Given settings provided through env", func(t *testing.T) {
-		t.Setenv("ORCHESTRATOR_SLACK_BRIDGE__PUBLIC_KEY", address)
+		t.Setenv("ORCHESTRATOR__PUBLIC_KEY", address)
 
 		v := viper.New()
-		settings := orchestrator_settings.NewOrchestratorSlackBridgeSettings(zap.NewNop(), v)
+		settings := orchestrator_settings.NewOrchestratorSettings(zap.NewNop(), v)
 
 		assert.NotNil(t, settings)
 		assert.True(t, common.HexToAddress(address) == settings.PublicKey)
