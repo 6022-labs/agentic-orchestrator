@@ -22,7 +22,7 @@ FROM scratch AS final
 COPY --from=builder /app /app
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-ai-orchestrator/back-end/src/orchestrator_db/migrations/*.sql /migrations/
-ENV MIGRATIONS_FOLDER_PATH=/migrations
+ENV MIGRATIONS__FOLDER_PATH=/migrations
 
 # Run the compiled binary at container start.
 ENTRYPOINT ["/app"]
