@@ -131,7 +131,7 @@ func (p *SlackThreadProcessorDaemon) processThreadsForAgent(agent *models.SlackA
 		return
 	}
 	if len(threads) == 0 {
-		p.logger.Info("No processable threads found for agent",
+		p.logger.Debug("No processable threads found for agent",
 			zap.String("agentEnsDomain", agent.EnsDomain),
 			zap.Uint64("agentCollectionTokenId", agent.CollectionTokenId),
 		)
