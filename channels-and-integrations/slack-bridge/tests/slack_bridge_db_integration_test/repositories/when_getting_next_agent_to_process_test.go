@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -119,13 +120,13 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			agent1 := model_builders.NewSlackAgentBuilder().
 				WithCollectionTokenId(20).
 				WithIsProcessing(false).
-				WithLastProcessedAt(time.Now().UTC().Add(-time.Second * 40)).
+				WithLastProcessedAt(lo.ToPtr(time.Now().UTC().Add(-time.Second * 40))).
 				Build()
 
 			agent2 := model_builders.NewSlackAgentBuilder().
 				WithCollectionTokenId(2).
 				WithIsProcessing(false).
-				WithLastProcessedAt(time.Now().UTC().Add(-time.Second * 30)).
+				WithLastProcessedAt(lo.ToPtr(time.Now().UTC().Add(-time.Second * 30))).
 				Build()
 
 			_, err := suite.sut.Save(agent1)
@@ -138,6 +139,40 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, agent1.CollectionTokenId, nextAgent.CollectionTokenId)
+		})
+	})
+
+	t.Run("Given slack agents with NULL and non-NULL last_processed_at", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return agent with NULL last_processed_at first", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingNextAgentToProcessBeforeEach()
+			defer WhenGettingNextAgentToProcessAfterEach(suite)
+
+			agentWithNull := model_builders.NewSlackAgentBuilder().
+				WithCollectionTokenId(10).
+				WithIsProcessing(false).
+				WithLastProcessedAt(nil).
+				Build()
+
+			agentWithTimestamp := model_builders.NewSlackAgentBuilder().
+				WithCollectionTokenId(11).
+				WithIsProcessing(false).
+				WithLastProcessedAt(lo.ToPtr(time.Now().UTC().Add(-time.Second * 40))).
+				Build()
+
+			_, err := suite.sut.Save(agentWithTimestamp)
+			assert.NoError(t, err)
+
+			_, err = suite.sut.Save(agentWithNull)
+			assert.NoError(t, err)
+
+			nextAgent, err := suite.sut.GetNextAgentToProcess(20)
+			assert.NoError(t, err)
+
+			assert.Equal(t, agentWithNull.CollectionTokenId, nextAgent.CollectionTokenId)
 		})
 	})
 }

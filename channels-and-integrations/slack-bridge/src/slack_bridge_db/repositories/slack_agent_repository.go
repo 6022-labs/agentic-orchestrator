@@ -55,7 +55,7 @@ func (r *SlackAgentRepository) GetNextAgentToProcess(processingInterval uint64) 
 				processingInterval,
 			),
 		).
-		Order("last_processed_at ASC").
+		Order("last_processed_at ASC NULLS FIRST").
 		First(&entity).
 		Error
 	if err != nil {

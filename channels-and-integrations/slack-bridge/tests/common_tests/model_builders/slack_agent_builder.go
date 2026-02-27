@@ -83,8 +83,8 @@ func (b *SlackAgentBuilder) WithIsProcessing(isProcessing bool) *SlackAgentBuild
 	return b
 }
 
-func (b *SlackAgentBuilder) WithLastProcessedAt(lastProcessedAt time.Time) *SlackAgentBuilder {
-	b.lastProcessedAt = &lastProcessedAt
+func (b *SlackAgentBuilder) WithLastProcessedAt(lastProcessedAt *time.Time) *SlackAgentBuilder {
+	b.lastProcessedAt = lastProcessedAt
 	return b
 }
 
