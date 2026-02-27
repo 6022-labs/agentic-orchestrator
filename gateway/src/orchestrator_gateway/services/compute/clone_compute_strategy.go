@@ -187,6 +187,7 @@ func (cs *CloneComputeStrategy) processDefaultPrompt(
 
 	promptParameterBuilder := cs.promptParametersBuilderFactory.Create()
 	promptParameters, err := promptParameterBuilder.
+		WithBase(computeContext.PromptParameters).
 		WithParam([]string{"LatestRequest", "Content"}, latestRequest.Content, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialRequest.Content, nil).
 		WithParam([]string{"ConversationId"}, computeContext.ConversationContext.Id, nil).
