@@ -164,9 +164,9 @@ func (cs *FacilitatorComputeStrategy) addSystemPrompt(
 		CreatedAt:      time.Now(),
 		Content:        *systemPrompt,
 		Author:         "", // Author of the prompt is not the agent
-		Role:           enums.AgentContextMessageRoleUser,
-		ConversationId: &computeContext.ConversationContext.Id,
+		Role:           enums.AgentContextMessageRoleSystem,
 		Platform:       enums.AgentContextMessagePlatformNone,
+		ConversationId: &computeContext.ConversationContext.Id,
 	})
 
 	return messages, nil
@@ -206,9 +206,9 @@ func (cs *FacilitatorComputeStrategy) processDefaultPrompt(
 		CreatedAt:      time.Now(),
 		Content:        *defaultPrompt,
 		Author:         "", // Author of the prompt is not the agent
-		ConversationId: &computeContext.ConversationContext.Id,
 		Role:           enums.AgentContextMessageRoleUser,
 		Platform:       enums.AgentContextMessagePlatformNone,
+		ConversationId: &computeContext.ConversationContext.Id,
 	})
 
 	defaultPromptCompletion, err := cs.llmConnectionChatCompletionRequester.ChatCompletion(agent.ID, messages)

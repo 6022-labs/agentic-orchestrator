@@ -235,7 +235,7 @@ func (cs *ExpertComputeStrategy) addSystemPrompt(
 		CreatedAt:      time.Now(),
 		Content:        *systemPrompt,
 		Author:         "", // Author of the prompt is not the agent
-		Role:           enums.AgentContextMessageRoleUser,
+		Role:           enums.AgentContextMessageRoleSystem,
 		Platform:       enums.AgentContextMessagePlatformNone,
 		ConversationId: &computeContext.ConversationContext.Id,
 	})
