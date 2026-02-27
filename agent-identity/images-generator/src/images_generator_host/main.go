@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	images_generator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator_host/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator_host/settings"
+	images_generator_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator_host/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator_host/settings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"

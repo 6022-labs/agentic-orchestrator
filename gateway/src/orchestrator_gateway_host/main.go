@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	orchestrator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_host/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_host/settings"
+	orchestrator_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/configurations"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/configurations"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

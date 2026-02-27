@@ -3,7 +3,7 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/services"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

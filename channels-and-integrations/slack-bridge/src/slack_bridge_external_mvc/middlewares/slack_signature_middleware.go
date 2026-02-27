@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )

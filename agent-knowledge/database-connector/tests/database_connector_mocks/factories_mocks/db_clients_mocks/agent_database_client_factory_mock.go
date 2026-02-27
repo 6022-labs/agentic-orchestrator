@@ -12,8 +12,8 @@ package db_clients_mocks
 import (
 	reflect "reflect"
 
-	db_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/db_clients"
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models"
+	db_clients "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/db_clients"
+	models "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )

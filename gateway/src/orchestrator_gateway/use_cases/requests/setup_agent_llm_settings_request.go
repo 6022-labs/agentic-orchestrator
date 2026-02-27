@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/errors"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
 )
 
 var awsRegionRegex = regexp.MustCompile(`^[a-z]{2}(-[a-z]+)+-\d+$`)

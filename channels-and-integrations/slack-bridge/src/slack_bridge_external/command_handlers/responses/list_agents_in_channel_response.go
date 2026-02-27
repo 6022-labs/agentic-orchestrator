@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
+import "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 
 type ListAgentsInChannelResponse struct {
 	Role              enums.AgentRole `json:"role"`

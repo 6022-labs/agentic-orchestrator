@@ -3,13 +3,13 @@ package use_cases
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/use_cases/requests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/use_cases/responses"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

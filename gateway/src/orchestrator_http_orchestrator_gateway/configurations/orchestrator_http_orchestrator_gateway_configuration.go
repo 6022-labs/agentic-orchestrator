@@ -3,9 +3,9 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	http_orchestrator_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_http_orchestrator_gateway/clients"
-	http_orchestrator_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_http_orchestrator_gateway/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	http_orchestrator_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_http_orchestrator_gateway/clients"
+	http_orchestrator_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_http_orchestrator_gateway/services"
 	"go.uber.org/dig"
 )
 

@@ -12,8 +12,8 @@ package compute_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	compute "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute"
+	models "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	compute "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute"
 	gomock "go.uber.org/mock/gomock"
 )
 

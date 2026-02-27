@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
-	vault_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_vault/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
+	vault_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 	"go.uber.org/dig"
 	"go.uber.org/zap"

@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/db_clients"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/db_clients"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
 )
 
 type AgentCollectionRepository struct {

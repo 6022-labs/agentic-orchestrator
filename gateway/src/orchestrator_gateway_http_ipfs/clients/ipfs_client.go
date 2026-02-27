@@ -8,8 +8,8 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/settings"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

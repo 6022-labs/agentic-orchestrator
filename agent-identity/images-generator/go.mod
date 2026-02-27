@@ -1,4 +1,4 @@
-module github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator
+module github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator
 
 go 1.24.3
 

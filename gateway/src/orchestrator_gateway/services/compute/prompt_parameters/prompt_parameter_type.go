@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
 )
 
 func PromptParameterTypeFromString(s string) (interfaces.PromptParameterType, error) {

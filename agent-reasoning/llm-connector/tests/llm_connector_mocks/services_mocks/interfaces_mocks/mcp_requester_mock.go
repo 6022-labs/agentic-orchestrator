@@ -12,8 +12,8 @@ package interfaces_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/models"
-	interfaces "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/services/interfaces"
+	models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/models"
+	interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/services/interfaces"
 	gomock "go.uber.org/mock/gomock"
 )
 

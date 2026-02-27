@@ -3,8 +3,8 @@ package subscribers
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/abi"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_blockchain/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/abi"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_blockchain/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"

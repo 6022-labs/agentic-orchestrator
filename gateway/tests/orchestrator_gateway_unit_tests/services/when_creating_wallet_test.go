@@ -4,7 +4,7 @@ import (
 	"crypto/ecdsa"
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )

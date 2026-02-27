@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/settings"
 	"github.com/stretchr/testify/assert"
 )
 

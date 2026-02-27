@@ -3,9 +3,9 @@ package factories_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db/factories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db/factories"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/tests/common_tests/container_builders"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )

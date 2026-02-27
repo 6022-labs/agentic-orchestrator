@@ -1,11 +1,11 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_event_listeners"
-	_ "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_host/docs"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_host/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_mvc"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_event_listeners"
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_host/docs"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_host/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_mvc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"

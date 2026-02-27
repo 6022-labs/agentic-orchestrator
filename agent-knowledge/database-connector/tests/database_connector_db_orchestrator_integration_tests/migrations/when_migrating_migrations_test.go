@@ -3,10 +3,10 @@ package migrations_test
 import (
 	"testing"
 
-	orchestrator_agent_database_connector_db_orchestrator "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_orchestrator"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_orchestrator/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/tests/common_tests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/tests/common_tests/container_builders"
+	orchestrator_agent_database_connector_db_orchestrator "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_orchestrator"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/tests/common_tests/container_builders"
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

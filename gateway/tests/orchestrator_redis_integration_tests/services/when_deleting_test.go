@@ -3,8 +3,8 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_redis/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_redis/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"

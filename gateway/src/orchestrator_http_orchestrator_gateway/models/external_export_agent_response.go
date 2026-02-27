@@ -1,6 +1,6 @@
 package models
 
-import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
+import "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
 
 type ExternalExportAgentResponse struct {
 	PrivateKey string `json:"privateKey"`

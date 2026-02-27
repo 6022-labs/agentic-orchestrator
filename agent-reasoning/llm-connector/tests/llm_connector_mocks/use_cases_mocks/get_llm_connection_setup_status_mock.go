@@ -12,8 +12,8 @@ package use_cases_mocks
 import (
 	reflect "reflect"
 
-	requests "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/use_cases/requests"
-	responses "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/use_cases/responses"
+	requests "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/use_cases/requests"
+	responses "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/use_cases/responses"
 	gomock "go.uber.org/mock/gomock"
 )
 

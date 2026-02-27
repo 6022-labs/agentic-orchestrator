@@ -3,9 +3,9 @@ package services
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_knowledge_database_connector/clients"
-	database_connector_models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_knowledge_database_connector/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_knowledge_database_connector/clients"
+	database_connector_models "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_knowledge_database_connector/models"
 	"github.com/google/uuid"
 )
 

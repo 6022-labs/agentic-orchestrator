@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_platform_bridge/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_platform_bridge/models"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

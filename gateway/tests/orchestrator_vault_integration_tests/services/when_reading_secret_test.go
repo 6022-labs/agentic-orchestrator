@@ -3,9 +3,9 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 )

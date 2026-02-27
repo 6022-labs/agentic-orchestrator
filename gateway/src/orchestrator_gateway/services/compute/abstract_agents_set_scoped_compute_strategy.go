@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )

@@ -3,9 +3,9 @@ package use_cases
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/repositories"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/use_cases/requests"
 )
 
 type RemoveDatabaseConnectionInterface interface {

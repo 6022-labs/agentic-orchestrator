@@ -12,8 +12,8 @@ package interfaces_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	interfaces "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
+	models "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )

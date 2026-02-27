@@ -12,7 +12,7 @@ package settings_mocks
 import (
 	reflect "reflect"
 
-	settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_http_inference/settings"
+	settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_http_inference/settings"
 	gomock "go.uber.org/mock/gomock"
 )
 

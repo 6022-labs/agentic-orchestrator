@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	_ "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_host/docs"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_host/settings"
-	orchestrator_mvc "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_mvc"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_mvc/middlewares"
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/docs"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/settings"
+	orchestrator_mvc "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_mvc"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_mvc/middlewares"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

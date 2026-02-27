@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	vault_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
+	vault_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 )
 

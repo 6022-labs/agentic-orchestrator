@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	llm_connector_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_host/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_host/settings"
+	llm_connector_configurations "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_host/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

@@ -3,9 +3,9 @@ package orchestrator_sc_sync_event_listeners
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/abi"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/event_handlers"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/subscribers"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/abi"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/event_handlers"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/subscribers"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

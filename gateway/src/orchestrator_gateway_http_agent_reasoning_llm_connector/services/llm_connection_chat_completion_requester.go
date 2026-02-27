@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/clients"
-	agent_llm_connector_models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/clients"
+	agent_llm_connector_models "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/models"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 )

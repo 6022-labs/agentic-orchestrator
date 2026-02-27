@@ -1,15 +1,15 @@
 package configurations
 
 import (
-	orchestrator_slack_bridge_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/configurations"
-	slack_bridge_db_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/configurations"
-	orchestrator_slack_bridge_http_orchestrator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/configurations"
-	orchestrator_slack_bridge_http_slack_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/configurations"
-	orchestrator_slack_bridge_internal_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal/configurations"
-	orchestrator_slack_bridge_internal_host_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
-	orchestrator_slack_bridge_internal_mvc_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc/configurations"
-	orchestrator_slack_bridge_redis_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
-	orchestrator_slack_bridge_vault_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_vault/configurations"
+	orchestrator_slack_bridge_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/configurations"
+	slack_bridge_db_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/configurations"
+	orchestrator_slack_bridge_http_orchestrator_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/configurations"
+	orchestrator_slack_bridge_http_slack_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/configurations"
+	orchestrator_slack_bridge_internal_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/configurations"
+	orchestrator_slack_bridge_internal_host_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
+	orchestrator_slack_bridge_internal_mvc_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc/configurations"
+	orchestrator_slack_bridge_redis_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
+	orchestrator_slack_bridge_vault_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_vault/configurations"
 
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"

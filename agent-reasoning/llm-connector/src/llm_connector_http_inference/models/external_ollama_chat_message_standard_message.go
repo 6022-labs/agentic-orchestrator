@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/models"
 )
 
 type ExternalOllamaChatMessageStandardMessage struct {

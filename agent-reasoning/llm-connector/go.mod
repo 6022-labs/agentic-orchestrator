@@ -1,4 +1,4 @@
-module github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector
+module github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector
 
 go 1.24.3
 

@@ -12,7 +12,7 @@ package db_clients_mocks
 import (
 	reflect "reflect"
 
-	enums "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models/enums"
+	enums "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models/enums"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 )

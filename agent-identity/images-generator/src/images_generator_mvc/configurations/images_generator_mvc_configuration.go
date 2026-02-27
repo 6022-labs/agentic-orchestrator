@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	orchestrator_images_generator_mvc "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator_mvc"
+	orchestrator_images_generator_mvc "github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator_mvc"
 	"go.uber.org/dig"
 )
 

@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/auth/signature"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/auth/signature"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/settings"
 	"go.uber.org/dig"
 )
 

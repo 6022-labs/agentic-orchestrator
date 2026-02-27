@@ -1,9 +1,9 @@
 package factories
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/db_clients"
-	orchestrator_agent_llm_connector_db "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/db_clients"
+	orchestrator_agent_llm_connector_db "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db/settings"
 	"go.uber.org/zap"
 )
 

@@ -1,9 +1,9 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	infra_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	infra_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 	"go.uber.org/dig"
 	"go.uber.org/zap"

@@ -3,7 +3,7 @@ package settings_test
 import (
 	"testing"
 
-	images_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
+	images_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"

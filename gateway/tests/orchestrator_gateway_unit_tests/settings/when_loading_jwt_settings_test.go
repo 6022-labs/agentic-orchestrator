@@ -3,7 +3,7 @@ package settings_test
 import (
 	"testing"
 
-	jwt_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/settings"
+	jwt_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/settings"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"

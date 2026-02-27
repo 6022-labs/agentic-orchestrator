@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models/enums"
+import "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
 
 type ImportExternalAgentFirstStepResponse struct {
 	Name        string                      `json:"name"`

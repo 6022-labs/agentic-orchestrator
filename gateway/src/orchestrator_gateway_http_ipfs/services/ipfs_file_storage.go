@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/clients"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/clients"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/models"
 	"go.uber.org/zap"
 )
 

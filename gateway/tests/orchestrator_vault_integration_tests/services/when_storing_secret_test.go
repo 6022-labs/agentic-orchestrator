@@ -7,9 +7,9 @@ import (
 	vault "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
 )
 
 type WhenStoringSecretTestSuite struct {

@@ -3,10 +3,10 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
-	http_agent_llm_connector_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/clients"
-	http_agent_llm_connector_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/services"
-	http_agent_llm_connector_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
+	http_agent_llm_connector_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/clients"
+	http_agent_llm_connector_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/services"
+	http_agent_llm_connector_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector/settings"
 	"go.uber.org/dig"
 )
 

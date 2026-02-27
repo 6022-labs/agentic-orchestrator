@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"

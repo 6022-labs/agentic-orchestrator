@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/errors"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models/enums"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute"
 	"github.com/ethereum/go-ethereum/common"
 )
 

@@ -12,7 +12,7 @@ package repositories_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/models"
+	models "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 )

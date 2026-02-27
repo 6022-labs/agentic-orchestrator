@@ -12,7 +12,7 @@ package event_handlers_mocks
 import (
 	reflect "reflect"
 
-	abi "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/abi"
+	abi "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/abi"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -3,9 +3,9 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_vault/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/tests/common_tests/container_builders"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 )

@@ -1,8 +1,8 @@
 package use_cases
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/use_cases/responses"
 )
 
 type ListAgentCollectionsInterface interface {

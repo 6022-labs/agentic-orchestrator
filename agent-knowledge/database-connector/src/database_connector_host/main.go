@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	database_connector_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_host/configurations"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_host/settings"
+	database_connector_configurations "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_host/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

@@ -12,8 +12,8 @@ package repositories_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models"
-	enums "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models/enums"
+	models "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models"
+	enums "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models/enums"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 )

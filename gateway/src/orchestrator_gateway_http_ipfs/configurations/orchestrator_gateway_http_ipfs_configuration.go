@@ -3,10 +3,10 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
-	orchestrator_http_ipfs_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/clients"
-	orchestrator_http_ipfs_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/services"
-	orchestrator_http_ipfs_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_ipfs/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
+	orchestrator_http_ipfs_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/clients"
+	orchestrator_http_ipfs_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/services"
+	orchestrator_http_ipfs_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_ipfs/settings"
 	"go.uber.org/dig"
 )
 

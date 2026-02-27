@@ -3,8 +3,8 @@ package images_generator_mvc
 import (
 	"io"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/use_cases"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/use_cases/requests"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )

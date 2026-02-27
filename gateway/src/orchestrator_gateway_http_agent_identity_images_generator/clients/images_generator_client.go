@@ -8,8 +8,8 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

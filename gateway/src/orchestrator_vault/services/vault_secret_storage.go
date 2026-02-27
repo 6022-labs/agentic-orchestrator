@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 )
 

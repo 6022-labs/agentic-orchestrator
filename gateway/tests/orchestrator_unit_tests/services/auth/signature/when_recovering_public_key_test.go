@@ -3,7 +3,7 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/auth/signature"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/auth/signature"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )

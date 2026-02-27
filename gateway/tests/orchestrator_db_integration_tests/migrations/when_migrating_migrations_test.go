@@ -3,10 +3,10 @@ package migrations_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_db"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_db/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_db"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

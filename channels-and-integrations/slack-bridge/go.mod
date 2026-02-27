@@ -1,4 +1,4 @@
-module github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge
+module github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge
 
 go 1.24.0
 

@@ -3,9 +3,9 @@ package use_cases_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/use_cases"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/use_cases/requests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/orchestrator_sc_sync_mocks/services_mocks"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/orchestrator_sc_sync_mocks/services_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

@@ -1,9 +1,9 @@
 package services
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/clients"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/clients"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/models"
 )
 
 type ImagesGeneratorRequester struct {

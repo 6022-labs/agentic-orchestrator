@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/auth/jwt"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/auth/jwt"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/settings"
 	"github.com/stretchr/testify/assert"
 )
 

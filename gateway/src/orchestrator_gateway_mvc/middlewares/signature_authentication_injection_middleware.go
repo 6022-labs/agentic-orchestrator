@@ -3,7 +3,7 @@ package middlewares
 import (
 	"encoding/base64"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -35,7 +35,7 @@ func (m *SignatureAuthenticationInjectionMiddleware) Handle(c *fiber.Ctx) error 
 
 	payload := append(requestQuery, requestBody...)
 
-	signatureHeaders := c.GetReqHeaders()["X-Agentic-Ai-Orchestrator-Signature"]
+	signatureHeaders := c.GetReqHeaders()["X-Agentic-Orchestrator-Signature"]
 	// Check if there is a item in the array
 	if len(signatureHeaders) == 0 {
 		m.logger.Warn("No signature found in headers")

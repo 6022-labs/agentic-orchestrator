@@ -1,9 +1,9 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/services"
-	vault_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/services"
-	vault_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/services"
+	vault_services "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_vault/services"
+	vault_settings "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 	"go.uber.org/dig"
 	"go.uber.org/zap"

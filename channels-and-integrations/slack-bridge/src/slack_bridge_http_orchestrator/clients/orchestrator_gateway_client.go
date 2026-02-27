@@ -8,9 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/models"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/settings"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -77,7 +77,7 @@ func (c *OrchestratorGatewayClient) Completions(collectionAddress string, collec
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-Agentic-Ai-Orchestrator-Signature", signature)
+	request.Header.Set("X-Agentic-Orchestrator-Signature", signature)
 
 	c.logger.Debug(
 		"Sending completions request to orchestrator",

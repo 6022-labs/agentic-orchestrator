@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_mvc"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_mvc"
 	"go.uber.org/dig"
 )
 

@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_http_orchestrator_gateway/clients"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_http_orchestrator_gateway/clients"
 )
 
 type ExternalAgentInformationFetcher struct {

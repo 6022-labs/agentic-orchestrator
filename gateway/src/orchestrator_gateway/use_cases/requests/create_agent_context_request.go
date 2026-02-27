@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/errors"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute"
 )
 
 type CreateAgentContextRequest struct {

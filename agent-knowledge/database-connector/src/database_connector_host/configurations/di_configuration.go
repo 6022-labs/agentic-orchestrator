@@ -1,12 +1,12 @@
 package configurations
 
 import (
-	database_connector_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/configurations"
-	database_connector_db_agent_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/configurations"
-	database_connector_db_orchestrator_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_orchestrator/configurations"
-	database_connector_host_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_host/settings"
-	database_connector_mvc_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_mvc/configurations"
-	database_connector_vault_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/configurations"
+	database_connector_configuration "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/configurations"
+	database_connector_db_agent_configuration "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_agent/configurations"
+	database_connector_db_orchestrator_configuration "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_orchestrator/configurations"
+	database_connector_host_settings "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_host/settings"
+	database_connector_mvc_configuration "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_mvc/configurations"
+	database_connector_vault_configuration "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_vault/configurations"
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )

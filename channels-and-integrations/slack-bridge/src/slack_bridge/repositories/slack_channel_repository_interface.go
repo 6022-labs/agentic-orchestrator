@@ -1,6 +1,6 @@
 package repositories
 
-import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge/models"
+import "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 
 type SlackChannelRepositoryInterface interface {
 	Save(entity *models.SlackChannel) (*models.SlackChannel, error)

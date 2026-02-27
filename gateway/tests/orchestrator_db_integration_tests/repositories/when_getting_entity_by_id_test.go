@@ -3,13 +3,13 @@ package repositories_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_db"
-	db_repositories "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_db/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_db/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/container_builders"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/tests/common_tests/model_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_db"
+	db_repositories "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_db/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/model_builders"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 

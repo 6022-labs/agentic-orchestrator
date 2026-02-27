@@ -3,10 +3,10 @@ package migrations_test
 import (
 	"testing"
 
-	orchestrator_agent_llm_connector_db "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/tests/common_tests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/tests/common_tests/container_builders"
+	orchestrator_agent_llm_connector_db "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/tests/common_tests/container_builders"
 	"github.com/pressly/goose"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

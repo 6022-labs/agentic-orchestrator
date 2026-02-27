@@ -12,7 +12,7 @@ package command_handlers_mocks
 import (
 	reflect "reflect"
 
-	requests "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
+	requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	gomock "go.uber.org/mock/gomock"
 )
 

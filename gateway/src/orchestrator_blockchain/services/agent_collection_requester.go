@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"strings"
 
-	orchestrator_abi "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/abi"
+	orchestrator_abi "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

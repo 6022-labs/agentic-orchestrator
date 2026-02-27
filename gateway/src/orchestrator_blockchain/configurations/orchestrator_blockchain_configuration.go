@@ -1,12 +1,12 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	orchestrator_blockchain_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_blockchain/services"
-	orchestrator_blockchain_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_blockchain/settings"
-	orchestrator_blockchain_subscribers "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_blockchain/subscribers"
-	sc_sync_interfaces "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/services/interfaces"
-	orchestrator_sc_sync_subscribers "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/subscribers"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	orchestrator_blockchain_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_blockchain/services"
+	orchestrator_blockchain_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_blockchain/settings"
+	orchestrator_blockchain_subscribers "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_blockchain/subscribers"
+	sc_sync_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/services/interfaces"
+	orchestrator_sc_sync_subscribers "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/subscribers"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/dig"
 )

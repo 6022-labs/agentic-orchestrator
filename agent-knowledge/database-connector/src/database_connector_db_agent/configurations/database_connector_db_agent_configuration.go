@@ -1,11 +1,11 @@
 package configurations
 
 import (
-	factories_db_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/factories/db_clients"
-	factories_repositories "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/factories/repositories"
-	db_agent_factories_db_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/factories/db_clients"
-	db_agent_factories_repositories "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/factories/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_agent/settings"
+	factories_db_clients "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/factories/db_clients"
+	factories_repositories "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/factories/repositories"
+	db_agent_factories_db_clients "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_agent/factories/db_clients"
+	db_agent_factories_repositories "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_agent/factories/repositories"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_agent/settings"
 
 	"go.uber.org/dig"
 )

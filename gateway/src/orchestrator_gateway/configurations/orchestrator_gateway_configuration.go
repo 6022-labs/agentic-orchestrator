@@ -1,13 +1,13 @@
 package configurations
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/auth/jwt"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/compute/prompt_parameters"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/settings"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/auth/jwt"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/compute/prompt_parameters"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/use_cases"
 	"go.uber.org/dig"
 )
 

@@ -3,10 +3,10 @@ package configurations
 import (
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
-	orchestrator_http_images_generator_clients "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/clients"
-	orchestrator_http_images_generator_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/services"
-	orchestrator_http_images_generator_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
+	orchestrator_http_images_generator_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/clients"
+	orchestrator_http_images_generator_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/services"
+	orchestrator_http_images_generator_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_http_agent_identity_images_generator/settings"
 	"go.uber.org/dig"
 )
 

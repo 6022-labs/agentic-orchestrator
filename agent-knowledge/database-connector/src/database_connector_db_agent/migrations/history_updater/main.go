@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models/enums"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 	"github.com/samber/lo"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/settings"
 	"github.com/golang-jwt/jwt/v5"
 )
 

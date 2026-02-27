@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 )

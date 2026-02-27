@@ -13,7 +13,7 @@ import (
 	big "math/big"
 	reflect "reflect"
 
-	abi "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/abi"
+	abi "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/abi"
 	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )

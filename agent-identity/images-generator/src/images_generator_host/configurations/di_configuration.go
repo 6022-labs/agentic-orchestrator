@@ -1,9 +1,9 @@
 package configurations
 
 import (
-	images_generator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/configurations"
-	images_generator_host_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator_host/settings"
-	images_generator_mvc_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator_mvc/configurations"
+	images_generator_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/configurations"
+	images_generator_host_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator_host/settings"
+	images_generator_mvc_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator_mvc/configurations"
 
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"

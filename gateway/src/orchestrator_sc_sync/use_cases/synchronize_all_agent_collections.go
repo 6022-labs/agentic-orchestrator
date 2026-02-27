@@ -3,9 +3,9 @@ package use_cases
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/repositories"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/repositories"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/services/interfaces"
 )
 
 type SynchronizeAllAgentCollectionsInterface interface {

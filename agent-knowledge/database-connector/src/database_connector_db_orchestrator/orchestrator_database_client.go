@@ -3,7 +3,7 @@ package orchestrator_agent_database_connector_db_orchestrator
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_db_orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_orchestrator/settings"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"

@@ -1,8 +1,8 @@
 package configurations
 
 import (
-	orchestrator_slack_bridge_external_mvc "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/middlewares"
+	orchestrator_slack_bridge_external_mvc "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/middlewares"
 	"go.uber.org/dig"
 )
 

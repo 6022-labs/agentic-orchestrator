@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

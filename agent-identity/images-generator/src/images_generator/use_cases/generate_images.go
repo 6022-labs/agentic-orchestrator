@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/use_cases/requests"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-identity/images-generator/src/images_generator/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/images-generator/src/images_generator/use_cases/responses"
 )
 
 type GenerateImagesInterface interface {

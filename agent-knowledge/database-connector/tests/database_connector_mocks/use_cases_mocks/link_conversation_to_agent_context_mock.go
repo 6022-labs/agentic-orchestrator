@@ -12,7 +12,7 @@ package use_cases_mocks
 import (
 	reflect "reflect"
 
-	requests "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector/use_cases/requests"
+	requests "github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/use_cases/requests"
 	gomock "go.uber.org/mock/gomock"
 )
 

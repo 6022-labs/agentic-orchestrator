@@ -1,6 +1,6 @@
 package models
 
-import "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_gateway/services/interfaces"
+import "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway/services/interfaces"
 
 type ExternalListMCPConnectionsResponse struct {
 	MCPConnections  []ExternalMCPConnectionResponse `json:"mcpConnections"`

@@ -1,13 +1,13 @@
 package configurations
 
 import (
-	orchestrator_agent_llm_connector_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector/configurations"
-	orchestrator_agent_llm_connector_db_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_db/configurations"
-	orchestrator_agent_llm_connector_host_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_host/settings"
-	orchestrator_agent_llm_connector_http_inference_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_http_inference/configurations"
-	orchestrator_agent_llm_connector_http_mcp_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_http_mcp/configurations"
-	orchestrator_agent_llm_connector_mvc_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_mvc/configurations"
-	orchestrator_agent_llm_connector_vault_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/configurations"
+	orchestrator_agent_llm_connector_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector/configurations"
+	orchestrator_agent_llm_connector_db_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_db/configurations"
+	orchestrator_agent_llm_connector_host_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_host/settings"
+	orchestrator_agent_llm_connector_http_inference_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_http_inference/configurations"
+	orchestrator_agent_llm_connector_http_mcp_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_http_mcp/configurations"
+	orchestrator_agent_llm_connector_mvc_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_mvc/configurations"
+	orchestrator_agent_llm_connector_vault_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/llm-connector/src/llm_connector_vault/configurations"
 
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"

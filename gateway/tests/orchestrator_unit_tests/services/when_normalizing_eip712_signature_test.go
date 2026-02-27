@@ -3,8 +3,8 @@ package services_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/settings"
 	"github.com/stretchr/testify/assert"
 )
 

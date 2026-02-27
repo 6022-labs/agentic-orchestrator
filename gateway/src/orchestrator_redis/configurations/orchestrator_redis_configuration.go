@@ -3,9 +3,9 @@ package configurations
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	redis_services "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_redis/services"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_redis/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	redis_services "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_redis/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_redis/settings"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/dig"
 	"go.uber.org/zap"

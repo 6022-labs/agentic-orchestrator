@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	vault_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_vault/settings"
+	vault_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 )
 

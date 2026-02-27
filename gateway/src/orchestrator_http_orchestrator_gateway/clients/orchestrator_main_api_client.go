@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/services/interfaces"
-	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_http_orchestrator_gateway/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_http_orchestrator_gateway/models"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -283,7 +283,7 @@ func (c *OrchestratorMainApiClient) addRequestSignature(req *http.Request) error
 
 	// Encode the signature in Base64
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
-	req.Header.Set("X-Agentic-Ai-Orchestrator-Signature", encodedSignature)
+	req.Header.Set("X-Agentic-Orchestrator-Signature", encodedSignature)
 
 	return nil
 }
