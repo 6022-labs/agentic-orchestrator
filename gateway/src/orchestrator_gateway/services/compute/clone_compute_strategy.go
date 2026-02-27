@@ -75,7 +75,7 @@ func (cs *CloneComputeStrategy) Compute(
 		return nil, fmt.Errorf("failed to get agent context messages: %w", err)
 	}
 
-	alreadyMapped, err := cs.mapContextToConversationIfNotMapped(agent.ID, computeContext.ConversationContext.Id, agentContext.Key)
+	err = cs.mapContextToConversationIfNotMapped(agent.ID, computeContext.ConversationContext.Id, agentContext.Key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to map context to conversation: %w", err)
 	}
@@ -85,7 +85,7 @@ func (cs *CloneComputeStrategy) Compute(
 
 	var messages []*models.AgentContextMessage
 
-	if !*alreadyMapped {
+	if !cs.isThereSystemPromptForThisConversation(messages, computeContext.ConversationContext.Id) {
 		messages, err = cs.addSystemPrompt(agent, computeContext, storedMessages, latestMessage, initialRequest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add system prompt: %w", err)
@@ -114,7 +114,7 @@ func (cs *CloneComputeStrategy) mapContextToConversationIfNotMapped(
 	agentId uuid.UUID,
 	conversationId string,
 	agentContextKey string,
-) (*bool, error) {
+) error {
 	cs.logger.Debug("Mapping context to conversation",
 		zap.String("agentId", agentId.String()),
 		zap.String("conversationContext.Id", conversationId),
@@ -122,17 +122,17 @@ func (cs *CloneComputeStrategy) mapContextToConversationIfNotMapped(
 
 	_, found, err := cs.agentContextConversationMappingRequester.GetLinkedAgentContextKeyOfConversation(agentId, conversationId)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get linked agent context key of conversation: %w", err)
+		return fmt.Errorf("failed to get linked agent context key of conversation: %w", err)
 	}
 
 	if !*found {
 		err = cs.agentContextConversationMappingRequester.LinkConversationToAgentContext(agentId, conversationId, agentContextKey)
 		if err != nil {
-			return nil, fmt.Errorf("failed to link agent context key to conversation: %w", err)
+			return fmt.Errorf("failed to link agent context key to conversation: %w", err)
 		}
 	}
 
-	return found, nil
+	return nil
 }
 
 func (cs *CloneComputeStrategy) addSystemPrompt(

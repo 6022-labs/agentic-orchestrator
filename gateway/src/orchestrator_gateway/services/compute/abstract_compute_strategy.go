@@ -193,3 +193,14 @@ func (cs *AbstractComputeStrategy) groupMessages(messages []*models.AgentContext
 
 	return result
 }
+
+func (cs *AbstractComputeStrategy) isThereSystemPromptForThisConversation(
+	messages []*models.AgentContextMessage,
+	conversationId string,
+) bool {
+	_, systemPromptFound := lo.Find(messages, func(message *models.AgentContextMessage) bool {
+		return message.Role == enums.AgentContextMessageRoleSystem && message.ConversationId != nil && *message.ConversationId == conversationId
+	})
+
+	return systemPromptFound
+}

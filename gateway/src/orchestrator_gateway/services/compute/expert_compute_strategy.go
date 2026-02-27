@@ -119,7 +119,7 @@ func (cs *ExpertComputeStrategy) Compute(agent *models.Agent, inputs []*models.A
 	messages = cs.groupMessages(messages, computeContext.ConversationContext.Id)
 
 	// In case of a new conversation, we need to create the system prompt
-	if !*isFound {
+	if !cs.isThereSystemPromptForThisConversation(messages, computeContext.ConversationContext.Id) {
 		messages, err = cs.addSystemPrompt(agent, computeContext, messages, latestMessage, initialRequest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add system prompt: %w", err)

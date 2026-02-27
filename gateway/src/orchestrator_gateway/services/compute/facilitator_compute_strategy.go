@@ -75,7 +75,7 @@ func (cs *FacilitatorComputeStrategy) Compute(agent *models.Agent, inputs []*mod
 	messages = cs.groupMessages(messages, context.ConversationContext.Id)
 
 	// In case of a new conversation, we need to create the system prompt
-	if !*isFound {
+	if !cs.isThereSystemPromptForThisConversation(messages, context.ConversationContext.Id) {
 		messages, err = cs.addSystemPrompt(agent, context, inputs[0], messages)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to add system prompt: %w", err)
