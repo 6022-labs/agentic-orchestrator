@@ -1,28 +1,25 @@
 package settings
 
 import (
-	"os"
+	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const AnthropicSettingsKey = "anthropic"
 
 type AnthropicSettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewAnthropicSettings(logger *zap.Logger, v *viper.Viper) *AnthropicSettings {
-	v.SetDefault(AnthropicSettingsKey+".base_url", "https://api.anthropic.com")
-	if val, ok := os.LookupEnv("ANTHROPIC__BASE_URL"); ok {
-		v.Set(AnthropicSettingsKey+".base_url", val)
-	}
-
-	var settings AnthropicSettings
-	if err := v.UnmarshalKey(AnthropicSettingsKey, &settings); err != nil {
+func NewAnthropicSettings(logger *zap.Logger, k *koanf.Koanf) *AnthropicSettings {
+	settings := AnthropicSettings{BaseUrl: "https://api.anthropic.com"}
+	if err := k.Unmarshal(AnthropicSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal anthropic settings", zap.Error(err))
 	}
+
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
 
 	return &settings
 }

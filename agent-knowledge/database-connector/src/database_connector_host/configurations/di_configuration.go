@@ -7,15 +7,17 @@ import (
 	database_connector_host_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_host/settings"
 	database_connector_mvc_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_mvc/configurations"
 	database_connector_vault_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-knowledge/database-connector/src/database_connector_vault/configurations"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )
 
-func ConfigureDI() *dig.Container {
+func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	container := dig.New()
 
 	container.Provide(database_connector_host_settings.NewHostSettings)
-	container.Provide(viper.GetViper)
+	container.Provide(func() *koanf.Koanf {
+		return config
+	})
 
 	database_connector_configuration.AddDatabaseConnectorConfiguration(container)
 	database_connector_mvc_configuration.AddOrchestratorAgentDatabaseConnectorMvcConfiguration(container)

@@ -4,31 +4,22 @@ import (
 	"testing"
 
 	settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_http_inference/settings"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 func TestWhenLoadingXSettings(t *testing.T) {
-	t.Run("Given settings provided through viper", func(t *testing.T) {
-		v := viper.New()
-		v.Set("x", map[string]any{
-			"base_url": "https://x.example.com",
-		})
+	t.Run("Loads settings", func(t *testing.T) {
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]interface{}{
+			"x.base_url": "https://x.example.com",
+		}, "."), nil)
 
-		result := settings.NewXSettings(zap.NewNop(), v)
+		result := settings.NewXSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, result)
 		assert.Equal(t, "https://x.example.com", result.BaseUrl)
-	})
-
-	t.Run("Given settings provided through env", func(t *testing.T) {
-		t.Setenv("X__BASE_URL", "https://x.env")
-
-		v := viper.New()
-		result := settings.NewXSettings(zap.NewNop(), v)
-
-		assert.NotNil(t, result)
-		assert.Equal(t, "https://x.env", result.BaseUrl)
 	})
 }

@@ -1,28 +1,25 @@
 package settings
 
 import (
-	"os"
+	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const DeepSeekSettingsKey = "deepseek"
 
 type DeepSeekSettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewDeepSeekSettings(logger *zap.Logger, v *viper.Viper) *DeepSeekSettings {
-	v.SetDefault(DeepSeekSettingsKey+".base_url", "https://api.deepseek.com")
-	if val, ok := os.LookupEnv("DEEPSEEK__BASE_URL"); ok {
-		v.Set(DeepSeekSettingsKey+".base_url", val)
-	}
-
-	var settings DeepSeekSettings
-	if err := v.UnmarshalKey(DeepSeekSettingsKey, &settings); err != nil {
+func NewDeepSeekSettings(logger *zap.Logger, k *koanf.Koanf) *DeepSeekSettings {
+	settings := DeepSeekSettings{BaseUrl: "https://api.deepseek.com"}
+	if err := k.Unmarshal(DeepSeekSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal deepseek settings", zap.Error(err))
 	}
+
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
 
 	return &settings
 }

@@ -1,30 +1,27 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const AgentLLMConnectorSettingsKey = "agent_llm_connector"
 
 type AgentLLMConnectorSettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewAgentLLMConnectorSettings(logger *zap.Logger, v *viper.Viper) *AgentLLMConnectorSettings {
-	if val, ok := os.LookupEnv("AGENT_LLM_CONNECTOR__BASE_URL"); ok {
-		v.Set(AgentLLMConnectorSettingsKey+".base_url", val)
-	}
-
+func NewAgentLLMConnectorSettings(logger *zap.Logger, k *koanf.Koanf) *AgentLLMConnectorSettings {
 	var settings AgentLLMConnectorSettings
-	if err := v.UnmarshalKey(AgentLLMConnectorSettingsKey, &settings); err != nil {
+	if err := k.Unmarshal(AgentLLMConnectorSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal agent llm connector settings", zap.Error(err))
 	}
 
-	if len(strings.TrimSpace(settings.BaseUrl)) == 0 {
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
+
+	if len(settings.BaseUrl) == 0 {
 		logger.Fatal("please set your agent_llm_connector.base_url value in your configuration")
 	}
 

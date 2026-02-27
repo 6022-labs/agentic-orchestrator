@@ -4,37 +4,37 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const ImageGenerationSettingsKey = "image_generation"
 
 type ImageGenerationSettings struct {
-	ImageMarkPath *string `mapstructure:"image_mark_path"`
+	ImageMarkPath *string `koanf:"image_mark_path"`
 }
 
-func NewImageGenerationSettings(logger *zap.Logger, v *viper.Viper) *ImageGenerationSettings {
-	if val, ok := os.LookupEnv("IMAGE_GENERATION__IMAGE_MARK_PATH"); ok {
-		v.Set(ImageGenerationSettingsKey+".image_mark_path", val)
+func NewImageGenerationSettings(logger *zap.Logger, k *koanf.Koanf) *ImageGenerationSettings {
+	var settings ImageGenerationSettings
+	if err := k.Unmarshal(ImageGenerationSettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal image generation settings", zap.Error(err))
 	}
 
-	var imageMarkPath *string = nil
-	imageMarkPathEnv := v.GetString(ImageGenerationSettingsKey + ".image_mark_path")
-
-	if len(strings.TrimSpace(imageMarkPathEnv)) != 0 {
-		if _, err := os.Stat(imageMarkPathEnv); os.IsNotExist(err) {
-			logger.Warn("The file specified in IMAGE_GENERATION__IMAGE_MARK_PATH does not exist", zap.String("path", imageMarkPathEnv))
+	if settings.ImageMarkPath != nil {
+		value := strings.TrimSpace(*settings.ImageMarkPath)
+		if len(value) == 0 {
+			settings.ImageMarkPath = nil
+		} else if _, err := os.Stat(value); os.IsNotExist(err) {
+			logger.Warn("The file specified in image_generation.image_mark_path does not exist", zap.String("path", value))
+			settings.ImageMarkPath = nil
 		} else {
-			imageMarkPath = &imageMarkPathEnv
+			settings.ImageMarkPath = &value
 		}
 	}
 
-	if imageMarkPath == nil {
+	if settings.ImageMarkPath == nil {
 		logger.Info("image_generation.image_mark_path is not set, nft generation will not be marked")
 	}
 
-	return &ImageGenerationSettings{
-		ImageMarkPath: imageMarkPath,
-	}
+	return &settings
 }

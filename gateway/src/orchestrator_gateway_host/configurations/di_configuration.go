@@ -16,15 +16,17 @@ import (
 	orchestrator_redis_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_redis/configurations"
 	orchestrator_vault_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_vault/configurations"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )
 
-func ConfigureDI() *dig.Container {
+func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	container := dig.New()
 
 	container.Provide(orchestrator_gateway_host_settings.NewHostSettings)
-	container.Provide(viper.GetViper)
+	container.Provide(func() *koanf.Koanf {
+		return config
+	})
 
 	orchestrator_configurations.AddOrchestratorConfiguration(container)
 	orchestrator_db_configurations.AddOrchestratorDbConfiguration(container)

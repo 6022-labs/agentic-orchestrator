@@ -1,30 +1,27 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const AgentDatabaseConnectorSettingsKey = "agent_database_connector"
 
 type AgentDatabaseConnectorSettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewAgentDatabaseConnectorSettings(logger *zap.Logger, v *viper.Viper) *AgentDatabaseConnectorSettings {
-	if val, ok := os.LookupEnv("AGENT_DATABASE_CONNECTOR__BASE_URL"); ok {
-		v.Set(AgentDatabaseConnectorSettingsKey+".base_url", val)
-	}
-
+func NewAgentDatabaseConnectorSettings(logger *zap.Logger, k *koanf.Koanf) *AgentDatabaseConnectorSettings {
 	var settings AgentDatabaseConnectorSettings
-	if err := v.UnmarshalKey(AgentDatabaseConnectorSettingsKey, &settings); err != nil {
+	if err := k.Unmarshal(AgentDatabaseConnectorSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal agent database connector settings", zap.Error(err))
 	}
 
-	if len(strings.TrimSpace(settings.BaseUrl)) == 0 {
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
+
+	if len(settings.BaseUrl) == 0 {
 		logger.Fatal("please set your agent_database_connector.base_url value in your configuration")
 	}
 

@@ -1,30 +1,27 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const PlatformBridgesSettingsKey = "platform_bridges"
 
 type PlatformBridgesSettings struct {
-	SlackBridgeUrl string `mapstructure:"slack_bridge_url"`
+	SlackBridgeUrl string `koanf:"slack_bridge_url"`
 }
 
-func NewPlatformBridgesSettings(logger *zap.Logger, v *viper.Viper) *PlatformBridgesSettings {
-	if val, ok := os.LookupEnv("PLATFORM_BRIDGES__SLACK_BRIDGE_URL"); ok {
-		v.Set(PlatformBridgesSettingsKey+".slack_bridge_url", val)
-	}
-
+func NewPlatformBridgesSettings(logger *zap.Logger, k *koanf.Koanf) *PlatformBridgesSettings {
 	var settings PlatformBridgesSettings
-	if err := v.UnmarshalKey(PlatformBridgesSettingsKey, &settings); err != nil {
+	if err := k.Unmarshal(PlatformBridgesSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal platform bridges settings", zap.Error(err))
 	}
 
-	if len(strings.TrimSpace(settings.SlackBridgeUrl)) == 0 {
+	settings.SlackBridgeUrl = strings.TrimSpace(settings.SlackBridgeUrl)
+
+	if len(settings.SlackBridgeUrl) == 0 {
 		logger.Fatal("please set your platform_bridges.slack_bridge_url value in your configuration")
 	}
 

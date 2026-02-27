@@ -1,27 +1,22 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const AgentCollectionsManagerSettingsKey = "agent_collections_manager"
 
 type AgentCollectionsManagerSettings struct {
-	SmartContractAddress common.Address `mapstructure:"smart_contract_address"`
+	SmartContractAddress common.Address `koanf:"smart_contract_address"`
 }
 
-func NewAgentCollectionsManagerSettings(logger *zap.Logger, v *viper.Viper) *AgentCollectionsManagerSettings {
-	if val, ok := os.LookupEnv("AGENT_COLLECTIONS_MANAGER__SMART_CONTRACT_ADDRESS"); ok {
-		v.Set(AgentCollectionsManagerSettingsKey+".smart_contract_address", val)
-	}
-
-	addressStr := v.GetString(AgentCollectionsManagerSettingsKey + ".smart_contract_address")
-	if len(strings.TrimSpace(addressStr)) == 0 {
+func NewAgentCollectionsManagerSettings(logger *zap.Logger, k *koanf.Koanf) *AgentCollectionsManagerSettings {
+	addressStr := strings.TrimSpace(k.String(AgentCollectionsManagerSettingsKey + ".smart_contract_address"))
+	if len(addressStr) == 0 {
 		logger.Fatal("please set your agent_collections_manager.smart_contract_address value in your configuration")
 	}
 

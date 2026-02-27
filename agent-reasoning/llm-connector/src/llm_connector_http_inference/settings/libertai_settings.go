@@ -1,28 +1,25 @@
 package settings
 
 import (
-	"os"
+	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const LibertAISettingsKey = "libertai"
 
 type LibertAISettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewLibertAISettings(logger *zap.Logger, v *viper.Viper) *LibertAISettings {
-	v.SetDefault(LibertAISettingsKey+".base_url", "https://api.libertai.io")
-	if val, ok := os.LookupEnv("LIBERTAI__BASE_URL"); ok {
-		v.Set(LibertAISettingsKey+".base_url", val)
-	}
-
-	var settings LibertAISettings
-	if err := v.UnmarshalKey(LibertAISettingsKey, &settings); err != nil {
+func NewLibertAISettings(logger *zap.Logger, k *koanf.Koanf) *LibertAISettings {
+	settings := LibertAISettings{BaseUrl: "https://api.libertai.io"}
+	if err := k.Unmarshal(LibertAISettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal libertai settings", zap.Error(err))
 	}
+
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
 
 	return &settings
 }

@@ -4,32 +4,22 @@ import (
 	"testing"
 
 	migrations_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
 func TestWhenLoadingSlackBridgeMigrationsSettings(t *testing.T) {
-	t.Run("Given settings provided through viper", func(t *testing.T) {
+	t.Run("Loads settings", func(t *testing.T) {
 		folder := t.TempDir()
 
-		v := viper.New()
-		v.Set("migrations", map[string]any{
-			"folder_path": folder,
-		})
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]interface{}{
+			"migrations.folder_path": folder,
+		}, "."), nil)
 
-		settings := migrations_settings.NewMigrationsSettings(zap.NewNop(), v)
-
-		assert.NotNil(t, settings)
-		assert.Equal(t, folder, settings.MigrationsFolderPath)
-	})
-
-	t.Run("Given settings provided through env", func(t *testing.T) {
-		folder := t.TempDir()
-		t.Setenv("MIGRATIONS__FOLDER_PATH", folder)
-
-		v := viper.New()
-		settings := migrations_settings.NewMigrationsSettings(zap.NewNop(), v)
+		settings := migrations_settings.NewMigrationsSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, folder, settings.MigrationsFolderPath)

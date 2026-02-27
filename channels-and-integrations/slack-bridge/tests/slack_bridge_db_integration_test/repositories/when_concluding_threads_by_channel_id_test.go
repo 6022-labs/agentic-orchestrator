@@ -172,5 +172,4 @@ func TestWhenConcludingThreadsByChannelId(t *testing.T) {
 			assert.False(t, storedOtherThread.IsConcluded)
 		})
 	})
-
 }

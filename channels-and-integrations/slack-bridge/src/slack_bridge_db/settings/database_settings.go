@@ -1,31 +1,28 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const DatabaseSettingsKey = "database"
 
 type DatabaseSettings struct {
-	Url string `mapstructure:"url"`
+	Url string `koanf:"url"`
 }
 
 func NewDatabaseSettings(
 	logger *zap.Logger,
-	v *viper.Viper,
+	k *koanf.Koanf,
 ) *DatabaseSettings {
-	if val, ok := os.LookupEnv("DATABASE__URL"); ok {
-		v.Set(DatabaseSettingsKey+".url", val)
-	}
-
-	var settings DatabaseSettings
-	if err := v.UnmarshalKey(DatabaseSettingsKey, &settings); err != nil {
+	settings := DatabaseSettings{}
+	if err := k.Unmarshal(DatabaseSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal database settings", zap.Error(err))
 	}
+
+	settings.Url = strings.TrimSpace(settings.Url)
 
 	if len(strings.TrimSpace(settings.Url)) == 0 {
 		logger.Fatal("please set your database.url value in your configuration")

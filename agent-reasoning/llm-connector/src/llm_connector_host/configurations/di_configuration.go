@@ -9,15 +9,17 @@ import (
 	orchestrator_agent_llm_connector_mvc_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_mvc/configurations"
 	orchestrator_agent_llm_connector_vault_configuration "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/agent-reasoning/llm-connector/src/llm_connector_vault/configurations"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )
 
-func ConfigureDI() *dig.Container {
+func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	container := dig.New()
 
 	container.Provide(orchestrator_agent_llm_connector_host_settings.NewHostSettings)
-	container.Provide(viper.GetViper)
+	container.Provide(func() *koanf.Koanf {
+		return config
+	})
 
 	orchestrator_agent_llm_connector_configuration.AddLLMConnectorConfiguration(container)
 	orchestrator_agent_llm_connector_db_configuration.AddLLMConnectorDbConfiguration(container)

@@ -8,13 +8,7 @@ import (
 )
 
 func TestWhenLoadingOllamaSettings(t *testing.T) {
-	t.Run("Given settings provided through viper", func(t *testing.T) {
-		result := settings.NewOllamaSettings()
-
-		assert.NotNil(t, result)
-	})
-
-	t.Run("Given settings provided through env", func(t *testing.T) {
+	t.Run("Loads settings", func(t *testing.T) {
 		result := settings.NewOllamaSettings()
 
 		assert.NotNil(t, result)

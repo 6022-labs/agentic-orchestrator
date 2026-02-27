@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	manager_settings "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_blockchain/settings"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -12,23 +13,13 @@ import (
 func TestWhenLoadingAgentCollectionsManagerSettings(t *testing.T) {
 	address := "0x0000000000000000000000000000000000000002"
 
-	t.Run("Given settings provided through viper", func(t *testing.T) {
-		v := viper.New()
-		v.Set("agent_collections_manager", map[string]any{
-			"smart_contract_address": address,
-		})
+	t.Run("Loads settings", func(t *testing.T) {
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]interface{}{
+			"agent_collections_manager.smart_contract_address": address,
+		}, "."), nil)
 
-		settings := manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), v)
-
-		assert.NotNil(t, settings)
-		assert.Equal(t, address, settings.SmartContractAddress.Hex())
-	})
-
-	t.Run("Given settings provided through env", func(t *testing.T) {
-		t.Setenv("AGENT_COLLECTIONS_MANAGER__SMART_CONTRACT_ADDRESS", address)
-
-		v := viper.New()
-		settings := manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), v)
+		settings := manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, address, settings.SmartContractAddress.Hex())

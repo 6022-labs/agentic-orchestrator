@@ -1,28 +1,25 @@
 package settings
 
 import (
-	"os"
+	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const XSettingsKey = "x"
 
 type XSettings struct {
-	BaseUrl string `mapstructure:"base_url"`
+	BaseUrl string `koanf:"base_url"`
 }
 
-func NewXSettings(logger *zap.Logger, v *viper.Viper) *XSettings {
-	v.SetDefault(XSettingsKey+".base_url", "https://api.x.ai")
-	if val, ok := os.LookupEnv("X__BASE_URL"); ok {
-		v.Set(XSettingsKey+".base_url", val)
-	}
-
-	var settings XSettings
-	if err := v.UnmarshalKey(XSettingsKey, &settings); err != nil {
+func NewXSettings(logger *zap.Logger, k *koanf.Koanf) *XSettings {
+	settings := XSettings{BaseUrl: "https://api.x.ai"}
+	if err := k.Unmarshal(XSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal x settings", zap.Error(err))
 	}
+
+	settings.BaseUrl = strings.TrimSpace(settings.BaseUrl)
 
 	return &settings
 }

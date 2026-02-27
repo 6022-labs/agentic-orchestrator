@@ -1,16 +1,15 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
+	orchestrator_configurations "github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator/configurations"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync/use_cases"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_host/configurations"
 	"github.com/6022-labs/agentic-ai-orchestrator-mono-repo/gateway/src/orchestrator_sc_sync_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -21,19 +20,12 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	viper.SetConfigName("appsettings")
-	viper.SetConfigType("json")
-	viper.AddConfigPath(".")
-
-	err := viper.ReadInConfig()
+	config, err := orchestrator_configurations.LoadKoanfConfig()
 	if err != nil {
-		var configNotFound viper.ConfigFileNotFoundError
-		if !errors.As(err, &configNotFound) {
-			panic(err)
-		}
+		panic(err)
 	}
 
-	container := configurations.ConfigureDI()
+	container := configurations.ConfigureDI(config)
 	configurations.ConfigureLogging(container)
 	configurations.ConfigureDatabase(container)
 	configurations.ConfigureServer(container)

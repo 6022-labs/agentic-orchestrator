@@ -1,28 +1,30 @@
 package settings
 
 import (
-	"os"
+	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const IpfsGatewaySettingsKey = "ipfs_gateway"
 
 type IpfsGatewaySettings struct {
-	GatewayUrlTemplate string `mapstructure:"url_template"`
+	GatewayUrlTemplate string `koanf:"url_template"`
 }
 
-func NewIpfsGatewaySettings(logger *zap.Logger, v *viper.Viper) *IpfsGatewaySettings {
-	v.SetDefault(IpfsGatewaySettingsKey+".url_template", "https://ipfs.io/ipfs/%s")
-
-	if val, ok := os.LookupEnv("IPFS_GATEWAY__URL_TEMPLATE"); ok {
-		v.Set(IpfsGatewaySettingsKey+".url_template", val)
+func NewIpfsGatewaySettings(logger *zap.Logger, k *koanf.Koanf) *IpfsGatewaySettings {
+	settings := IpfsGatewaySettings{
+		GatewayUrlTemplate: "https://ipfs.io/ipfs/%s",
+	}
+	if err := k.Unmarshal(IpfsGatewaySettingsKey, &settings); err != nil {
+		logger.Fatal("failed to unmarshal ipfs gateway settings", zap.Error(err))
 	}
 
-	var settings IpfsGatewaySettings
-	if err := v.UnmarshalKey(IpfsGatewaySettingsKey, &settings); err != nil {
-		logger.Fatal("failed to unmarshal ipfs gateway settings", zap.Error(err))
+	settings.GatewayUrlTemplate = strings.TrimSpace(settings.GatewayUrlTemplate)
+
+	if len(settings.GatewayUrlTemplate) == 0 {
+		settings.GatewayUrlTemplate = "https://ipfs.io/ipfs/%s"
 	}
 
 	return &settings

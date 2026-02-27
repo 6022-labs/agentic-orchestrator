@@ -65,5 +65,4 @@ func TestWhenNormalizingEip712Signature(t *testing.T) {
 			assert.Equal(t, byte(27), normalizedSignature[64])
 		})
 	})
-
 }

@@ -4,28 +4,26 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const MigrationsSettingsKey = "migrations"
 
 type MigrationsSettings struct {
-	MigrationsFolderPath string `mapstructure:"folder_path"`
+	MigrationsFolderPath string `koanf:"folder_path"`
 }
 
 func NewMigrationsSettings(
 	logger *zap.Logger,
-	v *viper.Viper,
+	k *koanf.Koanf,
 ) *MigrationsSettings {
-	if val, ok := os.LookupEnv("MIGRATIONS__FOLDER_PATH"); ok {
-		v.Set(MigrationsSettingsKey+".folder_path", val)
-	}
-
-	var settings MigrationsSettings
-	if err := v.UnmarshalKey(MigrationsSettingsKey, &settings); err != nil {
+	settings := MigrationsSettings{}
+	if err := k.Unmarshal(MigrationsSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal migrations settings", zap.Error(err))
 	}
+
+	settings.MigrationsFolderPath = strings.TrimSpace(settings.MigrationsFolderPath)
 
 	if len(strings.TrimSpace(settings.MigrationsFolderPath)) == 0 {
 		defaultPath := "./migrations"

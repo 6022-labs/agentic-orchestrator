@@ -1,46 +1,39 @@
 package settings
 
 import (
-	"os"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const RpcNodeSettingsKey = "rpc_node"
 
 type RpcNodeSettings struct {
-	WsUrl      string `mapstructure:"ws_url"`
-	HttpUrl    string `mapstructure:"http_url"`
-	ENSHttpUrl string `mapstructure:"ens_http_url"`
+	WsUrl      string `koanf:"ws_url"`
+	HttpUrl    string `koanf:"http_url"`
+	ENSHttpUrl string `koanf:"ens_http_url"`
 }
 
-func NewRpcNodeSettings(logger *zap.Logger, v *viper.Viper) *RpcNodeSettings {
-	if val, ok := os.LookupEnv("RPC_NODE__WS_URL"); ok {
-		v.Set(RpcNodeSettingsKey+".ws_url", val)
-	}
-	if val, ok := os.LookupEnv("RPC_NODE__HTTP_URL"); ok {
-		v.Set(RpcNodeSettingsKey+".http_url", val)
-	}
-	if val, ok := os.LookupEnv("RPC_NODE__ENS_HTTP_URL"); ok {
-		v.Set(RpcNodeSettingsKey+".ens_http_url", val)
-	}
-
+func NewRpcNodeSettings(logger *zap.Logger, k *koanf.Koanf) *RpcNodeSettings {
 	var settings RpcNodeSettings
-	if err := v.UnmarshalKey(RpcNodeSettingsKey, &settings); err != nil {
+	if err := k.Unmarshal(RpcNodeSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal rpc node settings", zap.Error(err))
 	}
 
-	if len(strings.TrimSpace(settings.WsUrl)) == 0 {
+	settings.WsUrl = strings.TrimSpace(settings.WsUrl)
+	settings.HttpUrl = strings.TrimSpace(settings.HttpUrl)
+	settings.ENSHttpUrl = strings.TrimSpace(settings.ENSHttpUrl)
+
+	if len(settings.WsUrl) == 0 {
 		logger.Fatal("please set your rpc_node.ws_url value in your configuration")
 	}
 
-	if len(strings.TrimSpace(settings.HttpUrl)) == 0 {
+	if len(settings.HttpUrl) == 0 {
 		logger.Fatal("please set your rpc_node.http_url value in your configuration")
 	}
 
-	if len(strings.TrimSpace(settings.ENSHttpUrl)) == 0 {
+	if len(settings.ENSHttpUrl) == 0 {
 		logger.Fatal("please set your rpc_node.ens_http_url value in your configuration")
 	}
 
