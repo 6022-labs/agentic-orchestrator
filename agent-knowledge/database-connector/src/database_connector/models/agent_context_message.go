@@ -14,7 +14,7 @@ import (
 type AgentContextMessage struct {
 	ID             uuid.UUID                         `gorm:"type:varchar(36);primaryKey"`
 	Content        string                            `gorm:"type:text;not null"`
-	Author         string                            `gorm:"type:varchar(64);not null"`
+	Author         string                            `gorm:"type:text;not null"`
 	Platform       enums.AgentContextMessagePlatform `gorm:"type:varchar(64);not null"`
 	Role           enums.AgentContextMessageRole     `gorm:"type:varchar(64);not null"`
 	Hash           string                            `gorm:"type:varchar(128);not null"`

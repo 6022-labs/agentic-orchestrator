@@ -1,4 +1,5 @@
-h1:hNo4/2jknFMQIc4QEXpMq+epUAHSDCCvpBsxDjY/EI8=
+h1:cvhE1wl8xcZzKqN+R6zjjaWb76iQYNcgDjKecYsBUHw=
 20250729144720_initial-migration.sql h1:FxOBJ4YA3NiD0N2ZzYBOn8oXNl0XVb7bnxQbkeq1huM=
 20250808002811_message-conversation-id.sql h1:Y2qKWSuilXJdMEyPuxzywOlVNNGrnMJI6ZC+/+jdCMs=
 20250819192655_conversation-context-discovery.sql h1:9Dj+aSINtOA5CyiYot37uQTemYJ0BetZedYlhaoiTPY=
+20260228013732_author-variable-length.sql h1:GD5oqwE//cIcw1ZovNyBrM+uQuA7BwZx8nHg7gm9/pk=
