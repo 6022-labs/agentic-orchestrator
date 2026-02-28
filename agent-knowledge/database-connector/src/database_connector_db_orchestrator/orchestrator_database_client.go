@@ -2,6 +2,7 @@ package orchestrator_agent_database_connector_db_orchestrator
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_orchestrator/settings"
 	"github.com/pressly/goose/v3"
@@ -10,6 +11,9 @@ import (
 	"gorm.io/gorm"
 	"moul.io/zapgorm2"
 )
+
+// goose does not support concurrent migrations, so we use a global mutex to ensure that only one migration runs at a time.
+var gooseMigrationMu sync.Mutex
 
 type OrchestratorDatabaseClient struct {
 	*gorm.DB
@@ -39,6 +43,9 @@ func NewOrchestratorDatabaseClient(
 }
 
 func (c *OrchestratorDatabaseClient) Migrate() error {
+	gooseMigrationMu.Lock()
+	defer gooseMigrationMu.Unlock()
+
 	sqlDB, err := c.DB.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get sql.DB: %w", err)

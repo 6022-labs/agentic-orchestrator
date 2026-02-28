@@ -2,6 +2,7 @@ package slack_bridge_db
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
 	"github.com/pressly/goose/v3"
@@ -10,6 +11,9 @@ import (
 	"gorm.io/gorm"
 	"moul.io/zapgorm2"
 )
+
+// goose does not support concurrent migrations, so we use a global mutex to ensure that only one migration runs at a time.
+var gooseMigrationMu sync.Mutex
 
 type DatabaseClient struct {
 	*gorm.DB
@@ -39,6 +43,9 @@ func NewDatabaseClient(
 }
 
 func (c *DatabaseClient) Migrate() error {
+	gooseMigrationMu.Lock()
+	defer gooseMigrationMu.Unlock()
+
 	sqlDB, err := c.DB.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get sql.DB: %w", err)

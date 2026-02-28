@@ -2,6 +2,7 @@ package database_connector_db_agent
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/database-connector/src/database_connector_db_agent/settings"
@@ -19,6 +20,9 @@ type AgentDatabaseClient struct {
 	driver             enums.DatabaseConnectionDriver
 	migrationsSettings *settings.MigrationsSettings
 }
+
+// goose does not support concurrent migrations, so we use a global mutex to ensure that only one migration runs at a time.
+var gooseMigrationMu sync.Mutex
 
 func NewAgentDbClient(
 	connStr string,
@@ -62,6 +66,9 @@ func (c *AgentDatabaseClient) Close() error {
 }
 
 func (c *AgentDatabaseClient) Migrate() error {
+	gooseMigrationMu.Lock()
+	defer gooseMigrationMu.Unlock()
+
 	sqlDB, err := c.DB.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get sql.DB: %w", err)
