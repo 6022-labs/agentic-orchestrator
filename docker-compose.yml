@@ -88,7 +88,7 @@ services:
 
   agent-llm-connector-host:
     build:
-      context: ./agent-reasoning/llm-connector
+      context: ./agent-reasoning
       dockerfile: ./src/llm_connector_host/Dockerfile
     container_name: orchestrator-agent-llm-connector-host
     ports:
@@ -110,7 +110,7 @@ services:
 
   agent-database-connector-host:
     build:
-      context: ./agent-knowledge/database-connector
+      context: ./agent-knowledge
       dockerfile: ./src/database_connector_host/Dockerfile
     container_name: orchestrator-agent-database-connector-host
     ports:
@@ -132,7 +132,7 @@ services:
 
   images-generator-host:
     build:
-      context: ./agent-identity/images-generator
+      context: ./agent-identity
       dockerfile: ./src/images_generator_host/Dockerfile
     container_name: orchestrator-images-generator-host
     ports:
