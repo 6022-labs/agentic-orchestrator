@@ -1,0 +1,16 @@
+package settings_test
+
+import (
+	"testing"
+
+	settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_inference/settings"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestWhenLoadingOllamaSettings(t *testing.T) {
+	t.Run("Loads settings", func(t *testing.T) {
+		result := settings.NewOllamaSettings()
+
+		assert.NotNil(t, result)
+	})
+}

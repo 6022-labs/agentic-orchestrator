@@ -15,7 +15,7 @@ func FindMigrationFolderPath() (*string, error) {
 		gitPath := filepath.Join(currentDir, ".git")
 		info, err := os.Stat(gitPath)
 		if err == nil && info.IsDir() {
-			migrationFolderPath := filepath.Join(currentDir, "agent-reasoning", "src", "llm_connector_db", "migrations")
+			migrationFolderPath := filepath.Join(currentDir, "agent-reasoning", "src", "compute_db", "migrations")
 			return &migrationFolderPath, nil
 		} else if err != nil && !os.IsNotExist(err) {
 			return nil, err

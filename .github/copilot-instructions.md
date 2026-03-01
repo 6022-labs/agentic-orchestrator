@@ -32,7 +32,7 @@
 1. For Go changes, inspect the matching service folder (`gateway/src/...`, `agent-knowledge/database-connector/src/...`, `channels-and-integrations/slack-bridge/src/...`). Follow the established pipeline: controllers in `*_mvc`, request/response DTOs in `use_cases/requests|responses`, business logic in `use_cases`, adapters in `services`, persistence in `orchestrator_db/repositories`.
 2. For front-end work, mirror the organization under `ui/src`: shared hooks/contexts live in `contexts/`, requests in `queries/`, typed models in `models/`, UI building blocks in `components/ui/`, and feature surfaces under `components/dashboard/**`.
 3. For documentation, edit the MD/MDX files in `docs/docs/**`. Each doc begins with YAML front matter (`id`, `title`, `sidebar_label`, etc.) and is registered in `docs/sidebars.ts`.
-4. Cross-service communication is handled through HTTP client packages (e.g., `gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector`). Never bypass these clients; update or extend them instead.
+4. Cross-service communication is handled through HTTP client packages (e.g., `gateway/src/orchestrator_gateway_http_agent_reasoning_compute`). Never bypass these clients; update or extend them instead.
 5. When touching persistence, review existing migrations under `*/migrations` and the Atlas schema files before adding SQL or schema drift.
 
 ## Code Quality Standards

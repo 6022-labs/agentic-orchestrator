@@ -3,7 +3,7 @@ package model_builders
 import (
 	"time"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/llm_connector/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 )

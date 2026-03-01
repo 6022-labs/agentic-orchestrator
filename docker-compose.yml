@@ -26,7 +26,7 @@ services:
       - RPC_NODE_WS_URL=ws://evm-node:8545
       - RPC_NODE_HTTP_URL=http://evm-node:8545
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - AGENT_LLM_CONNECTOR_BASE_URL=http://agent-llm-connector-host:5000
+      - AGENT_COMPUTE_BASE_URL=http://agent-compute-host:5000
       - AGENT_DATABASE_CONNECTOR_BASE_URL=http://agent-database-connector-host:5000
       - IMAGE_GENERATOR_BASE_URL=http://images-generator-host:5000
       - IPFS_NODE_HTTP_URL=http://kubo:5001
@@ -44,7 +44,7 @@ services:
         condition: service_started
       kubo:
         condition: service_started
-      agent-llm-connector-host:
+      agent-compute-host:
         condition: service_started
       agent-database-connector-host:
         condition: service_started
@@ -86,17 +86,17 @@ services:
       vault:
         condition: service_started
 
-  agent-llm-connector-host:
+  agent-compute-host:
     build:
       context: ./agent-reasoning
-      dockerfile: ./src/llm_connector_host/Dockerfile
-    container_name: orchestrator-agent-llm-connector-host
+      dockerfile: ./src/compute_host/Dockerfile
+    container_name: orchestrator-agent-compute-host
     ports:
       - "5002:5000"
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=5000
-      - APP_NAME=AgenticAI-Orchestrator-Agent-LLM-Connector-API
+      - APP_NAME=AgenticAI-Orchestrator-Agent-Reasoning-Compute-API
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
       - VAULT_KV_V1_MOUNT_PATH=secret
