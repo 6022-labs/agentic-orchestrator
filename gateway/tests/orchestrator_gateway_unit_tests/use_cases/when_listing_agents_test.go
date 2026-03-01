@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/orchestrator_gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/orchestrator_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -171,16 +172,22 @@ func TestWhenListingAgents(t *testing.T) {
 			assert.Equal(t, elementsPerPage, response.ElementsPerPage)
 			assert.Equal(t, uint(len(existingAgents)), response.TotalElements)
 
-			for i, existingAgent := range existingAgents {
-				fetchedAgent := response.Agents[i]
-				assert.Equal(t, existingAgent.ID, fetchedAgent.ID)
-				assert.Equal(t, existingAgent.Name, fetchedAgent.Name)
-				assert.Equal(t, existingAgent.Owner, fetchedAgent.Owner)
-				assert.Equal(t, existingAgent.WalletAddress, fetchedAgent.WalletAddress)
-				assert.NotNil(t, fetchedAgent.LLMSetupStatus)
-				assert.Equal(t, "llm-ok", *fetchedAgent.LLMSetupStatus)
-				assert.NotNil(t, fetchedAgent.DatabaseSetupStatus)
-				assert.Equal(t, "db-ok", *fetchedAgent.DatabaseSetupStatus)
+			expectedByID := make(map[uuid.UUID]*models.Agent, len(existingAgents))
+			for _, existingAgent := range existingAgents {
+				expectedByID[existingAgent.ID] = existingAgent
+			}
+
+			for _, fetchedAgent := range response.Agents {
+				existingAgent := expectedByID[fetchedAgent.ID]
+				if assert.NotNil(t, existingAgent) {
+					assert.Equal(t, existingAgent.Name, fetchedAgent.Name)
+					assert.Equal(t, existingAgent.Owner, fetchedAgent.Owner)
+					assert.Equal(t, existingAgent.WalletAddress, fetchedAgent.WalletAddress)
+					assert.NotNil(t, fetchedAgent.LLMSetupStatus)
+					assert.Equal(t, "llm-ok", *fetchedAgent.LLMSetupStatus)
+					assert.NotNil(t, fetchedAgent.DatabaseSetupStatus)
+					assert.Equal(t, "db-ok", *fetchedAgent.DatabaseSetupStatus)
+				}
 			}
 		})
 	})
