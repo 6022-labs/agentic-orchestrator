@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	orchestrator_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_gateway_host/settings"
 	"github.com/gofiber/fiber/v2"
@@ -21,7 +20,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	config, err := orchestrator_configurations.LoadKoanfConfig()
+	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}

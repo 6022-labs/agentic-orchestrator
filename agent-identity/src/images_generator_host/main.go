@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	images_generator_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/images_generator/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/images_generator_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/images_generator_host/settings"
 
@@ -19,7 +18,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	config, err := images_generator_configurations.LoadKoanfConfig()
+	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}

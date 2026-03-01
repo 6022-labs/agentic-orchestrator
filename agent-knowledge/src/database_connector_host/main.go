@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	database_connector_configurations "github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector_host/settings"
 	"github.com/gofiber/fiber/v2"
@@ -18,7 +17,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	config, err := database_connector_configurations.LoadKoanfConfig()
+	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}

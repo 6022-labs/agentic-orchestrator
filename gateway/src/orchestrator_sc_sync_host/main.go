@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	orchestrator_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator_sc_sync_host/settings"
@@ -20,7 +19,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	config, err := orchestrator_configurations.LoadKoanfConfig()
+	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}

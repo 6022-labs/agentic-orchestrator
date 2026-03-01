@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	compute_configurations "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_host/settings"
 	"github.com/gofiber/fiber/v2"
@@ -18,7 +17,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	config, err := compute_configurations.LoadKoanfConfig()
+	config, err := configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}
