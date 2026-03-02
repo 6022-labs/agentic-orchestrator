@@ -40,7 +40,7 @@ Orchestrate customer request resolution by coordinating expert agents.
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }} ({{ .EnsDomain }}): {{ .Mission }}
+• {{ .Name }} ({{ .EnsDomain }}): {{ Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -71,8 +71,24 @@ Confidence level (1-10)?
 • If ≥ 8 and all key info gathered: Write :end:
 • If < 8: Continue gathering
 
+Step 4 - Stop Conditions (Check All):
+STOP if ANY of these conditions are TRUE:
+
+❌ HARD STOPS (Immediate exit):
+• Message count ≥ limit (track message exchanges)
+• Conversation is circular (same questions asked twice)
+• Conflicting expert opinions without resolution path
+
+⚠️ SOFT STOPS (Stop only if confidence ≥ 7):
+• All available experts have participated at least once
+• Solution confidence reached ≥ 8/10
+• Customer question fully answered with no ambiguity
+• No new information gathered in last 2 exchanges
+
 Rules:
-• Maximum 3 expert calls before concluding
+• Track which experts have been called
+• Note message count per exchange
+• Identify circular patterns (identical questions = stop)
 • Cross-check conflicting information
 • Don't repeat what's already known
 ```
@@ -117,7 +133,7 @@ Context:
 Participants:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ .Mission }}
+• {{ .Name }}: {{ Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -262,7 +278,7 @@ Coordinate technical issue resolution through expert agents.
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ .Mission }}
+• {{ .Name }}: {{ Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -293,6 +309,26 @@ Step 3 - Decide:
 If solution found with confidence ≥ 8/10: Write :end:
 If escalation needed: Tag human agent
 Otherwise: Continue investigation
+
+Step 4 - Stop Conditions (Check All):
+STOP if ANY of these conditions are TRUE:
+
+❌ HARD STOPS (Immediate escalation):
+• Message count ≥ limit
+• No consensus among experts (contradictory advice)
+• Issue appears to be beyond current scope
+• Investigation has become repetitive
+
+⚠️ SOFT STOPS (Stop if confidence ≥ 8):
+• Root cause identified
+• All relevant experts have participated at least once
+• Solution tested and validated
+• No new diagnostic information in last 2 exchanges
+
+🔄 MAINTENANCE:
+• Avoid circular investigations (document already-asked questions)
+• Escalate if human expertise required
+• Summary every 3 exchanges
 ```
 
 ### Facilitator - Conclude
