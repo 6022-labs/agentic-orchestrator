@@ -1,0 +1,20 @@
+package configuration
+
+func Register{{EventName}}(container *dig.Container) error {
+    if err := container.Provide(
+        New{{EventName}}Provider,
+        dig.As(new(interfaces.{{EventName}}SubscriptionProviderInterface)),
+    ); err != nil {
+        return err
+    }
+
+    if err := container.Provide(
+        New{{EventName}}Listener,
+        dig.Group("event_listeners"),
+        dig.As(new(interfaces.EventListenerInterface)),
+    ); err != nil {
+        return err
+    }
+
+    return nil
+}

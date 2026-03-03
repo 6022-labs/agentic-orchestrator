@@ -1,0 +1,23 @@
+package listeners
+
+type {{EventName}}Listener struct {
+    provider interfaces.{{EventName}}SubscriptionProviderInterface
+    sink     interfaces.{{EventName}}SinkInterface
+    errCh    chan error
+}
+
+func (l *{{EventName}}Listener) SubscribeAll(scopes []{{ScopeType}}) error {
+    for _, scope := range scopes {
+        if err := l.subscribe(scope); err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+func (l *{{EventName}}Listener) Listen() error {
+    for err := range l.errCh {
+        return err
+    }
+    return nil
+}

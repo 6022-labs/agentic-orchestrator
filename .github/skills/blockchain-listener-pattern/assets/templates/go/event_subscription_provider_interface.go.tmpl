@@ -1,0 +1,5 @@
+package interfaces
+
+type {{EventName}}SubscriptionProviderInterface interface {
+    Start{{EventName}}Subscription(scope {{ScopeType}}, out chan<- *{{EventType}}) ({{SubscriptionType}}, error)
+}
