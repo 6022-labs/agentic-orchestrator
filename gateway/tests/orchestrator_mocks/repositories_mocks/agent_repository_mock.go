@@ -88,19 +88,19 @@ func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByCollectionAddressAndCol
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByCollectionAddressAndCollectionTokenId), collectionAddress, collectionTokenId)
 }
 
-// GetByEnsDomain mocks base method.
-func (m *MockAgentRepositoryInterface) GetByEnsDomain(ensDomain string) (*models.Agent, error) {
+// GetMintedByEnsDomain mocks base method.
+func (m *MockAgentRepositoryInterface) GetMintedByEnsDomain(ensDomain string) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEnsDomain", ensDomain)
+	ret := m.ctrl.Call(m, "GetMintedByEnsDomain", ensDomain)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByEnsDomain indicates an expected call of GetByEnsDomain.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByEnsDomain(ensDomain any) *gomock.Call {
+// GetMintedByEnsDomain indicates an expected call of GetMintedByEnsDomain.
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetMintedByEnsDomain(ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEnsDomain", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByEnsDomain), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedByEnsDomain", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetMintedByEnsDomain), ensDomain)
 }
 
 // GetByEnsDomains mocks base method.

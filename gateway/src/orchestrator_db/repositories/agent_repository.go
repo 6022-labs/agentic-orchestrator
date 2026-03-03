@@ -128,10 +128,10 @@ func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionA
 	return agent, nil
 }
 
-func (r *AgentRepository) GetByEnsDomain(ensDomain string) (*models.Agent, error) {
+func (r *AgentRepository) GetMintedByEnsDomain(ensDomain string) (*models.Agent, error) {
 	agent := &models.Agent{}
 
-	tx := r.client.GetDB().Where("ens_domain = ?", ensDomain).First(agent)
+	tx := r.client.GetDB().Where("ens_domain = ? AND collection_token_id IS NOT NULL", ensDomain).First(agent)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

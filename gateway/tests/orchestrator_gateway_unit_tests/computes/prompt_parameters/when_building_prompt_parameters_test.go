@@ -84,7 +84,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 			agent := model_builders.NewAgentBuilder().Build()
 
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain(agent.EnsDomain).Return(agent, nil)
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain(agent.EnsDomain).Return(agent, nil)
 
 			base := map[string]any{
 				"target":      agent.EnsDomain,
@@ -188,7 +188,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 			pt := interfaces.PromptParameterTypeAgent
 			agent := model_builders.NewAgentBuilder().Build()
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain(agent.EnsDomain).Return(agent, nil)
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain(agent.EnsDomain).Return(agent, nil)
 
 			suite.sut.WithParam([]string{"target"}, agent.EnsDomain, &pt)
 			out, err := suite.sut.Build()
@@ -259,7 +259,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			suite := WhenBuildingPromptParametersBeforeEach(t)
 
 			ens := "missing.eth"
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain(ens).Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain(ens).Return(nil, gorm.ErrRecordNotFound)
 
 			suite.sut.WithBase(map[string]any{
 				"target":      ens,
@@ -278,7 +278,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 			suite := WhenBuildingPromptParametersBeforeEach(t)
 			ens := "err.eth"
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain(ens).Return(nil, errors.New("db down"))
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain(ens).Return(nil, errors.New("db down"))
 
 			suite.sut.WithBase(map[string]any{
 				"target":      ens,
@@ -389,7 +389,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			suite := WhenBuildingPromptParametersBeforeEach(t)
 
 			agent := model_builders.NewAgentBuilder().Build()
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain(agent.EnsDomain).Return(agent, nil)
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain(agent.EnsDomain).Return(agent, nil)
 
 			suite.sut.WithBase(map[string]any{
 				"pot":      agent.EnsDomain,
@@ -415,7 +415,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 			suite := WhenBuildingPromptParametersBeforeEach(t)
 
-			suite.agentRepositoryMock.EXPECT().GetByEnsDomain("ghost.eth").Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.EXPECT().GetMintedByEnsDomain("ghost.eth").Return(nil, gorm.ErrRecordNotFound)
 
 			suite.sut.WithBase(map[string]any{
 				"pot":      "ghost.eth",

@@ -25,7 +25,7 @@ type AgentRepositoryInterface interface {
 	Remove(agent *models.Agent) error
 	GetById(id uuid.UUID) (*models.Agent, error)
 	GetByWalletAddress(walletAddress string) (*models.Agent, error)
-	GetByEnsDomain(ensDomain string) (*models.Agent, error)
+	GetMintedByEnsDomain(ensDomain string) (*models.Agent, error)
 	GetByEnsDomains(ensDomains []string) ([]*models.Agent, error)
 	GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error)
 	GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress string, walletAddress string) (*models.Agent, error)

@@ -152,7 +152,7 @@ func (b *PromptParametersBuilder) resolveAgentParameter(target map[string]any, b
 		return fmt.Errorf("expected string value for agent, got %T", value)
 	}
 
-	agent, err := b.agentRepository.GetByEnsDomain(strVal)
+	agent, err := b.agentRepository.GetMintedByEnsDomain(strVal)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return fmt.Errorf("failed to get agent by ENS domain: %w", err)
 	}
@@ -199,7 +199,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(target map[stri
 		return fmt.Errorf("expected string value for potential agent, got %T", value)
 	}
 
-	agent, err := b.agentRepository.GetByEnsDomain(strVal)
+	agent, err := b.agentRepository.GetMintedByEnsDomain(strVal)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return fmt.Errorf("failed to get potential agent by ENS domain: %w", err)
 	}
