@@ -1,6 +1,6 @@
 module github.com/6022-labs/agentic-orchestrator/agent-identity
 
-go 1.24.3
+go 1.25.5
 
 require (
 	github.com/chromedp/chromedp v0.10.0
