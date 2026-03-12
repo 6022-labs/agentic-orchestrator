@@ -1,0 +1,55 @@
+package services
+
+import (
+	"errors"
+
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+)
+
+type TransferEventHandler struct {
+	logger          *zap.Logger
+	agentRepository repositories.AgentRepositoryInterface
+}
+
+func NewTransferEventHandler(
+	logger *zap.Logger,
+	agentRepository repositories.AgentRepositoryInterface,
+) *TransferEventHandler {
+	return &TransferEventHandler{
+		logger:          logger,
+		agentRepository: agentRepository,
+	}
+}
+
+func (handler *TransferEventHandler) Handle(event *abi.AgentCollectionV1Transfer) error {
+	handler.logger.Info("Handling Transfer event for collection",
+		zap.String("collectionAddress", event.Raw.Address.Hex()),
+		zap.Uint64("tokenId", event.TokenId.Uint64()),
+		zap.String("from", event.From.Hex()),
+		zap.String("to", event.To.Hex()),
+	)
+
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+		event.Raw.Address.Hex(),
+		event.TokenId.Uint64(),
+	)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("agent not found for transfer event")
+	}
+	if agent == nil {
+		return errors.New("agent not found for transfer event")
+	}
+
+	ownerHex := event.To.Hex()
+	agent.Owner = &ownerHex
+
+	_, err = handler.agentRepository.Save(agent)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
