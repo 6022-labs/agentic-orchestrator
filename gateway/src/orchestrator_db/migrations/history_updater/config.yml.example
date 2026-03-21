@@ -1,5 +1,0 @@
-connections:
-  - "host=host port=port user=user dbname=dbname password=password sslmode=disable"
-  - "host=host port=port user=user dbname=dbname password=password sslmode=disable"
-until: 3
-migrations_dir: ""

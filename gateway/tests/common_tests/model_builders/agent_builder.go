@@ -2,10 +2,9 @@ package model_builders
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/orchestrator/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-faker/faker/v4"
@@ -27,9 +26,6 @@ type AgentBuilder struct {
 	collectionAddress string
 	collectionTokenId *uint64
 	proposalId        *uint64
-	createdAt         time.Time
-	updatedAt         time.Time
-	deletedAt         *time.Time
 }
 
 func NewAgentBuilder() *AgentBuilder {
@@ -46,12 +42,6 @@ func NewAgentBuilder() *AgentBuilder {
 	owner := crypto.PubkeyToAddress(privateKey.PublicKey).String()
 	creator := owner
 
-	createdAtStr := faker.Date()
-	updatedAtStr := faker.Date()
-
-	createdAt, _ := time.Parse(time.RFC3339, createdAtStr)
-	updatedAt, _ := time.Parse(time.RFC3339, updatedAtStr)
-
 	return &AgentBuilder{
 		id:                id,
 		name:              name,
@@ -65,13 +55,10 @@ func NewAgentBuilder() *AgentBuilder {
 			"default": "QmTzQ1Z5b7g8d9f8e6c3b2a1c4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
 		},
 		attributes:        map[string]string{},
-		updatedAt:         updatedAt,
-		createdAt:         createdAt,
 		walletAddress:     common_tests.RandomEthAddress().Hex(),
 		proposalId:        &proposalId,
 		collectionTokenId: &collectionTokenId,
 		collectionAddress: common_tests.RandomEthAddress().Hex(),
-		deletedAt:         nil,
 	}
 }
 
@@ -145,23 +132,8 @@ func (b *AgentBuilder) WithWalletAddress(walletAddress string) *AgentBuilder {
 	return b
 }
 
-func (b *AgentBuilder) WithCreatedAt(createdAt time.Time) *AgentBuilder {
-	b.createdAt = createdAt
-	return b
-}
-
-func (b *AgentBuilder) WithUpdatedAt(updatedAt time.Time) *AgentBuilder {
-	b.updatedAt = updatedAt
-	return b
-}
-
-func (b *AgentBuilder) WithDeletedAt(deletedAt *time.Time) *AgentBuilder {
-	b.deletedAt = deletedAt
-	return b
-}
-
-func (b *AgentBuilder) Build() *models.Agent {
-	return &models.Agent{
+func (b *AgentBuilder) Build() *responses.AgentResponse {
+	return &responses.AgentResponse{
 		ID:                b.id,
 		Name:              b.name,
 		Role:              b.role,
@@ -175,8 +147,6 @@ func (b *AgentBuilder) Build() *models.Agent {
 		WalletAddress:     b.walletAddress,
 		ImportationStatus: b.importationStatus,
 		CollectionTokenId: b.collectionTokenId,
-		CreatedAt:         b.createdAt,
-		UpdatedAt:         b.updatedAt,
-		DeletedAt:         b.deletedAt,
+		CollectionAddress: b.collectionAddress,
 	}
 }

@@ -44,3 +44,17 @@ func (r *Token6022Requester) BalanceOf(account common.Address) (*big.Int, error)
 
 	return balanceOf, nil
 }
+
+func (r *Token6022Requester) Decimals() (*uint8, error) {
+	token6022, err := abi.NewToken6022(r.token6022Settings.SmartContractAddress, r.client)
+	if err != nil {
+		return nil, err
+	}
+
+	decimals, err := token6022.Decimals(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &decimals, nil
+}

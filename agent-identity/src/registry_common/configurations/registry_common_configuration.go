@@ -7,7 +7,17 @@ import (
 
 func AddRegistryCommonConfiguration(container *dig.Container) {
 	// Settings
-	err := container.Provide(settings.NewOrchestratorSettings)
+	err := container.Provide(settings.NewBlockchainSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewAgentCollectionSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewOrchestratorSettings)
 	if err != nil {
 		panic(err)
 	}

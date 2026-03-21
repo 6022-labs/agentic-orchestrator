@@ -15,7 +15,6 @@ import CreateAgentCollectionDialog from "./dialogs/create-agent-collection-dialo
 import SetupAgentLLMSettingsDialog from "./dialogs/setup-agent-llm-settings-dialog";
 import CreateAgentMCPConnectionDialog from "./dialogs/create-agent-mcp-connection-dialog";
 import AddMessageToAgentContextDialog from "./dialogs/add-message-to-agent-context-dialog";
-import AgentImportationThirdStepDialog from "./dialogs/agent-importation-third-step-dialog";
 import { TransferAgentDialogContextProvider } from "./contexts/transfer-agent-dialog-context";
 import { AgentContextsDialogContextProvider } from "./contexts/agent-contexts-dialog-context";
 import { AgentMCPConnectionsDialogContextProvider } from "./contexts/agent-mcp-connections-dialog-context";
@@ -28,9 +27,7 @@ import { CreateAgentCollectionDialogContextProvider } from "./contexts/create-ag
 import { SetupAgentLLMSettingsDialogContextProvider } from "./contexts/setup-agent-llm-settings-dialog-context";
 import { CreateAgentMCPConnectionDialogContextProvider } from "./contexts/create-agent-mcp-connection-dialog-context";
 import { AddMessageToAgentContextDialogContextProvider } from "./contexts/add-message-to-agent-context-dialog-context";
-import { AgentImportationThirdStepDialogContextProvider } from "./contexts/agent-importation-third-step-dialog-context";
 import { SetupAgentDatabaseSettingsFirstStepDialogContextProvider } from "./contexts/setup-agent-database-settings-first-step-dialog-context";
-// import { AgentImportationSecondStepDialogContextProvider } from "./contexts/agent-importation-second-step-dialog-context";
 
 export default function DashboardAgents() {
   return (
@@ -38,9 +35,7 @@ export default function DashboardAgents() {
       <CreateAgentCollectionDialogContextProvider>
         <CreateAgentFirstStepDialogContextProvider>
           <TransferAgentDialogContextProvider>
-            {/* <AgentImportationSecondStepDialogContextProvider> */}
-            <AgentImportationThirdStepDialogContextProvider>
-              <UpdateAgentPromptDialogContextProvider>
+            <UpdateAgentPromptDialogContextProvider>
                 <AgentContextsDialogContextProvider>
                   <CreateAgentContextDialogContextProvider>
                     <AddMessageToAgentContextDialogContextProvider>
@@ -57,7 +52,6 @@ export default function DashboardAgents() {
                                     <div className="flex flex-row items-center gap-2">
                                       <CreateAgentCollectionDialog />
                                       <CreateAgentFirstStepDialog />
-                                      <AgentImportationThirdStepDialog />
                                       <UpdateAgentPromptDialog />
                                       <CreateAgentContextDialog />
                                       <AddMessageToAgentContextDialog />
@@ -105,9 +99,7 @@ export default function DashboardAgents() {
                   </CreateAgentContextDialogContextProvider>
                 </AgentContextsDialogContextProvider>
               </UpdateAgentPromptDialogContextProvider>
-            </AgentImportationThirdStepDialogContextProvider>
           </TransferAgentDialogContextProvider>
-          {/* <AgentImportationSecondStepDialogContextProvider> */}
         </CreateAgentFirstStepDialogContextProvider>
       </CreateAgentCollectionDialogContextProvider>
     </AgentDashboardContextProvider>

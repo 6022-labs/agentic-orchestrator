@@ -28,6 +28,7 @@ services:
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
       - AGENT_COMPUTE_BASE_URL=http://agent-compute-host:5000
       - AGENT_DATABASE_CONNECTOR_BASE_URL=http://agent-database-connector-host:5000
+      - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
       - IMAGE_GENERATOR_BASE_URL=http://images-generator-host:5000
       - IPFS_NODE_HTTP_URL=http://kubo:5001
       - SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
@@ -51,6 +52,8 @@ services:
       images-generator-host:
         condition: service_started
       slack-bridge-internal-host:
+        condition: service_started
+      registry-host:
         condition: service_started
 
   sc-watcher-host:
@@ -100,12 +103,18 @@ services:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
       - VAULT_KV_V1_MOUNT_PATH=secret
+      - AGENT_KNOWLEDGE_BASE_URL=http://agent-database-connector-host:5000
+      - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
     networks:
       orchestrator-network:
     depends_on:
       db:
         condition: service_healthy
       vault:
+        condition: service_started
+      agent-database-connector-host:
+        condition: service_started
+      registry-host:
         condition: service_started
 
   agent-database-connector-host:
@@ -128,6 +137,36 @@ services:
       db:
         condition: service_healthy
       vault:
+        condition: service_started
+
+  registry-host:
+    build:
+      context: ./agent-identity
+      dockerfile: ./src/registry_host/Dockerfile
+    container_name: orchestrator-registry-host
+    ports:
+      - "5005:5000"
+    environment:
+      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - API_PORT=5000
+      - APP_NAME=AgenticAI-Orchestrator-Agent-Identity-Registry-API
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
+      - VAULT_KV_V1_MOUNT_PATH=secret
+      - CHAIN_ID=80002
+      - RPC_NODE_WS_URL=ws://evm-node:8545
+      - RPC_NODE_HTTP_URL=http://evm-node:8545
+      - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
+      - IPFS_NODE_HTTP_URL=http://kubo:5001
+      - IMAGE_GENERATOR_BASE_URL=http://images-generator-host:5000
+    networks:
+      orchestrator-network:
+    depends_on:
+      db:
+        condition: service_healthy
+      vault:
+        condition: service_started
+      evm-node:
         condition: service_started
 
   images-generator-host:
@@ -168,6 +207,7 @@ services:
       - SLACK_BOT_TOKEN=xoxb-change-me
       - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
       - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
+      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
     networks:
       orchestrator-network:
     depends_on:
@@ -176,6 +216,8 @@ services:
       redis:
         condition: service_started
       vault:
+        condition: service_started
+      agent-compute-host:
         condition: service_started
 
   slack-bridge-external-host:
@@ -202,6 +244,7 @@ services:
       - SLACK_BOT_TOKEN=xoxb-change-me
       - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
       - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
+      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
       - ORCHESTRATOR_FRONT_BASE_URL=http://web-ui:3000
     networks:
       orchestrator-network:

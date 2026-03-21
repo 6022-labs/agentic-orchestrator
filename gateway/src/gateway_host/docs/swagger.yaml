@@ -1,0 +1,1360 @@
+basePath: /
+definitions:
+  enums.AgentContextMessagePlatform:
+    enum:
+    - none
+    - slack
+    type: string
+    x-enum-varnames:
+    - AgentContextMessagePlatformNone
+    - AgentContextMessagePlatformSlack
+  enums.AgentContextMessageRole:
+    enum:
+    - user
+    - system
+    - assistant
+    type: string
+    x-enum-varnames:
+    - AgentContextMessageRoleUser
+    - AgentContextMessageRoleSystem
+    - AgentContextMessageRoleAssistant
+  enums.AgentImportationStatus:
+    enum:
+    - first-step
+    - second-step
+    - third-step
+    - finished
+    type: string
+    x-enum-varnames:
+    - AgentImportationStatusFirstStep
+    - AgentImportationStatusSecondStep
+    - AgentImportationStatusThirdStep
+    - AgentImportationStatusFinished
+  enums.AgentPromptTemplateKey:
+    enum:
+    - clone-system
+    - clone-default
+    - facilitator-system
+    - facilitator-default
+    - facilitator-conclude
+    - expert-system
+    - expert-context-found
+    - expert-context-not-found
+    type: string
+    x-enum-varnames:
+    - AgentPromptTemplateKeyCloneSystem
+    - AgentPromptTemplateKeyCloneDefault
+    - AgentPromptTemplateKeyFacilitatorSystem
+    - AgentPromptTemplateKeyFacilitatorDefault
+    - AgentPromptTemplateKeyFacilitatorConclude
+    - AgentPromptTemplateKeyExpertSystem
+    - AgentPromptTemplateKeyExpertContextFound
+    - AgentPromptTemplateKeyExpertContextNotFound
+  enums.AgentRole:
+    enum:
+    - clone
+    - human
+    - expert
+    - facilitator
+    type: string
+    x-enum-varnames:
+    - AgentRoleClone
+    - AgentRoleHuman
+    - AgentRoleExpert
+    - AgentRoleFacilitator
+  enums.DatabaseConnectionDriver:
+    enum:
+    - mysql
+    - mariadb
+    - postgres
+    - sqlserver
+    type: string
+    x-enum-varnames:
+    - DatabaseConnectionDriverMySQL
+    - DatabaseConnectionDriverMariaDB
+    - DatabaseConnectionDriverPostgres
+    - DatabaseConnectionDriverSQLServer
+  enums.LLMConnectionPlatform:
+    enum:
+    - x
+    - mistral
+    - open-ai
+    - libert-ai
+    - ollama
+    - deepseek
+    - anthropic
+    - amazon-bedrock
+    type: string
+    x-enum-comments:
+      LLMConnectionPlatformX: Twitter
+    x-enum-varnames:
+    - LLMConnectionPlatformX
+    - LLMConnectionPlatformMistral
+    - LLMConnectionPlatformOpenAI
+    - LLMConnectionPlatformLibertAI
+    - LLMConnectionPlatformOllama
+    - LLMConnectionPlatformDeepseek
+    - LLMConnectionPlatformAnthropic
+    - LLMConnectionPlatformAmazonBedrock
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  requests.AddMessageToAgentContextRequest:
+    properties:
+      message:
+        type: string
+      role:
+        $ref: '#/definitions/enums.AgentContextMessageRole'
+    type: object
+  requests.AgentByCollectionTokenIdRequest:
+    type: object
+  requests.AgentByIdRequest:
+    properties:
+      agentId:
+        type: string
+    type: object
+  requests.AgentComputeConversationContextAgentRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+    type: object
+  requests.AgentComputeConversationContextRequest:
+    properties:
+      agents:
+        items:
+          $ref: '#/definitions/requests.AgentComputeConversationContextAgentRequest'
+        type: array
+      id:
+        type: string
+    type: object
+  requests.AgentComputeInputRequest:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  requests.AgentComputeRequest:
+    properties:
+      conversationContext:
+        $ref: '#/definitions/requests.AgentComputeConversationContextRequest'
+      forceConclusion:
+        type: boolean
+      inputs:
+        items:
+          $ref: '#/definitions/requests.AgentComputeInputRequest'
+        type: array
+      platform:
+        $ref: '#/definitions/enums.AgentContextMessagePlatform'
+      promptParameters:
+        additionalProperties: {}
+        type: object
+    type: object
+  requests.CreateAgentContextRequest:
+    properties:
+      key:
+        type: string
+    type: object
+  requests.FinishJwtAuthenticationRequest:
+    properties:
+      message:
+        type: string
+      signature:
+        type: string
+    type: object
+  requests.InitializeJwtAuthenticationRequest:
+    properties:
+      address:
+        type: string
+    type: object
+  requests.ListAgentContextKeysSortBy:
+    enum:
+    - key
+    type: string
+    x-enum-varnames:
+    - ListAgentContextKeysSortByKey
+  requests.ListAgentSortBy:
+    enum:
+    - name
+    - owner
+    - createdAt
+    - walletAddress
+    - collectionAddress
+    type: string
+    x-enum-varnames:
+    - ListAgentSortByName
+    - ListAgentSortByOwner
+    - ListAgentSortByCreatedAt
+    - ListAgentSortByWalletAddress
+    - ListAgentSortByCollectionAddress
+  requests.SaveAgentPromptTemplateRequest:
+    properties:
+      content:
+        type: string
+      key:
+        $ref: '#/definitions/enums.AgentPromptTemplateKey'
+    type: object
+  requests.SetupAgentDatabaseSettingsFirstStepRequest:
+    properties:
+      driver:
+        $ref: '#/definitions/enums.DatabaseConnectionDriver'
+      host:
+        type: string
+      port:
+        type: integer
+    type: object
+  requests.SetupAgentLLMSettingsRequest:
+    properties:
+      amazonPlatformRegion:
+        type: string
+      apiKey:
+        type: string
+      baseUrl:
+        type: string
+      model:
+        type: string
+      platform:
+        $ref: '#/definitions/enums.LLMConnectionPlatform'
+    type: object
+  requests.SortDirection:
+    enum:
+    - asc
+    - desc
+    type: string
+    x-enum-varnames:
+    - SortDirectionAsc
+    - SortDirectionDesc
+  requests.VerifyWalletForBridgeRequest:
+    properties:
+      challenge:
+        type: string
+      platform:
+        $ref: '#/definitions/enums.AgentContextMessagePlatform'
+      signature:
+        type: string
+    type: object
+  responses.AgentCollectionResponse:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+      symbol:
+        type: string
+    type: object
+  responses.AgentComputeResponses:
+    properties:
+      isFinal:
+        type: boolean
+      responses:
+        items:
+          type: string
+        type: array
+    type: object
+  responses.AgentResponse:
+    properties:
+      attributes:
+        additionalProperties:
+          type: string
+        type: object
+      cloneOf:
+        type: integer
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      creator:
+        type: string
+      databaseSetupStatus:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      images:
+        additionalProperties:
+          type: string
+        type: object
+      importationStatus:
+        $ref: '#/definitions/enums.AgentImportationStatus'
+      isInternal:
+        type: boolean
+      isSetupCompleted:
+        type: boolean
+      llmSetupStatus:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      proposalId:
+        type: integer
+      role:
+        $ref: '#/definitions/enums.AgentRole'
+      walletAddress:
+        type: string
+    type: object
+  responses.CreateAgentSecondStepResponse:
+    properties:
+      nonce:
+        type: string
+      signature:
+        type: string
+      signer:
+        type: string
+    type: object
+  responses.ExportAgentResponse:
+    properties:
+      privateKey:
+        type: string
+    type: object
+  responses.FinishJwtAuthenticationResponse:
+    properties:
+      jwt:
+        type: string
+    type: object
+  responses.GetAgentLLMSettingsResponse:
+    properties:
+      baseUrl:
+        type: string
+      model:
+        type: string
+      platform:
+        $ref: '#/definitions/enums.LLMConnectionPlatform'
+    type: object
+  responses.InitializeJwtAuthenticationResponse:
+    properties:
+      nonce:
+        type: string
+    type: object
+  responses.IsInternalAgentResponse:
+    properties:
+      isInternalAgent:
+        type: boolean
+    type: object
+  responses.ListAgentsResponse:
+    properties:
+      agents:
+        items:
+          $ref: '#/definitions/responses.AgentResponse'
+        type: array
+      elementsPerPage:
+        type: integer
+      page:
+        type: integer
+      totalElements:
+        type: integer
+    type: object
+  responses.MCPConnectionResponse:
+    properties:
+      agentId:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      url:
+        type: string
+    type: object
+  responses.SetupAgentDatabaseSettingsFirstStepResponse:
+    properties:
+      databaseName:
+        type: string
+      databasePassword:
+        type: string
+      databaseUsername:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the API documentation for the Orchestrator.
+  title: Orchestrator Host
+  version: "1.0"
+paths:
+  /agent-collections:
+    get:
+      description: Retrieves all available agent collections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.AgentCollectionResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List agent collections
+      tags:
+      - agent-collections
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}:
+    get:
+      description: Retrieves details of a specific agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get agent information
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/compute:
+    post:
+      consumes:
+      - application/json
+      description: Runs the agent using the provided input
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: compute request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AgentComputeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentComputeResponses'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Compute agent response
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/context:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new context for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: context
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateAgentContextRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create agent context
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/context/{contextKey}/message:
+    post:
+      consumes:
+      - application/json
+      description: Appends a message to a specific agent context
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: context key
+        in: path
+        name: contextKey
+        required: true
+        type: string
+      - description: message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AddMessageToAgentContextRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Add message to agent context
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/contexts/keys:
+    get:
+      description: Returns all context keys for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - in: query
+        name: elementsPerPage
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: search
+        type: string
+      - enum:
+        - key
+        in: query
+        name: sortBy
+        type: string
+        x-enum-varnames:
+        - ListAgentContextKeysSortByKey
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: sortDirection
+        type: string
+        x-enum-varnames:
+        - SortDirectionAsc
+        - SortDirectionDesc
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List agent context keys
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/database/settings/first-step:
+    post:
+      consumes:
+      - application/json
+      description: Configures database credentials for the agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SetupAgentDatabaseSettingsFirstStepRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SetupAgentDatabaseSettingsFirstStepResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Setup agent database first step
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/database/settings/second-step:
+    post:
+      consumes:
+      - application/json
+      description: Applies database settings to the agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: agent
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AgentByCollectionTokenIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Finalize agent database setup
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/export:
+    post:
+      consumes:
+      - application/json
+      description: Exports the agent in a portable format
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ExportAgentResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Export agent data
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal:
+    get:
+      description: Returns true if the agent is managed internally
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.IsInternalAgentResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Check if agent is internal
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/llm/settings:
+    get:
+      description: Retrieves the LLM configuration for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GetAgentLLMSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get agent LLM settings
+      tags:
+      - agent
+    post:
+      consumes:
+      - application/json
+      description: Sets up the LLM parameters for the agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SetupAgentLLMSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Configure agent LLM settings
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connection:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new MCP connection for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create agent MCP connection
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connection/{mcpConnectionId}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a specific MCP connection for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: mcp connection id
+        in: path
+        name: mcpConnectionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Remove agent MCP connection
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connections:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the MCP connections for a specific agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MCPConnectionResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List agent MCP connections
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key}:
+    get:
+      description: Retrieves a specific prompt template for an agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: template key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get agent prompt template
+      tags:
+      - agent
+    post:
+      consumes:
+      - application/json
+      description: Stores a prompt template for a given agent
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: template key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: template
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SaveAgentPromptTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Save agent prompt template
+      tags:
+      - agent
+  /agent/create/first-step:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload agent image and create agent metadata
+      parameters:
+      - description: only for clone agents
+        in: formData
+        name: cloneOfAgentId
+        type: integer
+      - in: formData
+        name: collectionAddress
+        type: string
+      - in: formData
+        name: mission
+        type: string
+      - in: formData
+        name: name
+        type: string
+      - enum:
+        - clone
+        - human
+        - expert
+        - facilitator
+        in: formData
+        name: role
+        type: string
+        x-enum-varnames:
+        - AgentRoleClone
+        - AgentRoleHuman
+        - AgentRoleExpert
+        - AgentRoleFacilitator
+      - description: only for human agents
+        in: formData
+        name: walletAddress
+        type: string
+      - description: agent image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Start agent creation
+      tags:
+      - agent
+  /agent/create/second-step:
+    post:
+      consumes:
+      - application/json
+      description: Completes the agent creation process
+      parameters:
+      - description: agent id
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AgentByIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CreateAgentSecondStepResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Finish agent creation
+      tags:
+      - agent
+  /agents:
+    get:
+      description: Returns all agents managed by the orchestrator
+      parameters:
+      - in: query
+        name: elementsPerPage
+        type: integer
+      - in: query
+        name: isInternal
+        type: boolean
+      - in: query
+        name: page
+        type: integer
+      - enum:
+        - name
+        - owner
+        - createdAt
+        - walletAddress
+        - collectionAddress
+        in: query
+        name: sortBy
+        type: string
+        x-enum-varnames:
+        - ListAgentSortByName
+        - ListAgentSortByOwner
+        - ListAgentSortByCreatedAt
+        - ListAgentSortByWalletAddress
+        - ListAgentSortByCollectionAddress
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: sortDirection
+        type: string
+        x-enum-varnames:
+        - SortDirectionAsc
+        - SortDirectionDesc
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ListAgentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List agents
+      tags:
+      - agent
+  /auth/jwt/finish:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the signed nonce and returns a JWT token
+      parameters:
+      - description: authentication request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.FinishJwtAuthenticationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FinishJwtAuthenticationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Complete JWT authentication
+      tags:
+      - authentication
+  /auth/jwt/init:
+    post:
+      consumes:
+      - application/json
+      description: Initializes the JWT authentication flow by returning a nonce
+      parameters:
+      - description: authentication request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.InitializeJwtAuthenticationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.InitializeJwtAuthenticationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Start JWT authentication
+      tags:
+      - authentication
+  /ping:
+    get:
+      description: Returns "pong" if the service is running
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Health check endpoint
+      tags:
+      - health
+  /wallet/verify-for-bridge:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Verify wallet ownership for platform bridge
+      parameters:
+      - description: wallet verification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.VerifyWalletForBridgeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: verify wallet for bridge
+      tags:
+      - wallet
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

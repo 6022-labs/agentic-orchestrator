@@ -7,5 +7,6 @@ import (
 )
 
 type Token6022RequesterInterface interface {
+	Decimals() (*uint8, error)
 	BalanceOf(account common.Address) (*big.Int, error)
 }

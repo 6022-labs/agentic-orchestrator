@@ -55,3 +55,18 @@ func (mr *MockToken6022RequesterInterfaceMockRecorder) BalanceOf(account any) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BalanceOf", reflect.TypeOf((*MockToken6022RequesterInterface)(nil).BalanceOf), account)
 }
+
+// Decimals mocks base method.
+func (m *MockToken6022RequesterInterface) Decimals() (*uint8, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Decimals")
+	ret0, _ := ret[0].(*uint8)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Decimals indicates an expected call of Decimals.
+func (mr *MockToken6022RequesterInterfaceMockRecorder) Decimals() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decimals", reflect.TypeOf((*MockToken6022RequesterInterface)(nil).Decimals))
+}

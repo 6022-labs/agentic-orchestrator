@@ -36,4 +36,11 @@ func AddRegistryBlockchainConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
+		return ethclient.Dial(rpcNodeSettings.ENSHttpUrl)
+	}, dig.Name("ens"))
+	if err != nil {
+		panic(err)
+	}
 }
