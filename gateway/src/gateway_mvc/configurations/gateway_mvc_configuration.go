@@ -71,15 +71,6 @@ func AddGatewayMvcConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		orchestrator_gateway_mvc.NewExportAgentController,
-		dig.Group("controllers"),
-		dig.As(new(orchestrator_gateway_mvc.ControllerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		orchestrator_gateway_mvc.NewWalletController,
 		dig.Group("controllers"),
 		dig.As(new(orchestrator_gateway_mvc.ControllerInterface)),

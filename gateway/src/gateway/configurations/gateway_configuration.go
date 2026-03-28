@@ -257,14 +257,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewExportAgent,
-		dig.As(new(use_cases.ExportAgentInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		use_cases.NewIsInternalAgent,
 		dig.As(new(use_cases.IsInternalAgentInterface)),
 	)

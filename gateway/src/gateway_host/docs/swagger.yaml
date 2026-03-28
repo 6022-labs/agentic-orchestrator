@@ -311,11 +311,6 @@ definitions:
       signer:
         type: string
     type: object
-  responses.ExportAgentResponse:
-    properties:
-      privateKey:
-        type: string
-    type: object
   responses.FinishJwtAuthenticationResponse:
     properties:
       jwt:
@@ -720,42 +715,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Finalize agent database setup
-      tags:
-      - agent
-  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/export:
-    post:
-      consumes:
-      - application/json
-      description: Exports the agent in a portable format
-      parameters:
-      - description: collection address
-        in: path
-        name: agentCollectionAddress
-        required: true
-        type: string
-      - description: token id
-        in: path
-        name: agentCollectionTokenId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ExportAgentResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Export agent data
       tags:
       - agent
   /agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal:
