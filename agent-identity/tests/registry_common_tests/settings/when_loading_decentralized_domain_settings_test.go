@@ -22,4 +22,25 @@ func TestWhenLoadingDecentralizedDomainNameProviderSettings(t *testing.T) {
 		assert.NotNil(t, settings)
 		assert.Equal(t, "eth", settings.DomainExtension)
 	})
+
+	t.Run("Loads settings with default domain extension when empty", func(t *testing.T) {
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]interface{}{
+			"decentralized_domain_name_provider.domain_extension": "",
+		}, "."), nil)
+
+		settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+
+		assert.NotNil(t, settings)
+		assert.Equal(t, "eth", settings.DomainExtension)
+	})
+
+	t.Run("Loads settings with default domain extension when not set", func(t *testing.T) {
+		k := koanf.New(".")
+
+		settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+
+		assert.NotNil(t, settings)
+		assert.Equal(t, "eth", settings.DomainExtension)
+	})
 }
