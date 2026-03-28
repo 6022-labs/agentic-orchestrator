@@ -17,8 +17,6 @@ const (
 	GET_AGENT_ENDPOINT                = "/agent/:agentCollectionAddress/:agentCollectionTokenId"
 	AGENT_IS_INTERNAL_ENDPOINT        = "/agent/:agentCollectionAddress/:agentCollectionTokenId/is-internal"
 
-	AGENT_COMPUTE_ENDPOINT = "/agent/:agentCollectionAddress/:agentCollectionTokenId/compute"
-
 	GET_AGENT_PROMPT_TEMPLATE_ENDPOINT  = "/agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key"
 	SAVE_AGENT_PROMPT_TEMPLATE_ENDPOINT = "/agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key"
 
@@ -41,7 +39,6 @@ type AgentController struct {
 	logger                               *zap.Logger
 	getAgent                             use_cases.GetAgentInterface
 	listAgents                           use_cases.ListAgentsInterface
-	agentCompute                         use_cases.AgentComputeInterface
 	isInternalAgent                      use_cases.IsInternalAgentInterface
 	createAgentContext                   use_cases.CreateAgentContextInterface
 	getAgentLLMSettings                  use_cases.GetAgentLLMSettingsInterface
@@ -63,7 +60,6 @@ func NewAgentController(
 	logger *zap.Logger,
 	getAgent use_cases.GetAgentInterface,
 	listAgents use_cases.ListAgentsInterface,
-	agentCompute use_cases.AgentComputeInterface,
 	isInternalAgent use_cases.IsInternalAgentInterface,
 	createAgentContext use_cases.CreateAgentContextInterface,
 	getAgentLLMSettings use_cases.GetAgentLLMSettingsInterface,
@@ -84,7 +80,6 @@ func NewAgentController(
 		logger:                               logger,
 		getAgent:                             getAgent,
 		listAgents:                           listAgents,
-		agentCompute:                         agentCompute,
 		isInternalAgent:                      isInternalAgent,
 		createAgentContext:                   createAgentContext,
 		getAgentLLMSettings:                  getAgentLLMSettings,
@@ -108,7 +103,6 @@ func (controller *AgentController) InitAuthenticatedRoutes(app fiber.Router) {
 	app.Post(CREATE_AGENT_SECOND_STEP_ENDPOINT, controller.CreateAgentSecondStep)
 
 	app.Get(AGENT_IS_INTERNAL_ENDPOINT, controller.IsInternalAgent)
-	app.Post(AGENT_COMPUTE_ENDPOINT, controller.Compute)
 
 	app.Get(GET_AGENT_PROMPT_TEMPLATE_ENDPOINT, controller.GetAgentPromptTemplate)
 	app.Post(SAVE_AGENT_PROMPT_TEMPLATE_ENDPOINT, controller.SaveAgentPromptTemplate)
@@ -348,65 +342,6 @@ func (controller *AgentController) IsInternalAgent(c *fiber.Ctx) error {
 	}
 
 	controller.logger.Info("Successfully checked if agent is internal")
-	controller.logger.Debug("Response", zap.Any("response", response))
-
-	return c.JSON(response)
-}
-
-// Compute godoc
-// @Summary      Compute agent response
-// @Description  Runs the agent using the provided input
-// @Tags         agent
-// @Accept       json
-// @Produce      json
-// @Param        agentCollectionAddress path string true "collection address"
-// @Param        agentCollectionTokenId path string true "token id"
-// @Param        request body requests.AgentComputeRequest true "compute request"
-// @Success      200 {object} responses.AgentComputeResponses
-// @Failure      400 {object} errors.ValidationError
-// @Failure      500 {string} string "Internal Server Error"
-// @Security     BearerAuth
-// @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/compute [post]
-func (controller *AgentController) Compute(c *fiber.Ctx) error {
-	controller.logger.Info("Received request to compute agent")
-	controller.logger.Debug("Request",
-		zap.Any("body", c.Body()),
-		zap.Any("params", c.AllParams()),
-		zap.Any("queries", c.Queries()),
-		zap.Any("headers", c.GetReqHeaders()),
-	)
-
-	request := new(requests.AgentComputeRequest)
-	if err := c.BodyParser(request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
-		return err
-	}
-	if err := c.ParamsParser(request); err != nil {
-		controller.logger.Error("Failed to parse request parameters", zap.Error(err))
-		return err
-	}
-
-	authenticatedWallet, ok := c.Locals("authenticated-wallet").(common.Address)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-	}
-
-	request.AuthenticatedWallet = &authenticatedWallet
-
-	controller.logger.Debug("Parsed request", zap.Any("request", request))
-
-	response, err := controller.agentCompute.Compute(request)
-	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-
-		controller.logger.Error("Failed to compute agent responses", zap.Error(err))
-
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
-	}
-
-	controller.logger.Info("Successfully computed agent")
 	controller.logger.Debug("Response", zap.Any("response", response))
 
 	return c.JSON(response)

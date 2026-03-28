@@ -14,12 +14,14 @@ func TestWhenLoadingSlackBridgeHttpOrchestratorSettings(t *testing.T) {
 	t.Run("Loads settings", func(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
-			"orchestrator.api_base_url": "https://orchestrator.example.com/",
+			"orchestrator.api_base_url":               "https://orchestrator.example.com/",
+			"orchestrator.agent_compute_api_base_url": "https://agent-compute.example.com/",
 		}, "."), nil)
 
 		settings := orchestrator_settings.NewOrchestratorSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, "https://orchestrator.example.com", settings.ApiBaseUrl)
+		assert.Equal(t, "https://agent-compute.example.com", settings.AgentComputeApiBaseUrl)
 	})
 }

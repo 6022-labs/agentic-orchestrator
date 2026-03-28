@@ -2,7 +2,6 @@ package clients
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +10,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/settings"
-	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
@@ -57,7 +55,7 @@ func NewOrchestratorGatewayClient(
 
 func (c *OrchestratorGatewayClient) Completions(collectionAddress string, collectionTokenId uint64, body *models.ExternalAgentComputeRequest) (*models.ExternalAgentComputeResponses, error) {
 	endpoint := fmt.Sprintf(OrchestratorMainApiAgentsComputeEndpointTemplate, collectionAddress, collectionTokenId)
-	baseUrlWithEndpoint := fmt.Sprintf("%s%s", c.orchestratorSettings.ApiBaseUrl, endpoint)
+	baseUrlWithEndpoint := fmt.Sprintf("%s%s", c.orchestratorSettings.AgentComputeApiBaseUrl, endpoint)
 
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
@@ -69,18 +67,10 @@ func (c *OrchestratorGatewayClient) Completions(collectionAddress string, collec
 		return nil, err
 	}
 
-	// Prepare query and body for signature
-	queryBytes := []byte(request.URL.Query().Encode())
-	signature, err := c.addRequestSignature(queryBytes, bodyBytes)
-	if err != nil {
-		return nil, err
-	}
-
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-Agentic-Orchestrator-Signature", signature)
 
 	c.logger.Debug(
-		"Sending completions request to orchestrator",
+		"Sending completions request to agent-reasoning compute",
 		zap.String("url", baseUrlWithEndpoint),
 		zap.String("body", string(bodyBytes)),
 		zap.Any("header", request.Header),
@@ -97,7 +87,7 @@ func (c *OrchestratorGatewayClient) Completions(collectionAddress string, collec
 		bodyBytes, _ := io.ReadAll(response.Body)
 
 		c.logger.Warn(
-			"Failed to get completions from orchestrator",
+			"Failed to get completions from agent-reasoning compute",
 			zap.String("url", baseUrlWithEndpoint),
 			zap.Int("status_code", response.StatusCode),
 			zap.String("body", string(bodyBytes)),
@@ -176,24 +166,3 @@ func (c *OrchestratorGatewayClient) GetAgent(request *models.ExternalAgentByColl
 	return &agent, nil
 }
 
-func (c *OrchestratorGatewayClient) addRequestSignature(query, body []byte) (string, error) {
-	payload := append([]byte(query), body...)
-
-	privateKeyStr, err := c.orchestratorPrivateKeyFetcher.FetchPrivateKey()
-	if err != nil {
-		return "", err
-	}
-
-	privateKey, err := crypto.HexToECDSA(*privateKeyStr)
-	if err != nil {
-		return "", err
-	}
-
-	signature, err := c.ecdsaSignature.Sign(payload, privateKey)
-	if err != nil {
-		return "", err
-	}
-
-	encodedSignature := base64.StdEncoding.EncodeToString(signature)
-	return encodedSignature, nil
-}

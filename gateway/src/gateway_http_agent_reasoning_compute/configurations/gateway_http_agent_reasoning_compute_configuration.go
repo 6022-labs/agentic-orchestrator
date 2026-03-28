@@ -45,14 +45,6 @@ func AddGatewayHttpAgentReasoningComputeConfiguration(container *dig.Container) 
 		panic(err)
 	}
 
-	err = container.Provide(
-		http_agent_compute_services.NewLLMConnectionCompletionRequester,
-		dig.As(new(interfaces.LLMConnectionChatCompletionRequesterInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	// Http clients
 	err = container.Provide(func() *http.Client {
 		return http.DefaultClient

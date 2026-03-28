@@ -32,4 +32,13 @@ func AddComputeMvcConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(
+		compute_mvc.NewAgentComputeController,
+		dig.Group("controllers"),
+		dig.As(new(compute_mvc.ControllerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }

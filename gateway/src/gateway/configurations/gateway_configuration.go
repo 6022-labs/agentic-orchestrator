@@ -4,8 +4,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/jwt"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/signature"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/compute"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/compute/prompt_parameters"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
@@ -67,14 +65,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 	err = container.Provide(
 		services.NewMintSigner,
 		dig.As(new(interfaces.MintSignerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewPromptFromPromptTemplateParser,
-		dig.As(new(interfaces.PromptFromPromptTemplateParserInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -283,14 +273,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewAgentCompute,
-		dig.As(new(use_cases.AgentComputeInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		use_cases.NewCreateAgentMCPConnection,
 		dig.As(new(use_cases.CreateAgentMCPConnectionInterface)),
 	)
@@ -322,45 +304,4 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	// Prompt parameters
-	err = container.Provide(
-		prompt_parameters.NewPromptParameterBuilderFactory,
-		dig.As(new(interfaces.PromptParametersBuilderFactoryInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	// Compute strategies
-	err = container.Provide(
-		compute.NewHumanComputeStrategy,
-		dig.As(new(compute.HumanComputeStrategyInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		compute.NewFacilitatorComputeStrategy,
-		dig.As(new(compute.FacilitatorComputeStrategyInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		compute.NewExpertComputeStrategy,
-		dig.As(new(compute.ExpertComputeStrategyInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		compute.NewCloneComputeStrategy,
-		dig.As(new(compute.CloneComputeStrategyInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
 }

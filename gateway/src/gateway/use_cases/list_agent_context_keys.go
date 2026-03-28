@@ -5,7 +5,6 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/compute"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -71,8 +70,8 @@ func (c *ListAgentContextKeys) List(request *requests.ListAgentContextKeysReques
 
 	// Exclude context discovery contexts
 	agentContextsKeys = lo.Filter(agentContextsKeys, func(key string, _ int) bool {
-		return !strings.HasPrefix(key, compute.ConversationContextDiscoveryKeyPrefix) &&
-			key != compute.LegacyContextDiscoveryKey
+		return !strings.HasPrefix(key, "conversation-context-discovery") &&
+			key != "threading"
 	})
 
 	totalElements := uint(len(agentContextsKeys))
