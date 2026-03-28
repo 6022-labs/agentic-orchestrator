@@ -4,7 +4,6 @@ import (
 	gateway_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/configurations"
 	gateway_blockchain_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_blockchain/configurations"
 	gateway_host_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/settings"
-	gateway_http_agent_identity_images_generator_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_images_generator/configurations"
 	gateway_http_agent_identity_registry_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/configurations"
 	gateway_http_agent_knowledge_database_connector_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_knowledge_database_connector/configurations"
 	gateway_http_agent_reasoning_compute_configurations "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_reasoning_compute/configurations"
@@ -34,7 +33,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	gateway_http_platform_bridge_configurations.AddGatewayHttpPlatformBridgeConfiguration(container)
 	gateway_http_agent_reasoning_compute_configurations.AddGatewayHttpAgentReasoningComputeConfiguration(container)
 	gateway_http_agent_identity_registry_configurations.AddGatewayHttpAgentIdentityRegistryConfiguration(container)
-	gateway_http_agent_identity_images_generator_configurations.AddGatewayHttpAgentIdentityImagesGeneratorConfiguration(container)
 	gateway_http_agent_knowledge_database_connector_configurations.AddGatewayHttpAgentKnowledgeDatabaseConnectorConfiguration(container)
 
 	return container

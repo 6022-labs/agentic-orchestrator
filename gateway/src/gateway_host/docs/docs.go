@@ -700,62 +700,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/export": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Exports the agent in a portable format",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Export agent data",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ExportAgentResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal": {
             "get": {
                 "security": [
@@ -1955,14 +1899,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "signer": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.ExportAgentResponse": {
-            "type": "object",
-            "properties": {
-                "privateKey": {
                     "type": "string"
                 }
             }
