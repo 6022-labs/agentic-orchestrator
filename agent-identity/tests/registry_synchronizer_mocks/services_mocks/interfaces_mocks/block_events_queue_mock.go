@@ -168,16 +168,16 @@ func (mr *MockBlockEventsQueueInterfaceMockRecorder) Dequeue() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Dequeue", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).Dequeue))
 }
 
-// HandleBlockProcessed mocks base method.
-func (m *MockBlockEventsQueueInterface) HandleBlockProcessed(blockNumber uint64) error {
+// MarkBlockAsComplete mocks base method.
+func (m *MockBlockEventsQueueInterface) MarkBlockAsComplete(blockNumber uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HandleBlockProcessed", blockNumber)
+	ret := m.ctrl.Call(m, "MarkBlockAsComplete", blockNumber)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// HandleBlockProcessed indicates an expected call of HandleBlockProcessed.
-func (mr *MockBlockEventsQueueInterfaceMockRecorder) HandleBlockProcessed(blockNumber any) *gomock.Call {
+// MarkBlockAsComplete indicates an expected call of MarkBlockAsComplete.
+func (mr *MockBlockEventsQueueInterfaceMockRecorder) MarkBlockAsComplete(blockNumber any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleBlockProcessed", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).HandleBlockProcessed), blockNumber)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkBlockAsComplete", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).MarkBlockAsComplete), blockNumber)
 }

@@ -213,7 +213,9 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 			return fmt.Errorf("failed to enqueue agent collection v1 mint proposal removed events for block %d: %w", blockNumber, err)
 		}
 
-		b.blockEventsQueue.HandleBlockProcessed(blockNumber)
+		if err = b.blockEventsQueue.MarkBlockAsComplete(blockNumber); err != nil {
+			return fmt.Errorf("failed to mark block %d as complete: %w", blockNumber, err)
+		}
 	}
 
 	return nil

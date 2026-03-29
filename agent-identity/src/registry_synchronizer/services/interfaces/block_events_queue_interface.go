@@ -16,8 +16,6 @@ type QueueItem struct {
 }
 
 type BlockEventsQueueInterface interface {
-	BlockEventHandlerInterface
-
 	AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error
 	AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error
 	AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error
@@ -27,6 +25,8 @@ type BlockEventsQueueInterface interface {
 	AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error
 
 	AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error
+
+	MarkBlockAsComplete(blockNumber uint64) error
 
 	// Dequeue returns the next block to dequeue, ordered by block number ascending.
 	Dequeue() (uint64, *QueueItem)

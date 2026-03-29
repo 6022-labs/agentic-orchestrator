@@ -9,6 +9,38 @@ import (
 func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	// Services
 	err := container.Provide(
+		services.NewUniswapV3BlockEventsQueue,
+		dig.As(new(interfaces.BlockEventsQueueInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewBlockEventsProcessor,
+		dig.As(new(interfaces.BlockEventsProcessorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewBlockEventsGapEnqueuer,
+		dig.As(new(interfaces.BlockEventsGapEnqueuerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewBlockEventsDequeueDaemon,
+		dig.As(new(interfaces.BlockEventsDequeueDaemonInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewCollectionCreatedEventHandler,
 		dig.As(new(interfaces.CollectionCreatedEventHandlerInterface)),
 	)
