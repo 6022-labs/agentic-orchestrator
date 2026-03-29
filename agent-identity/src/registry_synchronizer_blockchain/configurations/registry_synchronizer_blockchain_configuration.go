@@ -22,6 +22,14 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 
 	// Services (requesters)
 	err = container.Provide(
+		services.NewBlockchainRequester,
+		dig.As(new(interfaces.BlockchainRequesterInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewAgentCollectionRequester,
 		dig.As(new(interfaces.AgentCollectionBlockchainRequesterInterface)),
 	)
