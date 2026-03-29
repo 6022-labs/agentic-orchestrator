@@ -6,6 +6,7 @@ import (
 	infra_factories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/factories"
 	infra_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
+	synchronizer_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
@@ -29,6 +30,14 @@ func AddRegistryCommonDbConfiguration(container *dig.Container) {
 	err = container.Provide(
 		infra_repositories.NewAgentCollectionRepository,
 		dig.As(new(repositories.AgentCollectionRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		infra_repositories.NewSyncCheckpointRepository,
+		dig.As(new(synchronizer_repositories.SyncCheckpointRepositoryInterface)),
 	)
 	if err != nil {
 		panic(err)

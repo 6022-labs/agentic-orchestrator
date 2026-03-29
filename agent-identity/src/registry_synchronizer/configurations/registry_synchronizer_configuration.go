@@ -3,12 +3,19 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"go.uber.org/dig"
 )
 
 func AddRegistrySynchronizerConfiguration(container *dig.Container) {
+	// Settings
+	err := container.Provide(settings.NewSyncSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	// Services
-	err := container.Provide(
+	err = container.Provide(
 		services.NewUniswapV3BlockEventsQueue,
 		dig.As(new(interfaces.BlockEventsQueueInterface)),
 	)

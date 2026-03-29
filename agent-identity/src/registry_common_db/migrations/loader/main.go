@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"ariga.io/atlas-provider-gorm/gormschema"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	common_models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	synchronizer_models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
 	"gorm.io/gorm"
 )
 
@@ -14,8 +15,10 @@ func main() {
 	stmts, err := gormschema.New("postgres", gormschema.WithConfig(&gorm.Config{
 		SkipDefaultTransaction: false,
 	})).Load(
-		&models.Agent{},
-		&models.AgentCollection{},
+		&common_models.Agent{},
+		&common_models.AgentCollection{},
+
+		&synchronizer_models.SyncCheckpoint{},
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)
