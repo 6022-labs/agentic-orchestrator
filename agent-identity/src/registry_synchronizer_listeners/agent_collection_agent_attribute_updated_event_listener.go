@@ -67,8 +67,7 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) SubscribeAll() err
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1AgentAttributeUpdated, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentAttributeUpdated events: %w", err)
 	}
@@ -96,8 +95,7 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) Subscribe(collecti
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1AgentAttributeUpdated, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentAttributeUpdated events for new address: %w", err)
 	}

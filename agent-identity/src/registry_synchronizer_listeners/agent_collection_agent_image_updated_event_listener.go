@@ -67,8 +67,7 @@ func (listener *AgentCollectionAgentImageUpdatedListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1AgentImageUpdated, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentImageUpdated events: %w", err)
 	}
@@ -96,8 +95,7 @@ func (listener *AgentCollectionAgentImageUpdatedListener) Subscribe(collectionAd
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1AgentImageUpdated, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentImageUpdated events for new address: %w", err)
 	}

@@ -35,28 +35,30 @@ func NewAgentCollectionEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentAttributeUpdated) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["AgentAttributeUpdated"]
 	if !ok {
-		return nil, fmt.Errorf("event AgentAttributeUpdated not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event AgentAttributeUpdated not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentAttributeUpdated, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -87,31 +89,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSub
 		"Subscribed to AgentCollection AgentAttributeUpdated events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentSignerUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentSignerUpdated) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentSignerUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentSignerUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["AgentSignerUpdated"]
 	if !ok {
-		return nil, fmt.Errorf("event AgentSignerUpdated not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event AgentSignerUpdated not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentSignerUpdated, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -142,31 +146,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentSignerUpdatedSubscr
 		"Subscribed to AgentCollection AgentSignerUpdated events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentImageUpdated) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["AgentImageUpdated"]
 	if !ok {
-		return nil, fmt.Errorf("event AgentImageUpdated not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event AgentImageUpdated not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentImageUpdated, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -197,31 +203,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscri
 		"Subscribed to AgentCollection AgentImageUpdated events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1MintProposalCreated) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["MintProposalCreated"]
 	if !ok {
-		return nil, fmt.Errorf("event MintProposalCreated not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event MintProposalCreated not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1MintProposalCreated, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -252,31 +260,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubsc
 		"Subscribed to AgentCollection MintProposalCreated events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1MintProposalRemoved) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["MintProposalRemoved"]
 	if !ok {
-		return nil, fmt.Errorf("event MintProposalRemoved not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event MintProposalRemoved not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1MintProposalRemoved, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -307,31 +317,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 		"Subscribed to AgentCollection MintProposalRemoved events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["Minted"]
 	if !ok {
-		return nil, fmt.Errorf("event Minted not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event Minted not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1Minted, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -362,31 +374,33 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addre
 		"Subscribed to AgentCollection Minted events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1Transfer) (ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	eventDef, ok := abiSpec.Events["Transfer"]
 	if !ok {
-		return nil, fmt.Errorf("event Transfer not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event Transfer not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
 	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	logs := make(chan *abi.AgentCollectionV1Transfer, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -417,5 +431,5 @@ func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(add
 		"Subscribed to AgentCollection Transfer events",
 	)
 
-	return wrappedSub, nil
+	return logs, wrappedSub, nil
 }

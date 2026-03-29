@@ -18,7 +18,7 @@ type BlockHeaderEventListener struct {
 	blockEventHandlers                  []interfaces.BlockEventHandlerInterface
 	blockchainEventSubscriptionProvider interfaces.BlockchainEventSubscriptionProviderInterface
 
-	eventChannel chan *types.Header
+	eventChannel <-chan *types.Header
 	subscription ethereum.Subscription
 }
 
@@ -40,7 +40,7 @@ func NewBlockHeaderEventListener(
 		blockEventHandlers:                  params.BlockEventHandlers,
 		blockchainEventSubscriptionProvider: params.BlockchainEventSubscriptionProvider,
 
-		eventChannel: make(chan *types.Header),
+		eventChannel: nil,
 		subscription: nil,
 	}
 }
@@ -48,8 +48,7 @@ func NewBlockHeaderEventListener(
 func (listener *BlockHeaderEventListener) SubscribeAll() error {
 	listener.logger.Debug("subscribing to ethereum block headers")
 
-	headers := make(chan *types.Header)
-	subscription, err := listener.blockchainEventSubscriptionProvider.StartNewHeadSubscription(headers)
+	headers, subscription, err := listener.blockchainEventSubscriptionProvider.StartNewHeadSubscription()
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to new heads: %w", err)
 	}

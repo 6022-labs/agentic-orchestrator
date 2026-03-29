@@ -67,8 +67,7 @@ func (listener *AgentCollectionTransferListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1Transfer, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.Transfer events: %w", err)
 	}
@@ -96,8 +95,7 @@ func (listener *AgentCollectionTransferListener) Subscribe(collectionAddress com
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1Transfer, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.Transfer events for new address: %w", err)
 	}

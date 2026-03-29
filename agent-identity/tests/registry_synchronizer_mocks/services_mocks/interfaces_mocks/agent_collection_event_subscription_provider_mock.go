@@ -43,106 +43,113 @@ func (m *MockAgentCollectionEventSubscriptionProviderInterface) EXPECT() *MockAg
 }
 
 // StartAgentAttributeUpdatedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentAttributeUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentAttributeUpdated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentAttributeUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartAgentAttributeUpdatedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartAgentAttributeUpdatedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentAttributeUpdated)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartAgentAttributeUpdatedSubscription indicates an expected call of StartAgentAttributeUpdatedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentAttributeUpdatedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentAttributeUpdatedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentAttributeUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentAttributeUpdatedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentAttributeUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentAttributeUpdatedSubscription), addresses)
 }
 
 // StartAgentImageUpdatedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentImageUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentImageUpdated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartAgentImageUpdatedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartAgentImageUpdatedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentImageUpdated)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartAgentImageUpdatedSubscription indicates an expected call of StartAgentImageUpdatedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentImageUpdatedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentImageUpdatedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentImageUpdatedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentImageUpdatedSubscription), addresses)
 }
 
 // StartAgentSignerUpdatedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentSignerUpdatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1AgentSignerUpdated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentSignerUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentSignerUpdated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartAgentSignerUpdatedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartAgentSignerUpdatedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentSignerUpdated)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartAgentSignerUpdatedSubscription indicates an expected call of StartAgentSignerUpdatedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentSignerUpdatedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentSignerUpdatedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentSignerUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentSignerUpdatedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentSignerUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentSignerUpdatedSubscription), addresses)
 }
 
 // StartMintProposalCreatedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintProposalCreatedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1MintProposalCreated) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartMintProposalCreatedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1MintProposalCreated)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartMintProposalCreatedSubscription indicates an expected call of StartMintProposalCreatedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalCreatedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalCreatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintProposalCreatedSubscription), addresses)
 }
 
 // StartMintProposalRemovedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintProposalRemovedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1MintProposalRemoved) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintProposalRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintProposalRemovedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartMintProposalRemovedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1MintProposalRemoved)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartMintProposalRemovedSubscription indicates an expected call of StartMintProposalRemovedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalRemovedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintProposalRemovedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalRemovedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintProposalRemovedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintProposalRemovedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintProposalRemovedSubscription), addresses)
 }
 
 // StartMintedSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintedSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1Minted) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartMintedSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartMintedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1Minted)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartMintedSubscription indicates an expected call of StartMintedSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartMintedSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintedSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartMintedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartMintedSubscription), addresses)
 }
 
 // StartTransferSubscription mocks base method.
-func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartTransferSubscription(addresses []common.Address, logs chan<- *abi.AgentCollectionV1Transfer) (ethereum.Subscription, error) {
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartTransferSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartTransferSubscription", addresses, logs)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartTransferSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1Transfer)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartTransferSubscription indicates an expected call of StartTransferSubscription.
-func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartTransferSubscription(addresses, logs any) *gomock.Call {
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartTransferSubscription(addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartTransferSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartTransferSubscription), addresses, logs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartTransferSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartTransferSubscription), addresses)
 }

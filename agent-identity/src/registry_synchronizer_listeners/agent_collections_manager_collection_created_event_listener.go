@@ -57,11 +57,8 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen() error
 }
 
 func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll() error {
-	events := make(chan *abi.AgentCollectionsManagerCollectionCreated, 64)
-
-	subscription, err := listener.agentCollectionsManagerEventSubscriptionProvider.StartCollectionCreatedSubscription(
+	events, subscription, err := listener.agentCollectionsManagerEventSubscriptionProvider.StartCollectionCreatedSubscription(
 		[]common.Address{listener.agentCollectionsManagerSettings.SmartContractAddress},
-		events,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollectionsManager.CollectionCreated events: %w", err)

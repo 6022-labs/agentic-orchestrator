@@ -6,5 +6,5 @@ import (
 )
 
 type BlockchainEventSubscriptionProviderInterface interface {
-	StartNewHeadSubscription(headers chan<- *types.Header) (ethereum.Subscription, error)
+	StartNewHeadSubscription() (<-chan *types.Header, ethereum.Subscription, error)
 }

@@ -42,16 +42,17 @@ func (m *MockBlockchainEventSubscriptionProviderInterface) EXPECT() *MockBlockch
 }
 
 // StartNewHeadSubscription mocks base method.
-func (m *MockBlockchainEventSubscriptionProviderInterface) StartNewHeadSubscription(headers chan<- *types.Header) (ethereum.Subscription, error) {
+func (m *MockBlockchainEventSubscriptionProviderInterface) StartNewHeadSubscription() (<-chan *types.Header, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartNewHeadSubscription", headers)
-	ret0, _ := ret[0].(ethereum.Subscription)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "StartNewHeadSubscription")
+	ret0, _ := ret[0].(<-chan *types.Header)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // StartNewHeadSubscription indicates an expected call of StartNewHeadSubscription.
-func (mr *MockBlockchainEventSubscriptionProviderInterfaceMockRecorder) StartNewHeadSubscription(headers any) *gomock.Call {
+func (mr *MockBlockchainEventSubscriptionProviderInterfaceMockRecorder) StartNewHeadSubscription() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartNewHeadSubscription", reflect.TypeOf((*MockBlockchainEventSubscriptionProviderInterface)(nil).StartNewHeadSubscription), headers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartNewHeadSubscription", reflect.TypeOf((*MockBlockchainEventSubscriptionProviderInterface)(nil).StartNewHeadSubscription))
 }

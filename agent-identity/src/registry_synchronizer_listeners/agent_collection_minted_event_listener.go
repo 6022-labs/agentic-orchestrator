@@ -67,8 +67,7 @@ func (listener *AgentCollectionMintedListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1Minted, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.Minted events: %w", err)
 	}
@@ -96,8 +95,7 @@ func (listener *AgentCollectionMintedListener) Subscribe(collectionAddress commo
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events := make(chan *abi.AgentCollectionV1Minted, 64)
-	subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(addressesToSubscribe, events)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(addressesToSubscribe)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.Minted events for new address: %w", err)
 	}

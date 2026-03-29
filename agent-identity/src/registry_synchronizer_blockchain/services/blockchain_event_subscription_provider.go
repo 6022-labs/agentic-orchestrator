@@ -32,10 +32,11 @@ func NewBlockchainEventSubscriptionProvider(
 	}
 }
 
-func (s *BlockchainEventSubscriptionProvider) StartNewHeadSubscription(headers chan<- *types.Header) (ethereum.Subscription, error) {
+func (s *BlockchainEventSubscriptionProvider) StartNewHeadSubscription() (<-chan *types.Header, ethereum.Subscription, error) {
+	headers := make(chan *types.Header)
 	sub, err := s.client.SubscribeNewHead(context.Background(), headers)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
@@ -52,5 +53,5 @@ func (s *BlockchainEventSubscriptionProvider) StartNewHeadSubscription(headers c
 
 	s.logger.Info("Subscribed to new Ethereum block headers")
 
-	return wrappedSub, nil
+	return headers, wrappedSub, nil
 }
