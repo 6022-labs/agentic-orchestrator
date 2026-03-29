@@ -1,6 +1,6 @@
 # Database migrations
 
-This directory contains the SQL migrations used by the orchestrator service. Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. Each database system has its own folder:
+This directory contains the SQL migrations used by the database connector agent database (`database_connector_db_agent` module). Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. Each database system has its own folder:
 
 - `mariadb`
 - `mysql`
@@ -22,14 +22,14 @@ resulting `TIMESTAMP_<name>.sql` files in the corresponding directories above.
 
 ## Customizing the migration
 
-### ⚠️ Edit only migrations that is not already played on any server !
+### ⚠️ Edit only migrations that have not been applied to any environment!
 
 After editing the generated SQL file you must recompute the checksums so that Atlas can verify the migration history:
 
 1. Navigate to this folder:
 
    ```bash
-   cd src/orchestrator_agent_database_connector_db_agent/migrations
+   cd agent-knowledge/src/database_connector_db_agent/migrations
    ```
 
 2. Regenerate hashes of existing migrations where `atlas.hcl` are stored :

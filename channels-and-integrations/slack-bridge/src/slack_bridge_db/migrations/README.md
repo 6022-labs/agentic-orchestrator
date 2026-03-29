@@ -1,13 +1,13 @@
 # Database migrations
 
-This directory contains the SQL migrations used by the orchestrator service. Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. The `atlas.hcl` file describes how the schema is loaded and where migrations are written.
+This directory contains the SQL migrations used by the Slack bridge database (`slack_bridge_db` module). Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. The `atlas.hcl` file describes how the schema is loaded and where migrations are written.
 
 ## Creating a new migration
 
 1. Navigate to this folder:
 
    ```bash
-   cd back-end/src/orchestrator_db/migrations
+   cd channels-and-integrations/slack-bridge/src/slack_bridge_db/migrations
    ```
 
 2. Generate the migration with Atlas using the `gorm` environment defined in `atlas.hcl`:
@@ -20,14 +20,14 @@ This directory contains the SQL migrations used by the orchestrator service. Mig
 
 ## Customizing the migration
 
-### ⚠️ Edit only migrations that is not already played on any server !
+### ⚠️ Edit only migrations that have not been applied to any environment!
 
 After editing the generated SQL file you must recompute the checksums so that Atlas can verify the migration history:
 
 1. Navigate to this folder:
 
    ```bash
-   cd back-end/src/orchestrator_db/migrations
+   cd channels-and-integrations/slack-bridge/src/slack_bridge_db/migrations
    ```
 
 2. Regenerate hashes of existing migrations:
