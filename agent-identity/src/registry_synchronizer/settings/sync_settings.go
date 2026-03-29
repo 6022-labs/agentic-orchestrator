@@ -12,11 +12,13 @@ type SyncSettings struct {
 }
 
 func NewSyncSettings(logger *zap.Logger, k *koanf.Koanf) *SyncSettings {
-	startBlock := uint64(k.Int64(SyncSettingsKey + ".start_block"))
+	startBlockInt := k.Int64(SyncSettingsKey + ".start_block")
 
-	if startBlock == 0 {
+	if startBlockInt <= 0 {
 		logger.Fatal("please set a valid sync.start_block value in your configuration")
 	}
+
+	startBlock := uint64(startBlockInt)
 
 	return &SyncSettings{
 		StartBlock: startBlock,
