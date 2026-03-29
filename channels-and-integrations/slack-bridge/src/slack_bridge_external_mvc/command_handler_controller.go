@@ -52,6 +52,19 @@ func (controller *CommandHandlerController) InitRoutes(app fiber.Router) {
 	app.Post(PAIR_SLACK_USER_TO_HUMAN_AGENT_COMMAND_ENDPOINT, controller.HandlePairSlackUserToHumanAgentCommand)
 }
 
+// HandleAddAgentToChannelCommand godoc
+// @Summary      Add agent to channel
+// @Description  Handles the Slack command to add an agent to a channel by collection address and token ID
+// @Tags         Command
+// @Accept       x-www-form-urlencoded
+// @Produce      plain
+// @Param        channel_id formData string true "Slack channel ID"
+// @Param        text formData string true "Command text: [collection address] [token ID]"
+// @Param        user_id formData string true "Slack user ID"
+// @Success      200 {string} string "Agent added to channel successfully"
+// @Failure      400 {string} string "Invalid request body"
+// @Failure      500 {string} string "Failed to handle command"
+// @Router       /command-handler/add-agent-to-channel [post]
 func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fiber.Ctx) error {
 	controller.logger.Info("Received add agent command request")
 
@@ -77,6 +90,19 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fi
 	return c.Status(fiber.StatusOK).SendString("Agent added to channel successfully")
 }
 
+// HandleListAgentsInChannelCommand godoc
+// @Summary      List agents in channel
+// @Description  Handles the Slack command to list all agents in a channel
+// @Tags         Command
+// @Accept       x-www-form-urlencoded
+// @Produce      json
+// @Param        channel_id formData string true "Slack channel ID"
+// @Param        text formData string false "Command text"
+// @Param        user_id formData string true "Slack user ID"
+// @Success      200 {string} string "JSON list of agents"
+// @Failure      400 {string} string "Invalid request body"
+// @Failure      500 {string} string "Failed to handle command"
+// @Router       /command-handler/list-agents-in-channel [post]
 func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *fiber.Ctx) error {
 	controller.logger.Info("Received list agents command request")
 
@@ -111,6 +137,19 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *
 	return c.Status(fiber.StatusOK).SendString(string(jsonResult))
 }
 
+// HandleRemoveAgentFromChannelCommand godoc
+// @Summary      Remove agent from channel
+// @Description  Handles the Slack command to remove an agent from a channel by collection address and token ID
+// @Tags         Command
+// @Accept       x-www-form-urlencoded
+// @Produce      plain
+// @Param        channel_id formData string true "Slack channel ID"
+// @Param        text formData string true "Command text: [collection address] [token ID]"
+// @Param        user_id formData string true "Slack user ID"
+// @Success      200 {string} string "Agent removed from channel successfully"
+// @Failure      400 {string} string "Invalid request body"
+// @Failure      500 {string} string "Failed to handle command"
+// @Router       /command-handler/remove-agent-from-channel [post]
 func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(c *fiber.Ctx) error {
 	controller.logger.Info("Received remove agent command request")
 
@@ -136,6 +175,19 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 	return c.Status(fiber.StatusOK).SendString("Agent removed from channel successfully")
 }
 
+// HandleVerifyWalletOwnershipCommand godoc
+// @Summary      Verify wallet ownership
+// @Description  Handles the Slack command to initiate wallet ownership verification for a user
+// @Tags         Command
+// @Accept       x-www-form-urlencoded
+// @Produce      plain
+// @Param        channel_id formData string true "Slack channel ID"
+// @Param        text formData string false "Command text"
+// @Param        user_id formData string true "Slack user ID"
+// @Success      200 {string} string "Verification response"
+// @Failure      400 {string} string "Invalid command format"
+// @Failure      500 {string} string "Failed to handle command"
+// @Router       /command-handler/verify-wallet-ownership [post]
 func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c *fiber.Ctx) error {
 	controller.logger.Info("Received verify wallet ownership command request")
 
@@ -162,6 +214,19 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 	return c.Status(fiber.StatusOK).SendString(*resp)
 }
 
+// HandlePairSlackUserToHumanAgentCommand godoc
+// @Summary      Pair Slack user to human agent
+// @Description  Handles the Slack command to pair a Slack user with a human agent by collection address and token ID
+// @Tags         Command
+// @Accept       x-www-form-urlencoded
+// @Produce      plain
+// @Param        channel_id formData string true "Slack channel ID"
+// @Param        text formData string true "Command text: [slack user ID] [collection address] [token ID]"
+// @Param        user_id formData string true "Slack user ID"
+// @Success      200 {string} string "Slack user paired to human agent successfully"
+// @Failure      400 {string} string "Invalid command format"
+// @Failure      500 {string} string "Failed to handle command"
+// @Router       /command-handler/pair-slack-user-to-human-agent [post]
 func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentCommand(c *fiber.Ctx) error {
 	controller.logger.Info("Received pair slack user to human agent command request")
 

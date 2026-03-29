@@ -29,6 +29,14 @@ func (controller *AgentCollectionController) RegisterRoutes(app fiber.Router) {
 	app.Get(LIST_AGENT_COLLECTIONS_ENDPOINT, controller.ListAgentCollections)
 }
 
+// ListAgentCollections godoc
+// @Summary      List agent collections
+// @Description  Retrieves all available agent collections
+// @Tags         AgentCollection
+// @Produce      json
+// @Success      200 {array} responses.AgentCollectionResponse
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent-collections [get]
 func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) error {
 	collections, err := controller.listAgentCollections.List()
 	if err != nil {

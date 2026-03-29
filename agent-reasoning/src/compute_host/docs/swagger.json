@@ -533,7 +533,7 @@
                 "apiKey": {
                     "type": "string"
                 },
-                "host": {
+                "baseUrl": {
                     "type": "string"
                 },
                 "model": {
@@ -541,9 +541,6 @@
                 },
                 "platform": {
                     "$ref": "#/definitions/enums.LLMConnectionPlatform"
-                },
-                "port": {
-                    "type": "string"
                 }
             }
         },
@@ -561,7 +558,7 @@
         "responses.GetLLMConnectionSettingsResponse": {
             "type": "object",
             "properties": {
-                "host": {
+                "baseUrl": {
                     "type": "string"
                 },
                 "model": {

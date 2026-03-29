@@ -57,6 +57,16 @@ func (controller *AgentController) RegisterRoutes(app fiber.Router) {
 	app.Post(CREATE_AGENT_SECOND_STEP_ENDPOINT, controller.CreateAgentSecondStep)
 }
 
+// GetAgent godoc
+// @Summary      Get agent
+// @Description  Retrieves details of a specific agent by collection address and token ID
+// @Tags         Agent
+// @Produce      json
+// @Param        agentCollectionAddress path string true "Agent collection address"
+// @Param        agentCollectionTokenId path int true "Agent collection token ID"
+// @Success      200 {object} responses.AgentResponse
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.ParamsParser(request); err != nil {
@@ -73,6 +83,19 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// ListAgents godoc
+// @Summary      List agents
+// @Description  Retrieves a paginated list of agents with optional filtering
+// @Tags         Agent
+// @Produce      json
+// @Param        page query int false "Page number"
+// @Param        elementsPerPage query int false "Elements per page"
+// @Param        sortDirection query string false "Sort direction (asc, desc)"
+// @Param        sortBy query string false "Sort by field"
+// @Param        isInternal query bool false "Filter by internal status"
+// @Success      200 {object} responses.ListAgentsResponse
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agents [get]
 func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 	request := new(requests.ListAgentsRequest)
 	if err := c.QueryParser(request); err != nil {
@@ -89,6 +112,16 @@ func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
+// IsInternalAgent godoc
+// @Summary      Check if agent is internal
+// @Description  Checks whether a specific agent is an internal agent
+// @Tags         Agent
+// @Produce      json
+// @Param        agentCollectionAddress path string true "Agent collection address"
+// @Param        agentCollectionTokenId path int true "Agent collection token ID"
+// @Success      200 {object} responses.IsInternalAgentResponse
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal [get]
 func (controller *AgentController) IsInternalAgent(c *fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.ParamsParser(request); err != nil {
@@ -105,6 +138,24 @@ func (controller *AgentController) IsInternalAgent(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// CreateAgentFirstStep godoc
+// @Summary      Start agent creation
+// @Description  Uploads agent image and creates agent metadata as the first step of agent creation
+// @Tags         Agent
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        authenticatedWallet formData string true "Authenticated wallet address"
+// @Param        collectionAddress formData string true "Collection address"
+// @Param        name formData string true "Agent name"
+// @Param        role formData string true "Agent role"
+// @Param        mission formData string true "Agent mission"
+// @Param        walletAddress formData string false "Agent wallet address"
+// @Param        cloneOfAgentId formData int false "ID of agent to clone"
+// @Param        image formData file true "Agent image"
+// @Success      200 {object} responses.AgentResponse
+// @Failure      400 {object} errors.ValidationError
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent/create/first-step [post]
 func (controller *AgentController) CreateAgentFirstStep(c *fiber.Ctx) error {
 	request := new(requests.CreateAgentFirstStepRequest)
 	if err := c.BodyParser(request); err != nil {
@@ -136,6 +187,18 @@ func (controller *AgentController) CreateAgentFirstStep(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// CreateAgentSecondStep godoc
+// @Summary      Complete agent creation
+// @Description  Completes agent creation by generating the mint signature
+// @Tags         Agent
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.AgentByIdRequest true "Agent ID and authenticated wallet"
+// @Success      200 {object} responses.CreateAgentSecondStepResponse
+// @Failure      400 {object} errors.ValidationError
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent/create/second-step [post]
 func (controller *AgentController) CreateAgentSecondStep(c *fiber.Ctx) error {
 	request := new(requests.AgentByIdRequest)
 	if err := c.BodyParser(request); err != nil {
@@ -163,6 +226,16 @@ func (controller *AgentController) CreateAgentSecondStep(c *fiber.Ctx) error {
 	return c.JSON(response)
 }
 
+// GetMintedAgentByEnsDomain godoc
+// @Summary      Get agent by ENS domain
+// @Description  Retrieves a minted agent by its ENS domain name
+// @Tags         Agent
+// @Produce      json
+// @Param        ensDomain path string true "ENS domain name"
+// @Success      200 {object} responses.AgentResponse
+// @Failure      404 {string} string "Agent not found"
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /agent/ens/{ensDomain} [get]
 func (controller *AgentController) GetMintedAgentByEnsDomain(c *fiber.Ctx) error {
 	request := new(requests.GetAgentByEnsDomainRequest)
 	if err := c.ParamsParser(request); err != nil {

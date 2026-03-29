@@ -90,14 +90,12 @@ definitions:
         type: string
       apiKey:
         type: string
-      host:
+      baseUrl:
         type: string
       model:
         type: string
       platform:
         $ref: '#/definitions/enums.LLMConnectionPlatform'
-      port:
-        type: string
     type: object
   requests.SortDirection:
     enum:
@@ -109,7 +107,7 @@ definitions:
     - SortDirectionDesc
   responses.GetLLMConnectionSettingsResponse:
     properties:
-      host:
+      baseUrl:
         type: string
       model:
         type: string

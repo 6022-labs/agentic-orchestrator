@@ -1,0 +1,43 @@
+basePath: /
+definitions:
+  requests.SetWalletOwnershipToSlackUserRequest:
+    properties:
+      challenge:
+        type: string
+      walletAddress:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the API documentation for the Slack Bridge Internal Host.
+  title: Slack Bridge Internal API
+  version: "1.0"
+paths:
+  /wallet/set-ownership-to-slack-user:
+    post:
+      consumes:
+      - application/json
+      description: Confirms wallet ownership for a Slack user by providing a signed
+        challenge
+      parameters:
+      - description: Wallet ownership verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SetWalletOwnershipToSlackUserRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Set wallet ownership to Slack user
+      tags:
+      - Wallet
+swagger: "2.0"

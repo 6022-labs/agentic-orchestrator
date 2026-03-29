@@ -716,13 +716,11 @@ const docTemplate = `{
         "enums.DatabaseConnectionSetupStatus": {
             "type": "string",
             "enum": [
-                "copying",
                 "configured",
                 "established",
                 "establishing"
             ],
             "x-enum-varnames": [
-                "DatabaseConnectionSetupStatusCopying",
                 "DatabaseConnectionSetupStatusConfigured",
                 "DatabaseConnectionSetupStatusEstablished",
                 "DatabaseConnectionSetupStatusEstablishing"

@@ -1,6 +1,6 @@
 ---
 name: swagger-host-docs-generator
-description: Generate and refresh Swagger/OpenAPI documentation for Go host services that expose a docs generation script. Use when asked to regenerate host API docs, produce swagger.v3 files, or update docs artifacts under src/*_host/docs.
+description: Generate and refresh Swagger/OpenAPI documentation for Go host services that expose a docs generation script. Use when asked to regenerate host API docs, produce swagger.v3 files, or update docs artifacts under *_host/docs.
 ---
 
 # Swagger Host Docs Generator
@@ -11,10 +11,10 @@ Generate host Swagger/OpenAPI documentation by running each host's local `docs/g
 
 1. Identify target hosts:
    - Use all discovered hosts by default.
-   - Or restrict to specific hosts (example: `collateral_dashboard_host`).
+   - Or restrict to specific hosts (example: `gateway_host`).
 2. Run the bundled script from repository root:
    - `./scripts/generate_swagger_docs_for_hosts.sh`
-   - `./scripts/generate_swagger_docs_for_hosts.sh --host collateral_dashboard_host`
+   - `./scripts/generate_swagger_docs_for_hosts.sh --host gateway_host`
 3. Verify generated artifacts in each host `docs/` directory:
    - `docs.go`
    - `swagger.json`
@@ -30,7 +30,7 @@ Generate host Swagger/OpenAPI documentation by running each host's local `docs/g
 ./scripts/generate_swagger_docs_for_hosts.sh
 
 # Regenerate docs for a specific host
-./scripts/generate_swagger_docs_for_hosts.sh --host collateral_dashboard_host
+./scripts/generate_swagger_docs_for_hosts.sh --host gateway_host
 
 # Preview without running generation
 ./scripts/generate_swagger_docs_for_hosts.sh --dry-run

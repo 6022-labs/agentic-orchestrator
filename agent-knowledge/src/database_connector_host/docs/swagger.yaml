@@ -50,13 +50,11 @@ definitions:
     - DatabaseConnectionDriverPostgres
   enums.DatabaseConnectionSetupStatus:
     enum:
-    - copying
     - configured
     - established
     - establishing
     type: string
     x-enum-varnames:
-    - DatabaseConnectionSetupStatusCopying
     - DatabaseConnectionSetupStatusConfigured
     - DatabaseConnectionSetupStatusEstablished
     - DatabaseConnectionSetupStatusEstablishing

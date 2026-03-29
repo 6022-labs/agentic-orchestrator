@@ -8,8 +8,8 @@ Usage:
 
 Examples:
   generate_swagger_docs_for_hosts.sh
-  generate_swagger_docs_for_hosts.sh --host collateral_dashboard_host
-  generate_swagger_docs_for_hosts.sh --repo-root /path/to/repo --host collateral_image_generator_host
+  generate_swagger_docs_for_hosts.sh --host gateway_host
+  generate_swagger_docs_for_hosts.sh --repo-root /path/to/repo --host images_generator_host
 USAGE
 }
 
@@ -75,18 +75,13 @@ require_cmd find
 require_cmd sort
 require_cmd go
 
-if [[ ! -d "$REPO_ROOT/src" ]]; then
-  echo "src directory not found under repo root: $REPO_ROOT" >&2
-  exit 1
-fi
-
 ALL_SCRIPTS=()
 while IFS= read -r script_path; do
   ALL_SCRIPTS+=("$script_path")
-done < <(find "$REPO_ROOT/src" -type f -path '*_host/docs/generate_docs.sh' | sort)
+done < <(find "$REPO_ROOT" -path '*/.*' -prune -o -type f -path '*_host/docs/generate_docs.sh' -print | sort)
 
 if [[ "${#ALL_SCRIPTS[@]}" -eq 0 ]]; then
-  echo "no host docs generation scripts found under $REPO_ROOT/src" >&2
+  echo "no host docs generation scripts found under $REPO_ROOT" >&2
   exit 1
 fi
 

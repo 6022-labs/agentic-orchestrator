@@ -1,0 +1,85 @@
+{
+    "components": {
+        "schemas": {
+            "requests.SetWalletOwnershipToSlackUserRequest": {
+                "properties": {
+                    "challenge": {
+                        "type": "string"
+                    },
+                    "walletAddress": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "description": "This is the API documentation for the Slack Bridge Internal Host.",
+        "title": "Slack Bridge Internal API",
+        "version": "1.0"
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "paths": {
+        "/wallet/set-ownership-to-slack-user": {
+            "post": {
+                "description": "Confirms wallet ownership for a Slack user by providing a signed challenge",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.SetWalletOwnershipToSlackUserRequest",
+                                        "summary": "request",
+                                        "description": "Wallet ownership verification"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Wallet ownership verification",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Set wallet ownership to Slack user",
+                "tags": [
+                    "Wallet"
+                ]
+            }
+        }
+    },
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "/"
+        }
+    ]
+}

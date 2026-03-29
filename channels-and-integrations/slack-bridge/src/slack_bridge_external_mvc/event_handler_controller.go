@@ -51,6 +51,17 @@ func (controller *EventHandlerController) InitRoutes(app fiber.Router) {
 	app.Post(EVENT_HANDLER_ENDPOINT, controller.HandleEventRequest)
 }
 
+// HandleEventRequest godoc
+// @Summary      Handle Slack event
+// @Description  Receives and dispatches Slack event callbacks including messages, channel events, and URL verification
+// @Tags         Event
+// @Accept       json
+// @Produce      plain
+// @Param        request body map[string]interface{} true "Slack event payload"
+// @Success      200 {string} string "OK"
+// @Failure      400 {string} string "Bad Request"
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /event-handler [post]
 func (controller *EventHandlerController) HandleEventRequest(c *fiber.Ctx) error {
 	controller.logger.Info("Received event request")
 

@@ -540,7 +540,7 @@ const docTemplate = `{
                 "apiKey": {
                     "type": "string"
                 },
-                "host": {
+                "baseUrl": {
                     "type": "string"
                 },
                 "model": {
@@ -548,9 +548,6 @@ const docTemplate = `{
                 },
                 "platform": {
                     "$ref": "#/definitions/enums.LLMConnectionPlatform"
-                },
-                "port": {
-                    "type": "string"
                 }
             }
         },
@@ -568,7 +565,7 @@ const docTemplate = `{
         "responses.GetLLMConnectionSettingsResponse": {
             "type": "object",
             "properties": {
-                "host": {
+                "baseUrl": {
                     "type": "string"
                 },
                 "model": {
