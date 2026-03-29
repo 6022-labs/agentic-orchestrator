@@ -19,8 +19,6 @@ type ExternalAgentResponse struct {
 	IsInternal    bool              `json:"isInternal"`
 	WalletAddress string            `json:"walletAddress"`
 
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
-
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`
 	CollectionAddress string  `json:"collectionAddress"`

@@ -65,7 +65,6 @@ func mapExternalAgentToResponse(ext *models.ExternalAgentResponse) *responses.Ag
 		EnsDomain:         ext.EnsDomain,
 		IsInternal:        ext.IsInternal,
 		WalletAddress:     ext.WalletAddress,
-		ImportationStatus: ext.ImportationStatus,
 		ProposalId:        ext.ProposalId,
 		CollectionTokenId: ext.CollectionTokenId,
 		CollectionAddress: ext.CollectionAddress,

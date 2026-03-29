@@ -22,7 +22,6 @@ type AgentBuilder struct {
 	images            map[string]string
 	attributes        map[string]string
 	ensDomain         string
-	importationStatus *enums.AgentImportationStatus
 	collectionAddress string
 	collectionTokenId *uint64
 	proposalId        *uint64
@@ -49,7 +48,6 @@ func NewAgentBuilder() *AgentBuilder {
 		owner:             &owner,
 		creator:           creator,
 		ensDomain:         ensDomain,
-		importationStatus: nil,
 		isInternal:        false,
 		images: map[string]string{
 			"default": "QmTzQ1Z5b7g8d9f8e6c3b2a1c4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
@@ -107,11 +105,6 @@ func (b *AgentBuilder) WithAttributes(attributes map[string]string) *AgentBuilde
 	return b
 }
 
-func (b *AgentBuilder) WithImportationStatus(importationStatus *enums.AgentImportationStatus) *AgentBuilder {
-	b.importationStatus = importationStatus
-	return b
-}
-
 func (b *AgentBuilder) WithProposalId(proposalId *uint64) *AgentBuilder {
 	b.proposalId = proposalId
 	return b
@@ -145,7 +138,6 @@ func (b *AgentBuilder) Build() *responses.AgentResponse {
 		ProposalId:        b.proposalId,
 		Attributes:        b.attributes,
 		WalletAddress:     b.walletAddress,
-		ImportationStatus: b.importationStatus,
 		CollectionTokenId: b.collectionTokenId,
 		CollectionAddress: b.collectionAddress,
 	}

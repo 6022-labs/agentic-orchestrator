@@ -3,6 +3,7 @@ package responses
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models/enums"
 	"github.com/google/uuid"
+
 )
 
 type AgentResponse struct {
@@ -18,8 +19,6 @@ type AgentResponse struct {
 	EnsDomain     string            `json:"ensDomain"`
 	IsInternal    bool              `json:"isInternal"`
 	WalletAddress string            `json:"walletAddress"`
-
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
 
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`

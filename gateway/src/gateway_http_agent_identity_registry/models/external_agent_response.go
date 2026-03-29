@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/google/uuid"
+
 )
 
 type ExternalAgentResponse struct {
@@ -22,8 +23,6 @@ type ExternalAgentResponse struct {
 	LLMSetupStatus      *string `json:"llmSetupStatus"`
 	DatabaseSetupStatus *string `json:"databaseSetupStatus"`
 	IsSetupCompleted    *bool   `json:"isSetupCompleted"`
-
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
 
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`

@@ -25,8 +25,6 @@ type AgentResponse struct {
 
 	IsSetupCompleted *bool `json:"isSetupCompleted"`
 
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
-
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`
 	CollectionAddress string  `json:"collectionAddress"`
@@ -71,8 +69,6 @@ func AgentResponseFromModel(
 		DatabaseSetupStatus: databaseConnectionSetupStatus,
 
 		IsSetupCompleted: isSetupCompletedPtr,
-
-		ImportationStatus: agent.ImportationStatus,
 
 		ProposalId:        agent.ProposalId,
 		CollectionTokenId: agent.CollectionTokenId,

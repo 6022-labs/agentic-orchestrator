@@ -24,8 +24,6 @@ type AgentResponse struct {
 	DatabaseSetupStatus *string `json:"databaseSetupStatus"`
 	IsSetupCompleted    *bool   `json:"isSetupCompleted"`
 
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
-
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`
 	CollectionAddress string  `json:"collectionAddress"`
@@ -48,7 +46,6 @@ func AgentResponseFromModel(agent *models.Agent) *AgentResponse {
 		IsInternal:        agent.IsInternal,
 		Attributes:        agent.Attributes,
 		WalletAddress:     agent.WalletAddress,
-		ImportationStatus: agent.ImportationStatus,
 		ProposalId:        agent.ProposalId,
 		CollectionTokenId: agent.CollectionTokenId,
 		CollectionAddress: agent.CollectionAddress,

@@ -33,8 +33,6 @@ type Agent struct {
 
 	IsInternal bool `gorm:"type:boolean;not null" json:"isInternal"`
 
-	ImportationStatus *enums.AgentImportationStatus `gorm:"type:string" json:"importationStatus"`
-
 	UpdatedAt time.Time  `gorm:"type:timestamp;not null" json:"updatedAt"`
 	CreatedAt time.Time  `gorm:"type:timestamp;not null" json:"createdAt"`
 	DeletedAt *time.Time `gorm:"type:timestamp" json:"deletedAt"`

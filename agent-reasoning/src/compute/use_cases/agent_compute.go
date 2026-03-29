@@ -135,7 +135,6 @@ func agentResponseToModel(r *responses.AgentResponse) *models.Agent {
 		EnsDomain:         r.EnsDomain,
 		IsInternal:        r.IsInternal,
 		WalletAddress:     r.WalletAddress,
-		ImportationStatus: r.ImportationStatus,
 		ProposalId:        r.ProposalId,
 		CollectionTokenId: r.CollectionTokenId,
 		CollectionAddress: r.CollectionAddress,

@@ -27,7 +27,6 @@ CREATE TABLE "public"."agents" (
   "images" jsonb NULL,
   "attributes" jsonb NULL,
   "is_internal" boolean NOT NULL,
-  "importation_status" text NULL,
   "updated_at" timestamp NOT NULL,
   "created_at" timestamp NOT NULL,
   "deleted_at" timestamp NULL,

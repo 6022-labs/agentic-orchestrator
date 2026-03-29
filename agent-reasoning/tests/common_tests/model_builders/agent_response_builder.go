@@ -21,7 +21,6 @@ type AgentResponseBuilder struct {
 	collectionAddress string
 	collectionTokenId *uint64
 	proposalId        *uint64
-	importationStatus *enums.AgentImportationStatus
 }
 
 func NewAgentResponseBuilder() *AgentResponseBuilder {
@@ -33,8 +32,6 @@ func NewAgentResponseBuilder() *AgentResponseBuilder {
 	walletAddress := faker.Word()
 	collectionAddress := faker.Word()
 	collectionTokenId := uint64(1)
-
-	importationStatus := enums.AgentImportationStatusFinished
 
 	return &AgentResponseBuilder{
 		id:                id,
@@ -50,7 +47,6 @@ func NewAgentResponseBuilder() *AgentResponseBuilder {
 		collectionAddress: collectionAddress,
 		collectionTokenId: &collectionTokenId,
 		proposalId:        nil,
-		importationStatus: &importationStatus,
 	}
 }
 
@@ -79,6 +75,5 @@ func (b *AgentResponseBuilder) Build() *responses.AgentResponse {
 		CollectionAddress: b.collectionAddress,
 		CollectionTokenId: b.collectionTokenId,
 		ProposalId:        b.proposalId,
-		ImportationStatus: b.importationStatus,
 	}
 }

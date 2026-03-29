@@ -24,6 +24,4 @@ type Agent struct {
 	Attributes map[string]string `json:"attributes"`
 
 	IsInternal bool `json:"isInternal"`
-
-	ImportationStatus *enums.AgentImportationStatus `json:"importationStatus"`
 }

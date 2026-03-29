@@ -235,71 +235,6 @@
                 }
             }
         },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/compute": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Runs the agent using the provided input",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Compute agent response",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "compute request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AgentComputeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.AgentComputeResponses"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/context": {
             "post": {
                 "security": [
@@ -1475,21 +1410,6 @@
                 "AgentContextMessageRoleAssistant"
             ]
         },
-        "enums.AgentImportationStatus": {
-            "type": "string",
-            "enum": [
-                "first-step",
-                "second-step",
-                "third-step",
-                "finished"
-            ],
-            "x-enum-varnames": [
-                "AgentImportationStatusFirstStep",
-                "AgentImportationStatusSecondStep",
-                "AgentImportationStatusThirdStep",
-                "AgentImportationStatusFinished"
-            ]
-        },
         "enums.AgentPromptTemplateKey": {
             "type": "string",
             "enum": [
@@ -1599,69 +1519,6 @@
             "properties": {
                 "agentId": {
                     "type": "string"
-                }
-            }
-        },
-        "requests.AgentComputeConversationContextAgentRequest": {
-            "type": "object",
-            "properties": {
-                "collectionAddress": {
-                    "type": "string"
-                },
-                "collectionTokenId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "requests.AgentComputeConversationContextRequest": {
-            "type": "object",
-            "properties": {
-                "agents": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/requests.AgentComputeConversationContextAgentRequest"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.AgentComputeInputRequest": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.AgentComputeRequest": {
-            "type": "object",
-            "properties": {
-                "conversationContext": {
-                    "$ref": "#/definitions/requests.AgentComputeConversationContextRequest"
-                },
-                "forceConclusion": {
-                    "type": "boolean"
-                },
-                "inputs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/requests.AgentComputeInputRequest"
-                    }
-                },
-                "platform": {
-                    "$ref": "#/definitions/enums.AgentContextMessagePlatform"
-                },
-                "promptParameters": {
-                    "type": "object",
-                    "additionalProperties": {}
                 }
             }
         },
@@ -1802,20 +1659,6 @@
                 }
             }
         },
-        "responses.AgentComputeResponses": {
-            "type": "object",
-            "properties": {
-                "isFinal": {
-                    "type": "boolean"
-                },
-                "responses": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "responses.AgentResponse": {
             "type": "object",
             "properties": {
@@ -1851,9 +1694,6 @@
                     "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "importationStatus": {
-                    "$ref": "#/definitions/enums.AgentImportationStatus"
                 },
                 "isInternal": {
                     "type": "boolean"

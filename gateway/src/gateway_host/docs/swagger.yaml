@@ -18,18 +18,6 @@ definitions:
     - AgentContextMessageRoleUser
     - AgentContextMessageRoleSystem
     - AgentContextMessageRoleAssistant
-  enums.AgentImportationStatus:
-    enum:
-    - first-step
-    - second-step
-    - third-step
-    - finished
-    type: string
-    x-enum-varnames:
-    - AgentImportationStatusFirstStep
-    - AgentImportationStatusSecondStep
-    - AgentImportationStatusThirdStep
-    - AgentImportationStatusFinished
   enums.AgentPromptTemplateKey:
     enum:
     - clone-system
@@ -116,47 +104,6 @@ definitions:
     properties:
       agentId:
         type: string
-    type: object
-  requests.AgentComputeConversationContextAgentRequest:
-    properties:
-      collectionAddress:
-        type: string
-      collectionTokenId:
-        type: integer
-    type: object
-  requests.AgentComputeConversationContextRequest:
-    properties:
-      agents:
-        items:
-          $ref: '#/definitions/requests.AgentComputeConversationContextAgentRequest'
-        type: array
-      id:
-        type: string
-    type: object
-  requests.AgentComputeInputRequest:
-    properties:
-      author:
-        type: string
-      content:
-        type: string
-      timestamp:
-        type: string
-    type: object
-  requests.AgentComputeRequest:
-    properties:
-      conversationContext:
-        $ref: '#/definitions/requests.AgentComputeConversationContextRequest'
-      forceConclusion:
-        type: boolean
-      inputs:
-        items:
-          $ref: '#/definitions/requests.AgentComputeInputRequest'
-        type: array
-      platform:
-        $ref: '#/definitions/enums.AgentContextMessagePlatform'
-      promptParameters:
-        additionalProperties: {}
-        type: object
     type: object
   requests.CreateAgentContextRequest:
     properties:
@@ -250,15 +197,6 @@ definitions:
       symbol:
         type: string
     type: object
-  responses.AgentComputeResponses:
-    properties:
-      isFinal:
-        type: boolean
-      responses:
-        items:
-          type: string
-        type: array
-    type: object
   responses.AgentResponse:
     properties:
       attributes:
@@ -283,8 +221,6 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      importationStatus:
-        $ref: '#/definitions/enums.AgentImportationStatus'
       isInternal:
         type: boolean
       isSetupCompleted:
@@ -419,48 +355,6 @@ paths:
           schema:
             type: string
       summary: Get agent information
-      tags:
-      - agent
-  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/compute:
-    post:
-      consumes:
-      - application/json
-      description: Runs the agent using the provided input
-      parameters:
-      - description: collection address
-        in: path
-        name: agentCollectionAddress
-        required: true
-        type: string
-      - description: token id
-        in: path
-        name: agentCollectionTokenId
-        required: true
-        type: string
-      - description: compute request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.AgentComputeRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.AgentComputeResponses'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.ValidationError'
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - BearerAuth: []
-      summary: Compute agent response
       tags:
       - agent
   /agent/{agentCollectionAddress}/{agentCollectionTokenId}/context:

@@ -60,7 +60,6 @@ func (s *GetAgent) Get(request *requests.AgentByCollectionTokenIdRequest) (*resp
 		Images:            registryAgentResponse.Images,
 		Attributes:        registryAgentResponse.Attributes,
 		IsInternal:        registryAgentResponse.IsInternal,
-		ImportationStatus: registryAgentResponse.ImportationStatus,
 	}
 
 	llmConnectionSetupStatus, databaseConnectionSetupStatus, err := getAgentSetupStatuses(

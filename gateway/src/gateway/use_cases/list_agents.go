@@ -62,7 +62,6 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 			Images:            agent.Images,
 			Attributes:        agent.Attributes,
 			IsInternal:        agent.IsInternal,
-			ImportationStatus: agent.ImportationStatus,
 		}
 	}
 
