@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -63,7 +64,7 @@ func (p *SlackThreadProcessor) ProcessThread(slackAgent *models.SlackAgent, slac
 	}
 
 	slackChannel, err := p.slackChannelRepository.GetById(slackThread.ChannelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to fetch slack channel: %w", err)
 	}
 	if slackChannel == nil {
@@ -145,7 +146,7 @@ func (p *SlackThreadProcessor) sendCompletionsToThread(
 ) error {
 	// Reload the thread to ensure it's not yet concluded
 	reloadedSlackThread, err := p.slackThreadRepository.GetByIdAndChannelId(slackThread.Id, slackThread.ChannelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to fetch slack thread: %w", err)
 	}
 	if reloadedSlackThread == nil {

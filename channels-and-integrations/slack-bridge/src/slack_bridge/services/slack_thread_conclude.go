@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -49,7 +50,7 @@ func (s *SlackThreadConclude) concludeThread(slackThread *models.SlackThread) er
 
 func (s *SlackThreadConclude) Conclude(threadId, channelId string) error {
 	slackThread, err := s.slackThreadRepository.GetByIdAndChannelId(threadId, channelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to fetch slack thread from database: %w", err)
 	}
 	if slackThread == nil {
@@ -61,7 +62,7 @@ func (s *SlackThreadConclude) Conclude(threadId, channelId string) error {
 
 func (s *SlackThreadConclude) ConcludeIfExists(threadId, channelId string) error {
 	slackThread, err := s.slackThreadRepository.GetByIdAndChannelId(threadId, channelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to fetch slack thread from database: %w", err)
 	}
 	if slackThread == nil {

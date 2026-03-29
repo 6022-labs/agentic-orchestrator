@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
@@ -45,7 +46,7 @@ func (c *CreateAgentContext) Create(request *requests.CreateAgentContextRequest)
 	defer agentDbClient.Close()
 
 	existingAgentContext, err := agentContextRepository.GetByKey(request.Key)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get agent context by key: %w", err)
 	}
 	if existingAgentContext != nil {

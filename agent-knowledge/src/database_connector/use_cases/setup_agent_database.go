@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
@@ -56,7 +57,7 @@ func (u *SetupAgentDatabase) Setup(request *requests.SetupAgentDatabaseRequest) 
 	}
 
 	databaseConnection, err := u.databaseConnectionRepository.GetByAgentId(request.AgentId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		err = fmt.Errorf("failed to get database connection for agent %s: %w", request.AgentId, err)
 		return
 	}

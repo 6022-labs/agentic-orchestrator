@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -43,7 +44,7 @@ func (c *CreateDatabaseConnection) Create(request *requests.CreateDatabaseConnec
 	}
 
 	existingDatabaseConnection, err := c.databaseConnectionRepository.GetByAgentId(request.AgentID)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("error getting existing database connection: %w", err)
 	}
 	if existingDatabaseConnection != nil {

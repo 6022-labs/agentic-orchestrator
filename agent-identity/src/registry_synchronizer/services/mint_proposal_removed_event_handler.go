@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -34,7 +35,7 @@ func (handler *MintProposalRemovedEventHandler) Handle(event *abi.AgentCollectio
 	)
 
 	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(event.Raw.Address.Hex(), event.ProposalId.Uint64())
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 	if agent == nil {

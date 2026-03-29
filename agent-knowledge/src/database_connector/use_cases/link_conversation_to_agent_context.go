@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
@@ -49,7 +50,7 @@ func (l *LinkConversationToAgentContext) Link(request *requests.LinkConversation
 
 	// Check if the conversation mapping already exists
 	existingMapping, err := agentContextConversationMappingRepository.GetByConversationId(request.ConversationId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get conversation mapping: %w", err)
 	}
 	if existingMapping != nil {
@@ -57,7 +58,7 @@ func (l *LinkConversationToAgentContext) Link(request *requests.LinkConversation
 	}
 
 	agentContext, err := agentContextRepository.GetByKey(request.Key)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get agent context by key: %w", err)
 	}
 	if agentContext == nil {

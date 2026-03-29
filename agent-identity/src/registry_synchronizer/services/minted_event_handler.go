@@ -89,7 +89,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	}
 
 	agentCollection, err := handler.agentCollectionRepository.GetByAddress(event.Raw.Address.Hex())
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get agent collection by address: %w", err)
 	}
 	if agentCollection == nil {

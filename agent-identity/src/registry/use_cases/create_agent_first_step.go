@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -60,7 +61,7 @@ func (c *CreateAgentFirstStep) Execute(request *requests.CreateAgentFirstStepReq
 	}
 
 	agentCollection, err := c.agentCollectionRepository.GetByAddress(request.CollectionAddress)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to get agent collection by address: %w", err)
 	}
 	if agentCollection == nil {
@@ -74,7 +75,7 @@ func (c *CreateAgentFirstStep) Execute(request *requests.CreateAgentFirstStepReq
 	}
 
 	alreadyExistingAgentForAddress, err := c.agentRepository.GetByWalletAddress(*address)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to check existing agent by wallet address: %w", err)
 	}
 	if alreadyExistingAgentForAddress != nil && alreadyExistingAgentForAddress.CollectionTokenId != nil {
@@ -100,7 +101,7 @@ func (c *CreateAgentFirstStep) Execute(request *requests.CreateAgentFirstStepReq
 
 	if request.Role == enums.AgentRoleClone {
 		agentToClone, err := c.agentRepository.GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, *request.CloneOfAgentId)
-		if err != nil && err != gorm.ErrRecordNotFound {
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("failed to get agent to clone: %w", err)
 		}
 		if agentToClone == nil {

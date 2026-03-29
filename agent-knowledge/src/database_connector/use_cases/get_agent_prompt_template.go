@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
@@ -52,7 +53,7 @@ func (u *GetAgentPromptTemplate) Get(request *requests.GetAgentPromptTemplateReq
 	defer agentDbClient.Close()
 
 	agentPromptTemplate, err := agentPromptTemplateRepository.GetByKey(request.TemplateKey)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to get agent prompt template: %w", err)
 	}
 

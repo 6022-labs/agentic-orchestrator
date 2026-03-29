@@ -1,6 +1,7 @@
 package db_clients
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -57,7 +58,7 @@ func NewAgentDatabaseClientFactory(
 
 func (factory *AgentDatabaseClientFactory) Create(agentId uuid.UUID) (db_clients.AgentDatabaseClientInterface, error) {
 	databaseConnection, err := factory.databaseConnectionRepository.GetByAgentId(agentId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to get database connection: %w for agent ID: %s", err, agentId.String())
 	}
 	if databaseConnection == nil {

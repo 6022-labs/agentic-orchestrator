@@ -1,6 +1,7 @@
 package command_handlers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
@@ -60,7 +61,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		request.HumanAgentCollectionAddress,
 		request.HumanAgentCollectionTokenId,
 	)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to check if human agent is already paired: %w", err)
 	}
 	if alreadyPairedUserForAgent != nil {

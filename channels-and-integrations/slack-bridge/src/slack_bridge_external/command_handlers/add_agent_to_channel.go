@@ -1,6 +1,7 @@
 package command_handlers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -35,7 +36,7 @@ func NewAddAgentToChannel(
 
 func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) error {
 	slackChannel, err := h.slackChannelRepository.GetById(request.ChannelID)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get channel with ID %s: %w", request.ChannelID, err)
 	}
 	if slackChannel != nil {

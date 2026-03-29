@@ -1,6 +1,7 @@
 package event_handlers
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -173,7 +174,7 @@ func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRe
 		*collectionTokenAddress,
 		*collectionTokenId,
 	)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get agent with metadata %s and %d : %w", *collectionTokenAddress, *collectionTokenId, err)
 	}
 	if agent == nil {
@@ -203,7 +204,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(request *requests.Message
 		*slackUser.PairedHumanAgentCollectionAddress,
 		*slackUser.PairedHumanAgentCollectionTokenId,
 	)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get paired human agent: %w", err)
 	}
 	if pairedHumanAgent == nil {
@@ -252,7 +253,7 @@ func (p *MessageCreatedHandler) getParentMessageTs(request *requests.MessageCrea
 
 func (p *MessageCreatedHandler) unconcludeThreadIfNeeded(slackThreadId, slackChannelId string) error {
 	slackThread, err := p.slackThreadRepository.GetByIdAndChannelId(slackThreadId, slackChannelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to get slack thread by id and channel id: %w", err)
 	}
 	if slackThread == nil {

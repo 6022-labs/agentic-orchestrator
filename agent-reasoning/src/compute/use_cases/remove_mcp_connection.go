@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/repositories"
@@ -35,7 +36,7 @@ func (d *RemoveMCPConnection) Remove(request *requests.IdRequest) error {
 	}
 
 	mcpConnection, err := d.mcpConnectionRepository.GetById(request.ID)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to find MCPConnection: %w", err)
 	}
 	if mcpConnection == nil {

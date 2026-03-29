@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
 	factories_db_clients "github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/factories/db_clients"
 	factories_repositories "github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/factories/repositories"
@@ -43,7 +45,7 @@ func (g *GetAgentContextByKey) Get(request *requests.GetAgentContextByKeyRequest
 	defer agentDbClient.Close()
 
 	agentContext, err := agentContextRepository.GetByKey(request.Key)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 	if agentContext == nil {

@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -42,7 +43,7 @@ func (uc *SaveLLMConnection) Save(request *requests.SaveLLMConnectionRequest) er
 	}
 
 	connection, err := uc.llmConnectionRepository.GetByAgentId(request.AgentId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("error requesting existing connection: %w", err)
 	}
 	if connection == nil {

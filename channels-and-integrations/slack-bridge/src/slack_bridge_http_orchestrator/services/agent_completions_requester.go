@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -40,7 +41,7 @@ func (a *AgentCompletionsRequester) Completions(
 
 		if message.AuthorCollectionAddress != nil && message.AuthorCollectionTokenId != nil {
 			authorAgent, err := a.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(*message.AuthorCollectionAddress, *message.AuthorCollectionTokenId)
-			if err != nil && err != gorm.ErrRecordNotFound {
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, nil, fmt.Errorf("failed to fetch author agent: %w", err)
 			}
 			if authorAgent == nil {

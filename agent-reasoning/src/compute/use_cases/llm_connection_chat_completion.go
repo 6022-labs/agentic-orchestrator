@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models/enums"
@@ -45,7 +46,7 @@ func (uc *LLMConnectionChatCompletion) Complete(request *requests.LLMConnectionC
 	}
 
 	llmConnection, err := uc.llmConnectionRepository.GetByAgentId(request.AgentId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to get llm connection: %w", err)
 	}
 	if llmConnection == nil {

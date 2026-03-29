@@ -1,6 +1,7 @@
 package use_cases
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-knowledge/src/database_connector/db_clients"
@@ -48,7 +49,7 @@ func (g *GetLinkedAgentContextOfConversation) Get(request *requests.GetLinkedAge
 	defer agentDbClient.Close()
 
 	conversationMapping, err := agentContextConversationMappingRepository.GetByConversationId(request.ConversationId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 	if conversationMapping == nil {
@@ -58,7 +59,7 @@ func (g *GetLinkedAgentContextOfConversation) Get(request *requests.GetLinkedAge
 	}
 
 	agentContext, err := agentContextRepository.GetById(conversationMapping.AgentContextId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to get agent context: %w", err)
 	}
 	if agentContext == nil {
