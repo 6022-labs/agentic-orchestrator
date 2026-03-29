@@ -2,27 +2,27 @@ package services
 
 import (
 	"errors"
-	"log"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AgentSignerUpdatedEventHandler struct {
-	logger *log.Logger
+	logger *zap.Logger
 
-	orchestratorSettings settings.OrchestratorSettings
+	orchestratorSettings *settings.OrchestratorSettings
 
 	agentRepository          repositories.AgentRepositoryInterface
 	agentCollectionRequester interfaces.AgentCollectionBlockchainRequesterInterface
 }
 
 func NewAgentSignerUpdatedEventHandler(
-	logger *log.Logger,
-	orchestratorSettings settings.OrchestratorSettings,
+	logger *zap.Logger,
+	orchestratorSettings *settings.OrchestratorSettings,
 	agentRepository repositories.AgentRepositoryInterface,
 	agentCollectionRequester interfaces.AgentCollectionBlockchainRequesterInterface,
 ) *AgentSignerUpdatedEventHandler {
@@ -37,10 +37,10 @@ func NewAgentSignerUpdatedEventHandler(
 }
 
 func (handler *AgentSignerUpdatedEventHandler) Handle(event *abi.AgentCollectionV1AgentSignerUpdated) error {
-	handler.logger.Printf("Handling AgentSignerUpdated event for collection %s, agentId %d, new signer %s",
-		event.Raw.Address.Hex(),
-		event.TokenId.Uint64(),
-		event.NewSigner.Hex(),
+	handler.logger.Info("Handling AgentSignerUpdated event",
+		zap.String("collectionAddress", event.Raw.Address.Hex()),
+		zap.Uint64("agentId", event.TokenId.Uint64()),
+		zap.String("newSigner", event.NewSigner.Hex()),
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())

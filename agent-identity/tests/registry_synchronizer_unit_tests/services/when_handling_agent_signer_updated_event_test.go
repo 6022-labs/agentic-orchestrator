@@ -1,8 +1,6 @@
 package services_test
 
 import (
-	"io"
-	"log"
 	"math/big"
 	"testing"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 )
 
 type WhenHandlingAgentSignerUpdatedEventTestingSuite struct {
@@ -37,8 +36,8 @@ func WhenHandlingAgentSignerUpdatedEventBeforeEach(t *testing.T) *WhenHandlingAg
 	orchestratorPublicKey := common_tests.RandomEthAddress()
 
 	sut := services.NewAgentSignerUpdatedEventHandler(
-		log.New(io.Discard, "", 0),
-		settings.OrchestratorSettings{PublicKey: orchestratorPublicKey},
+		zap.NewNop(),
+		&settings.OrchestratorSettings{PublicKey: orchestratorPublicKey},
 		agentRepositoryMock,
 		agentCollectionRequesterMock,
 	)
