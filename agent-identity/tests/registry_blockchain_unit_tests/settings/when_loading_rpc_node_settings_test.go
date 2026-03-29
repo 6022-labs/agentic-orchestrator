@@ -14,16 +14,12 @@ func TestWhenLoadingRpcNodeSettings(t *testing.T) {
 	t.Run("Loads settings", func(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
-			"rpc_node.ws_url":       "wss://example.com/ws",
-			"rpc_node.http_url":     "https://example.com/rpc",
-			"rpc_node.ens_http_url": "https://example.com/ens",
+			"rpc_node.http_url": "https://example.com/rpc",
 		}, "."), nil)
 
 		settings := rpc_node_settings.NewRpcNodeSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
-		assert.Equal(t, "wss://example.com/ws", settings.WsUrl)
 		assert.Equal(t, "https://example.com/rpc", settings.HttpUrl)
-		assert.Equal(t, "https://example.com/ens", settings.ENSHttpUrl)
 	})
 }
