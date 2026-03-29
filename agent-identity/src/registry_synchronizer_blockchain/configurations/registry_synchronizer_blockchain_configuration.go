@@ -30,14 +30,6 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewOrchestratorDomainResolver,
-		dig.As(new(interfaces.OrchestratorDomainResolverInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewAgentCollectionsManagerRequester,
 		dig.As(new(interfaces.AgentCollectionsManagerBlockchainRequesterInterface)),
 	)
@@ -77,10 +69,4 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
-		return ethclient.Dial(rpcNodeSettings.ENSHttpUrl)
-	}, dig.Name("ens"))
-	if err != nil {
-		panic(err)
-	}
 }

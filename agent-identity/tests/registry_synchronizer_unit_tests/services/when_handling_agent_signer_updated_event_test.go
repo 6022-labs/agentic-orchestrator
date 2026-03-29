@@ -8,7 +8,6 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
@@ -22,11 +21,9 @@ import (
 )
 
 type WhenHandlingAgentSignerUpdatedEventTestingSuite struct {
-	agentRepositoryMock             *repositories_mocks.MockAgentRepositoryInterface
-	agentCollectionRequesterMock    *interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
-	orchestratorDomainResolverMock  *interfaces_mocks.MockOrchestratorDomainResolverInterface
-	agentPreviousSignerImporterMock *interfaces_mocks.MockAgentPreviousSignerImporterInterface
-	orchestratorPublicKey           common.Address
+	agentRepositoryMock          *repositories_mocks.MockAgentRepositoryInterface
+	agentCollectionRequesterMock *interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
+	orchestratorPublicKey        common.Address
 
 	sut *services.AgentSignerUpdatedEventHandler
 }
@@ -36,8 +33,6 @@ func WhenHandlingAgentSignerUpdatedEventBeforeEach(t *testing.T) *WhenHandlingAg
 
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
 	agentCollectionRequesterMock := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
-	orchestratorDomainResolverMock := interfaces_mocks.NewMockOrchestratorDomainResolverInterface(mockController)
-	agentPreviousSignerImporterMock := interfaces_mocks.NewMockAgentPreviousSignerImporterInterface(mockController)
 
 	orchestratorPublicKey := common_tests.RandomEthAddress()
 
@@ -46,16 +41,12 @@ func WhenHandlingAgentSignerUpdatedEventBeforeEach(t *testing.T) *WhenHandlingAg
 		settings.OrchestratorSettings{PublicKey: orchestratorPublicKey},
 		agentRepositoryMock,
 		agentCollectionRequesterMock,
-		orchestratorDomainResolverMock,
-		agentPreviousSignerImporterMock,
 	)
 
 	return &WhenHandlingAgentSignerUpdatedEventTestingSuite{
-		agentRepositoryMock:             agentRepositoryMock,
-		agentCollectionRequesterMock:    agentCollectionRequesterMock,
-		orchestratorDomainResolverMock:  orchestratorDomainResolverMock,
-		agentPreviousSignerImporterMock: agentPreviousSignerImporterMock,
-		orchestratorPublicKey:           orchestratorPublicKey,
+		agentRepositoryMock:          agentRepositoryMock,
+		agentCollectionRequesterMock: agentCollectionRequesterMock,
+		orchestratorPublicKey:        orchestratorPublicKey,
 
 		sut: sut,
 	}
@@ -137,7 +128,7 @@ func TestWhenHandlingAgentSignerUpdatedEvent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given signer is internal and importation status is third step", func(t *testing.T) {
+	t.Run("Given signer is internal", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingAgentSignerUpdatedEventTestingSuite) *abi.AgentCollectionV1AgentSignerUpdated {
@@ -146,42 +137,24 @@ func TestWhenHandlingAgentSignerUpdatedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, tokenID, suite.orchestratorPublicKey)
 			agent := model_builders.NewAgentBuilder().
 				WithCollectionTokenId(&tokenID).
-				WithImportationStatus(enums.AgentImportationStatusThirdStep.ToPointer()).
 				Build()
-			previousSigner := common_tests.RandomEthAddress()
-			previousSignerDomain := "orchestrator.example"
 
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), tokenID).
 				Return(agent, nil)
-			suite.agentCollectionRequesterMock.
-				EXPECT().
-				GetAgentPreviousSigners(collectionAddress, gomock.Any()).
-				Return([]common.Address{previousSigner}, nil)
-			suite.orchestratorDomainResolverMock.
-				EXPECT().
-				ResolveGatewayDomain(previousSigner).
-				Return(&previousSignerDomain, nil)
-			suite.agentPreviousSignerImporterMock.
-				EXPECT().
-				Import(previousSignerDomain, agent).
-				Return(nil)
 			suite.agentRepositoryMock.
 				EXPECT().
 				Save(agent).
 				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
 					assert.True(t, saved.IsInternal)
-					if assert.NotNil(t, saved.ImportationStatus) {
-						assert.Equal(t, enums.AgentImportationStatusFinished, *saved.ImportationStatus)
-					}
 					return saved, nil
 				})
 
 			return event
 		}
 
-		t.Run("Should import from previous signer and finish importation", func(t *testing.T) {
+		t.Run("Should mark agent as internal and save", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingAgentSignerUpdatedEventBeforeEach(t)
@@ -190,38 +163,6 @@ func TestWhenHandlingAgentSignerUpdatedEvent(t *testing.T) {
 			err := suite.sut.Handle(event)
 
 			assert.NoError(t, err)
-		})
-	})
-
-	t.Run("Given signer is internal at third step and token id is missing", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenHandlingAgentSignerUpdatedEventTestingSuite) *abi.AgentCollectionV1AgentSignerUpdated {
-			collectionAddress := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 4, suite.orchestratorPublicKey)
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionTokenId(nil).
-				WithImportationStatus(enums.AgentImportationStatusThirdStep.ToPointer()).
-				Build()
-
-			suite.agentRepositoryMock.
-				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(4)).
-				Return(agent, nil)
-
-			return event
-		}
-
-		t.Run("Should return token id error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenHandlingAgentSignerUpdatedEventBeforeEach(t)
-			event := initSuite(suite)
-
-			err := suite.sut.Handle(event)
-
-			assert.Error(t, err)
-			assert.ErrorContains(t, err, "agent collection token id is missing")
 		})
 	})
 }
