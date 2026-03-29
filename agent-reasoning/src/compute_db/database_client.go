@@ -33,7 +33,7 @@ func NewOrchestratorDbClient(
 		Logger: gormLogger,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %v", err)
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
 	return &DatabaseClient{
