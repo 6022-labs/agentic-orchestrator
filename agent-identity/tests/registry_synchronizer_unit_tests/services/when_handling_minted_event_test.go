@@ -197,10 +197,13 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				EXPECT().
 				GetByWalletAddress(wallet.Hex()).
 				Return(nil, gorm.ErrRecordNotFound)
+
+			owner := common_tests.RandomEthAddress()
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
 				GetAgentOwner(collectionAddress, gomock.Any()).
-				Return(common_tests.RandomEthAddress(), nil)
+				Return(&owner, nil)
+
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
 				GetByAddress(collectionAddress.Hex()).
@@ -254,7 +257,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
 				GetAgentOwner(collectionAddress, gomock.Any()).
-				Return(owner, nil)
+				Return(&owner, nil)
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
 				GetByAddress(collectionAddress.Hex()).
