@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
-	http_compute_clients "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/clients"
-	http_compute_services "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/services"
-	http_compute_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/settings"
+	http_compute_clients "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_agent_reasoning_compute/clients"
+	http_compute_services "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_agent_reasoning_compute/services"
+	http_compute_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_agent_reasoning_compute/settings"
 	"go.uber.org/dig"
 )
 
-func AddSlackBridgeHttpAgentReasoningComputeConfiguration(container *dig.Container) {
+func AddSlackBridgeInternalHttpAgentReasoningComputeConfiguration(container *dig.Container) {
 	err := container.Provide(http_compute_settings.NewAgentReasoningComputeSettings)
 	if err != nil {
 		panic(err)
