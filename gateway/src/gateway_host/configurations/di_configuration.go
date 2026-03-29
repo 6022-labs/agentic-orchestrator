@@ -25,7 +25,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	})
 
 	gateway_configurations.AddGatewayConfiguration(container)
-	gateway_configurations.AddGatewayConfiguration(container)
 	gateway_mvc_configurations.AddGatewayMvcConfiguration(container)
 	gateway_vault_configurations.AddGatewayVaultConfiguration(container)
 	gateway_redis_configurations.AddGatewayRedisConfiguration(container)
