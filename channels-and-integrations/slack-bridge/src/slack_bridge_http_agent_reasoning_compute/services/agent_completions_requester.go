@@ -6,19 +6,19 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
-	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/clients"
-	http_orchestrator_models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/models"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/clients"
+	http_compute_models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/models"
 	"gorm.io/gorm"
 )
 
 type AgentCompletionsRequester struct {
-	client clients.OrchestratorGatewayClientInterface
+	client clients.AgentReasoningComputeClientInterface
 
 	slackAgentRepository repositories.SlackAgentRepositoryInterface
 }
 
 func NewAgentCompletionsRequester(
-	client clients.OrchestratorGatewayClientInterface,
+	client clients.AgentReasoningComputeClientInterface,
 	slackAgentRepository repositories.SlackAgentRepositoryInterface,
 ) *AgentCompletionsRequester {
 	return &AgentCompletionsRequester{
@@ -35,7 +35,7 @@ func (a *AgentCompletionsRequester) Completions(
 	collectionTokenId uint64,
 	forceCompletion bool,
 ) ([]*string, *bool, error) {
-	inputs := make([]*http_orchestrator_models.ExternalAgentComputeInputRequest, len(slackMessages))
+	inputs := make([]*http_compute_models.ExternalAgentComputeInputRequest, len(slackMessages))
 	for i, message := range slackMessages {
 		var author *string
 
@@ -50,7 +50,7 @@ func (a *AgentCompletionsRequester) Completions(
 			author = &authorAgent.EnsDomain
 		}
 
-		inputs[i] = &http_orchestrator_models.ExternalAgentComputeInputRequest{
+		inputs[i] = &http_compute_models.ExternalAgentComputeInputRequest{
 			Author:    author,
 			Content:   message.Content,
 			Timestamp: message.CreatedAt(),
@@ -63,12 +63,12 @@ func (a *AgentCompletionsRequester) Completions(
 		channelMembers[len(slackChannel.Members)+i] = agent.EnsDomain
 	}
 
-	externalAgentComputeContextConversationContextRequest := &http_orchestrator_models.ExternalAgentComputeContextConversationContextRequest{
+	externalAgentComputeContextConversationContextRequest := &http_compute_models.ExternalAgentComputeContextConversationContextRequest{
 		Id: slackThread.Id,
 	}
 	externalAgentComputeContextConversationContextRequest.SetAgents(slackChannel.Agents)
 
-	completionsRequest := &http_orchestrator_models.ExternalAgentComputeRequest{
+	completionsRequest := &http_compute_models.ExternalAgentComputeRequest{
 		Platform:            "slack",
 		Inputs:              inputs,
 		ForceConclusion:     forceCompletion,

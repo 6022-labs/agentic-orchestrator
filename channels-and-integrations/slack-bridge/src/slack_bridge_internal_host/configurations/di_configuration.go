@@ -3,7 +3,8 @@ package configurations
 import (
 	orchestrator_slack_bridge_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/configurations"
 	slack_bridge_db_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/configurations"
-	orchestrator_slack_bridge_http_orchestrator_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_orchestrator/configurations"
+	orchestrator_slack_bridge_http_agent_identity_registry_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_identity_registry/configurations"
+	orchestrator_slack_bridge_http_agent_reasoning_compute_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_reasoning_compute/configurations"
 	orchestrator_slack_bridge_http_slack_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/configurations"
 	orchestrator_slack_bridge_internal_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/configurations"
 	orchestrator_slack_bridge_internal_host_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
@@ -30,7 +31,8 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	orchestrator_slack_bridge_internal_configurations.AddSlackBridgeInternalConfiguration(container)
 	orchestrator_slack_bridge_http_slack_configurations.AddSlackBridgeHttpSlackConfiguration(container)
 	orchestrator_slack_bridge_internal_mvc_configurations.AddSlackBridgeInternalMvcConfiguration(container)
-	orchestrator_slack_bridge_http_orchestrator_configurations.AddSlackBridgeHttpOrchestratorConfiguration(container)
+	orchestrator_slack_bridge_http_agent_identity_registry_configurations.AddSlackBridgeHttpAgentIdentityRegistryConfiguration(container)
+	orchestrator_slack_bridge_http_agent_reasoning_compute_configurations.AddSlackBridgeHttpAgentReasoningComputeConfiguration(container)
 
 	return container
 }
