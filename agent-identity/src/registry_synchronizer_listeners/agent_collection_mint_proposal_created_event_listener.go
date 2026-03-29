@@ -2,6 +2,7 @@ package registry_synchronizer_listeners
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
@@ -84,11 +85,9 @@ func (listener *AgentCollectionMintProposalCreatedListener) SubscribeAll() error
 
 func (listener *AgentCollectionMintProposalCreatedListener) Subscribe(collectionAddress common.Address) error {
 	listener.mu.Lock()
-	for _, trackedAddress := range listener.trackedAddresses {
-		if trackedAddress == collectionAddress {
-			listener.mu.Unlock()
-			return nil
-		}
+	if slices.Contains(listener.trackedAddresses, collectionAddress) {
+		listener.mu.Unlock()
+		return nil
 	}
 
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
