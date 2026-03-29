@@ -1,7 +1,7 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -40,7 +40,7 @@ func (handler *CollectionCreatedEventHandler) Handle(event *abi.AgentCollections
 
 	_, err := handler.agentCollectionRepository.Save(collection)
 	if err != nil {
-		return errors.New("failed to save new collection: " + err.Error())
+		return fmt.Errorf("failed to save new collection: %w", err)
 	}
 
 	return nil

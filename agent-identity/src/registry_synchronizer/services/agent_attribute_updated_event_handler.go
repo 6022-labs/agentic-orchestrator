@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
@@ -35,10 +36,10 @@ func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollect
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("failed to get agent by collection and id: " + err.Error())
+		return fmt.Errorf("failed to get agent by collection %s and id %s: %w", event.Raw.Address.Hex(), event.TokenId.String(), err)
 	}
 	if agent == nil {
-		return errors.New("agent not found for collection " + event.Raw.Address.Hex() + " and id " + event.TokenId.String())
+		return fmt.Errorf("agent not found for collection %s and id %s", event.Raw.Address.Hex(), event.TokenId.String())
 	}
 
 	if agent.Attributes == nil {
@@ -49,7 +50,7 @@ func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollect
 
 	_, err = handler.agentRepository.Save(agent)
 	if err != nil {
-		return errors.New("failed to update agent: " + err.Error())
+		return fmt.Errorf("failed to update agent: %w", err)
 	}
 
 	return nil

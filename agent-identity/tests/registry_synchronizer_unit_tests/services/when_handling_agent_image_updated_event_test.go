@@ -79,7 +79,7 @@ func TestWhenHandlingAgentImageUpdatedEvent(t *testing.T) {
 			err := suite.sut.Handle(event)
 
 			assert.Error(t, err)
-			assert.ErrorContains(t, err, "failed to get agent by collection and id")
+			assert.ErrorContains(t, err, "failed to get agent by collection")
 		})
 	})
 
