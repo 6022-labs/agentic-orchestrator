@@ -163,10 +163,10 @@ func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentI
 }
 
 // GetAgentOwner mocks base method.
-func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (common.Address, error) {
+func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (*common.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgentOwner", collectionAddress, collectionTokenId)
-	ret0, _ := ret[0].(common.Address)
+	ret0, _ := ret[0].(*common.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

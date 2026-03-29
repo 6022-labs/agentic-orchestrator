@@ -35,48 +35,6 @@ func NewAgentCollectionRequester(
 	}
 }
 
-func (a *AgentCollectionRequester) GetName(collectionAddress common.Address) (*string, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	name, err := agentCollection.Name(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &name, nil
-}
-
-func (a *AgentCollectionRequester) GetSymbol(collectionAddress common.Address) (*string, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	symbol, err := agentCollection.Symbol(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &symbol, nil
-}
-
-func (a *AgentCollectionRequester) GetNextTokenId(collectionAddress common.Address) (*big.Int, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	nextTokenId, err := agentCollection.NextTokenId(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return nextTokenId, nil
-}
-
 func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (*common.Address, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
@@ -89,44 +47,6 @@ func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Addres
 	}
 
 	return &owner, nil
-}
-
-func (a *AgentCollectionRequester) GetAgentSigner(collectionAddress common.Address, collectionTokenId big.Int) (*common.Address, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	signer, err := agentCollection.SignerOf(nil, &collectionTokenId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &signer, nil
-}
-
-func (a *AgentCollectionRequester) GetAgentWallets(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	count, err := agentCollection.WalletsCountOf(nil, &collectionTokenId)
-	if err != nil {
-		return nil, err
-	}
-
-	wallets := make([]common.Address, count.Int64())
-
-	for i := big.NewInt(0); i.Cmp(count) < 0; i.Add(i, big.NewInt(1)) {
-		wallet, err := agentCollection.WalletOfByIndex(nil, &collectionTokenId, i)
-		if err != nil {
-			return nil, err
-		}
-		wallets[i.Int64()] = wallet
-	}
-
-	return wallets, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentPreviousSigners(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error) {
@@ -243,52 +163,184 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_ab
 	return mintProposals, nil
 }
 
-func (a *AgentCollectionRequester) GetAddOrUpdateAgentAttributeInputsFromTransaction(collectionAddress common.Address, txHash common.Hash) (*big.Int, *string, *string, error) {
-	tx, isPending, err := a.client.TransactionByHash(context.Background(), txHash)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to get transaction by hash: %w", err)
-	}
-	if isPending {
-		return nil, nil, nil, fmt.Errorf("transaction is still pending")
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1Minted, error) {
+	var allEvents []*registry_abi.AgentCollectionV1Minted
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterMinted(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(registry_abi.AgentCollectionV1ABI))
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1Transfer, error) {
+	var allEvents []*registry_abi.AgentCollectionV1Transfer
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterTransfer(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	data := tx.Data()
-	if len(data) < 4 {
-		return nil, nil, nil, fmt.Errorf("transaction data too short")
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentImageUpdated
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentImageUpdated(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	method, err := agentCollectionABI.MethodById(data[:4])
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to get method by ID: %w", err)
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentSignerUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentSignerUpdated, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentSignerUpdated
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentSignerUpdated(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	if method.Name != "addOrUpdateAgentAttribute" {
-		return nil, nil, nil, fmt.Errorf("transaction does not call addAgentAttribute or updateAgentAttribute")
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentAttributeUpdated
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentAttributeUpdated(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	argsAsMap := make(map[string]interface{})
-	err = method.Inputs.UnpackIntoMap(argsAsMap, data[4:])
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to unpack inputs into map: %w", err)
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
+	var allEvents []*registry_abi.AgentCollectionV1MintProposalCreated
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterMintProposalCreated(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	tokenId, ok := argsAsMap["tokenId"].(*big.Int)
-	if !ok {
-		return nil, nil, nil, fmt.Errorf("failed to assert TokenId type, got %T with map %v", argsAsMap["tokenId"], argsAsMap)
-	}
-	key, ok := argsAsMap["key"].(string)
-	if !ok {
-		return nil, nil, nil, fmt.Errorf("failed to assert Key type, got %T with map %v", argsAsMap["key"], argsAsMap)
-	}
-	value, ok := argsAsMap["value"].(string)
-	if !ok {
-		return nil, nil, nil, fmt.Errorf("failed to assert Value type, got %T with map %v", argsAsMap["value"], argsAsMap)
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1MintProposalRemoved
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterMintProposalRemoved(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
 	}
 
-	return tokenId, &key, &value, nil
+	return allEvents, nil
 }

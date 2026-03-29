@@ -54,6 +54,14 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		services.NewBlockchainEventSubscriptionProvider,
+		dig.As(new(interfaces.BlockchainEventSubscriptionProviderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Ethereum clients
 	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
 		return ethclient.Dial(rpcNodeSettings.WsUrl)

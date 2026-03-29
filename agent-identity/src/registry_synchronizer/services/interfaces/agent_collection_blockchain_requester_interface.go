@@ -8,7 +8,7 @@ import (
 )
 
 type AgentCollectionBlockchainRequesterInterface interface {
-	GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (common.Address, error)
+	GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (*common.Address, error)
 	GetAgentWalletsOfProposal(collectionAddress common.Address, proposalId *big.Int) ([]common.Address, error)
 	GetAgentPreviousSigners(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error)
 	GetAgentInformation(collectionAddress common.Address, collectionTokenId big.Int) (*abi.AgentInformation, error)
