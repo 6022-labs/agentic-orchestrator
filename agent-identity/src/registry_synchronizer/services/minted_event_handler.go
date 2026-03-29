@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,8 +21,8 @@ type MintedEventHandler struct {
 	orchestratorSettings               *settings.OrchestratorSettings
 	agentRepository                    repositories.AgentRepositoryInterface
 	agentCollectionRepository          repositories.AgentCollectionRepositoryInterface
-	decentralizedDomainNameBuilder     interfaces.DecentralizedDomainNameBuilderInterface
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface
+	decentralizedDomainNameBuilder     registry_common_interfaces.DecentralizedDomainNameBuilderInterface
 }
 
 func NewMintedEventHandler(
@@ -29,8 +30,8 @@ func NewMintedEventHandler(
 	orchestratorSettings *settings.OrchestratorSettings,
 	agentRepository repositories.AgentRepositoryInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	decentralizedDomainNameBuilder interfaces.DecentralizedDomainNameBuilderInterface,
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface,
+	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *MintedEventHandler {
 	return &MintedEventHandler{
 		logger:               logger,

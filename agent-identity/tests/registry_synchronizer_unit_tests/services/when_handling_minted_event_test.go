@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
+	registry_common_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -24,7 +25,7 @@ type WhenHandlingMintedEventTestingSuite struct {
 	orchestratorSettings               *settings.OrchestratorSettings
 	agentRepositoryMock                *repositories_mocks.MockAgentRepositoryInterface
 	agentCollectionRepositoryMock      *repositories_mocks.MockAgentCollectionRepositoryInterface
-	decentralizedDomainNameBuilder     *interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
+	decentralizedDomainNameBuilder     *registry_common_interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
 	agentCollectionBlockchainRequester *interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
 
 	sut *services.MintedEventHandler
@@ -38,7 +39,7 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
-	decentralizedDomainNameBuilder := interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
+	decentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
 	agentCollectionBlockchainRequester := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
 
 	sut := services.NewMintedEventHandler(
@@ -46,8 +47,8 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 		orchestratorSettings,
 		agentRepositoryMock,
 		agentCollectionRepositoryMock,
-		decentralizedDomainNameBuilder,
 		agentCollectionBlockchainRequester,
+		decentralizedDomainNameBuilder,
 	)
 
 	return &WhenHandlingMintedEventTestingSuite{

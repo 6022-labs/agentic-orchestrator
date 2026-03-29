@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

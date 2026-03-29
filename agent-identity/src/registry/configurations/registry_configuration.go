@@ -26,14 +26,6 @@ func AddRegistryConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewDecentralizedDomainNameBuilder,
-		dig.As(new(interfaces.DecentralizedDomainNameBuilderInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewOrchestratorPrivateKeyFetcher,
 		dig.As(new(interfaces.OrchestratorPrivateKeyFetcherInterface)),
 	)

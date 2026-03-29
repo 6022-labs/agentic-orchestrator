@@ -15,6 +15,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
+	registry_common_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -24,14 +25,14 @@ import (
 type WhenCreatingAgentFirstStepTestingSuite struct {
 	sut *use_cases.CreateAgentFirstStep
 
-	mockAgentRepository                *repositories_mocks.MockAgentRepositoryInterface
-	mockAgentCollectionRepository      *repositories_mocks.MockAgentCollectionRepositoryInterface
 	mockWalletCreator                  *interfaces_mocks.MockWalletCreatorInterface
-	mockToken6022Requester             *interfaces_mocks.MockToken6022RequesterInterface
 	mockIPFSFileStorage                *interfaces_mocks.MockIPFSFileStorageInterface
+	mockAgentRepository                *repositories_mocks.MockAgentRepositoryInterface
+	mockToken6022Requester             *interfaces_mocks.MockToken6022RequesterInterface
 	mockAgentPrivateKeyStorage         *interfaces_mocks.MockAgentPrivateKeyStorageInterface
 	mockImagesGeneratorRequester       *interfaces_mocks.MockImagesGeneratorRequesterInterface
-	mockDecentralizedDomainNameBuilder *interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
+	mockAgentCollectionRepository      *repositories_mocks.MockAgentCollectionRepositoryInterface
+	mockDecentralizedDomainNameBuilder *registry_common_interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
 }
 
 func WhenCreatingAgentFirstStepBeforeEach(t *testing.T) *WhenCreatingAgentFirstStepTestingSuite {
@@ -44,13 +45,13 @@ func WhenCreatingAgentFirstStepBeforeEach(t *testing.T) *WhenCreatingAgentFirstS
 	mockIPFSFileStorage := interfaces_mocks.NewMockIPFSFileStorageInterface(mockController)
 	mockAgentPrivateKeyStorage := interfaces_mocks.NewMockAgentPrivateKeyStorageInterface(mockController)
 	mockImagesGeneratorRequester := interfaces_mocks.NewMockImagesGeneratorRequesterInterface(mockController)
-	mockDecentralizedDomainNameBuilder := interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
+	mockDecentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
 
 	sut := use_cases.NewCreateAgentFirstStep(
-		mockAgentRepository,
 		mockWalletCreator,
-		mockToken6022Requester,
 		mockIPFSFileStorage,
+		mockAgentRepository,
+		mockToken6022Requester,
 		mockAgentPrivateKeyStorage,
 		mockImagesGeneratorRequester,
 		mockAgentCollectionRepository,

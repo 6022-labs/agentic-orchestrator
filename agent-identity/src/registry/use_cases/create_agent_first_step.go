@@ -13,6 +13,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -23,25 +24,25 @@ type CreateAgentFirstStepInterface interface {
 }
 
 type CreateAgentFirstStep struct {
+	walletCreator                  interfaces.WalletCreatorInterface
+	ipfsFileStorage                interfaces.IPFSFileStorageInterface
 	agentRepository                repositories.AgentRepositoryInterface
 	token6022Requester             interfaces.Token6022RequesterInterface
-	walletCreator                  interfaces.WalletCreatorInterface
 	agentPrivateKeyStorage         interfaces.AgentPrivateKeyStorageInterface
-	ipfsFileStorage                interfaces.IPFSFileStorageInterface
-	agentCollectionRepository      repositories.AgentCollectionRepositoryInterface
-	decentralizedDomainNameBuilder interfaces.DecentralizedDomainNameBuilderInterface
 	imagesGeneratorRequester       interfaces.ImagesGeneratorRequesterInterface
+	agentCollectionRepository      repositories.AgentCollectionRepositoryInterface
+	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface
 }
 
 func NewCreateAgentFirstStep(
-	agentRepository repositories.AgentRepositoryInterface,
 	walletCreator interfaces.WalletCreatorInterface,
-	token6022Requester interfaces.Token6022RequesterInterface,
 	ipfsFileStorage interfaces.IPFSFileStorageInterface,
+	agentRepository repositories.AgentRepositoryInterface,
+	token6022Requester interfaces.Token6022RequesterInterface,
 	agentPrivateKeyStorage interfaces.AgentPrivateKeyStorageInterface,
 	imagesGeneratorRequester interfaces.ImagesGeneratorRequesterInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	decentralizedDomainNameBuilder interfaces.DecentralizedDomainNameBuilderInterface,
+	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *CreateAgentFirstStep {
 	return &CreateAgentFirstStep{
 		walletCreator:                  walletCreator,
