@@ -35,7 +35,7 @@ func (b *DecentralizedDomainNameBuilder) BuildDomainName(agentName, collectionNa
 	)
 
 	b.logger.Debug(
-		"Builded domain name",
+		"Built domain name",
 		zap.String("agentName", agentName),
 		zap.String("collectionName", collectionName),
 		zap.String("domainName", domainName),
