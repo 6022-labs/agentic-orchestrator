@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_vault/settings"
 	vault "github.com/hashicorp/vault/api"
@@ -38,7 +39,12 @@ func (v *VaultSecretStorage) Read(key string) (string, error) {
 		return "", err
 	}
 
-	return secret.Data["value"].(string), nil
+	value, ok := secret.Data["value"].(string)
+	if !ok {
+		return "", fmt.Errorf("secret key %q: missing or non-string \"value\" field", key)
+	}
+
+	return value, nil
 }
 
 func (v *VaultSecretStorage) Delete(key string) error {
