@@ -37,7 +37,7 @@ type useRestApiParams struct {
 	Controllers []registry_mvc.ControllerInterface `group:"controllers"`
 }
 
-// RegisterRoutes hooks up the routes and uses Fx to create new controller instances per request
+// useRestApi registers middleware and routes on the Fiber app using controllers resolved from the dig container.
 func useRestApi(p useRestApiParams) {
 	p.App.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
