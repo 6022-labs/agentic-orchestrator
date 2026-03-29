@@ -7,7 +7,7 @@ This directory contains the SQL migrations used by the orchestrator service. Mig
 1. Navigate to this folder:
 
    ```bash
-   cd agent-identity/src/registry_db/migrations
+   cd agent-identity/src/registry_common_db/migrations
    ```
 
 2. Generate the migration with Atlas using the `gorm` environment defined in `atlas.hcl`:
@@ -27,7 +27,7 @@ After editing the generated SQL file you must recompute the checksums so that At
 1. Navigate to this folder:
 
    ```bash
-   cd agent-identity/src/registry_db/migrations
+   cd agent-identity/src/registry_common_db/migrations
    ```
 
 2. Regenerate hashes of existing migrations:
