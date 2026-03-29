@@ -2,17 +2,17 @@ package services
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models/enums"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/clients"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/clients"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/models"
 	"github.com/google/uuid"
 )
 
 type AgentPromptTemplateRequester struct {
-	client clients.AgentKnowledgeClientInterface
+	client clients.AgentDatabaseConnectorClientInterface
 }
 
 func NewAgentPromptTemplateRequester(
-	client clients.AgentKnowledgeClientInterface,
+	client clients.AgentDatabaseConnectorClientInterface,
 ) *AgentPromptTemplateRequester {
 	return &AgentPromptTemplateRequester{
 		client: client,

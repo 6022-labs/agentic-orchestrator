@@ -2,17 +2,17 @@ package services
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/clients"
-	agent_knowledge_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/clients"
+	agent_database_connector_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/models"
 	"github.com/google/uuid"
 )
 
 type AgentContextConversationMappingRequester struct {
-	client clients.AgentKnowledgeClientInterface
+	client clients.AgentDatabaseConnectorClientInterface
 }
 
 func NewAgentContextConversationMappingRequester(
-	client clients.AgentKnowledgeClientInterface,
+	client clients.AgentDatabaseConnectorClientInterface,
 ) *AgentContextConversationMappingRequester {
 	return &AgentContextConversationMappingRequester{
 		client: client,
@@ -20,7 +20,7 @@ func NewAgentContextConversationMappingRequester(
 }
 
 func (a *AgentContextConversationMappingRequester) GetLinkedAgentContextKeyOfConversation(agentId uuid.UUID, conversationId string) (*models.AgentContext, *bool, error) {
-	response, err := a.client.GetLinkedAgentContextOfConversation(&agent_knowledge_models.ExternalGetLinkedAgentContextOfConversationRequest{
+	response, err := a.client.GetLinkedAgentContextOfConversation(&agent_database_connector_models.ExternalGetLinkedAgentContextOfConversationRequest{
 		AgentId:        agentId,
 		ConversationId: conversationId,
 	})
@@ -28,7 +28,7 @@ func (a *AgentContextConversationMappingRequester) GetLinkedAgentContextKeyOfCon
 		return nil, nil, err
 	}
 
-	isFound := response.Status == agent_knowledge_models.GetLinkedAgentContextOfConversationResponseStatusFound
+	isFound := response.Status == agent_database_connector_models.GetLinkedAgentContextOfConversationResponseStatusFound
 
 	return &models.AgentContext{
 		Id:  response.Id,
@@ -37,7 +37,7 @@ func (a *AgentContextConversationMappingRequester) GetLinkedAgentContextKeyOfCon
 }
 
 func (a *AgentContextConversationMappingRequester) LinkConversationToAgentContext(agentId uuid.UUID, conversationId string, key string) error {
-	return a.client.LinkConversationToAgentContext(&agent_knowledge_models.ExternalLinkConversationToAgentContextRequest{
+	return a.client.LinkConversationToAgentContext(&agent_database_connector_models.ExternalLinkConversationToAgentContextRequest{
 		AgentId:        agentId,
 		ConversationId: conversationId,
 		Key:            key,

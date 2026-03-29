@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/clients"
-	agent_knowledge_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/clients"
+	agent_database_connector_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/models"
 	"github.com/google/uuid"
 )
 
 type AgentContextRequester struct {
-	client clients.AgentKnowledgeClientInterface
+	client clients.AgentDatabaseConnectorClientInterface
 }
 
 func NewAgentContextRequester(
-	client clients.AgentKnowledgeClientInterface,
+	client clients.AgentDatabaseConnectorClientInterface,
 ) *AgentContextRequester {
 	return &AgentContextRequester{
 		client: client,
@@ -22,14 +22,14 @@ func NewAgentContextRequester(
 }
 
 func (a *AgentContextRequester) CreateAgentContext(agentId uuid.UUID, key string) error {
-	return a.client.CreateAgentContext(&agent_knowledge_models.ExternalCreateAgentContextRequest{
+	return a.client.CreateAgentContext(&agent_database_connector_models.ExternalCreateAgentContextRequest{
 		AgentId: agentId,
 		Key:     key,
 	})
 }
 
 func (a *AgentContextRequester) GetAgentContextByKey(agentId uuid.UUID, key string) (*models.AgentContext, *bool, error) {
-	agentContext, err := a.client.GetAgentContextByKey(&agent_knowledge_models.ExternalGetAgentContextByKeyRequest{
+	agentContext, err := a.client.GetAgentContextByKey(&agent_database_connector_models.ExternalGetAgentContextByKeyRequest{
 		AgentId: agentId,
 		Key:     key,
 	})
@@ -46,7 +46,7 @@ func (a *AgentContextRequester) GetAgentContextByKey(agentId uuid.UUID, key stri
 }
 
 func (a *AgentContextRequester) GetAgentContexts(agentId uuid.UUID, search, sortBy, sortDirection *string) ([]*models.AgentContext, error) {
-	agentContexts, err := a.client.GetAgentContexts(&agent_knowledge_models.ExternalAgentIdRequest{
+	agentContexts, err := a.client.GetAgentContexts(&agent_database_connector_models.ExternalAgentIdRequest{
 		AgentId:       agentId,
 		Search:        search,
 		SortBy:        sortBy,

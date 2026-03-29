@@ -46,7 +46,7 @@ type AgentDatabaseConnectorClientInterface interface {
 type AgentDatabaseConnectorClient struct {
 	logger                         *zap.Logger
 	httpClient                     *http.Client
-	agentDatabaseConnectorSettings *settings.AgentDatabaseConnectorSettings
+	agentKnowledgeDatabaseConnectorSettings *settings.AgentKnowledgeDatabaseConnectorSettings
 }
 
 type newAgentDatabaseConnectorClientParams struct {
@@ -54,7 +54,7 @@ type newAgentDatabaseConnectorClientParams struct {
 
 	Logger                         *zap.Logger
 	HttpClient                     *http.Client `name:"database-connector-http-client"`
-	AgentDatabaseConnectorSettings *settings.AgentDatabaseConnectorSettings
+	AgentKnowledgeDatabaseConnectorSettings *settings.AgentKnowledgeDatabaseConnectorSettings
 }
 
 func NewAgentDatabaseConnectorClient(
@@ -63,12 +63,12 @@ func NewAgentDatabaseConnectorClient(
 	return &AgentDatabaseConnectorClient{
 		logger:                         params.Logger,
 		httpClient:                     params.HttpClient,
-		agentDatabaseConnectorSettings: params.AgentDatabaseConnectorSettings,
+		agentKnowledgeDatabaseConnectorSettings: params.AgentKnowledgeDatabaseConnectorSettings,
 	}
 }
 
 func (client *AgentDatabaseConnectorClient) CreateDatabaseConnection(request *models.ExternalCreateDatabaseConnectionRequest) (*models.ExternalCreateDatabaseConnectionResponse, error) {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + CREATE_DATABASE_CONNECTION_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + CREATE_DATABASE_CONNECTION_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -107,7 +107,7 @@ func (client *AgentDatabaseConnectorClient) CreateDatabaseConnection(request *mo
 }
 
 func (client *AgentDatabaseConnectorClient) RemoveDatabaseConnection(request *models.ExternalAgentIdRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + DELETE_DATABASE_CONNECTION_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + DELETE_DATABASE_CONNECTION_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -141,7 +141,7 @@ func (client *AgentDatabaseConnectorClient) RemoveDatabaseConnection(request *mo
 }
 
 func (client *AgentDatabaseConnectorClient) SetupAgentDatabase(request *models.ExternalSetupAgentDatabaseRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + SETUP_DATABASE_CONNECTION_MIGRATIONS_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + SETUP_DATABASE_CONNECTION_MIGRATIONS_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -175,7 +175,7 @@ func (client *AgentDatabaseConnectorClient) SetupAgentDatabase(request *models.E
 }
 
 func (client *AgentDatabaseConnectorClient) GetAgentContexts(request *models.ExternalAgentIdRequest) (*models.ExternalAgentContextResponses, error) {
-	baseUrl := fmt.Sprintf(client.agentDatabaseConnectorSettings.BaseUrl+GET_AGENT_CONTEXTS_ENDPOINT_ENDPOINT, request.AgentId.String())
+	baseUrl := fmt.Sprintf(client.agentKnowledgeDatabaseConnectorSettings.BaseUrl+GET_AGENT_CONTEXTS_ENDPOINT_ENDPOINT, request.AgentId.String())
 	u, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse base URL: %w", err)
@@ -227,7 +227,7 @@ func (client *AgentDatabaseConnectorClient) GetAgentContexts(request *models.Ext
 }
 
 func (client *AgentDatabaseConnectorClient) CreateAgentContext(request *models.ExternalCreateAgentContextRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + CREATE_AGENT_CONTEXT_ENDPOINT_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + CREATE_AGENT_CONTEXT_ENDPOINT_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -262,7 +262,7 @@ func (client *AgentDatabaseConnectorClient) CreateAgentContext(request *models.E
 
 func (client *AgentDatabaseConnectorClient) GetAgentContextByKey(request *models.ExternalGetAgentContextByKeyRequest) (*models.ExternalAgentContextResponse, error) {
 	urlStr := fmt.Sprintf(
-		client.agentDatabaseConnectorSettings.BaseUrl+GET_AGENT_CONTEXT_BY_KEY_ENDPOINT,
+		client.agentKnowledgeDatabaseConnectorSettings.BaseUrl+GET_AGENT_CONTEXT_BY_KEY_ENDPOINT,
 		request.AgentId.String(),
 		url.PathEscape(request.Key),
 	)
@@ -303,7 +303,7 @@ func (client *AgentDatabaseConnectorClient) GetAgentContextByKey(request *models
 }
 
 func (client *AgentDatabaseConnectorClient) AddMessagesToAgentContext(request *models.ExternalAddMessagesToAgentContextRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + ADD_MESSAGES_TO_AGENT_CONTEXT_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + ADD_MESSAGES_TO_AGENT_CONTEXT_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -337,7 +337,7 @@ func (client *AgentDatabaseConnectorClient) AddMessagesToAgentContext(request *m
 }
 
 func (client *AgentDatabaseConnectorClient) GetAgentContextMessages(request *models.ExternalGetAgentContextMessagesRequest) (*models.ExternalGetAgentContextMessageResponses, error) {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + GET_AGENT_CONTEXT_MESSAGES_ENDPOINT + "?"
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + GET_AGENT_CONTEXT_MESSAGES_ENDPOINT + "?"
 	url += "agentId=" + request.AgentId.String()
 	url += "&key=" + request.Key
 
@@ -374,7 +374,7 @@ func (client *AgentDatabaseConnectorClient) GetAgentContextMessages(request *mod
 }
 
 func (client *AgentDatabaseConnectorClient) SaveAgentPromptTemplate(request *models.ExternalSaveAgentPromptTemplateRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + "/agent/prompt/template"
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + "/agent/prompt/template"
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -408,7 +408,7 @@ func (client *AgentDatabaseConnectorClient) SaveAgentPromptTemplate(request *mod
 }
 
 func (client *AgentDatabaseConnectorClient) GetAgentPromptTemplate(request *models.ExternalGetAgentPromptTemplateRequest) (*models.ExternalGetAgentPromptTemplateResponse, error) {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + "/agent/prompt/template"
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + "/agent/prompt/template"
 	url += "?agentId=" + request.AgentId.String()
 	url += "&templateKey=" + request.TemplateKey.String()
 
@@ -443,7 +443,7 @@ func (client *AgentDatabaseConnectorClient) GetAgentPromptTemplate(request *mode
 }
 
 func (client *AgentDatabaseConnectorClient) GetLinkedAgentContextOfConversation(request *models.ExternalGetLinkedAgentContextOfConversationRequest) (*models.ExternalGetLinkedAgentContextOfConversationResponse, error) {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + GET_LINKED_AGENT_CONTEXT_OF_CONVERSATION_ENDPOINT + "?"
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + GET_LINKED_AGENT_CONTEXT_OF_CONVERSATION_ENDPOINT + "?"
 	url += "agentId=" + request.AgentId.String()
 	url += "&conversationId=" + request.ConversationId
 
@@ -478,7 +478,7 @@ func (client *AgentDatabaseConnectorClient) GetLinkedAgentContextOfConversation(
 }
 
 func (client *AgentDatabaseConnectorClient) LinkConversationToAgentContext(request *models.ExternalLinkConversationToAgentContextRequest) error {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + LINK_CONVERSATION_TO_AGENT_CONTEXT_ENDPOINT
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + LINK_CONVERSATION_TO_AGENT_CONTEXT_ENDPOINT
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -512,7 +512,7 @@ func (client *AgentDatabaseConnectorClient) LinkConversationToAgentContext(reque
 }
 
 func (client *AgentDatabaseConnectorClient) GetDatabaseConnectionSetupStatus(request *models.ExternalAgentIdRequest) (*models.ExternalGetDatabaseConnectionSetupStatusResponse, error) {
-	url := client.agentDatabaseConnectorSettings.BaseUrl + "/database/connection/setup-status?agentId=" + request.AgentId.String()
+	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + "/database/connection/setup-status?agentId=" + request.AgentId.String()
 
 	client.logger.Debug("Sending GetDatabaseConnectionSetupStatus request",
 		zap.String("method", http.MethodGet),

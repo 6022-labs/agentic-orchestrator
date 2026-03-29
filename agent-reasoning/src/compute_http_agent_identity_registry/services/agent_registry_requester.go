@@ -2,15 +2,15 @@ package services
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/use_cases/responses"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity/clients"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity_registry/clients"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity_registry/models"
 )
 
 type AgentRegistryRequester struct {
-	client clients.AgentIdentityClientInterface
+	client clients.AgentIdentityRegistryClientInterface
 }
 
-func NewAgentRegistryRequester(client clients.AgentIdentityClientInterface) *AgentRegistryRequester {
+func NewAgentRegistryRequester(client clients.AgentIdentityRegistryClientInterface) *AgentRegistryRequester {
 	return &AgentRegistryRequester{client: client}
 }
 

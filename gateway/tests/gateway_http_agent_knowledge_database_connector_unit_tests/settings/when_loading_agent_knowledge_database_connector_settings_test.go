@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestWhenLoadingAgentDatabaseConnectorSettings(t *testing.T) {
+func TestWhenLoadingAgentKnowledgeDatabaseConnectorSettings(t *testing.T) {
 	t.Run("Loads settings", func(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
-			"agent_database_connector.base_url": "https://db.example.com/",
+			"agent_knowledge_database_connector.base_url": "https://db.example.com/",
 		}, "."), nil)
 
-		settings := db_settings.NewAgentDatabaseConnectorSettings(zap.NewNop(), k)
+		settings := db_settings.NewAgentKnowledgeDatabaseConnectorSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, "https://db.example.com", settings.BaseUrl)

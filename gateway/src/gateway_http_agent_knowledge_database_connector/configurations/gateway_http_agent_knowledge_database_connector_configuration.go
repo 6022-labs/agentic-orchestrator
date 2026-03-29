@@ -13,7 +13,7 @@ import (
 func AddGatewayHttpAgentKnowledgeDatabaseConnectorConfiguration(container *dig.Container) {
 	// Settings
 	err := container.Provide(
-		http_agent_database_connector_settings.NewAgentDatabaseConnectorSettings,
+		http_agent_database_connector_settings.NewAgentKnowledgeDatabaseConnectorSettings,
 	)
 	if err != nil {
 		panic(err)

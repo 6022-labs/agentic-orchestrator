@@ -3,7 +3,7 @@ package settings_test
 import (
 	"testing"
 
-	agent_identity_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity/settings"
+	agent_identity_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity_registry/settings"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"

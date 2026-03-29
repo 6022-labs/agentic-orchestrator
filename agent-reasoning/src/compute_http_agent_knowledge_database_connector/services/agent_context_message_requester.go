@@ -5,17 +5,17 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/services/interfaces"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/clients"
-	agent_knowledge_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/clients"
+	agent_database_connector_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_knowledge_database_connector/models"
 	"github.com/google/uuid"
 )
 
 type AgentContextMessageRequester struct {
-	client clients.AgentKnowledgeClientInterface
+	client clients.AgentDatabaseConnectorClientInterface
 }
 
 func NewAgentContextMessageRequester(
-	client clients.AgentKnowledgeClientInterface,
+	client clients.AgentDatabaseConnectorClientInterface,
 ) *AgentContextMessageRequester {
 	return &AgentContextMessageRequester{
 		client: client,
@@ -23,15 +23,15 @@ func NewAgentContextMessageRequester(
 }
 
 func (a *AgentContextMessageRequester) AddMessagesToAgentContext(request *interfaces.AddMessageToAgentContextRequest) error {
-	externalRequest := &agent_knowledge_models.ExternalAddMessagesToAgentContextRequest{
+	externalRequest := &agent_database_connector_models.ExternalAddMessagesToAgentContextRequest{
 		AgentId:        request.AgentId,
-		Messages:       []agent_knowledge_models.ExternalMessage{},
+		Messages:       []agent_database_connector_models.ExternalMessage{},
 		ContextKey:     request.ContextKey,
 		ConversationId: request.ConversationId,
 	}
 
 	for _, message := range request.Messages {
-		externalRequest.Messages = append(externalRequest.Messages, agent_knowledge_models.ExternalMessage{
+		externalRequest.Messages = append(externalRequest.Messages, agent_database_connector_models.ExternalMessage{
 			Role:           message.Role,
 			Author:         message.Author,
 			Content:        message.Content,
@@ -44,7 +44,7 @@ func (a *AgentContextMessageRequester) AddMessagesToAgentContext(request *interf
 }
 
 func (a *AgentContextMessageRequester) GetAgentContextMessages(agentId uuid.UUID, key string) ([]*models.AgentContextMessage, error) {
-	messages, err := a.client.GetAgentContextMessages(&agent_knowledge_models.ExternalGetAgentContextMessagesRequest{
+	messages, err := a.client.GetAgentContextMessages(&agent_database_connector_models.ExternalGetAgentContextMessagesRequest{
 		AgentId: agentId,
 		Key:     key,
 	})

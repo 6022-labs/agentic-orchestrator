@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity_registry/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute_http_agent_identity_registry/settings"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
@@ -17,34 +17,34 @@ const (
 	GET_AGENT_BY_ENS_DOMAIN_ENDPOINT = "/agent/ens/%s"
 )
 
-type AgentIdentityClientInterface interface {
+type AgentIdentityRegistryClientInterface interface {
 	GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*models.ExternalAgentResponse, error)
 	GetMintedAgentByEnsDomain(ensDomain string) (*models.ExternalAgentResponse, error)
 }
 
-type AgentIdentityClient struct {
+type AgentIdentityRegistryClient struct {
 	logger                        *zap.Logger
 	httpClient                    *http.Client
 	agentIdentityRegistrySettings *settings.AgentIdentityRegistrySettings
 }
 
-type newAgentIdentityClientParams struct {
+type newAgentIdentityRegistryClientParams struct {
 	dig.In
 
 	Logger                        *zap.Logger
-	HttpClient                    *http.Client `name:"agent-identity-http-client"`
+	HttpClient                    *http.Client `name:"agent-identity-registry-http-client"`
 	AgentIdentityRegistrySettings *settings.AgentIdentityRegistrySettings
 }
 
-func NewAgentIdentityClient(params newAgentIdentityClientParams) *AgentIdentityClient {
-	return &AgentIdentityClient{
+func NewAgentIdentityRegistryClient(params newAgentIdentityRegistryClientParams) *AgentIdentityRegistryClient {
+	return &AgentIdentityRegistryClient{
 		logger:                        params.Logger,
 		httpClient:                    params.HttpClient,
 		agentIdentityRegistrySettings: params.AgentIdentityRegistrySettings,
 	}
 }
 
-func (client *AgentIdentityClient) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*models.ExternalAgentResponse, error) {
+func (client *AgentIdentityRegistryClient) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*models.ExternalAgentResponse, error) {
 	url := fmt.Sprintf(client.agentIdentityRegistrySettings.BaseUrl+GET_AGENT_ENDPOINT, agentCollectionAddress, agentCollectionTokenId)
 
 	httpRequest, err := http.NewRequest(http.MethodGet, url, nil)
@@ -75,7 +75,7 @@ func (client *AgentIdentityClient) GetAgent(agentCollectionAddress string, agent
 	return nil, fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(responseBody))
 }
 
-func (client *AgentIdentityClient) GetMintedAgentByEnsDomain(ensDomain string) (*models.ExternalAgentResponse, error) {
+func (client *AgentIdentityRegistryClient) GetMintedAgentByEnsDomain(ensDomain string) (*models.ExternalAgentResponse, error) {
 	url := fmt.Sprintf(client.agentIdentityRegistrySettings.BaseUrl+GET_AGENT_BY_ENS_DOMAIN_ENDPOINT, ensDomain)
 
 	httpRequest, err := http.NewRequest(http.MethodGet, url, nil)
