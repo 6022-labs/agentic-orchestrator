@@ -88,13 +88,13 @@ func (a *AgentCollectionRequester) GetAgentInformation(collectionAddress common.
 	return &info, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentWalletsOfProposal(collectionAddress common.Address, proposalId *big.Int) ([]common.Address, error) {
+func (a *AgentCollectionRequester) GetMintProposal(collectionAddress common.Address, proposalId *big.Int, atBlock uint64) (*registry_abi.MintProposal, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
 		return nil, err
 	}
 
-	mintProposals, err := a.getMintProposals(agentCollection, collectionAddress)
+	mintProposals, err := a.getMintProposals(agentCollection, collectionAddress, atBlock)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposals: %w", err)
 	}
@@ -106,11 +106,14 @@ func (a *AgentCollectionRequester) GetAgentWalletsOfProposal(collectionAddress c
 		return nil, fmt.Errorf("mint proposal with ID %s not found", proposalId.String())
 	}
 
-	return mintProposal.Wallets, nil
+	return mintProposal, nil
 }
 
-func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_abi.AgentCollectionV1, agentCollectionAddress common.Address) ([]*registry_abi.MintProposal, error) {
-	mintProposalLength, err := agentCollection.MintProposalsLength(nil)
+func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_abi.AgentCollectionV1, agentCollectionAddress common.Address, atBlock uint64) ([]*registry_abi.MintProposal, error) {
+	blockBigInt := new(big.Int).SetUint64(atBlock)
+	blockHex := fmt.Sprintf("0x%x", atBlock)
+
+	mintProposalLength, err := agentCollection.MintProposalsLength(&bind.CallOpts{BlockNumber: blockBigInt})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
@@ -136,7 +139,7 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_ab
 
 		batch = append(batch, rpc.BatchElem{
 			Method: "eth_call",
-			Args:   []interface{}{msg, "latest"},
+			Args:   []interface{}{msg, blockHex},
 			Result: &results[i],
 		})
 	}

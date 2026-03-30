@@ -192,17 +192,17 @@ func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentP
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPreviousSigners", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentPreviousSigners), collectionAddress, collectionTokenId)
 }
 
-// GetAgentWalletsOfProposal mocks base method.
-func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentWalletsOfProposal(collectionAddress common.Address, proposalId *big.Int) ([]common.Address, error) {
+// GetMintProposal mocks base method.
+func (m *MockAgentCollectionBlockchainRequesterInterface) GetMintProposal(collectionAddress common.Address, proposalId *big.Int, atBlock uint64) (*abi.MintProposal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentWalletsOfProposal", collectionAddress, proposalId)
-	ret0, _ := ret[0].([]common.Address)
+	ret := m.ctrl.Call(m, "GetMintProposal", collectionAddress, proposalId, atBlock)
+	ret0, _ := ret[0].(*abi.MintProposal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAgentWalletsOfProposal indicates an expected call of GetAgentWalletsOfProposal.
-func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentWalletsOfProposal(collectionAddress, proposalId any) *gomock.Call {
+// GetMintProposal indicates an expected call of GetMintProposal.
+func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetMintProposal(collectionAddress, proposalId, atBlock any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentWalletsOfProposal", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentWalletsOfProposal), collectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintProposal", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetMintProposal), collectionAddress, proposalId, atBlock)
 }
