@@ -49,8 +49,8 @@ func NewAgentController(
 }
 
 func (controller *AgentController) RegisterRoutes(app fiber.Router) {
-	app.Get(GET_AGENT_ENDPOINT, controller.GetAgent)
 	app.Get(GET_AGENT_BY_ENS_DOMAIN_ENDPOINT, controller.GetMintedAgentByEnsDomain)
+	app.Get(GET_AGENT_ENDPOINT, controller.GetAgent)
 	app.Get(LIST_AGENTS_ENDPOINT, controller.ListAgents)
 	app.Get(AGENT_IS_INTERNAL_ENDPOINT, controller.IsInternalAgent)
 	app.Post(CREATE_AGENT_FIRST_STEP_ENDPOINT, controller.CreateAgentFirstStep)
