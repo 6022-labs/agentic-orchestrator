@@ -86,6 +86,19 @@ func TestWhenCreatingAgentContext(t *testing.T) {
 			err := suite.sut.Create(request)
 			assert.Error(t, err)
 		})
+
+		t.Run("Because key starts with conversation-context-discovery and is not internal", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCreatingAgentContextBeforeEach(t)
+
+			request := generateValidCreateAgentContextRequest()
+			request.Key = "conversation-context-discovery/some-id"
+			request.IsInternal = false
+
+			err := suite.sut.Create(request)
+			assert.Error(t, err)
+		})
 	})
 
 	t.Run("Given error occurs while generating db client", func(t *testing.T) {
@@ -176,6 +189,45 @@ func TestWhenCreatingAgentContext(t *testing.T) {
 			initSuite(suite)
 
 			request := generateValidCreateAgentContextRequest()
+			err := suite.sut.Create(request)
+
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given request is internal with conversation-context-discovery key", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCreatingAgentContextTestingSuite) {
+			suite.mockAgentDBClientFactory.EXPECT().
+				Create(gomock.Any()).
+				Return(suite.mockAgentDbClient, nil)
+
+			suite.mockAgentDbClient.EXPECT().Close().Return(nil)
+
+			suite.mockAgentContextRepositoryFactory.EXPECT().
+				Create(gomock.Any()).
+				Return(suite.mockAgentContextRepository)
+
+			suite.mockAgentContextRepository.EXPECT().
+				GetByKey(gomock.Any()).
+				Return(nil, gorm.ErrRecordNotFound)
+
+			suite.mockAgentContextRepository.EXPECT().
+				Save(gomock.Any()).
+				Return(model_builders.NewAgentContextBuilder().Build(), nil)
+		}
+
+		t.Run("Should not return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCreatingAgentContextBeforeEach(t)
+			initSuite(suite)
+
+			request := generateValidCreateAgentContextRequest()
+			request.Key = "conversation-context-discovery/some-id"
+			request.IsInternal = true
+
 			err := suite.sut.Create(request)
 
 			assert.NoError(t, err)

@@ -23,8 +23,9 @@ func NewAgentContextRequester(
 
 func (a *AgentContextRequester) CreateAgentContext(agentId uuid.UUID, key string) error {
 	return a.client.CreateAgentContext(&database_connector_models.ExternalCreateAgentContextRequest{
-		AgentId: agentId,
-		Key:     key,
+		AgentId:    agentId,
+		Key:        key,
+		IsInternal: false,
 	})
 }
 

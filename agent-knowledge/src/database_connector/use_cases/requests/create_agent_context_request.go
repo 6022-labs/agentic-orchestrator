@@ -11,8 +11,9 @@ import (
 const conversationContextDiscoveryKeyPrefix = "conversation-context-discovery"
 
 type CreateAgentContextRequest struct {
-	AgentId uuid.UUID `json:"agentId"`
-	Key     string    `json:"key"`
+	AgentId    uuid.UUID `json:"agentId"`
+	Key        string    `json:"key"`
+	IsInternal bool      `json:"isInternal"`
 }
 
 func (r *CreateAgentContextRequest) Validate() error {
@@ -24,7 +25,7 @@ func (r *CreateAgentContextRequest) Validate() error {
 		return errors.NewValidationError("key", "cannot be empty")
 	}
 
-	if strings.HasPrefix(r.Key, conversationContextDiscoveryKeyPrefix) {
+	if !r.IsInternal && strings.HasPrefix(r.Key, conversationContextDiscoveryKeyPrefix) {
 		return errors.NewValidationError("key", fmt.Sprintf("cannot start with %s", conversationContextDiscoveryKeyPrefix))
 	}
 
