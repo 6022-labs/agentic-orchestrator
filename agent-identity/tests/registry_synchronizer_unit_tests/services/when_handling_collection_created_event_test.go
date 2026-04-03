@@ -26,9 +26,14 @@ func WhenHandlingCollectionCreatedEventBeforeEach(t *testing.T) *WhenHandlingCol
 
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
 
+	params := services.NewCollectionCreatedEventHandlerParams{
+		Logger: zap.NewNop(),
+
+		AgentCollectionRepository: agentCollectionRepositoryMock,
+	}
+
 	sut := services.NewCollectionCreatedEventHandler(
-		zap.NewNop(),
-		agentCollectionRepositoryMock,
+		params,
 	)
 
 	return &WhenHandlingCollectionCreatedEventTestingSuite{

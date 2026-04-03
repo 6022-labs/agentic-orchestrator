@@ -8,7 +8,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
@@ -25,30 +24,21 @@ type AgentCollectionsManagerCollectionCreatedListener struct {
 	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface
 }
 
-type newAgentCollectionsManagerCollectionCreatedListenerParams struct {
-	dig.In
-
-	Logger                                           *zap.Logger
-	AgentCollectionsManagerSettings                  *settings.AgentCollectionsManagerSettings
-	CollectionListeners                              []interfaces.CollectionEventSubscriberInterface `group:"collection_event_subscribers"`
-	CollectionCreatedEventHandler                    interfaces.CollectionCreatedEventHandlerInterface
-	AgentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface
-}
-
 func NewAgentCollectionsManagerCollectionCreatedListener(
-	params newAgentCollectionsManagerCollectionCreatedListenerParams,
+	logger *zap.Logger,
+	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings,
+	collectionCreatedEventHandler interfaces.CollectionCreatedEventHandlerInterface,
+	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface,
 ) *AgentCollectionsManagerCollectionCreatedListener {
 	return &AgentCollectionsManagerCollectionCreatedListener{
 		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
 
-		logger: params.Logger,
+		logger: logger,
 
-		agentCollectionsManagerSettings: params.AgentCollectionsManagerSettings,
+		agentCollectionsManagerSettings: agentCollectionsManagerSettings,
 
-		collectionListeners: params.CollectionListeners,
-
-		collectionCreatedEventHandler:                    params.CollectionCreatedEventHandler,
-		agentCollectionsManagerEventSubscriptionProvider: params.AgentCollectionsManagerEventSubscriptionProvider,
+		collectionCreatedEventHandler:                    collectionCreatedEventHandler,
+		agentCollectionsManagerEventSubscriptionProvider: agentCollectionsManagerEventSubscriptionProvider,
 	}
 }
 
@@ -98,13 +88,6 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 				err := listener.collectionCreatedEventHandler.Handle(event)
 				if err != nil {
 					listener.logger.Error("failed to handle AgentCollectionsManager.CollectionCreated event", zap.Any("event", event), zap.Error(err))
-				}
-
-				for _, collectionListener := range listener.collectionListeners {
-					err = collectionListener.Subscribe(event.CollectionAddress)
-					if err != nil {
-						listener.logger.Error("failed to notify collection listener about AgentCollectionsManager.CollectionCreated event", zap.Any("event", event), zap.Error(err))
-					}
 				}
 
 				listener.mu.Lock()
