@@ -7,9 +7,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
@@ -66,7 +66,7 @@ func TestWhenSavingSyncCheckpoint(t *testing.T) {
 			suite := WhenSavingSyncCheckpointBeforeEach()
 			defer WhenSavingSyncCheckpointAfterEach(suite)
 
-			checkpoint := &models.SyncCheckpoint{Block: 42}
+			checkpoint := model_builders.NewSyncCheckpointBuilder().WithBlock(42).Build()
 			savedCheckpoint, err := suite.sut.Save(checkpoint)
 
 			assert.Nil(t, err)

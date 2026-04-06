@@ -7,9 +7,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -67,7 +67,7 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 			suite := WhenGettingSyncCheckpointBeforeEach()
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
-			checkpoint := &models.SyncCheckpoint{Block: 123}
+			checkpoint := model_builders.NewSyncCheckpointBuilder().WithBlock(123).Build()
 			suite.sut.Save(checkpoint)
 
 			fetchedCheckpoint, err := suite.sut.Get()

@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -10,7 +12,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/avast/retry-go/v4"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 const (
@@ -21,6 +25,7 @@ const (
 type BlockEventsProcessor struct {
 	logger *zap.Logger
 
+	syncCheckpointMu         sync.Mutex
 	syncCheckpointRepository repositories.SyncCheckpointRepositoryInterface
 
 	agentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
@@ -118,12 +123,8 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 			return fmt.Errorf("failed to sync agent attribute updated events: %w", err)
 		}
 
-		syncCheckpoint := &models.SyncCheckpoint{
-			Block: blockNumber,
-		}
-
-		if _, err := p.syncCheckpointRepository.Save(syncCheckpoint); err != nil {
-			return fmt.Errorf("failed to save sync checkpoint at block %d: %w", blockNumber, err)
+		if err := p.saveOrUpdateSyncCheckpoint(blockNumber); err != nil {
+			return err
 		}
 
 		return nil
@@ -143,6 +144,34 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		zap.Uint64("blockNumber", blockNumber),
 	)
 
+	return nil
+}
+
+func (p *BlockEventsProcessor) saveOrUpdateSyncCheckpoint(blockNumber uint64) error {
+	p.syncCheckpointMu.Lock()
+	defer p.syncCheckpointMu.Unlock()
+
+	checkpoint, err := p.syncCheckpointRepository.Get()
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to get sync checkpoint: %w", err)
+	}
+
+	if checkpoint == nil {
+		newCheckpoint := &models.SyncCheckpoint{ID: uuid.New(), Block: blockNumber}
+		if _, err := p.syncCheckpointRepository.Save(newCheckpoint); err != nil {
+			return fmt.Errorf("failed to create sync checkpoint at block %d: %w", blockNumber, err)
+		}
+		return nil
+	}
+
+	if blockNumber <= checkpoint.Block {
+		return nil
+	}
+
+	checkpoint.Block = blockNumber
+	if _, err := p.syncCheckpointRepository.Save(checkpoint); err != nil {
+		return fmt.Errorf("failed to update sync checkpoint at block %d: %w", blockNumber, err)
+	}
 	return nil
 }
 
