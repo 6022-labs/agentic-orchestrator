@@ -18,7 +18,7 @@ type AgentCollectionAgentAttributeUpdatedListener struct {
 	logger *zap.Logger
 
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
-	agentAttributeUpdatedEventHandler        interfaces.AgentAttributeUpdatedEventHandlerInterface
+	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
 
 	trackedAddresses []common.Address
@@ -27,20 +27,21 @@ type AgentCollectionAgentAttributeUpdatedListener struct {
 func NewAgentCollectionAgentAttributeUpdatedListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	agentAttributeUpdatedEventHandler interfaces.AgentAttributeUpdatedEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionAgentAttributeUpdatedListener {
-	return &AgentCollectionAgentAttributeUpdatedListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
+	el := &AgentCollectionAgentAttributeUpdatedListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
-		agentAttributeUpdatedEventHandler:        agentAttributeUpdatedEventHandler,
+		blockEventsQueue:                         blockEventsQueue,
 		agentCollectionEventSubscriptionProvider: agentCollectionEventSubscriptionProvider,
 
 		trackedAddresses: []common.Address{},
 	}
+	el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+
+	return el
 }
 
 func (listener *AgentCollectionAgentAttributeUpdatedListener) Listen() error {
@@ -89,14 +90,21 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) Subscribe(collecti
 		listener.mu.Unlock()
 		return nil
 	}
-
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
+	listener.mu.Unlock()
+
+	listener.markNeedsRebuild()
+	return nil
+}
+
+func (listener *AgentCollectionAgentAttributeUpdatedListener) rebuildSubscription() error {
+	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.AgentAttributeUpdated events for new address: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.AgentAttributeUpdated subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -107,8 +115,7 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) Subscribe(collecti
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("started new AgentCollection.AgentAttributeUpdated subscription for collection", zap.String("collectionAddress", collectionAddress.Hex()))
-
+	listener.logger.Info("rebuilt AgentCollection.AgentAttributeUpdated subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
@@ -127,15 +134,15 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) startSubscriptionH
 					continue
 				}
 
-				if err := listener.agentAttributeUpdatedEventHandler.Handle(event); err != nil {
-					listener.logger.Error("failed to handle AgentCollection.AgentAttributeUpdated event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentAttributeUpdated{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollection.AgentAttributeUpdated event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
 
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
+				listener.onBlockSeen(event.Raw.BlockNumber)
 			case err := <-subscription.Err():
 				if err == nil {
 					return

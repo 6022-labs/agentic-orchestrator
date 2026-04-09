@@ -1,0 +1,9 @@
+package interfaces
+
+type BlockEventsQueueInterface interface {
+	Add{{EventName}}Events(chainId, blockNumber uint64, events []*{{EventType}}) error
+
+	// Dequeue returns the next block to process, ordered by block number ascending.
+	// Returns zero values and nil when the queue is empty.
+	Dequeue() (uint64, uint64, *QueueItem)
+}

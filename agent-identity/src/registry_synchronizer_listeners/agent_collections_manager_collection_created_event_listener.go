@@ -2,6 +2,7 @@ package registry_synchronizer_listeners
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
@@ -12,38 +13,47 @@ import (
 )
 
 type AgentCollectionsManagerCollectionCreatedListener struct {
-	*AbstractUpdatableSubscriptionListener
-
 	logger *zap.Logger
 
-	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
-
-	collectionListeners []interfaces.CollectionEventSubscriberInterface
-
-	collectionCreatedEventHandler                    interfaces.CollectionCreatedEventHandlerInterface
+	agentCollectionsManagerSettings                *settings.AgentCollectionsManagerSettings
+	blockEventsQueue                               interfaces.BlockEventsQueueInterface
 	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface
+
+	subscription ethereum.Subscription
+	mu           sync.Mutex
+	errCh        chan error
+	wg           sync.WaitGroup
 }
 
 func NewAgentCollectionsManagerCollectionCreatedListener(
 	logger *zap.Logger,
 	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings,
-	collectionCreatedEventHandler interfaces.CollectionCreatedEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface,
 ) *AgentCollectionsManagerCollectionCreatedListener {
 	return &AgentCollectionsManagerCollectionCreatedListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
 		logger: logger,
 
-		agentCollectionsManagerSettings: agentCollectionsManagerSettings,
-
-		collectionCreatedEventHandler:                    collectionCreatedEventHandler,
+		agentCollectionsManagerSettings:                agentCollectionsManagerSettings,
+		blockEventsQueue:                               blockEventsQueue,
 		agentCollectionsManagerEventSubscriptionProvider: agentCollectionsManagerEventSubscriptionProvider,
+
+		errCh: make(chan error, 8),
 	}
 }
 
 func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen() error {
-	return listener.AbstractUpdatableSubscriptionListener.Listen()
+	err := <-listener.errCh
+
+	listener.mu.Lock()
+	if listener.subscription != nil {
+		listener.subscription.Unsubscribe()
+	}
+	listener.mu.Unlock()
+
+	listener.wg.Wait()
+
+	return err
 }
 
 func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll() error {
@@ -85,16 +95,13 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 					continue
 				}
 
-				err := listener.collectionCreatedEventHandler.Handle(event)
-				if err != nil {
-					listener.logger.Error("failed to handle AgentCollectionsManager.CollectionCreated event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionsManagerCollectionCreated{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollectionsManager.CollectionCreated event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
-
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
 			case err := <-subscription.Err():
 				if err == nil {
 					return

@@ -47,16 +47,18 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	collectionCreatedEventHandlerMock := interfaces_mocks.NewMockCollectionCreatedEventHandlerInterface(mockController)
 
 	sut := services.NewBlockEventsProcessor(
-		zap.NewNop(),
-		syncCheckpointRepositoryMock,
-		mintedEventHandlerMock,
-		transferEventHandlerMock,
-		agentImageUpdatedEventHandlerMock,
-		agentSignerUpdatedEventHandlerMock,
-		mintProposalCreatedEventHandlerMock,
-		mintProposalRemovedEventHandlerMock,
-		agentAttributeUpdatedEventHandlerMock,
-		collectionCreatedEventHandlerMock,
+		services.NewBlockEventsProcessorParams{
+			Logger:                                        zap.NewNop(),
+			SyncCheckpointRepository:                      syncCheckpointRepositoryMock,
+			AgentCollectionV1MintedHandler:                mintedEventHandlerMock,
+			AgentCollectionV1TransferHandler:              transferEventHandlerMock,
+			AgentCollectionV1AgentImageUpdatedHandler:     agentImageUpdatedEventHandlerMock,
+			AgentCollectionV1AgentSignerUpdatedHandler:    agentSignerUpdatedEventHandlerMock,
+			AgentCollectionV1MintProposalCreatedHandler:   mintProposalCreatedEventHandlerMock,
+			AgentCollectionV1MintProposalRemovedHandler:   mintProposalRemovedEventHandlerMock,
+			AgentCollectionV1AgentAttributeUpdatedHandler: agentAttributeUpdatedEventHandlerMock,
+			AgentCollectionManagerCollectionCreatedHandler: collectionCreatedEventHandlerMock,
+		},
 	)
 
 	return &WhenProcessingBlockEventsTestingSuite{

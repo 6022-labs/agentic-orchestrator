@@ -3,17 +3,27 @@ package services
 import (
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
+	"go.uber.org/zap"
 )
 
-type UniswapV3BlockEventsQueue struct {
+const defaultBlockFinalizationDelay = 2 * time.Second
+
+type BlockEventsQueue struct {
+	logger       *zap.Logger
+	syncSettings *settings.SyncSettings
+
 	mu                   sync.Mutex
 	entries              map[uint64]*queueEntry
 	readyList            []uint64
 	pendingBlocks        map[uint64]*queueEntry
 	latestCompletedBlock uint64
+	latestBlockSeen      uint64
+	timer                *time.Timer
 }
 
 type queueEntry struct {
@@ -23,14 +33,20 @@ type queueEntry struct {
 	enqueued  bool
 }
 
-func NewUniswapV3BlockEventsQueue() *UniswapV3BlockEventsQueue {
-	return &UniswapV3BlockEventsQueue{
+func NewBlockEventsQueue(
+	logger *zap.Logger,
+	syncSettings *settings.SyncSettings,
+) *BlockEventsQueue {
+	return &BlockEventsQueue{
+		logger:       logger,
+		syncSettings: syncSettings,
+
 		entries:       make(map[uint64]*queueEntry),
 		pendingBlocks: make(map[uint64]*queueEntry),
 	}
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -41,7 +57,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintedEvents(blockNumber
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -52,7 +68,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1TransferEvents(blockNumb
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -63,7 +79,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentSignerUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentSignerUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentSignerUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentSignerUpdated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -74,7 +90,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentSignerUpdatedEvents
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -85,7 +101,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvent
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -96,7 +112,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvent
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -107,7 +123,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEve
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error {
+func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -118,20 +134,7 @@ func (s *UniswapV3BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedE
 	return nil
 }
 
-func (s *UniswapV3BlockEventsQueue) MarkBlockAsComplete(blockNumber uint64) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if blockNumber > s.latestCompletedBlock {
-		s.latestCompletedBlock = blockNumber
-	}
-
-	s.completePendingBlocks()
-
-	return nil
-}
-
-func (s *UniswapV3BlockEventsQueue) Dequeue() (uint64, *interfaces.QueueItem) {
+func (s *BlockEventsQueue) Dequeue() (uint64, *interfaces.QueueItem) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -149,7 +152,7 @@ func (s *UniswapV3BlockEventsQueue) Dequeue() (uint64, *interfaces.QueueItem) {
 	return blockNumber, entry.data
 }
 
-func (s *UniswapV3BlockEventsQueue) ensureEntry(blockNumber uint64) *queueEntry {
+func (s *BlockEventsQueue) ensureEntry(blockNumber uint64) *queueEntry {
 	entry, exists := s.entries[blockNumber]
 	if !exists {
 		entry = &queueEntry{
@@ -161,7 +164,7 @@ func (s *UniswapV3BlockEventsQueue) ensureEntry(blockNumber uint64) *queueEntry 
 	return entry
 }
 
-func (s *UniswapV3BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *queueEntry) {
+func (s *BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *queueEntry) {
 	if entry.enqueued {
 		return
 	}
@@ -175,7 +178,7 @@ func (s *UniswapV3BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *qu
 	delete(s.pendingBlocks, blockNumber)
 }
 
-func (s *UniswapV3BlockEventsQueue) trackPendingBlock(blockNumber uint64, entry *queueEntry) {
+func (s *BlockEventsQueue) trackPendingBlock(blockNumber uint64, entry *queueEntry) {
 	entry.hasEvents = true
 	if entry.enqueued {
 		return
@@ -187,9 +190,42 @@ func (s *UniswapV3BlockEventsQueue) trackPendingBlock(blockNumber uint64, entry 
 	}
 
 	s.pendingBlocks[blockNumber] = entry
+	s.scheduleBlockFinalization(blockNumber)
 }
 
-func (s *UniswapV3BlockEventsQueue) completePendingBlocks() {
+func (s *BlockEventsQueue) scheduleBlockFinalization(blockNumber uint64) {
+	if blockNumber > s.latestBlockSeen {
+		s.latestBlockSeen = blockNumber
+	}
+
+	if s.timer != nil {
+		return
+	}
+
+	s.timer = time.AfterFunc(s.getDeliveryBuffer(), func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+
+		s.timer = nil
+
+		completedBlock := s.latestBlockSeen
+		if completedBlock > s.latestCompletedBlock {
+			s.latestCompletedBlock = completedBlock
+		}
+
+		s.completePendingBlocks()
+	})
+}
+
+func (s *BlockEventsQueue) getDeliveryBuffer() time.Duration {
+	if s.syncSettings.BlockFinalizationDelay > 0 {
+		return s.syncSettings.BlockFinalizationDelay
+	}
+
+	return defaultBlockFinalizationDelay
+}
+
+func (s *BlockEventsQueue) completePendingBlocks() {
 	if len(s.pendingBlocks) == 0 {
 		return
 	}

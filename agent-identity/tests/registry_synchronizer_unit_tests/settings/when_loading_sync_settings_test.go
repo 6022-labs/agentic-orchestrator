@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"testing"
+	"time"
 
 	sync_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"github.com/knadh/koanf/providers/confmap"
@@ -11,7 +12,21 @@ import (
 )
 
 func TestWhenLoadingSyncSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Run("Loads settings with block finalization delay", func(t *testing.T) {
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]interface{}{
+			"sync.start_block":              "12345678",
+			"sync.block_finalization_delay": "3s",
+		}, "."), nil)
+
+		settings := sync_settings.NewSyncSettings(zap.NewNop(), k)
+
+		assert.NotNil(t, settings)
+		assert.Equal(t, uint64(12345678), settings.StartBlock)
+		assert.Equal(t, 3*time.Second, settings.BlockFinalizationDelay)
+	})
+
+	t.Run("Loads settings without block finalization delay", func(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
 			"sync.start_block": "12345678",
@@ -21,5 +36,6 @@ func TestWhenLoadingSyncSettings(t *testing.T) {
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, uint64(12345678), settings.StartBlock)
+		assert.Equal(t, time.Duration(0), settings.BlockFinalizationDelay)
 	})
 }

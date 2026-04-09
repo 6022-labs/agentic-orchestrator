@@ -1,0 +1,8 @@
+package interfaces
+
+// OnBlockProcessedHandlerInterface is called by the block events processor after
+// a block has been fully dequeued and processed. Listeners implement this to
+// defer subscription rebuilds to a safe point — after all events in the block are handled.
+type OnBlockProcessedHandlerInterface interface {
+	OnBlockProcessed(chainId, blockNumber uint64)
+}

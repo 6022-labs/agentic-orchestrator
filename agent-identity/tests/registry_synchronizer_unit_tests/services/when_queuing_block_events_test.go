@@ -2,22 +2,35 @@ package services_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type WhenQueuingBlockEventsTestingSuite struct {
-	sut *services.UniswapV3BlockEventsQueue
+	sut *services.BlockEventsQueue
 }
 
 func WhenQueuingBlockEventsBeforeEach(t *testing.T) *WhenQueuingBlockEventsTestingSuite {
-	sut := services.NewUniswapV3BlockEventsQueue()
+	sut := services.NewBlockEventsQueue(
+		zap.NewNop(),
+		&settings.SyncSettings{
+			StartBlock:             1,
+			BlockFinalizationDelay: 10 * time.Millisecond,
+		},
+	)
 
 	return &WhenQueuingBlockEventsTestingSuite{
 		sut: sut,
 	}
+}
+
+func waitForFinalization() {
+	time.Sleep(50 * time.Millisecond)
 }
 
 func TestWhenQueuingBlockEvents(t *testing.T) {
@@ -37,7 +50,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 		})
 	})
 
-	t.Run("Given minted events are added and block is marked complete", func(t *testing.T) {
+	t.Run("Given minted events are added and block finalization timer fires", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should dequeue the block with events", func(t *testing.T) {
@@ -48,8 +61,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err := basics.sut.AddAgentCollectionV1MintedEvents(10, []*abi.AgentCollectionV1Minted{mintedEvent})
 			assert.Nil(t, err)
 
-			err = basics.sut.MarkBlockAsComplete(10)
-			assert.Nil(t, err)
+			waitForFinalization()
 
 			blockNumber, item := basics.sut.Dequeue()
 
@@ -59,7 +71,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 		})
 	})
 
-	t.Run("Given events are added but block is not marked complete", func(t *testing.T) {
+	t.Run("Given events are added but finalization timer has not fired yet", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should not dequeue the block", func(t *testing.T) {
@@ -90,8 +102,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err = basics.sut.AddAgentCollectionV1TransferEvents(10, []*abi.AgentCollectionV1Transfer{{}})
 			assert.Nil(t, err)
 
-			err = basics.sut.MarkBlockAsComplete(20)
-			assert.Nil(t, err)
+			waitForFinalization()
 
 			blockNumber1, item1 := basics.sut.Dequeue()
 			assert.Equal(t, uint64(10), blockNumber1)
@@ -138,8 +149,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err = basics.sut.AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber, []*abi.AgentCollectionsManagerCollectionCreated{{}})
 			assert.Nil(t, err)
 
-			err = basics.sut.MarkBlockAsComplete(blockNumber)
-			assert.Nil(t, err)
+			waitForFinalization()
 
 			dequeuedBlockNumber, item := basics.sut.Dequeue()
 
@@ -166,8 +176,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err := basics.sut.AddAgentCollectionV1MintedEvents(10, []*abi.AgentCollectionV1Minted{{}})
 			assert.Nil(t, err)
 
-			err = basics.sut.MarkBlockAsComplete(10)
-			assert.Nil(t, err)
+			waitForFinalization()
 
 			blockNumber, item := basics.sut.Dequeue()
 			assert.Equal(t, uint64(10), blockNumber)

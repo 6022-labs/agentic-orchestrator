@@ -18,7 +18,7 @@ type AgentCollectionTransferListener struct {
 	logger *zap.Logger
 
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
-	transferEventHandler                     interfaces.TransferEventHandlerInterface
+	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
 
 	trackedAddresses []common.Address
@@ -27,20 +27,21 @@ type AgentCollectionTransferListener struct {
 func NewAgentCollectionTransferListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	transferEventHandler interfaces.TransferEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionTransferListener {
-	return &AgentCollectionTransferListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
+	el := &AgentCollectionTransferListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
-		transferEventHandler:                     transferEventHandler,
+		blockEventsQueue:                         blockEventsQueue,
 		agentCollectionEventSubscriptionProvider: agentCollectionEventSubscriptionProvider,
 
 		trackedAddresses: []common.Address{},
 	}
+	el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+
+	return el
 }
 
 func (listener *AgentCollectionTransferListener) Listen() error {
@@ -89,14 +90,21 @@ func (listener *AgentCollectionTransferListener) Subscribe(collectionAddress com
 		listener.mu.Unlock()
 		return nil
 	}
-
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
+	listener.mu.Unlock()
+
+	listener.markNeedsRebuild()
+	return nil
+}
+
+func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
+	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.Transfer events for new address: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.Transfer subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -107,8 +115,7 @@ func (listener *AgentCollectionTransferListener) Subscribe(collectionAddress com
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("started new AgentCollection.Transfer subscription for collection", zap.String("collectionAddress", collectionAddress.Hex()))
-
+	listener.logger.Info("rebuilt AgentCollection.Transfer subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
@@ -127,15 +134,15 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(subscr
 					continue
 				}
 
-				if err := listener.transferEventHandler.Handle(event); err != nil {
-					listener.logger.Error("failed to handle AgentCollection.Transfer event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionV1TransferEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1Transfer{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollection.Transfer event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
 
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
+				listener.onBlockSeen(event.Raw.BlockNumber)
 			case err := <-subscription.Err():
 				if err == nil {
 					return

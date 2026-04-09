@@ -26,8 +26,6 @@ type BlockEventsQueueInterface interface {
 
 	AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error
 
-	MarkBlockAsComplete(blockNumber uint64) error
-
 	// Dequeue returns the next block to dequeue, ordered by block number ascending.
 	Dequeue() (uint64, *QueueItem)
 }

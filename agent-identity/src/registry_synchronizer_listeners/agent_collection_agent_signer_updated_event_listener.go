@@ -18,7 +18,7 @@ type AgentCollectionAgentSignerUpdatedListener struct {
 	logger *zap.Logger
 
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
-	agentSignerUpdatedEventHandler           interfaces.AgentSignerUpdatedEventHandlerInterface
+	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
 
 	trackedAddresses []common.Address
@@ -27,20 +27,21 @@ type AgentCollectionAgentSignerUpdatedListener struct {
 func NewAgentCollectionAgentSignerUpdatedListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	agentSignerUpdatedEventHandler interfaces.AgentSignerUpdatedEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionAgentSignerUpdatedListener {
-	return &AgentCollectionAgentSignerUpdatedListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
+	el := &AgentCollectionAgentSignerUpdatedListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
-		agentSignerUpdatedEventHandler:           agentSignerUpdatedEventHandler,
+		blockEventsQueue:                         blockEventsQueue,
 		agentCollectionEventSubscriptionProvider: agentCollectionEventSubscriptionProvider,
 
 		trackedAddresses: []common.Address{},
 	}
+	el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+
+	return el
 }
 
 func (listener *AgentCollectionAgentSignerUpdatedListener) Listen() error {
@@ -89,14 +90,21 @@ func (listener *AgentCollectionAgentSignerUpdatedListener) Subscribe(collectionA
 		listener.mu.Unlock()
 		return nil
 	}
-
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
+	listener.mu.Unlock()
+
+	listener.markNeedsRebuild()
+	return nil
+}
+
+func (listener *AgentCollectionAgentSignerUpdatedListener) rebuildSubscription() error {
+	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentSignerUpdatedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.AgentSignerUpdated events for new address: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.AgentSignerUpdated subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -107,8 +115,7 @@ func (listener *AgentCollectionAgentSignerUpdatedListener) Subscribe(collectionA
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("started new AgentCollection.AgentSignerUpdated subscription for collection", zap.String("collectionAddress", collectionAddress.Hex()))
-
+	listener.logger.Info("rebuilt AgentCollection.AgentSignerUpdated subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
@@ -127,15 +134,15 @@ func (listener *AgentCollectionAgentSignerUpdatedListener) startSubscriptionHand
 					continue
 				}
 
-				if err := listener.agentSignerUpdatedEventHandler.Handle(event); err != nil {
-					listener.logger.Error("failed to handle AgentCollection.AgentSignerUpdated event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentSignerUpdatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentSignerUpdated{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollection.AgentSignerUpdated event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
 
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
+				listener.onBlockSeen(event.Raw.BlockNumber)
 			case err := <-subscription.Err():
 				if err == nil {
 					return

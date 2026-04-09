@@ -18,7 +18,7 @@ type AgentCollectionMintedListener struct {
 	logger *zap.Logger
 
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
-	mintedEventHandler                       interfaces.MintedEventHandlerInterface
+	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
 
 	trackedAddresses []common.Address
@@ -27,20 +27,21 @@ type AgentCollectionMintedListener struct {
 func NewAgentCollectionMintedListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	mintedEventHandler interfaces.MintedEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionMintedListener {
-	return &AgentCollectionMintedListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
+	el := &AgentCollectionMintedListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
-		mintedEventHandler:                       mintedEventHandler,
+		blockEventsQueue:                         blockEventsQueue,
 		agentCollectionEventSubscriptionProvider: agentCollectionEventSubscriptionProvider,
 
 		trackedAddresses: []common.Address{},
 	}
+	el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+
+	return el
 }
 
 func (listener *AgentCollectionMintedListener) Listen() error {
@@ -89,14 +90,21 @@ func (listener *AgentCollectionMintedListener) Subscribe(collectionAddress commo
 		listener.mu.Unlock()
 		return nil
 	}
-
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
+	listener.mu.Unlock()
+
+	listener.markNeedsRebuild()
+	return nil
+}
+
+func (listener *AgentCollectionMintedListener) rebuildSubscription() error {
+	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.Minted events for new address: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.Minted subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -107,8 +115,7 @@ func (listener *AgentCollectionMintedListener) Subscribe(collectionAddress commo
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("started new AgentCollection.Minted subscription for collection", zap.String("collectionAddress", collectionAddress.Hex()))
-
+	listener.logger.Info("rebuilt AgentCollection.Minted subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
@@ -127,15 +134,15 @@ func (listener *AgentCollectionMintedListener) startSubscriptionHandler(subscrip
 					continue
 				}
 
-				if err := listener.mintedEventHandler.Handle(event); err != nil {
-					listener.logger.Error("failed to handle AgentCollection.Minted event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionV1MintedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1Minted{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollection.Minted event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
 
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
+				listener.onBlockSeen(event.Raw.BlockNumber)
 			case err := <-subscription.Err():
 				if err == nil {
 					return

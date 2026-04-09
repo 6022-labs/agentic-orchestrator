@@ -16,7 +16,7 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 
 	// Services
 	err = container.Provide(
-		services.NewUniswapV3BlockEventsQueue,
+		services.NewBlockEventsQueue,
 		dig.As(new(interfaces.BlockEventsQueueInterface)),
 	)
 	if err != nil {

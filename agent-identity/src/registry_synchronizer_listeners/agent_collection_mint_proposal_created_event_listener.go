@@ -18,7 +18,7 @@ type AgentCollectionMintProposalCreatedListener struct {
 	logger *zap.Logger
 
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
-	mintProposalCreatedEventHandler          interfaces.MintProposalCreatedEventHandlerInterface
+	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
 
 	trackedAddresses []common.Address
@@ -27,20 +27,21 @@ type AgentCollectionMintProposalCreatedListener struct {
 func NewAgentCollectionMintProposalCreatedListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
-	mintProposalCreatedEventHandler interfaces.MintProposalCreatedEventHandlerInterface,
+	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionMintProposalCreatedListener {
-	return &AgentCollectionMintProposalCreatedListener{
-		AbstractUpdatableSubscriptionListener: NewAbstractUpdatableSubscriptionListener(),
-
+	el := &AgentCollectionMintProposalCreatedListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
-		mintProposalCreatedEventHandler:          mintProposalCreatedEventHandler,
+		blockEventsQueue:                         blockEventsQueue,
 		agentCollectionEventSubscriptionProvider: agentCollectionEventSubscriptionProvider,
 
 		trackedAddresses: []common.Address{},
 	}
+	el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+
+	return el
 }
 
 func (listener *AgentCollectionMintProposalCreatedListener) Listen() error {
@@ -89,14 +90,21 @@ func (listener *AgentCollectionMintProposalCreatedListener) Subscribe(collection
 		listener.mu.Unlock()
 		return nil
 	}
-
 	listener.trackedAddresses = append(listener.trackedAddresses, collectionAddress)
+	listener.mu.Unlock()
+
+	listener.markNeedsRebuild()
+	return nil
+}
+
+func (listener *AgentCollectionMintProposalCreatedListener) rebuildSubscription() error {
+	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintProposalCreatedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.MintProposalCreated events for new address: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.MintProposalCreated subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -107,8 +115,7 @@ func (listener *AgentCollectionMintProposalCreatedListener) Subscribe(collection
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("started new AgentCollection.MintProposalCreated subscription for collection", zap.String("collectionAddress", collectionAddress.Hex()))
-
+	listener.logger.Info("rebuilt AgentCollection.MintProposalCreated subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
@@ -127,15 +134,15 @@ func (listener *AgentCollectionMintProposalCreatedListener) startSubscriptionHan
 					continue
 				}
 
-				if err := listener.mintProposalCreatedEventHandler.Handle(event); err != nil {
-					listener.logger.Error("failed to handle AgentCollection.MintProposalCreated event", zap.Any("event", event), zap.Error(err))
+				if err := listener.blockEventsQueue.AddAgentCollectionV1MintProposalCreatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1MintProposalCreated{event}); err != nil {
+					listener.logger.Error(
+						"failed to enqueue AgentCollection.MintProposalCreated event",
+						zap.Uint64("blockNumber", event.Raw.BlockNumber),
+						zap.Error(err),
+					)
 				}
 
-				listener.mu.Lock()
-				if event.Raw.BlockNumber > listener.lastBlockSeen {
-					listener.lastBlockSeen = event.Raw.BlockNumber
-				}
-				listener.mu.Unlock()
+				listener.onBlockSeen(event.Raw.BlockNumber)
 			case err := <-subscription.Err():
 				if err == nil {
 					return

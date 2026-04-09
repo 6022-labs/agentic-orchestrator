@@ -1,6 +1,8 @@
 package settings
 
 import (
+	"time"
+
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
@@ -8,7 +10,8 @@ import (
 const SyncSettingsKey = "sync"
 
 type SyncSettings struct {
-	StartBlock uint64
+	StartBlock             uint64
+	BlockFinalizationDelay time.Duration
 }
 
 func NewSyncSettings(logger *zap.Logger, k *koanf.Koanf) *SyncSettings {
@@ -20,7 +23,10 @@ func NewSyncSettings(logger *zap.Logger, k *koanf.Koanf) *SyncSettings {
 
 	startBlock := uint64(startBlockInt)
 
+	blockFinalizationDelay := k.Duration(SyncSettingsKey + ".block_finalization_delay")
+
 	return &SyncSettings{
-		StartBlock: startBlock,
+		StartBlock:             startBlock,
+		BlockFinalizationDelay: blockFinalizationDelay,
 	}
 }

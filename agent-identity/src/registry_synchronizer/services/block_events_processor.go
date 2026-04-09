@@ -13,6 +13,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/avast/retry-go/v4"
 	"github.com/google/uuid"
+	"go.uber.org/dig"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -37,37 +38,49 @@ type BlockEventsProcessor struct {
 	agentCollectionV1AgentAttributeUpdatedHandler interfaces.AgentAttributeUpdatedEventHandlerInterface
 
 	agentCollectionManagerCollectionCreatedHandler interfaces.CollectionCreatedEventHandlerInterface
+
+	onBlockProcessedHandlers []interfaces.OnBlockProcessedHandlerInterface
+}
+
+type NewBlockEventsProcessorParams struct {
+	dig.In
+
+	Logger *zap.Logger
+
+	SyncCheckpointRepository repositories.SyncCheckpointRepositoryInterface
+
+	AgentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
+	AgentCollectionV1TransferHandler              interfaces.TransferEventHandlerInterface
+	AgentCollectionV1AgentImageUpdatedHandler     interfaces.AgentImageUpdatedEventHandlerInterface
+	AgentCollectionV1AgentSignerUpdatedHandler    interfaces.AgentSignerUpdatedEventHandlerInterface
+	AgentCollectionV1MintProposalCreatedHandler   interfaces.MintProposalCreatedEventHandlerInterface
+	AgentCollectionV1MintProposalRemovedHandler   interfaces.MintProposalRemovedEventHandlerInterface
+	AgentCollectionV1AgentAttributeUpdatedHandler interfaces.AgentAttributeUpdatedEventHandlerInterface
+
+	AgentCollectionManagerCollectionCreatedHandler interfaces.CollectionCreatedEventHandlerInterface
+
+	OnBlockProcessedHandlers []interfaces.OnBlockProcessedHandlerInterface `group:"on_block_processed_handlers"`
 }
 
 func NewBlockEventsProcessor(
-	logger *zap.Logger,
-
-	syncCheckpointRepository repositories.SyncCheckpointRepositoryInterface,
-
-	agentCollectionV1MintedHandler interfaces.MintedEventHandlerInterface,
-	agentCollectionV1TransferHandler interfaces.TransferEventHandlerInterface,
-	agentCollectionV1AgentImageUpdatedHandler interfaces.AgentImageUpdatedEventHandlerInterface,
-	agentCollectionV1AgentSignerUpdatedHandler interfaces.AgentSignerUpdatedEventHandlerInterface,
-	agentCollectionV1MintProposalCreatedHandler interfaces.MintProposalCreatedEventHandlerInterface,
-	agentCollectionV1MintProposalRemovedHandler interfaces.MintProposalRemovedEventHandlerInterface,
-	agentCollectionV1AgentAttributeUpdatedHandler interfaces.AgentAttributeUpdatedEventHandlerInterface,
-
-	agentCollectionManagerCollectionCreatedHandler interfaces.CollectionCreatedEventHandlerInterface,
+	params NewBlockEventsProcessorParams,
 ) *BlockEventsProcessor {
 	return &BlockEventsProcessor{
-		logger: logger,
+		logger: params.Logger,
 
-		syncCheckpointRepository: syncCheckpointRepository,
+		syncCheckpointRepository: params.SyncCheckpointRepository,
 
-		agentCollectionV1MintedHandler:                agentCollectionV1MintedHandler,
-		agentCollectionV1TransferHandler:              agentCollectionV1TransferHandler,
-		agentCollectionV1AgentImageUpdatedHandler:     agentCollectionV1AgentImageUpdatedHandler,
-		agentCollectionV1AgentSignerUpdatedHandler:    agentCollectionV1AgentSignerUpdatedHandler,
-		agentCollectionV1MintProposalCreatedHandler:   agentCollectionV1MintProposalCreatedHandler,
-		agentCollectionV1MintProposalRemovedHandler:   agentCollectionV1MintProposalRemovedHandler,
-		agentCollectionV1AgentAttributeUpdatedHandler: agentCollectionV1AgentAttributeUpdatedHandler,
+		agentCollectionV1MintedHandler:                params.AgentCollectionV1MintedHandler,
+		agentCollectionV1TransferHandler:              params.AgentCollectionV1TransferHandler,
+		agentCollectionV1AgentImageUpdatedHandler:     params.AgentCollectionV1AgentImageUpdatedHandler,
+		agentCollectionV1AgentSignerUpdatedHandler:    params.AgentCollectionV1AgentSignerUpdatedHandler,
+		agentCollectionV1MintProposalCreatedHandler:   params.AgentCollectionV1MintProposalCreatedHandler,
+		agentCollectionV1MintProposalRemovedHandler:   params.AgentCollectionV1MintProposalRemovedHandler,
+		agentCollectionV1AgentAttributeUpdatedHandler: params.AgentCollectionV1AgentAttributeUpdatedHandler,
 
-		agentCollectionManagerCollectionCreatedHandler: agentCollectionManagerCollectionCreatedHandler,
+		agentCollectionManagerCollectionCreatedHandler: params.AgentCollectionManagerCollectionCreatedHandler,
+
+		onBlockProcessedHandlers: params.OnBlockProcessedHandlers,
 	}
 }
 
@@ -138,6 +151,10 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		retry.Context(ctx),
 	); err != nil {
 		return fmt.Errorf("block %d: failed to process block events: %w", blockNumber, err)
+	}
+
+	for _, handler := range p.onBlockProcessedHandlers {
+		handler.OnBlockProcessed(blockNumber)
 	}
 
 	p.logger.Info("Processed block events successfully",
