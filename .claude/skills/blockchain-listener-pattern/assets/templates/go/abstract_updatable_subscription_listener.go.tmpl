@@ -1,0 +1,105 @@
+package listeners
+
+import (
+	"sync"
+
+	"github.com/ethereum/go-ethereum"
+)
+
+type AbstractUpdatableSubscriptionListener struct {
+	subscriptions    map[uint64]ethereum.Subscription
+	oldSubscriptions map[uint64][]ethereum.Subscription
+	lastBlockSeen    map[uint64]uint64
+	needsRebuild     map[uint64]bool
+
+	rebuildSubscription func(chainId uint64) error
+
+	mu    sync.Mutex
+	errCh chan error
+	wg    sync.WaitGroup
+}
+
+func NewAbstractUpdatableSubscriptionListener(
+	rebuildSubscription func(chainId uint64) error,
+) *AbstractUpdatableSubscriptionListener {
+	return &AbstractUpdatableSubscriptionListener{
+		subscriptions:    make(map[uint64]ethereum.Subscription),
+		oldSubscriptions: make(map[uint64][]ethereum.Subscription),
+		lastBlockSeen:    make(map[uint64]uint64),
+		needsRebuild:     make(map[uint64]bool),
+		errCh:            make(chan error, 8),
+
+		rebuildSubscription: rebuildSubscription,
+	}
+}
+
+func (l *AbstractUpdatableSubscriptionListener) Listen() error {
+	err := <-l.errCh
+
+	l.mu.Lock()
+	for _, sub := range l.subscriptions {
+		sub.Unsubscribe()
+	}
+	for _, subs := range l.oldSubscriptions {
+		for _, sub := range subs {
+			sub.Unsubscribe()
+		}
+	}
+	l.mu.Unlock()
+
+	l.wg.Wait()
+
+	return err
+}
+
+// OnBlockProcessed is called by the processor after a block is fully processed.
+// It handles old subscription cleanup and deferred subscription rebuilds.
+// Concrete listeners do NOT override this — they provide a rebuildSubscription callback instead.
+func (l *AbstractUpdatableSubscriptionListener) OnBlockProcessed(chainId, blockNumber uint64) {
+	l.onBlockSeen(chainId, blockNumber)
+
+	l.mu.Lock()
+	if !l.needsRebuild[chainId] {
+		l.mu.Unlock()
+		return
+	}
+	l.needsRebuild[chainId] = false
+	l.mu.Unlock()
+
+	if err := l.rebuildSubscription(chainId); err != nil {
+		select {
+		case l.errCh <- err:
+		default:
+		}
+	}
+}
+
+// markNeedsRebuild flags a chain for subscription rebuild.
+// Called by the concrete listener's Subscribe() — the actual rebuild is deferred
+// to OnBlockProcessed so it happens at a safe point.
+func (l *AbstractUpdatableSubscriptionListener) markNeedsRebuild(chainId uint64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.needsRebuild[chainId] = true
+}
+
+// onBlockSeen updates lastBlockSeen and cleans up old subscriptions that have been superseded.
+// Called after enqueuing an event and from OnBlockProcessed.
+func (l *AbstractUpdatableSubscriptionListener) onBlockSeen(chainId, blockNumber uint64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	last := l.lastBlockSeen[chainId]
+	if blockNumber > last {
+		l.lastBlockSeen[chainId] = blockNumber
+	}
+
+	oldSubs, ok := l.oldSubscriptions[chainId]
+	if ok && blockNumber >= last {
+		for _, sub := range oldSubs {
+			sub.Unsubscribe()
+		}
+		delete(l.oldSubscriptions, chainId)
+	}
+}

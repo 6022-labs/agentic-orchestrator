@@ -11,6 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title Slack Bridge External API
+// @version 1.0
+// @description This is the API documentation for the Slack Bridge External Host.
+// @BasePath /
 func main() {
 	godotenv.Load(".env")
 

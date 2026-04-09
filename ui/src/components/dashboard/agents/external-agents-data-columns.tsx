@@ -7,9 +7,6 @@ import ViewOnOpenseaAction from "./row-actions/view-on-opensea-action";
 import ViewOnRaribleAction from "./row-actions/view-on-rarible-action";
 import ViewOnScannerAction from "./row-actions/view-on-scanner-action";
 import { AgentCollectionsContext } from "@/contexts/agent-collections-context";
-import { AgentImportationStatus } from "@/models/enums/agent-importation-status";
-import { AgentImportationThirdStepDialogContext } from "./contexts/agent-importation-third-step-dialog-context";
-// import { AgentImportationSecondStepDialogContext } from "./contexts/agent-importation-second-step-dialog-context";
 import {
   ArrowUp,
   ArrowDown,
@@ -236,38 +233,6 @@ export const externalAgentsColumns: ColumnDef<Agent>[] = [
                     {user?.address.toLowerCase() ==
                       row.original.owner.toLowerCase() && (
                       <>
-                        {/* {(!row.original.importationStatus ||
-                        row.original.importationStatus ===
-                          AgentImportationStatus.FirstStep) && (
-                        <AgentImportationSecondStepDialogContext.Consumer>
-                          {({ open }) => (
-                            <DropdownMenuItem
-                              onClick={() => {
-                                open(row.original);
-                              }}
-                            >
-                              Start import
-                            </DropdownMenuItem>
-                          )}
-                        </AgentImportationSecondStepDialogContext.Consumer>
-                      )} */}
-                        {(row.original.importationStatus ===
-                          AgentImportationStatus.SecondStep ||
-                          row.original.importationStatus ===
-                            AgentImportationStatus.ThirdStep) && (
-                          <AgentImportationThirdStepDialogContext.Consumer>
-                            {({ setAgent, setIsOpen }) => (
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setAgent(row.original);
-                                  setIsOpen(true);
-                                }}
-                              >
-                                Finish import
-                              </DropdownMenuItem>
-                            )}
-                          </AgentImportationThirdStepDialogContext.Consumer>
-                        )}
                         <DropdownMenuItem>Transfer</DropdownMenuItem>
                       </>
                     )}

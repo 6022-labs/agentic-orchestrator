@@ -1,0 +1,5 @@
+package interfaces
+
+type {{EventName}}SubscriptionProviderInterface interface {
+    Start{{EventName}}Subscription(chainId uint64, addresses []common.Address) (<-chan *{{EventType}}, ethereum.Subscription, error)
+}

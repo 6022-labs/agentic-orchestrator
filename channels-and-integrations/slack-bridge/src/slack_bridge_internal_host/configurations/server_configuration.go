@@ -1,11 +1,13 @@
 package configurations
 
 import (
+	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
@@ -44,6 +46,8 @@ func useRestApi(p useRestApiParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
+
+	p.App.Get("/swagger/*", swagger.New())
 
 	for _, controller := range p.Controllers {
 		controller.InitRoutes(p.App)

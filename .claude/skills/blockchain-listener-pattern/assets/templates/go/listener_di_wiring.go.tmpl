@@ -1,0 +1,39 @@
+package configuration
+
+func add{{EventName}}EventListenerConfiguration(container *dig.Container) error {
+	// Register the concrete listener
+	if err := container.Provide(
+		New{{EventName}}Listener,
+	); err != nil {
+		return err
+	}
+
+	// Register as domain-specific subscriber interface
+	if err := container.Provide(
+		func(l *{{EventName}}Listener) interfaces.{{EventName}}SubscriberInterface { return l },
+		dig.As(new(interfaces.{{EventName}}SubscriberInterface)),
+		dig.Group("{{event_name}}_subscribers"),
+	); err != nil {
+		return err
+	}
+
+	// Register as event listener (inbound entrypoint)
+	if err := container.Provide(
+		func(l *{{EventName}}Listener) EventListenerInterface { return l },
+		dig.As(new(EventListenerInterface)),
+		dig.Group("event_listeners"),
+	); err != nil {
+		return err
+	}
+
+	// Register as on-block-processed handler (for subscription rebuilds)
+	if err := container.Provide(
+		func(l *{{EventName}}Listener) interfaces.OnBlockProcessedHandlerInterface { return l },
+		dig.As(new(interfaces.OnBlockProcessedHandlerInterface)),
+		dig.Group("on_block_processed_handlers"),
+	); err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -32,7 +32,7 @@
 1. For Go changes, inspect the matching service folder (`gateway/src/...`, `agent-knowledge/database-connector/src/...`, `channels-and-integrations/slack-bridge/src/...`). Follow the established pipeline: controllers in `*_mvc`, request/response DTOs in `use_cases/requests|responses`, business logic in `use_cases`, adapters in `services`, persistence in `orchestrator_db/repositories`.
 2. For front-end work, mirror the organization under `ui/src`: shared hooks/contexts live in `contexts/`, requests in `queries/`, typed models in `models/`, UI building blocks in `components/ui/`, and feature surfaces under `components/dashboard/**`.
 3. For documentation, edit the MD/MDX files in `docs/docs/**`. Each doc begins with YAML front matter (`id`, `title`, `sidebar_label`, etc.) and is registered in `docs/sidebars.ts`.
-4. Cross-service communication is handled through HTTP client packages (e.g., `gateway/src/orchestrator_gateway_http_agent_reasoning_llm_connector`). Never bypass these clients; update or extend them instead.
+4. Cross-service communication is handled through HTTP client packages (e.g., `gateway/src/gateway_http_agent_reasoning_compute`). Never bypass these clients; update or extend them instead.
 5. When touching persistence, review existing migrations under `*/migrations` and the Atlas schema files before adding SQL or schema drift.
 
 ## Code Quality Standards
@@ -46,13 +46,13 @@
 ### Performance
 
 - Match existing concurrency techniques: `use_cases/ListAgents` spins goroutines per agent and funnels results through typed channels—reuse that pattern whenever a use case fan-outs work.
-- Lean on the existing cache abstraction (`orchestrator_redis/services/redis_storage.go`) before querying remote systems repeatedly.
+- Lean on the existing cache abstraction (`gateway_redis/services/redis_storage.go`) before querying remote systems repeatedly.
 - Favor streaming/limited logging helpers like `zapext.ArrayTruncateEnd` when dumping large payloads.
 
 ### Security
 
 - Reuse the layered auth middleware stack: `middlewares.JWTAuthenticationInjectionMiddleware` populates `authenticated-wallet`, and `AuthenticationMandatoryMiddleware` enforces it. New endpoints must live behind the same guards unless they are explicitly public.
-- Store and read secrets with `VaultSecretStorage` (`orchestrator_vault/services/vault_secret_storage.go`) instead of environment variables or config files.
+- Store and read secrets with `VaultSecretStorage` (`gateway_vault/services/vault_secret_storage.go`) instead of environment variables or config files.
 - Issue parameterized DB queries through GORM repositories and keep blockchain signing via the existing services (`services/auth/signature/ECDSASigner`, `services/auth/jwt/JwtManager`).
 
 ### Accessibility
@@ -93,8 +93,8 @@
 - Requests live in `use_cases/requests`, responses in `use_cases/responses`. Always add sanitize/validation helpers before hitting repositories.
 - Repositories belong under `orchestrator_db/repositories` and must go through the shared `OrchestratorDbClientInterface` for transactions and migrations.
 - For secrets/caching/blockchain:
-  - Use `orchestrator_vault` services for KV storage paths (e.g., agent private keys follow `AgentPrivateKeyVaultPathTemplate`).
-  - Use `orchestrator_redis/services/redis_storage.go` for cache interactions.
+  - Use `gateway_vault` services for KV storage paths (e.g., agent private keys follow `AgentPrivateKeyVaultPathTemplate`).
+  - Use `gateway_redis/services/redis_storage.go` for cache interactions.
   - Use the helpers in `orchestrator_gateway/services/auth` for JWT/SIWE/signature flows; do not reimplement Keccak hashing.
 - Migrations are timestamped Goose scripts in `*/migrations`. Update the Atlas schema file and rerun `generate_migrations.sh` when schema changes, and wire migrations via `ConfigureDatabase` so hosts auto-migrate at startup.
 - Logging must go through the injected `*zap.Logger` (see `AuthenticationMandatoryMiddleware` and `agent_controller`). Never use `fmt.Println` outside of intentional CLI/debug utilities.
@@ -136,7 +136,7 @@
 
 ## Project-Specific Guidance
 
-- The gateway orchestrates agent lifecycle operations: controllers (`orchestrator_gateway_mvc`) talk to use cases that coordinate blockchain (`orchestrator_blockchain`), database (`orchestrator_db`), Vault (`orchestrator_vault`), Redis (`orchestrator_redis`), and downstream HTTP connectors (`orchestrator_gateway_http_*`). Respect these seams; do not mix responsibilities.
+- The gateway orchestrates agent lifecycle operations: controllers (`orchestrator_gateway_mvc`) talk to use cases that coordinate blockchain (`orchestrator_blockchain`), database (`orchestrator_db`), Vault (`gateway_vault`), Redis (`gateway_redis`), and downstream HTTP connectors (`orchestrator_gateway_http_*`). Respect these seams; do not mix responsibilities.
 - Agent Knowledge, Agent Reasoning, Agent Identity, and Slack Bridge services follow the same host/mvc/use-case/service/repository structure. When extending a capability, edit the matching service rather than the gateway.
 - HTTP clients in `orchestrator_gateway_http_agent_*` already handle auth headers and DTOs for downstream agents. Extend those clients when new endpoints are exposed instead of inlining `http.Client` calls.
 - Frontend routes in `ui/src/App.tsx` mirror backend capabilities (login, verify-wallet, dashboard sections). When adding a backend endpoint, expose it via the `queries/api` layer, wrap it in a context/hook if shared, and only then surface it in a page component.

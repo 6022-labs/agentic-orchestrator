@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -32,7 +33,7 @@ func (s *SlackChannelSynchronizer) Sync(channelId string) (*models.SlackChannel,
 	s.logger.Debug("Starting channel synchronization", zap.String("channelId", channelId))
 
 	existingChannelInDatabase, err := s.slackChannelRepository.GetById(channelId)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 

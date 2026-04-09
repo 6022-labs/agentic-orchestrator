@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -40,7 +41,7 @@ func NewSlackUserSynchronizerCached(
 
 func (s *SlackUserSynchronizerCached) Sync(id string) (*models.SlackUser, error) {
 	inDatabaseUser, err := s.slackUserRepository.GetById(id)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("error getting user %s from database: %w", id, err)
 	}
 

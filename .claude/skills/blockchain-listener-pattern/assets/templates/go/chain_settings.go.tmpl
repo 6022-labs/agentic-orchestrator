@@ -1,0 +1,10 @@
+package settings
+
+import "time"
+
+type ChainSettings struct {
+	Name                   string        `koanf:"name"`
+	BlockFinalizationDelay time.Duration `koanf:"block_finalization_delay"`
+}
+
+type ChainsSettings map[uint64]*ChainSettings

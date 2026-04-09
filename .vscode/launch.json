@@ -9,16 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/gateway/src/orchestrator_gateway_host",
-      "env": {},
-      "args": []
-    },
-    {
-      "name": "Gateway SC Sync Host",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceFolder}/gateway/src/orchestrator_sc_sync_host",
+      "program": "${workspaceFolder}/gateway/src/gateway_host",
       "env": {},
       "args": []
     },
@@ -41,11 +32,11 @@
       "args": []
     },
     {
-      "name": "Agent Reasoning - LLM Connector Host",
+      "name": "Agent Reasoning - Compute Host",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/agent-reasoning/llm-connector/src/llm_connector_host",
+      "program": "${workspaceFolder}/agent-reasoning/src/compute_host",
       "env": {},
       "args": []
     },
@@ -54,7 +45,25 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/agent-identity/image-generator/src/image_generator_host",
+      "program": "${workspaceFolder}/agent-identity/src/images_generator_host",
+      "env": {},
+      "args": []
+    },
+    {
+      "name": "Agent Identity - Registry Host",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/agent-identity/src/registry_host",
+      "env": {},
+      "args": []
+    },
+    {
+      "name": "Agent Identity - Registry Synchronizer Host",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/agent-identity/src/registry_synchronizer_host",
       "env": {},
       "args": []
     },
@@ -63,7 +72,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/agent-knowledge/database-connector/src/database_connector_host",
+      "program": "${workspaceFolder}/agent-knowledge/src/database_connector_host",
       "env": {},
       "args": []
     }

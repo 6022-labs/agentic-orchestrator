@@ -15,6 +15,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title Slack Bridge Internal API
+// @version 1.0
+// @description This is the API documentation for the Slack Bridge Internal Host.
+// @BasePath /
 func main() {
 	godotenv.Load(".env")
 

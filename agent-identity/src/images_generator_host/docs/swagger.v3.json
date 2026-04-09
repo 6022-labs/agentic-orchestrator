@@ -1,0 +1,96 @@
+{
+    "components": {
+        "schemas": {
+            "requests.GenerateImagesRequest": {
+                "type": "object"
+            },
+            "responses.GenerateImagesResponse": {
+                "properties": {
+                    "images": {
+                        "additionalProperties": {
+                            "items": {
+                                "type": "integer"
+                            },
+                            "type": "array"
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "description": "This is the API for the orchestrator images generator host.",
+        "title": "Orchestrator images generator Host API",
+        "version": "1.0"
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "paths": {
+        "/generate-images": {
+            "post": {
+                "description": "Generates images based on the request payload",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "title": "baseImageBytes",
+                                        "type": "file"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.GenerateImagesRequest",
+                                        "summary": "otherParam",
+                                        "description": "Other parameter"
+                                    }
+                                ]
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Base image file | Other parameter"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.GenerateImagesResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Generate images",
+                "tags": [
+                    "images"
+                ]
+            }
+        }
+    },
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "/"
+        }
+    ]
+}

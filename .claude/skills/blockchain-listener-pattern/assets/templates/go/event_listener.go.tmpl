@@ -1,0 +1,60 @@
+package listeners
+
+type {{EventName}}Listener struct {
+    *AbstractUpdatableSubscriptionListener
+
+    logger         *zap.Logger
+    chainsSettings *ChainsSettings
+    syncSettings   *SyncSettings
+
+    repository       repositories.{{EventName}}RepositoryInterface
+    eventsQueue      interfaces.BlockEventsQueueInterface
+    provider         interfaces.{{EventName}}SubscriptionProviderInterface
+    listenerMetrics  metrics_interfaces.ListenerMetricsInterface
+
+    trackedAddresses map[uint64][]common.Address
+}
+
+func New{{EventName}}Listener(
+    logger *zap.Logger,
+    chainsSettings *ChainsSettings,
+    syncSettings *SyncSettings,
+    repository repositories.{{EventName}}RepositoryInterface,
+    eventsQueue interfaces.BlockEventsQueueInterface,
+    provider interfaces.{{EventName}}SubscriptionProviderInterface,
+    listenerMetrics metrics_interfaces.ListenerMetricsInterface,
+) *{{EventName}}Listener {
+    el := &{{EventName}}Listener{
+        logger:           logger,
+        chainsSettings:   chainsSettings,
+        syncSettings:     syncSettings,
+        repository:       repository,
+        eventsQueue:      eventsQueue,
+        provider:         provider,
+        listenerMetrics:  listenerMetrics,
+        trackedAddresses: make(map[uint64][]common.Address),
+    }
+    el.AbstractUpdatableSubscriptionListener = NewAbstractUpdatableSubscriptionListener(el.rebuildSubscription)
+    return el
+}
+
+func (el *{{EventName}}Listener) Listen() error {
+    if el.syncSettings.Skip{{EventName}}Events {
+        return nil
+    }
+    return el.AbstractUpdatableSubscriptionListener.Listen()
+}
+
+func (el *{{EventName}}Listener) SubscribeAll() error {
+    if el.syncSettings.Skip{{EventName}}Events {
+        el.logger.Info("skipping {{eventName}} listener due to configuration")
+        return nil
+    }
+
+    for chainId := range *el.chainsSettings {
+        if err := el.subscribe(chainId); err != nil {
+            return err
+        }
+    }
+    return nil
+}

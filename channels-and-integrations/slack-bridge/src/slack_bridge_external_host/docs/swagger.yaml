@@ -1,0 +1,237 @@
+basePath: /
+info:
+  contact: {}
+  description: This is the API documentation for the Slack Bridge External Host.
+  title: Slack Bridge External API
+  version: "1.0"
+paths:
+  /command-handler/add-agent-to-channel:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Handles the Slack command to add an agent to a channel by collection
+        address and token ID
+      parameters:
+      - description: Slack channel ID
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: 'Command text: [collection address] [token ID]'
+        in: formData
+        name: text
+        required: true
+        type: string
+      - description: Slack user ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Agent added to channel successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Failed to handle command
+          schema:
+            type: string
+      summary: Add agent to channel
+      tags:
+      - Command
+  /command-handler/list-agents-in-channel:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Handles the Slack command to list all agents in a channel
+      parameters:
+      - description: Slack channel ID
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: Command text
+        in: formData
+        name: text
+        type: string
+      - description: Slack user ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JSON list of agents
+          schema:
+            type: string
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Failed to handle command
+          schema:
+            type: string
+      summary: List agents in channel
+      tags:
+      - Command
+  /command-handler/pair-slack-user-to-human-agent:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Handles the Slack command to pair a Slack user with a human agent
+        by collection address and token ID
+      parameters:
+      - description: Slack channel ID
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: 'Command text: [slack user ID] [collection address] [token ID]'
+        in: formData
+        name: text
+        required: true
+        type: string
+      - description: Slack user ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Slack user paired to human agent successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid command format
+          schema:
+            type: string
+        "500":
+          description: Failed to handle command
+          schema:
+            type: string
+      summary: Pair Slack user to human agent
+      tags:
+      - Command
+  /command-handler/remove-agent-from-channel:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Handles the Slack command to remove an agent from a channel by
+        collection address and token ID
+      parameters:
+      - description: Slack channel ID
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: 'Command text: [collection address] [token ID]'
+        in: formData
+        name: text
+        required: true
+        type: string
+      - description: Slack user ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Agent removed from channel successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Failed to handle command
+          schema:
+            type: string
+      summary: Remove agent from channel
+      tags:
+      - Command
+  /command-handler/verify-wallet-ownership:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Handles the Slack command to initiate wallet ownership verification
+        for a user
+      parameters:
+      - description: Slack channel ID
+        in: formData
+        name: channel_id
+        required: true
+        type: string
+      - description: Command text
+        in: formData
+        name: text
+        type: string
+      - description: Slack user ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Verification response
+          schema:
+            type: string
+        "400":
+          description: Invalid command format
+          schema:
+            type: string
+        "500":
+          description: Failed to handle command
+          schema:
+            type: string
+      summary: Verify wallet ownership
+      tags:
+      - Command
+  /event-handler:
+    post:
+      consumes:
+      - application/json
+      description: Receives and dispatches Slack event callbacks including messages,
+        channel events, and URL verification
+      parameters:
+      - description: Slack event payload
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Handle Slack event
+      tags:
+      - Event
+swagger: "2.0"

@@ -30,6 +30,16 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 	app.Post(SET_WALLET_OWNERSHIP_TO_SLACK_USER_ENDPOINT, controller.SetWalletOwnershipToSlackUser)
 }
 
+// SetWalletOwnershipToSlackUser godoc
+// @Summary      Set wallet ownership to Slack user
+// @Description  Confirms wallet ownership for a Slack user by providing a signed challenge
+// @Tags         Wallet
+// @Accept       json
+// @Produce      plain
+// @Param        request body requests.SetWalletOwnershipToSlackUserRequest true "Wallet ownership verification"
+// @Success      200 {string} string "OK"
+// @Failure      500 {string} string "Internal Server Error"
+// @Router       /wallet/set-ownership-to-slack-user [post]
 func (controller *WalletController) SetWalletOwnershipToSlackUser(c *fiber.Ctx) error {
 	controller.logger.Info("Set wallet ownership to Slack user request received")
 	controller.logger.Debug("Request", zap.Any("params", c.AllParams()))

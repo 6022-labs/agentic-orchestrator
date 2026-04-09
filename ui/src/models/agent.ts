@@ -1,6 +1,5 @@
 import { AgentRole } from "./enums/agent-role";
 import { AgentLLMSetupStatus } from "./enums/agent-llm-setup-status";
-import { AgentImportationStatus } from "./enums/agent-importation-status";
 import { AgentDatabaseSetupStatus } from "./enums/agent-database-setup-status";
 
 export type Agent = {
@@ -19,6 +18,5 @@ export type Agent = {
   proposalId: number | undefined;
   collectionTokenId: number | undefined;
   llmSetupStatus: AgentLLMSetupStatus | undefined;
-  importationStatus: AgentImportationStatus | undefined;
   databaseSetupStatus: AgentDatabaseSetupStatus | undefined;
 };

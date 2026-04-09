@@ -1,0 +1,360 @@
+basePath: /
+definitions:
+  enums.AgentRole:
+    enum:
+    - clone
+    - human
+    - expert
+    - facilitator
+    type: string
+    x-enum-varnames:
+    - AgentRoleClone
+    - AgentRoleHuman
+    - AgentRoleExpert
+    - AgentRoleFacilitator
+  errors.NotFoundError:
+    properties:
+      message:
+        type: string
+    type: object
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  requests.AgentByIdRequest:
+    properties:
+      agentId:
+        type: string
+      authenticatedWallet:
+        type: string
+    type: object
+  responses.AgentCollectionResponse:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+      symbol:
+        type: string
+    type: object
+  responses.AgentResponse:
+    properties:
+      attributes:
+        additionalProperties:
+          type: string
+        type: object
+      cloneOf:
+        type: integer
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      creator:
+        type: string
+      databaseSetupStatus:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      images:
+        additionalProperties:
+          type: string
+        type: object
+      isInternal:
+        type: boolean
+      isSetupCompleted:
+        type: boolean
+      llmSetupStatus:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      proposalId:
+        type: integer
+      role:
+        $ref: '#/definitions/enums.AgentRole'
+      walletAddress:
+        type: string
+    type: object
+  responses.CreateAgentSecondStepResponse:
+    properties:
+      nonce:
+        type: string
+      signature:
+        type: string
+      signer:
+        type: string
+    type: object
+  responses.IsInternalAgentResponse:
+    properties:
+      isInternalAgent:
+        type: boolean
+    type: object
+  responses.ListAgentsResponse:
+    properties:
+      agents:
+        items:
+          $ref: '#/definitions/responses.AgentResponse'
+        type: array
+      elementsPerPage:
+        type: integer
+      page:
+        type: integer
+      totalElements:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: This is the API documentation for the Agent Identity Registry.
+  title: Agent Identity Registry API
+  version: "1.0"
+paths:
+  /agent-collections:
+    get:
+      description: Retrieves all available agent collections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.AgentCollectionResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List agent collections
+      tags:
+      - AgentCollection
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}:
+    get:
+      description: Retrieves details of a specific agent by collection address and
+        token ID
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: Agent collection token ID
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get agent
+      tags:
+      - Agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal:
+    get:
+      description: Checks whether a specific agent is an internal agent
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: Agent collection token ID
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.IsInternalAgentResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Check if agent is internal
+      tags:
+      - Agent
+  /agent/create/first-step:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads agent image and creates agent metadata as the first step
+        of agent creation
+      parameters:
+      - description: Authenticated wallet address
+        in: formData
+        name: authenticatedWallet
+        required: true
+        type: string
+      - description: Collection address
+        in: formData
+        name: collectionAddress
+        required: true
+        type: string
+      - description: Agent name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Agent role
+        in: formData
+        name: role
+        required: true
+        type: string
+      - description: Agent mission
+        in: formData
+        name: mission
+        required: true
+        type: string
+      - description: Agent wallet address
+        in: formData
+        name: walletAddress
+        type: string
+      - description: ID of agent to clone
+        in: formData
+        name: cloneOfAgentId
+        type: integer
+      - description: Agent image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Start agent creation
+      tags:
+      - Agent
+  /agent/create/second-step:
+    post:
+      consumes:
+      - application/json
+      description: Completes agent creation by generating the mint signature
+      parameters:
+      - description: Agent ID and authenticated wallet
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AgentByIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CreateAgentSecondStepResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Complete agent creation
+      tags:
+      - Agent
+  /agent/ens/{ensDomain}:
+    get:
+      description: Retrieves a minted agent by its ENS domain name
+      parameters:
+      - description: ENS domain name
+        in: path
+        name: ensDomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentResponse'
+        "404":
+          description: Agent not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get agent by ENS domain
+      tags:
+      - Agent
+  /agents:
+    get:
+      description: Retrieves a paginated list of agents with optional filtering
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Elements per page
+        in: query
+        name: elementsPerPage
+        type: integer
+      - description: Sort direction (asc, desc)
+        in: query
+        name: sortDirection
+        type: string
+      - description: Sort by field
+        in: query
+        name: sortBy
+        type: string
+      - description: Filter by internal status
+        in: query
+        name: isInternal
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ListAgentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List agents
+      tags:
+      - Agent
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
