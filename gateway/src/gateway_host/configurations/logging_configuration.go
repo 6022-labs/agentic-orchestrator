@@ -16,8 +16,10 @@ func ConfigureLogging(container *dig.Container) {
 	case "debug":
 		zapConfig.Level.SetLevel(zap.DebugLevel)
 	case "info":
+	case "information":
 		zapConfig.Level.SetLevel(zap.InfoLevel)
 	case "warn":
+	case "warning":
 		zapConfig.Level.SetLevel(zap.WarnLevel)
 	case "error":
 		zapConfig.Level.SetLevel(zap.ErrorLevel)
