@@ -1,6 +1,9 @@
 package configurations
 
 import (
+	"time"
+
+	gateway_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/settings"
 	orchestrator_mvc "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc"
@@ -8,6 +11,7 @@ import (
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/swagger"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -35,6 +39,7 @@ type registerRoutesParams struct {
 
 	App                               *fiber.App
 	Logger                            *zap.Logger
+	RateLimitSettings                 *gateway_settings.RateLimitSettings
 	AuthenticationMandatoryMiddleware *middlewares.AuthenticationMandatoryMiddleware
 	Controllers                       []orchestrator_mvc.ControllerInterface         `group:"controllers"`
 	AuthInjectionMiddlewares          []middlewares.AuthInjectionMiddlewareInterface `group:"auth-injection-middlewares"`
@@ -49,6 +54,11 @@ func registerRoutes(p registerRoutesParams) {
 
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
+	}))
+
+	p.App.Use(limiter.New(limiter.Config{
+		Max:        p.RateLimitSettings.RequestsPerSecond,
+		Expiration: 1 * time.Second,
 	}))
 
 	p.App.Get("/swagger/*", swagger.New())
