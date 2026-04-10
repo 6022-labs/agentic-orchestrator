@@ -11,6 +11,8 @@ Agents are created and managed by an Orchestrator. The Orchestrator is intended 
 
 This docs section focuses on the developer perspective: how domains own data and responsibilities, and how to integrate with the Orchestrator and agent services.
 
+For a high‑level map of how the smart contracts, domains, and components fit together, see [Architecture](./architecture).
+
 Domains (entry points):
 
 - Agent Identity — identity, metadata, and wallet operations for an agent

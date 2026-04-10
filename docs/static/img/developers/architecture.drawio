@@ -1,0 +1,91 @@
+<mxfile host="Electron" agent="6022-docs" version="24.0.0">
+  <diagram id="architecture" name="Architecture">
+    <mxGraphModel dx="1500" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ui" value="Web UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="40" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gateway" value="Gateway — orchestrator routing, sessions, auth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="150" width="1220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ipfs" value="IPFS (Kubo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;horizontal=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="100" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="id_domain" value="Agent Identity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="260" width="290" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="id_c1" value="Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="id_domain">
+          <mxGeometry x="20" y="60" width="250" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="id_c2" value="SC Watcher (chain sync)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="id_domain">
+          <mxGeometry x="20" y="130" width="250" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rs_domain" value="Agent Reasoning" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="260" width="290" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="rs_c1" value="Agent Compute" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="rs_domain">
+          <mxGeometry x="20" y="60" width="250" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rs_c2" value="Conversation Broker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="rs_domain">
+          <mxGeometry x="20" y="130" width="250" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="kn_domain" value="Agent Knowledge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="870" y="260" width="290" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="kn_c1" value="Database Connector Host" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="kn_domain">
+          <mxGeometry x="20" y="40" width="250" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kn_c2" value="Per-agent Postgres" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="kn_domain">
+          <mxGeometry x="70" y="100" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_domain" value="Channels &amp; Integrations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="260" width="290" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_c1" value="Slack Bridge — Internal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="ch_domain">
+          <mxGeometry x="20" y="40" width="250" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_c2" value="Slack Bridge — External" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="ch_domain">
+          <mxGeometry x="20" y="90" width="250" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_c3" value="Discord / Teams / Telegram (future)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;dashed=1;" vertex="1" parent="ch_domain">
+          <mxGeometry x="20" y="140" width="250" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sc_container" value="Smart contracts (on-chain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="540" width="1220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="sc1" value="Agent Collection V1&#10;(ERC-721 identity NFT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="sc_container">
+          <mxGeometry x="50" y="50" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sc2" value="Agent Collection Creator V1&#10;(factory)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="sc_container">
+          <mxGeometry x="450" y="50" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sc3" value="Token 6022&#10;(ERC-20 utility token)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="sc_container">
+          <mxGeometry x="850" y="50" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ui" target="gateway">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="gateway" target="id_domain">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="gateway" target="rs_domain">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="gateway" target="kn_domain">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="gateway" target="ch_domain">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="sync + read" style="endArrow=classic;html=1;rounded=0;startArrow=classic;fontSize=11;" edge="1" parent="1" source="id_domain" target="sc_container">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="images" style="endArrow=classic;html=1;rounded=0;dashed=1;fontSize=11;" edge="1" parent="1" source="id_domain" target="ipfs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
