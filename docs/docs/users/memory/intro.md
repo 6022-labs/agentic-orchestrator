@@ -5,95 +5,24 @@ sidebar_position: 1
 
 # Memory
 
-> Documentation for the 6022 Agentic Teams project
+Everything an agent "knows" and "remembers" is organised around **context primary keys**. A key groups the conversation history for one specific thing — a customer, a contract, a ticket, a GDPR article — so that when an expert is asked about that thing again, it can load everything it ever discussed under that key.
 
-## Overview
+## Three concepts to understand
 
-Memory encompasses everything an agent "knows" and "remembers" across conversations. In the 6022 framework, this knowledge is structured around **context primary keys** that organize memory into distinct contexts, **strategies** that determine how memory is populated, and **APIs** that enable programmatic management.
+- **[Context primary key](./context-primary-keys.md)** — a unique identifier that creates an isolated memory space. Example: contract number `C45653` groups every conversation the CRM expert has ever had about that customer.
+- **[Memory strategy](./memory-strategies.md)** — how the memory gets populated. Lazy (grows from real conversations), Hydration (pre-loaded synthetic conversations), or MCP (fetched live from an external system).
+- **[Threading phase](./threading-phase.md)** — when an expert is first @-mentioned in a conversation, it runs a threading routine to identify which context primary key applies and lock it for the rest of the thread.
 
----
+## Getting started
 
-## Documentation Structure
+1. Decide what makes a good key for your agent's domain (email? contract number? ticket ID?)
+2. Create the keys through the dashboard for small batches, or through the API for bulk
+3. Pick a memory strategy that matches your use case
+4. Configure the agent's Context Not Found prompt to recognise your key format
+5. Test in a real conversation
 
-### Core Concepts
-
-| #   | Topic                                             | Description                                                 | Status      |
-| --- | ------------------------------------------------- | ----------------------------------------------------------- | ----------- |
-| 01  | [Context Primary Keys](./context-primary-keys.md) | Creating and managing context primary keys for agent memory | ✅ Complete |
-| 02  | [Memory Strategies](./memory-strategies.md)       | Lazy, Hydration, and MCP approaches                         | ✅ Complete |
-| 03  | [Memory Hydration](./memory-hydration.md)         | Pre-loading knowledge via synthetic conversations           | ✅ Complete |
-| 04  | [Threading Phase](./threading-phase.md)           | Context detection and key identification                    | ✅ Complete |
-
----
-
-## Quick Links
-
-### For Administrators
-
-- [How to create context primary keys](./context-primary-keys.md#creating-context-primary-keys)
-- [How to hydrate agent memory](./memory-hydration.md)
-
-### For Developers
+## For developers
 
 - [API Reference Overview](../../developers/api-reference/intro.md)
-- [Bulk key creation](../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
-
-### For Business Users
-
-- [Understanding context primary keys](./context-primary-keys.md#what-is-a-context-primary-key)
-- [Designing keys for your domain](./context-primary-keys.md#designing-context-primary-keys)
-- [Memory strategies overview](./memory-strategies.md)
-
----
-
-## Key Concepts at a Glance
-
-- **Context Primary Key** — a unique identifier that creates an isolated memory space for an agent (e.g. contract number `C45653`). Full definition and design rules: [Context Primary Keys](./context-primary-keys.md).
-- **Memory Strategy** — Lazy, Hydration, or MCP. Full taxonomy with selection guide: [Memory Strategies](./memory-strategies.md).
-- **Threading** — the process by which an expert agent identifies the relevant context primary key when first mentioned. Full walkthrough: [Threading Phase](./threading-phase.md).
-- **Context Window** — the LLM's working memory containing the full conversation history for a given context primary key.
-
----
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     MEMORY                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐   │
-│  │Context Primary│  │Context Primary│  │Context Primary│   │
-│  │  Key: C45653  │  │  Key: C78901  │  │  Key: C12345  │   │
-│  └───────┬───────┘  └───────┬───────┘  └───────┬───────┘   │
-│          │                  │                  │            │
-│          ▼                  ▼                  ▼            │
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐   │
-│  │ Conversation  │  │ Conversation  │  │ Conversation  │   │
-│  │   History     │  │   History     │  │   History     │   │
-│  │               │  │               │  │               │   │
-│  │ May 2023      │  │ June 2023     │  │ Sept 2025     │   │
-│  │ June 2023     │  │ April 2024    │  │ Oct 2025      │   │
-│  │ April 2024    │  │ July 2025     │  │               │   │
-│  │ July 2025     │  │ Oct 2025      │  │               │   │
-│  │ Oct 2025      │  │               │  │               │   │
-│  └───────────────┘  └───────────────┘  └───────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Getting Started
-
-1. **Understand your use case** - Identify what context primary keys make sense for your agent's domain
-2. **Create your keys** - Use the UI for small scale, API for bulk operations
-3. **Choose a memory strategy** - Lazy for organic growth, Hydration for pre-loaded knowledge
-4. **Configure threading** - Set up key detection prompts for expert agents
-5. **Test and iterate** - Verify memory works as expected in conversations
-
----
-
-## Contributing
-
-This documentation is maintained as part of the 6022 Agentic Teams project. For updates or corrections, please submit a pull request to the [documentation repository](https://github.com/6022-labs/documentation).
+- [Context Primary Keys API](../../developers/api-reference/context-primary-keys.md) — bulk provisioning, pagination, search
+- [Memory Hydration API](../../developers/api-reference/memory-hydration.md)

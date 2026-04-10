@@ -4,46 +4,33 @@ sidebar_position: 2
 
 # MCP Configuration
 
-This guide explains how to add and configure MCP connections for your agents using the orchestrator interface.
+How to add an MCP connection to an agent from the dashboard.
 
 ## Prerequisites
 
-Before adding an MCP connection:
+- Your agent's LLM supports function calling (see [LLM Compatibility](./intro.md#llm-compatibility))
+- The MCP server is running and reachable over **HTTPS** (non-HTTPS URLs are rejected)
+- You have the auth credentials if the server requires them
 
-1. ✅ Your agent must use a compatible LLM (OpenAI, Anthropic, or AWS Bedrock)
-2. ✅ You have the MCP server URL (must be HTTPS)
-3. ✅ You have authentication credentials (if required)
-4. ✅ The MCP server is running and accessible
+## Adding a connection
 
-## Adding an MCP Connection
+1. Open the agent in the dashboard
+2. Click **⋮ → Manage MCPs**
+3. Click **+ Add MCP Connection** and fill in the form
 
-### Step 1: Access MCP Settings
+![Add MCP Connection dialog](/img/users/add-mcp-connection-dialog.png)
 
-1. Go to **Dashboard** → **Agents**
-2. Find your agent
-3. Click the **⋮** menu
-4. Select **"Manage MCPs"**
+### Fields
 
-### Step 2: Add New Connection
+| Field | Description |
+|---|---|
+| **Name** | Identifier for this connection. Must match `^[a-z][a-z0-9-]*$` and be at least 3 characters. Unique per agent. |
+| **URL** | Server endpoint — HTTPS only. Unique per agent. |
+| **Authentication** | A set of HTTP header key/value pairs that get attached to every request. |
 
-1. Click **"+ Add MCP Connection"**
-2. Fill in the configuration form
+## Authentication methods
 
-### Step 3: Configure Connection Details
-
-| Field | Description | Required |
-|-------|-------------|:--------:|
-| **Name** | Identifier for this MCP (e.g., `stripe-mcp`). Must match `^[a-z][a-z0-9-]*$` and be at least 3 characters. Must be unique per agent. | ✅ |
-| **URL** | Server endpoint (must be HTTPS). Must be unique per agent. | ✅ |
-| **Authentication** | Set of HTTP header key/value pairs that get attached to every request. The UI presents this as "None / API Key (Bearer) / Custom Header / Basic Auth" but they all resolve to the same underlying header map. | ✅ |
-
-## URL Requirements
-
-MCP URLs must use **HTTPS** — `http://` URLs are rejected by the orchestrator's validation. URLs are also trimmed of leading/trailing whitespace before validation. For trailing-slash gotchas and hidden-character issues, see [Troubleshooting → URL Issues](./troubleshooting.md#url-issues).
-
-## Authentication
-
-Authentication is a set of HTTP header key/value pairs. Whatever the UI labels them, they all resolve to headers that the orchestrator attaches to every MCP request. Here is what each label produces:
+The UI offers four auth labels for clarity, but they all resolve to the same underlying header map:
 
 | UI label | What you fill in | What the orchestrator sends |
 |---|---|---|
@@ -52,89 +39,29 @@ Authentication is a set of HTTP header key/value pairs. Whatever the UI labels t
 | **Custom Header** | a header name + value | `<header-name>: <value>` |
 | **Basic Auth** | username + password | `Authorization: Basic <base64(user:pass)>` |
 
-Header values are stored in the orchestrator's secret vault, not in the agent database. When you delete an MCP connection, the vault entries for its header values are removed alongside the database row.
+Header values are stored in the orchestrator's secret vault, not in the agent database. Deleting an MCP connection also removes its vault entries.
 
-## Configuration Examples
+## Pre-configured server examples
 
-For pre-configured server examples (Stripe, Kirha, Markitdown, HubSpot, Notion, etc.), see **[Available MCPs](./available-mcps.md)** — that page is the canonical catalogue. Don't duplicate the per-server examples here.
+For Stripe, Kirha, Markitdown, HubSpot, Notion and other ready-to-go servers, see **[Available MCPs](./available-mcps.md)**. That page is the canonical catalogue with exact URLs, auth methods, and gotchas per server.
 
-## Managing Multiple MCPs
+## Verifying a connection
 
-An agent can have multiple MCP connections. Each connection:
-
-- Has a unique name
-- Has its own URL and authentication
-- Provides its own set of tools
-
-The LLM sees tools from ALL connected MCPs and decides which to use.
-
-### Recommended Approach
-
-Instead of one large MCP with everything, use multiple specialized MCPs:
-
-```
-Agent: customer-service.mycompany.137.protocol6022.eth
-├── MCP: crm        → Customer data, history
-├── MCP: payments   → Stripe invoices, subscriptions
-├── MCP: documents  → Contract templates, policies
-└── MCP: websearch  → Real-time information
-```
-
-## Verifying Your Configuration
-
-### Test with Postman or cURL
-
-Before adding to the orchestrator, verify the MCP server responds correctly:
+Before wrestling with the dashboard, verify the MCP server itself works with cURL:
 
 ```bash
 curl -X POST 'https://your-mcp-server.com/mcp' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "tools/list",
-    "params": {},
-    "id": 1
-  }'
+  -d '{"jsonrpc":"2.0","method":"tools/list","params":{},"id":1}'
 ```
 
-**Expected response:**
-```json
-{
-  "jsonrpc": "2.0",
-  "result": {
-    "tools": [
-      {
-        "name": "tool_name",
-        "description": "What this tool does",
-        "inputSchema": { ... }
-      }
-    ]
-  },
-  "id": 1
-}
-```
+A working server responds with a `result.tools` array. If cURL fails, the problem is on the MCP side — see [Troubleshooting](./troubleshooting.md) for 401/424/500 diagnostics.
 
-### Using MCP Inspector
+## Managing multiple MCPs on one agent
 
-For a visual tool discovery experience, use [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
+An agent can have many MCP connections. The LLM sees all the tools from all connections and picks the right one per question. For tool count limits, specialisation strategies, and when to split vs combine, see [Best Practices](./best-practice.md).
 
-```bash
-npx @modelcontextprotocol/inspector https://your-mcp-server.com/mcp
-```
+## Removing a connection
 
-## Removing an MCP Connection
-
-1. Go to **Manage MCPs**
-2. Find the connection to remove
-3. Click the **⋮** menu on that row
-4. Select **"Delete"**
-5. Confirm removal
-
-:::note
-Removing an MCP does not affect past conversations. The agent simply won't have access to those tools in future interactions.
-:::
-
-## Best Practices
-
-For specialization strategies, tool count limits, and the full Do's/Don'ts list (when to split MCPs, when to combine, how to prompt for tool usage), see **[MCP Best Practices](./best-practice.md)**.
+Open **⋮ → Manage MCPs**, click **⋮** on the row you want to remove, select **Delete**. Past conversations are unaffected — the agent just won't have access to those tools going forward.

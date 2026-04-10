@@ -5,130 +5,32 @@ sidebar_position: 5
 
 # Threading Phase
 
-## Introduction
+When an expert is first @-mentioned in a conversation, it doesn't yet know which [context primary key](./context-primary-keys.md) applies. The **threading phase** is the short routine it runs to figure that out before loading memory and responding.
 
-The **threading phase** is the critical process during which an expert agent identifies which context primary key applies to a conversation when it is first mentioned.
+## The five steps
 
-This document explains the importance of context primary keys during threading and how agents identify them.
+1. **Mention detected.** The facilitator (or another agent) writes `@claudine.mycompany.137.protocol6022.eth, can you help with customer C45653?`. The orchestrator routes the message to Claudine.
+2. **Context Not Found prompt runs.** Claudine doesn't have a key yet, so the orchestrator runs her [Context Not Found prompt](../prompting/expert-prompts.md#context-not-found-prompt) with the message as input.
+3. **Key extracted.** The prompt asks the model to find a valid key in the message. For Claudine that might be a regex like `^C[0-9]{5}$`, which matches `C45653`.
+4. **Memory loaded.** The orchestrator loads all history stored under key `C45653` for this agent, regardless of which conversation it came from.
+5. **Conversation is bound to the key.** A row is persisted in `agent_context_conversation_mappings` linking this conversation to `C45653` for the rest of its lifetime. Subsequent messages in the same thread bypass threading and go straight to the [Context Found prompt](../prompting/expert-prompts.md#context-found-prompt).
 
----
+There is no distributed lock: two concurrent threading attempts on the same conversation ID are not guarded. In practice this isn't an issue because the orchestrator processes messages sequentially per conversation.
 
-## Threading Overview
+## Three ways the key gets identified
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        THREADING PHASE                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  1. Agent is mentioned          2. Agent enters              3. Agent searches    │
-│     in conversation              context-discovery state        for context key   │
-│                                                                     │
-│     "@claudine can you           Context =                    "C45653" found     │
-│      help with C45653?"          conversation-context-        in message         │
-│                                  discovery/{conversationId}                       │
-│            │                            │                            │            │
-│            ▼                            ▼                            ▼            │
-│     ┌───────────┐               ┌───────────────┐            ┌───────────────┐   │
-│     │  Mention  │──────────────▶│  THREADING    │───────────▶│ Context Found │   │
-│     │  Detected │               │    State      │            │   = C45653    │   │
-│     └───────────┘               └───────────────┘            └───────────────┘   │
-│                                        │                            │            │
-│                                        │ Key not found              │            │
-│                                        ▼                            ▼            │
-│                                 ┌───────────────┐            ┌───────────────┐   │
-│                                 │ Ask for help  │            │ Load memory   │   │
-│                                 │ from others   │            │ for C45653    │   │
-│                                 └───────────────┘            └───────────────┘   │
-│                                                                     │            │
-│                                                                     ▼            │
-│                                                              ┌───────────────┐   │
-│                                                              │ Key locked    │   │
-│                                                              │ for session   │   │
-│                                                              └───────────────┘   │
-│                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
+- **Explicit mention** — the key is literally in the message: `"Can you help with customer C45653?"` → `C45653`.
+- **Pattern matching** — the message contains something that matches a regex the prompt taught the model: `"Customer (customer@example.com) needs help"` → `customer@example.com`.
+- **MCP lookup** — the agent calls an MCP server during threading to resolve a fuzzy identifier: `"The customer from the automotive workshop"` → the MCP returns `CUST-45653`. See [MCPs during threading](../mcp/best-practice.md#mcps-during-threading).
 
----
+If none of these work, the agent asks for help from another agent by name (per the "trust the swarm" pattern). The conversation stays open and the next turn gets another shot at threading.
 
-## How Threading Works
+## What happens if threading fails repeatedly
 
-When an expert agent is first mentioned in a conversation, it triggers the threading process:
+The conversation continues without a locked key, which means the expert has no memory to load. Either tune the Context Not Found prompt (add more explicit patterns, loosen the regex, add an MCP lookup), or accept that some conversations genuinely don't have a matching key and the expert should decline to answer.
 
-1. **Agent is mentioned** — Someone calls the agent to help with a specific issue
-2. **Agent analyzes the message** — Looks for clues about which context primary key applies
-3. **Key is identified** — Extracts or determines the correct context primary key
-4. **Memory is loaded** — All associated memory for that key becomes available
-5. **Conversation is bound to the key** — the orchestrator persists a row in `agent_context_conversation_mappings` linking this conversation to the chosen context key. The binding remains for the lifetime of the conversation. There is no mutex; concurrent threading attempts on the same conversation ID are not guarded by a distributed lock.
-
----
-
-## Key Identification Methods
-
-Agents identify context primary keys through:
-
-### 1. Explicit Mention
-
-The key appears directly in the message:
-
-```
-"Can you help with customer C45653?"
-→ Identifies: C45653
-```
-
-### 2. Pattern Matching
-
-The key follows a known format (regex patterns, email format, UUID, etc.):
-
-```
-"Example Customer (customer@example.com) needs help"
-→ Matches email pattern
-→ Identifies: customer@example.com
-```
-
-### 3. MCP Lookup
-
-The agent queries external systems to find the correct key:
-
-```
-"The customer from the automotive workshop"
-→ Query CRM MCP
-→ Identifies: CUST-45653
-```
-
----
-
-## What Happens After Threading
-
-Once the context primary key is identified and locked:
-
-- The agent loads all associated memory (from memory strategies: lazy, hydration, MCP)
-- The agent engages in meaningful conversation with proper context
-- The key remains locked for the duration of the conversation
-- Future messages use the loaded memory to provide informed responses
-
----
+Humans and digital twins **skip threading entirely** — their key is computed automatically from the set of participant wallet addresses, so there's nothing to figure out.
 
 ## Configuration
 
-Detailed configuration of key detection, prompt design, and MCP integration is covered in the **[Prompting](../prompting/intro.md)** section — see specifically [Expert Prompts](../prompting/expert-prompts.md) for the Context Not Found / Context Found prompt templates.
-
----
-
-## Summary
-
-The threading phase is critical for:
-
-- **Correct context selection** — Identifying which context primary key applies
-- **Memory isolation** — Loading the right conversation history
-- **Conversation coherence** — Ensuring agents have proper context for meaningful responses
-
-Without proper threading, agents cannot distinguish between different customers, contracts, tickets, or other business entities they manage.
-
----
-
-## Related Documentation
-
-- [Context Primary Keys](./context-primary-keys.md) - Creating and managing keys
-- [Expert Prompts](../prompting/expert-prompts.md) - Configuring key detection and prompts
-- [Memory Strategies](./memory-strategies.md) - How memory is populated once a context is bound
+All the configuration happens in the Expert's [Context Not Found prompt](../prompting/expert-prompts.md#context-not-found-prompt). The orchestrator-side machinery (running the prompt, extracting the key, persisting the mapping) requires no setup.

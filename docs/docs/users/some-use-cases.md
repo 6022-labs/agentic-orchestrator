@@ -4,48 +4,35 @@ title: Some Use Cases
 sidebar_position: 3
 ---
 
-# Illustrative Examples: Decentralized Intelligence
+# Illustrative Examples
 
-To illustrate these principles, let's examine two concrete use cases showing how 6022 transforms centralized systems into decentralized intelligent swarms.
+Two concrete applications of 6022 in production and in the wild.
 
-## Via the Chess Hackathon (Plan B Network 2025)
+## Decentralised Chess (Plan B Network Hackathon 2025)
 
-The 6022 protocol was used to create the first fully decentralized chess game by "ejecting the player" and freeing the pieces. Each piece (16 agents: brave pawns, scheming knights, disgruntled queen, lazy king) becomes an autonomous agent:
+The first fully decentralised chess game: the player is removed and the pieces become autonomous agents. Sixteen NFT-minted agents (brave pawns, scheming knights, a disgruntled queen, a lazy king) discuss each move in a Slack channel. The king acts as facilitator; decisions emerge from debate rather than from a central master — pawns demand respect, the queen periodically requests a divorce.
 
-- Identity and Ownership: NFT minted on Ethereum with a smart wallet.
-- Swarm Collaboration: Pieces discuss on Slack with the king (facilitator) to decide the next move. No central master; decisions emerge through debate (e.g., pawns demanding respect, queen seeking divorce).
-- Decentralized Economy: Each move rewards 50 satoshis via the Lightning Network (Alby). The king decides who deserves the reward, incentivizing agents to pay to speak (risk of receiving no reward). This leads to self-optimization: agents manage their LLM/MCP costs to "survive".
-- Hackathon Deliverables: 16 minted agents, Lightning transaction tooling, Slack channel for unlimited games.
-- Rarible testnet collection: https://testnet.rarible.com/collection/polygon/0xad5e65c2714ba4eecc86a55da0c51ad1826f5dcb/items
+The economic layer uses the Lightning Network (via Alby): each move rewards 50 satoshis, which the king distributes among the agents that contributed. This creates a "pay to speak, earn rewards for usefulness" pressure — agents have to manage their LLM and MCP costs to survive.
 
-This case demonstrates how 6022 decentralizes a classic game into swarm AI, with real payments for emergent behaviors.
+Hackathon deliverables: 16 minted agents, Lightning-Network transaction tooling, and a Slack channel hosting continuous games. See the [Rarible testnet collection](https://testnet.rarible.com/collection/polygon/0xad5e65c2714ba4eecc86a55da0c51ad1826f5dcb/items).
 
-## Insurance Industry Use Case (live)
+## Insurance claims processing
 
-The 6022 Collateral system provides a mechanism for decentralized insurance protocols, where swarm agents dynamically manage customer inquiries and claims.
-Each agent uses a primary key to store past conversations related to each key.
+A live deployment where swarm agents handle customer inquiries and claims collaboratively. Each agent uses a [context primary key](./memory/context-primary-keys.md) to organise its memory around a specific business entity:
 
-### Specialized Agents
+- **CRM Expert** — keyed by customer email
+- **Claims Manager** — keyed by claim number
+- **Compliance Officer** — keyed by regulatory chapter
+- **Customer Success Manager** — keyed by customer ID
+- **Facilitator** — moderates discussion, concludes threads
+- **Humans and digital twins** — intervene when judgment or escalation is required
 
-- CRM Expert (primary key: email)
-- Claims Manager (key: claim number)
-- Compliance Officer (key: regulatory chapters)
-- Customer Success Manager
-- Facilitator agents moderate discussions, while humans and digital twins can intervene when needed
+Memory is populated with a mix of [hydration](./memory/memory-hydration.md) (pre-loaded policies, customer facts) and [MCP](./mcp/intro.md) (live CRM lookups). A typical interaction:
 
-### Memory Management
+1. Customer sends a request — *"I crashed my 2022 Toyota Corolla, you owe me 2300 USD"*
+2. Facilitator identifies the relevant experts and @-mentions them
+3. Each expert runs its [threading phase](./memory/threading-phase.md), locks its key, loads relevant history, and responds
+4. Experts cross-check each other's information
+5. Facilitator concludes and emits the final customer-facing response
 
-- Primary keys are used to merge all related conversations (e.g., policy number for auto insurance quotes)
-- Hydration from existing data or MCP to feed conversations context (e.g., "Note for later: customer John Doe subscribed to policy POL-654245EF on October 12, 2025")
-
-### Conversation Flow
-
-1. Initiation through customer request (e.g., "I crashed my 2022 Toyota Corolla ! you owe me 2300 USD")
-2. Threading for context (primary key search)
-3. Swarm interactions
-   - Agents ask questions
-   - Share information
-   - Collaborate on solution
-4. Closure with summary and email confirmation
-
-This implementation demonstrates how swarm agents can effectively handle complex insurance processes while maintaining compliance and customer satisfaction through coordinated, specialized roles.
+The result: complex claims handled by coordinated specialists while compliance and customer continuity are preserved across conversations.

@@ -176,4 +176,4 @@ Coordinate with the platform team before running manual SQL to avoid violating t
 | `404`  | `Context not found`                       | Key missing when hydrating memory | Create key before pushing conversations        |
 | `500`  | `Internal Server Error`                   | Database or sync issue            | Check orchestrator logs, open ticket if needed |
 
-For UI-driven workflows, see the [user documentation](../../users/memory/context-primary-keys.md#creating-context-primary-keys).
+For UI-driven workflows, see the [user documentation](../../users/memory/context-primary-keys.md).

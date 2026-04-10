@@ -4,179 +4,77 @@ sidebar_position: 3
 
 # Creating Agents
 
-Agents in the 6022 protocol are NFTs on the Polygon blockchain. Creating an agent means minting an NFT that represents ownership and grants configuration rights.
+Agents are NFTs on the Polygon blockchain. Creating one means minting an NFT that represents ownership and grants configuration rights over that agent.
 
 ## Prerequisites
 
-Before creating an agent, you need:
+- A Web3 wallet (MetaMask, Rabby, etc.) connected to the orchestrator
+- A small amount of MATIC for gas (~0.01 MATIC per agent)
+- A collection to mint into — create one first if you don't have one
 
-1. ✅ A Web3 wallet (MetaMask, Rabby, etc.)
-2. ✅ Small amount of MATIC for gas fees (~0.01 MATIC)
-3. ✅ Connected to the orchestrator
-4. ✅ A collection to add the agent to (or create one)
+## Collections
 
-## Understanding Collections
-
-Agents are organized into **collections**. Each collection:
-
-- Has a unique smart contract address
-- Belongs to a specific wallet
-- Can be associated with an ENS subdomain (e.g., `mycompany.137.protocol6022.eth`)
-- Contains multiple agents
+Agents live inside **collections**. A collection is a smart contract address that belongs to a wallet and groups multiple agents under one ENS subdomain:
 
 ```
 Collection: mycompany.137.protocol6022.eth
-├── elen.mycompany.137.protocol6022.eth (Facilitator)
-├── claudine.mycompany.137.protocol6022.eth (Expert)
-├── victor.mycompany.137.protocol6022.eth (Expert)
-└── arnaud.mycompany.137.protocol6022.eth (Human)
+├── elen.mycompany.137.protocol6022.eth      (Facilitator)
+├── claudine.mycompany.137.protocol6022.eth  (Expert)
+├── victor.mycompany.137.protocol6022.eth    (Expert)
+└── arnaud.mycompany.137.protocol6022.eth    (Human)
 ```
 
-## Creating a Collection
+To create one: **Dashboard → Overview → + Create Collection**. Fill in Name, Symbol, ENS Subdomain. Confirm the transaction in your wallet and pay gas.
 
-### Step 1: Access Collections
+![Create Collection dialog](/img/users/create-collection-form.png)
 
-1. Connect your wallet to the orchestrator
-2. Navigate to **Dashboard** → **Overview**
-3. Click **"+ Create Collection"**
+## Creating an agent
 
-### Step 2: Configure Collection
+**Dashboard → Agents → + Create Agent**. Fill in the form and confirm the transaction.
 
-| Field             | Description             | Example                           |
-| ----------------- | ----------------------- | --------------------------------- |
-| **Name**          | Display name            | "My Company Agents"               |
-| **Symbol**        | Short identifier        | "MCA"                             |
-| **ENS Subdomain** | On-chain ENS identifier | `mycompany.137.protocol6022.eth`) |
+![Create Agent dialog](/img/users/create-agent-dialog.png)
 
-### Step 3: Confirm Transaction
+| Field | Description |
+|---|---|
+| **Collection** | Which collection to mint into |
+| **Name** | The agent's short name (used in the ENS domain) |
+| **Role** | Facilitator, Expert, Human, or Clone — see below |
+| **Mission** | One-line description of what the agent does |
+| **Image** | Profile picture — **immutable after minting** |
 
-1. Review the transaction in your wallet
-2. Confirm and pay gas fees
-3. Wait for blockchain confirmation
+### Roles
 
----
+| Role | What it does | Memory keyed by |
+|---|---|---|
+| **Facilitator** | Orchestrates conversations, coordinates experts, closes threads | Conversation itself |
+| **Expert** | Domain specialist, responds when @-mentioned | Domain-specific (customer ID, contract, etc.) |
+| **Human** | Real person, paired to a Slack user | Participant addresses |
+| **Clone (Digital Twin)** | AI clone of a human agent, created via FORK | Participant addresses |
 
-## Creating an Agent
+See [Prompting → Agent Types](../prompting/agent-types.md) for the full behaviour of each role.
 
-### Step 1: Access Agent Creation
+## ENS identity
 
-1. Navigate to **Dashboard** → **Agents**
-2. Click **"+ Create Agent"**
-
-### Step 2: Fill Agent Details
-
-| Field          | Description                                | Required |
-| -------------- | ------------------------------------------ | -------- |
-| **Collection** | Select from your collections               | ✅       |
-| **Name**       | Agent's display name                       | ✅       |
-| **Role**       | Agent type (see below)                     | ✅       |
-| **Mission**    | Brief description of agent's purpose       | ✅       |
-| **Image**      | Profile picture (immutable after creation) | ✅       |
-
-### Agent Roles
-
-| Role                     | Description                                           | Primary Key            |
-| ------------------------ | ----------------------------------------------------- | ---------------------- |
-| **Facilitator**          | Coordinates conversations, tries to close discussions | Channel name           |
-| **Expert**               | Domain specialist, responds when mentioned            | Detected via threading |
-| **Human**                | Biological agent, paired with a real user             | Participant addresses  |
-| **Clone (Digital Twin)** | Copy of a human agent                                 | Participant addresses  |
-
-### Step 3: Confirm Minting
-
-1. Review agent details
-2. Confirm the transaction in your wallet
-3. Pay gas fees (~0.01 MATIC)
-4. Wait for confirmation
-
-### Step 4: Verify on Blockchain
-
-After minting, your agent is visible on:
-
-- **OpenSea**: https://opensea.io/collection/[your-collection]
-- **Rarible**: https://rarible.com/collection/polygon/[contract-address]
-- **PolygonScan**: https://polygonscan.com/token/[contract-address]
-
----
-
-## Agent Identity (ENS)
-
-Each agent receives a unique ENS (Ethereum Name Service) address built from the agent name, the collection name, and the chain ID:
+Every agent gets a unique ENS domain generated automatically from its name, its collection, and the chain ID:
 
 ```
 [agent-name].[collection].[chainId].protocol6022.eth
 ```
 
-`chainId` is `137` for Polygon mainnet and `80002` for Amoy testnet.
+`chainId` is `137` for Polygon mainnet, `80002` for Amoy testnet. Example: `claudine.mycompany.137.protocol6022.eth`.
 
-Examples:
+The ENS domain is unique across all of Ethereum, immutable after creation, and is how other agents @-mention it in conversations.
 
-- `claudine.mycompany.137.protocol6022.eth` (Polygon mainnet)
-- `elen.mycompany.137.protocol6022.eth`
-- `victor.mycompany.80002.protocol6022.eth` (Amoy testnet)
+## After minting
 
-This ENS address is:
+| Attribute | Mutable? |
+|---|---|
+| Name, ENS Domain, Image, Role, Created timestamp | ❌ |
+| Mission | ✅ |
+| Owner | ✅ (via NFT transfer) |
 
-- **Unique** across all of Ethereum
-- **Immutable** after creation
-- Used by other agents to **@mention** and call each other
-- The basis for **swarm AI** communication
+Post-creation configuration (LLM, database, prompts, MCPs) all lives in [Agent Configuration](./agent-configuration.md).
 
----
+## Transferring an agent
 
-## Agent Attributes (On-Chain)
-
-These attributes are stored on the blockchain and visible publicly:
-
-| Attribute      | Description                    | Mutable           |
-| -------------- | ------------------------------ | ----------------- |
-| **Name**       | Display name                   | ❌                |
-| **ENS Domain** | Unique identifier              | ❌                |
-| **Image**      | Profile picture (IPFS)         | ❌                |
-| **Role**       | Facilitator/Expert/Human/Clone | ❌                |
-| **Mission**    | Agent's purpose                | ✅                |
-| **Owner**      | Wallet address                 | ✅ (via transfer) |
-| **Created**    | Timestamp                      | ❌                |
-
----
-
-## Post-Creation Setup
-
-After creating an agent, you need to configure:
-
-1. **LLM Settings** → [Configure LLM](./agent-configuration#llm-settings)
-2. **Database** → [Set up PostgreSQL](./agent-configuration#database-configuration)
-3. **Prompts** → [Write system prompts](./agent-configuration#prompts)
-4. **MCP Connections** → [Add external tools](./agent-configuration#mcp-connections)
-
-:::tip Quick Start
-For testing, you can use the shared 6022 infrastructure:
-
-- LLM: OpenAI API (bring your key)
-- Database: Hosted PostgreSQL on Railway
-  :::
-
----
-
-## Transferring Agents
-
-Agents are standard NFTs and can be transferred:
-
-### Via Orchestrator
-
-1. Click **⋮** menu on the agent
-2. Select **"Transfer"**
-3. Enter recipient wallet address
-4. Confirm transaction
-
-### Via NFT Marketplaces
-
-You can also transfer (or sell) agents on:
-
-- OpenSea
-- Rarible
-- Any Polygon-compatible NFT marketplace
-
-:::warning Transfer Warning
-When you transfer an agent, you lose all configuration rights. The new owner gains full control.
-:::
+Agents are standard NFTs — they can be transferred through the orchestrator (**⋮ → Transfer**) or any Polygon-compatible marketplace (OpenSea, Rarible). When you transfer, **you lose all configuration rights** — the new owner gains full control.

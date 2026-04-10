@@ -5,316 +5,66 @@ sidebar_position: 4
 
 # Memory Strategies
 
-## Introduction
+Once a context primary key exists, you have to decide **how** its memory gets populated. Three strategies, and you can combine them.
 
-Once a context primary key is created, you need to decide **how** the agent's memory will be populated. The 6022 framework offers three distinct strategies, each suited to different use cases.
+| Strategy | How it works | Best for | Setup effort |
+|---|---|---|---|
+| **Lazy** | Memory grows organically from real conversations | Relationship building, general support | None |
+| **Hydration** | Memory is pre-loaded with synthetic "past" conversations via API | Compliance, procedures, onboarding knowledge | Medium |
+| **MCP** | Memory is fetched live from an external system on every query | CRM, ERP, real-time data needs | High |
 
-This document explains when and how to use each strategy.
+## Lazy
 
----
+The simplest approach: do nothing. The agent starts with empty memory for each key, and builds up history naturally through real conversations.
 
-## Strategy Overview
+- **Day 1**: customer `C45653` contacts support. Agent has no history. Conversation is stored.
+- **Day 15**: customer returns. Agent recalls day-1 conversation and responds with context.
+- **Day 45**: third issue. Agent has the full history of both previous interactions.
 
-```
-                    ┌─────────────────────────┐
-                    │  Create Context Primary │
-                    │          Key            │
-                    └───────────┬─────────────┘
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        │                       │                       │
-        ▼                       ▼                       ▼
-┌───────────────┐       ┌───────────────┐       ┌───────────────┐
-│ LAZY STRATEGY │       │   HYDRATION   │       │ MCP STRATEGY  │
-│               │       │   STRATEGY    │       │               │
-│  🛋️ Passive   │       │  💉 Proactive │       │  🔄 Dynamic   │
-└───────────────┘       └───────────────┘       └───────────────┘
-        │                       │                       │
-        ▼                       ▼                       ▼
-   Conversations           Synthetic              External
-   feed memory             "past" chats           data sources
-        │                       │                       │
-        ▼                       ▼                       ▼
-┌───────────────┐       ┌───────────────┐       ┌───────────────┐
-│  Happiness    │       │  GDPR Agent   │       │  CRM Agent    │
-│   Manager     │       │               │       │               │
-└───────────────┘       └───────────────┘       └───────────────┘
-```
+Use this for happiness managers, general support, team collaboration — anywhere relationships develop over time.
 
-| Strategy      | Description                                            | Best For                                |
-| ------------- | ------------------------------------------------------ | --------------------------------------- |
-| **Lazy**      | Memory grows organically through real conversations    | General support, relationship building  |
-| **Hydration** | Memory is pre-loaded with synthetic past conversations | Compliance, knowledge bases, onboarding |
-| **MCP**       | Memory is refreshed dynamically from external systems  | CRM, ERP, real-time data needs          |
+**Pros:** zero setup; memory reflects actual conversations. **Cons:** the agent is cold on day 1.
 
----
+## Hydration
 
-## Lazy Strategy
+Pre-populate memory with synthetic conversations before the agent ever talks to a real user. The agent treats the hydrated content as real history — the LLM sees it in its context window and acts on it.
 
-### Concept
-
-The **lazy strategy** is the simplest approach: the agent's memory grows naturally through actual conversations with humans and other agents. No proactive initialization is required.
-
-The agent starts with an empty memory for each context primary key. As conversations occur, the history accumulates organically.
-
-### Characteristics
-
-- ✅ No setup required beyond creating context primary keys
-- ✅ Memory reflects genuine interactions
-- ✅ Low maintenance overhead
-- ⚠️ Agent has no knowledge until first interaction
-- ⚠️ May need time to build useful context
-
-### When to Use
-
-| Use Case            | Why Lazy Works                                     |
-| ------------------- | -------------------------------------------------- |
-| Happiness Manager   | Customer relationships develop naturally over time |
-| General Support     | Issues are discussed as they arise                 |
-| Team Collaboration  | Context builds through ongoing exchanges           |
-| Feedback Collection | Responses accumulate organically                   |
-
-### Implementation
-
-1. Create the context primary key (see [Context Primary Keys](./context-primary-keys.md))
-2. That's it — conversations will automatically populate memory
-
-### Example Flow
+Example for a GDPR agent with key `Article-15`:
 
 ```
-Day 1: Customer C45653 contacts support
-       → Agent has no history, starts fresh conversation
-       → Conversation is stored under key C45653
+User: "Note for later the content of GDPR chapter individual privacy 3.1:
+       The right of access allows data subjects to obtain confirmation..."
 
-Day 15: Customer C45653 returns with follow-up
-        → Agent recalls previous conversation
-        → Provides contextual response
-
-Day 45: Customer C45653 has new issue
-        → Agent has full history of both previous interactions
-        → Can reference past solutions and preferences
+Agent: "Noted. I will reference this when handling Article 15 requests."
 ```
 
----
+Now when a real question arrives for `Article-15`, the agent "remembers" the regulation. Use this for compliance, onboarding, knowledge bases — anywhere the agent needs to know things from day one.
 
-## Hydration Strategy
+**Pros:** immediate expertise; consistent baseline across all keys. **Cons:** requires upfront work; the agent may show minor inconsistencies if directly challenged about fabricated memories.
 
-### Concept
+See [Memory Hydration](./memory-hydration.md) for the conceptual patterns and the [Memory Hydration API](../../developers/api-reference/memory-hydration.md) for the runnable code.
 
-The **hydration strategy** pre-populates an agent's memory with synthetic "past" conversations. These fabricated exchanges give the agent knowledge it needs from day one.
+## MCP
 
-The agent genuinely believes it had these conversations. When the LLM processes future requests, the hydrated content appears in its context window as real history.
+Instead of storing knowledge in memory, give the agent a tool that fetches it live from an external system. The agent calls the MCP server on every question that needs fresh data.
 
-### Characteristics
+Use this when the data changes faster than you can update it — real-time customer data from HubSpot, live inventory, current appointment slots, current KPIs. The agent is always up-to-date but depends on the external system being available.
 
-- ✅ Agent has immediate expertise
-- ✅ Consistent baseline knowledge across all keys
-- ✅ Can embed procedures, guidelines, regulations
-- ⚠️ Requires upfront preparation
-- ⚠️ May need periodic updates as source information changes
-- ⚠️ Agent may show confusion if challenged about hydrated memories
+**Pros:** always fresh; scales to huge datasets; integrates with existing systems. **Cons:** requires MCP server setup and maintenance; latency per query.
 
-### When to Use
+See [MCP Configuration](../mcp/configuration.md) and [MCP Best Practices](../mcp/best-practice.md) for how to wire one up.
 
-| Use Case             | Why Hydration Works                            |
-| -------------------- | ---------------------------------------------- |
-| GDPR Agent           | Needs complete regulatory knowledge from start |
-| Compliance Agent     | Must know all procedures immediately           |
-| Onboarding Agent     | Requires company policies pre-loaded           |
-| Knowledge Base Agent | Domain expertise needed before first query     |
+## Combining strategies
 
-### Implementation
+Most production deployments combine two or three:
 
-See [Memory Hydration](./memory-hydration.md) for collaboration tips and share the linked developer guide when you need the API details.
+- **Hydration + Lazy** — hydrate baseline procedures, then let organic conversations add case-specific context. Good for customer support agents with a return policy + individual customer preferences.
+- **Hydration + MCP** — hydrate static regulatory knowledge, use MCP for dynamic customer data. Good for a GDPR agent that also needs to check current consent status.
+- **All three** — hydrate internal docs, MCP for live system data, lazy for organic team interactions. Complex enterprise deployments.
 
-**High-Level Process:**
+## Picking a strategy
 
-1. Create the context primary key
-2. Design the synthetic conversation(s) to inject
-3. Use the API to add messages with appropriate roles
-4. Agent now "remembers" this information
+Ask two questions:
 
-### Example Hydration
-
-For a GDPR Agent with context primary key `Article-15`:
-
-```
-Synthetic conversation to inject:
-
-User: "Note for later the whole content of GDPR chapter 'individual privacy 3.1':
-       The right of access allows data subjects to obtain confirmation as to whether
-       personal data concerning them is being processed..."
-
-Agent: "Yes, duly noted. I will reference this information when handling
-        Article 15 requests."
-```
-
-The agent now has this regulatory knowledge "in memory" and will use it naturally in responses.
-
-### Hydration Side Effects
-
-When an agent's memory is hydrated with fabricated information, it may occasionally show inconsistencies:
-
-```
-User: "Are you serious about what you said earlier?"
-
-Agent: "Sorry — I don't know why I said that earlier, I wasn't fully awake..."
-```
-
-This is expected behavior when the agent cannot truly recall the context of hydrated memories.
-
----
-
-## MCP Strategy
-
-### Concept
-
-The **MCP (Model Context Protocol) strategy** connects agents to external data sources that dynamically provide and refresh memory content. Instead of static knowledge, the agent accesses live data from CRMs, databases, APIs, and other systems.
-
-### Characteristics
-
-- ✅ Always up-to-date information
-- ✅ Integrates with existing business systems
-- ✅ Scales to large, changing datasets
-- ⚠️ Requires MCP server setup and maintenance
-- ⚠️ Dependent on external system availability
-- ⚠️ May have latency for complex queries
-
-### When to Use
-
-| Use Case         | Why MCP Works                                              |
-| ---------------- | ---------------------------------------------------------- |
-| CRM Agent        | Needs current customer data from HubSpot, Salesforce, etc. |
-| Inventory Agent  | Must reflect real-time stock levels                        |
-| Scheduling Agent | Requires live calendar availability                        |
-| Analytics Agent  | Needs current metrics and KPIs                             |
-
-### How MCP Works
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│    Agent    │────▶│  MCP Server │────▶│  External   │
-│             │◀────│             │◀────│   System    │
-└─────────────┘     └─────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │   CRM       │
-                    │   ERP       │
-                    │   Database  │
-                    │   API       │
-                    └─────────────┘
-```
-
-1. Agent receives a query requiring external data
-2. Agent calls the configured MCP server
-3. MCP server fetches data from external systems
-4. Data is returned and incorporated into agent's response
-5. Data is automatically stored in agent memory for future reference
-
-### MCP Configuration
-
-In the orchestrator UI:
-
-1. Navigate to your agent
-2. Open **Actions** → **Manage MCPs**
-3. Configure the MCP server connection:
-   - Server URL
-   - Authentication (Bearer token, API key)
-   - Allowed tools/endpoints
-
-### MCP During Threading
-
-MCP servers are accessible during the threading phase, allowing agents to:
-
-- Validate context primary keys against external databases
-- Look up customer information from partial identifiers
-- Cross-reference data before committing to a key
-
----
-
-## Combining Strategies
-
-Strategies are not mutually exclusive. Many production deployments combine approaches:
-
-### Hydration + Lazy
-
-**Use case:** Agent needs baseline knowledge but also learns from interactions
-
-```
-1. Hydrate with core procedures and guidelines
-2. Let organic conversations add case-specific context
-```
-
-**Example:** Customer support agent hydrated with return policy, then learns individual customer preferences through conversations.
-
-### Hydration + MCP
-
-**Use case:** Agent needs static knowledge plus dynamic data
-
-```
-1. Hydrate with regulatory content, procedures
-2. Use MCP for real-time customer/inventory data
-```
-
-**Example:** GDPR agent hydrated with regulations, uses MCP to check customer consent status.
-
-### All Three
-
-**Use case:** Complex enterprise deployments
-
-```
-1. Hydrate with organizational knowledge
-2. Connect MCP for live system data
-3. Allow organic learning from team interactions
-```
-
----
-
-## Strategy Selection Guide
-
-```
-                              START
-                                │
-                                ▼
-                   ┌────────────────────────┐
-                   │ Does agent need        │
-                   │ knowledge from day 1?  │
-                   └───────────┬────────────┘
-                               │
-              ┌────────────────┴────────────────┐
-              │ NO                              │ YES
-              ▼                                 ▼
-     ┌─────────────────┐           ┌────────────────────────┐
-     │  LAZY STRATEGY  │           │ Is the knowledge       │
-     │                 │           │ in external systems?   │
-     └─────────────────┘           └───────────┬────────────┘
-                                               │
-                          ┌────────────────────┴────────────────┐
-                          │ NO                                  │ YES
-                          ▼                                     ▼
-                 ┌─────────────────┐                   ┌─────────────────┐
-                 │    HYDRATION    │                   │  MCP STRATEGY   │
-                 │    STRATEGY     │                   │                 │
-                 └─────────────────┘                   └─────────────────┘
-```
-
----
-
-## Summary
-
-| Strategy      | Setup Effort | Maintenance      | Data Freshness           | Best For                               |
-| ------------- | ------------ | ---------------- | ------------------------ | -------------------------------------- |
-| **Lazy**      | None         | None             | Real-time (organic)      | Relationship building, general support |
-| **Hydration** | Medium       | Periodic updates | Static (until refreshed) | Compliance, procedures, onboarding     |
-| **MCP**       | High         | Ongoing          | Real-time (from source)  | CRM, ERP, live data integration        |
-
-Choose based on your agent's mission, data requirements, and operational constraints. Most production deployments benefit from combining strategies.
-
----
-
-## Related Documentation
-
-- [Context Primary Keys](./context-primary-keys.md) - Creating keys before applying strategies
-- [Memory Hydration](./memory-hydration.md) - Detailed API for injecting memories
-- [Threading Phase](./threading-phase.md) - How agents detect context
+1. **Does the agent need knowledge on day 1?** If no → **Lazy**. If yes, continue.
+2. **Is that knowledge in an external system that updates in real time?** If yes → **MCP**. If no → **Hydration**.

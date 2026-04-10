@@ -4,128 +4,54 @@ sidebar_position: 1
 
 # Introduction to LLM Configuration
 
-Each agent in the 6022 Agentic Teams protocol can be configured with its own Large Language Model (LLM). This flexibility allows you to optimize costs, performance, and capabilities based on each agent's specific role.
+Every agent has its own LLM. You can mix providers inside a single team: a premium model for the facilitator that orchestrates everything, cheap or local models for experts that do simple lookups. This saves money, improves diversity of reasoning, and protects against single-vendor outages.
 
-## The Power of Model Diversity
+## Supported providers
 
-One of the key strengths of the 6022 protocol is the ability to **mix different LLM providers and models** within the same agent team. This is not just a technical feature — it's a strategic advantage.
+The platform string in the right column is the literal value the orchestrator stores in its `Platform` field — use it verbatim when configuring through the API.
 
-### Why Use Different Models?
+| Provider | Models | Platform string | MCP routing |
+|---|---|---|---|
+| **OpenAI** | GPT-4, GPT-4o, GPT-5 | `open-ai` | ✅ Native (via `/v1/responses`) |
+| **Anthropic** | Claude 3, Claude 3.5, Claude 4 | `anthropic` | ✅ Native — requires custom header (`x-api-key`) |
+| **AWS Bedrock** | Llama, Mistral, Claude, Titan | `amazon-bedrock` | ⚙️ Function-call loop (Converse API) |
+| **xAI** | Grok | `x` | ⚙️ Function-call loop (model-dependent) |
+| **Mistral** | mistral-medium-latest | `mistral` | ⚙️ Function-call loop (model-dependent) |
+| **Deepseek** | deepseek-chat | `deepseek` | ⚙️ Function-call loop (model-dependent) |
+| **LibertAI** | Open-source models | `libert-ai` | ⚙️ Function-call loop (model-dependent) |
+| **Ollama** | Llama 3, Mistral, Mixtral, etc. | `ollama` | ⚙️ Function-call loop (model-dependent) |
 
-**1. Richer Conversations**
+**Native** MCP routing means the orchestrator hands your MCP server definitions straight to the provider. **Function-call loop** means the orchestrator runs its own loop and asks the model to emit tool calls — so whether MCP works depends on whether the chosen model actually supports function calling.
 
-When agents use different LLMs, each brings its own "personality" and reasoning patterns to the conversation. This diversity leads to more varied perspectives and reduces groupthink — similar to how a human team benefits from diverse backgrounds.
+## Configuring in the dashboard
 
-```
-Example: Customer Support Team
-├── Facilitator → GPT-4o (strong orchestration)
-├── Legal Expert → Claude (nuanced reasoning)
-├── Technical Expert → Deepseek (cost-effective for code)
-└── CRM Expert → Mistral (fast responses)
-```
+1. Open the agent
+2. Click **⋮ → Manage LLM settings**
+3. Fill in Provider, API URL, Model, API Key
+4. Save
 
-**2. Better Response Quality**
+![Manage LLM Settings dialog](/img/users/manage-llm-settings.png)
 
-Different models excel at different tasks:
+## Why mix providers
 
-| Model Strength    | Best Provider                  |
-| ----------------- | ------------------------------ |
-| Complex reasoning | Anthropic Claude, OpenAI GPT-4 |
-| Fast responses    | Mistral, Groq                  |
-| Code generation   | Deepseek, CodeLlama            |
-| Cost efficiency   | Deepseek, Ollama (local)       |
-| Tool/MCP usage    | OpenAI, xAI Grok               |
+Different models excel at different things. A customer support team might look like this:
 
-By matching each agent's role to the most suitable model, you optimize the overall team performance.
+| Agent | Role | LLM | Why |
+|---|---|---|---|
+| Elen | Facilitator | GPT-4o | Critical coordination, needs best reasoning |
+| Claudine | CRM Expert | Claude 3.5 | Nuanced customer interactions |
+| Victor | Legal Expert | Claude 3 | Careful regulatory work |
+| Charles | Technical Support | Deepseek | Cost-effective for technical lookups |
+| Albert | FAQ Bot | Ollama (local) | Zero marginal cost on a cheap model |
 
-**3. Cost Optimization (Frugal Computing)**
+**Rough cost comparison:** the team above runs around $110/month. The same team all on GPT-4o would cost $250/month.
 
-Not every agent needs the most powerful (and expensive) model:
+Start with a premium model on the facilitator, then downgrade experts based on their actual needs. Monitor conversations for a week or two before locking in a choice.
 
-| Agent Role              | Model Choice                    | Why                        |
-| ----------------------- | ------------------------------- | -------------------------- |
-| Facilitator             | Premium (GPT-4o, Claude)        | Critical coordination role |
-| Expert (complex domain) | Mid-tier (GPT-4, Mistral Large) | Needs good reasoning       |
-| Expert (simple lookups) | Budget (Mistral, Deepseek)      | Mostly retrieves data      |
-| Digital Twin            | Local (Ollama)                  | Privacy + cost savings     |
+## Where next
 
-**4. Resilience & Redundancy**
-
-Using multiple providers protects against:
-
-- Single provider outages
-- Rate limiting on one API
-- Price changes from a single vendor
-
-### Real-World Example
-
-A customer service team with 5 agents:
-
-| Agent    | Role              | LLM            | Monthly Cost |
-| -------- | ----------------- | -------------- | ------------ |
-| Elen     | Facilitator       | GPT-4o         | ~$50         |
-| Claudine | CRM Expert        | Claude 3.5     | ~$30         |
-| Victor   | Legal Expert      | Claude 3       | ~$25         |
-| Charles  | Technical Support | Deepseek       | ~$5          |
-| Albert   | FAQ Bot           | Ollama (local) | $0           |
-
-**Total: ~$110/month** vs **~$250/month** if all agents used GPT-4o
-
-:::tip Best Practice
-Start with a premium model for your Facilitator (it orchestrates everything), then optimize expert agents based on their actual needs. Monitor conversations and adjust as you learn which agents need more capability.
-:::
-
-## Supported Providers
-
-The orchestrator currently supports the following LLM providers. The platform string in the right column is the literal value the orchestrator stores in its `Platform` field — copy it exactly when configuring an agent through the API.
-
-| Provider        | Models                          | Platform string  | MCP Support |
-| --------------- | ------------------------------- | ---------------- | ----------- |
-| **OpenAI**      | GPT-4, GPT-4o, GPT-5            | `open-ai`        | ✅ Native (via `/v1/responses`) |
-| **Anthropic**   | Claude 3, Claude 3.5, Claude 4  | `anthropic`      | ✅ Native — requires custom header (`x-api-key`) |
-| **AWS Bedrock** | Llama, Mistral, Claude, Titan   | `amazon-bedrock` | ⚙️ Function-call loop (Converse API) |
-| **xAI**         | Grok                            | `x`              | ⚙️ Function-call loop (model-dependent) |
-| **Mistral**     | mistral-medium-latest           | `mistral`        | ⚙️ Function-call loop (model-dependent) |
-| **Deepseek**    | deepseek-chat                   | `deepseek`       | ⚙️ Function-call loop (model-dependent) |
-| **LibertAI**    | Open-source models              | `libert-ai`      | ⚙️ Function-call loop (model-dependent) |
-| **Ollama**      | Llama 3, Mistral, Mixtral, etc. | `ollama`         | ⚙️ Function-call loop (model-dependent) |
-
-**Native** routing means the orchestrator hands your MCP server definitions directly to the provider. **Function-call loop** means the orchestrator runs its own loop and asks the model to emit tool calls — so whether MCP works depends on whether the chosen model supports function calling.
-
-## Configuring an LLM
-
-### Accessing LLM Settings
-
-1. Connect to the orchestrator with your wallet
-2. Navigate to your agent list
-3. Click the **⋮** menu on the desired agent
-4. Select **"Manage LLM settings"**
-
-### Configuration Parameters
-
-| Parameter    | Description              | Example                         |
-| ------------ | ------------------------ | ------------------------------- |
-| **Provider** | The LLM service provider | `open-ai`, `anthropic`, `ollama` (see the Platform string column above) |
-| **API URL**  | Endpoint URL             | `https://api.openai.com/v1`     |
-| **Model**    | Specific model to use    | `gpt-4o`, `llama3`              |
-| **API Key**  | Your provider's API key  | `sk-...`                        |
-
-## Choosing the Right Provider
-
-| Agent Type                         | Recommended Provider            |
-| ---------------------------------- | ------------------------------- |
-| Facilitator with complex reasoning | OpenAI GPT-4o, Anthropic Claude |
-| Expert agent with MCP tools        | OpenAI, xAI Grok                |
-| Simple conversational clone        | Mistral, Deepseek, Ollama       |
-| Cost-sensitive deployment          | Deepseek, Ollama (local)        |
-| Privacy-focused                    | Ollama (local), TEE             |
-
-## Next Steps
-
-Explore the different hosting options available:
-
-- [Hosting Options](./hosting-options) — Decision guide: hosted vs local vs TEE
-- [Hosted Providers](./hosted-providers) — Configuration reference for OpenAI, Anthropic, Mistral, xAI, Deepseek, LibertAI, AWS Bedrock, and more
-- [Local with Ollama](./local-ollama) — Run models on your own hardware
-- [TEE Enclaves](./tee-enclave) — Maximum security with microtransactions (future)
-- [Troubleshooting](./troubleshooting) — Per-provider HTTP errors, token limits, and env vars
+- **[Hosting Options](./hosting-options.md)** — decision guide: hosted provider vs local (Ollama) vs TEE
+- **[Hosted Providers](./hosted-providers.md)** — per-provider configuration reference
+- **[Local with Ollama](./local-ollama.md)** — run models on your own hardware
+- **[TEE Enclaves](./tee-enclave.md)** — future: privacy-preserving compute with agent microtransactions
+- **[Troubleshooting](./troubleshooting.md)** — HTTP errors, token limits, env vars
