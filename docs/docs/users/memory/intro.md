@@ -3,13 +3,13 @@ title: Introduction
 sidebar_position: 1
 ---
 
-# Agent Knowledge
+# Memory
 
 > Documentation for the 6022 Agentic Teams project
 
 ## Overview
 
-Agent Knowledge encompasses everything an agent "knows" and "remembers" across conversations. In the 6022 framework, this knowledge is structured around **context primary keys** that organize memory into distinct contexts, **strategies** that determine how memory is populated, and **APIs** that enable programmatic management.
+Memory encompasses everything an agent "knows" and "remembers" across conversations. In the 6022 framework, this knowledge is structured around **context primary keys** that organize memory into distinct contexts, **strategies** that determine how memory is populated, and **APIs** that enable programmatic management.
 
 ---
 
@@ -74,7 +74,7 @@ The LLM's working memory containing the full conversation history for a given co
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     AGENT KNOWLEDGE                         │
+│                     MEMORY                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐   │
