@@ -37,6 +37,11 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewRateLimitSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	// Services
 	err = container.Provide(
 		signature.NewECDSASigner,
