@@ -67,14 +67,14 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 
 	newMintProposal := func(proposalID uint64, wallets []common.Address, signer common.Address) *abi.MintProposal {
 		return &abi.MintProposal{
-			Id:      new(big.Int).SetUint64(proposalID),
-			Name:    "TestAgent",
-			Role:    "expert",
-			Owner:   common_tests.RandomEthAddress(),
-			Signer:  signer,
-			Creator: common_tests.RandomEthAddress(),
-			Wallets: wallets,
-			Images:  []abi.KeyValue{{Key: "avatar", Value: "ipfs://test"}},
+			Id:         new(big.Int).SetUint64(proposalID),
+			Name:       "TestAgent",
+			Role:       "expert",
+			Owner:      common_tests.RandomEthAddress(),
+			Signer:     signer,
+			Creator:    common_tests.RandomEthAddress(),
+			Wallets:    wallets,
+			Images:     []abi.KeyValue{{Key: "avatar", Value: "ipfs://test"}},
 			Attributes: []abi.KeyValue{{Key: "bio", Value: "test bio"}},
 		}
 	}
@@ -199,6 +199,10 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
 				Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetByWalletAddress(agentWallet.Hex()).
+				Return(nil, gorm.ErrRecordNotFound)
 
 			return event
 		}
@@ -213,6 +217,90 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "must be created by this orchestrator")
+		})
+	})
+
+	t.Run("Given agent already exists and is already minted", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMintProposalCreatedEventTestingSuite) *abi.AgentCollectionV1MintProposalCreated {
+			collectionAddress := common_tests.RandomEthAddress()
+			agentWallet := common_tests.RandomEthAddress()
+			signer := suite.orchestratorSettings.PublicKey
+			event := newEvent(collectionAddress, 8, 800, signer)
+			proposal := newMintProposal(8, []common.Address{agentWallet}, signer)
+			tokenId := uint64(42)
+			mintedAgent := model_builders.NewAgentBuilder().
+				WithWalletAddress(agentWallet.Hex()).
+				WithCollectionAddress(collectionAddress.Hex()).
+				WithCollectionTokenId(&tokenId).
+				WithProposalId(nil).
+				Build()
+
+			suite.agentCollectionRequesterMock.
+				EXPECT().
+				GetMintProposal(collectionAddress, gomock.Any(), uint64(800)).
+				Return(proposal, nil)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetByWalletAddress(agentWallet.Hex()).
+				Return(mintedAgent, nil)
+
+			return event
+		}
+
+		t.Run("Should treat the event as a no-op and not error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
+			event := initSuite(suite)
+
+			err := suite.sut.Handle(event)
+
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given lookup of already-minted agent fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMintProposalCreatedEventTestingSuite) *abi.AgentCollectionV1MintProposalCreated {
+			collectionAddress := common_tests.RandomEthAddress()
+			agentWallet := common_tests.RandomEthAddress()
+			signer := suite.orchestratorSettings.PublicKey
+			event := newEvent(collectionAddress, 9, 900, signer)
+			proposal := newMintProposal(9, []common.Address{agentWallet}, signer)
+
+			suite.agentCollectionRequesterMock.
+				EXPECT().
+				GetMintProposal(collectionAddress, gomock.Any(), uint64(900)).
+				Return(proposal, nil)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetByWalletAddress(agentWallet.Hex()).
+				Return(nil, assert.AnError)
+
+			return event
+		}
+
+		t.Run("Should return wrapped repository error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
+			event := initSuite(suite)
+
+			err := suite.sut.Handle(event)
+
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "failed to get agent by wallet address")
 		})
 	})
 
@@ -232,6 +320,10 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				Return(nil, gorm.ErrRecordNotFound)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetByWalletAddress(agentWallet.Hex()).
 				Return(nil, gorm.ErrRecordNotFound)
 			suite.agentCollectionRepositoryMock.
 				EXPECT().

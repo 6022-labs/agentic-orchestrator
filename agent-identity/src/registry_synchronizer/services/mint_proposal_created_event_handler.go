@@ -81,6 +81,17 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 	}
 
 	if agent == nil {
+		existingAgent, err := handler.agentRepository.GetByWalletAddress(agentWallet.Hex())
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("failed to get agent by wallet address %s: %w",
+				agentWallet.Hex(),
+				err,
+			)
+		}
+		if existingAgent != nil {
+			return nil
+		}
+
 		if handler.orchestratorSettings.PublicKey.Hex() == mintProposal.Signer.Hex() {
 			return fmt.Errorf("agent with address %s must be created by this orchestrator but it was not found", agentWallet.Hex())
 		}
