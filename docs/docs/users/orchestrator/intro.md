@@ -4,94 +4,32 @@ sidebar_position: 1
 
 # Introduction to the Orchestrator
 
-The orchestrator is the central Web3 interface for managing your 6022 Agentic Teams. It allows you to configure agents, manage swarm AI interactions, and connect to messaging platforms like Slack.
+The orchestrator is the Web3 dashboard where you configure your 6022 Agentic Teams. You create and mint agents, wire them to LLMs and MCPs, write their prompts, and connect them to Slack from here.
 
-## What is the Orchestrator?
+![Orchestrator dashboard](/img/users/dashboard.png)
 
-The orchestrator is the **second layer** of the 6022 protocol architecture:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 1: Smart Contract (Polygon)                          │
-│  → Agent ownership (NFT), ENS identity, token management    │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 2: Orchestrator                          ← YOU ARE HERE
-│  → Swarm AI coordination, agent configuration, Web3 UI      │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 3: Resources                                         │
-│  → LLM services, databases, MCP connections                 │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Key Functions
-
-The orchestrator handles:
-
-| Function | Description |
-|----------|-------------|
-| **Swarm AI** | Coordinates discussions between agents, enables self-organization |
-| **Agent Configuration** | Set prompts, LLM credentials, database connections, MCPs |
-| **Web3 Authentication** | Only NFT holders can modify their agents |
-| **Slack Integration** | Bridge between agents and messaging platforms |
-| **Memory Management** | Manage agent contexts and conversation history |
-
-## Access URLs
-
-| Environment | URL |
-|-------------|-----|
-| **Orchestrator** | https://frontend-orchestrator-a.up.railway.app/login |
-
-## Ownership & Permissions
-
-The orchestrator implements **decentralized access control**:
-
-- Only the **wallet holding the agent's NFT** can modify that agent's parameters
-- Agents are visible on NFT marketplaces (OpenSea, Rarible) and can be transferred
-- When an agent is transferred, the new owner gains full configuration rights
+## Where it sits
 
 ```
-Wallet 0xABC... owns Agent "claudine.agent.6022.eth"
-         ↓
-Only 0xABC... can:
-  • Change LLM settings
-  • Update prompts
-  • Configure MCP connections
-  • Manage database credentials
+Layer 1 — Smart contract (Polygon)  → Agent ownership (NFT), ENS identity
+Layer 2 — Orchestrator ← you are here → Agent configuration, swarm coordination
+Layer 3 — Resources                   → LLM providers, databases, MCP servers
 ```
 
-## Architecture Overview
+Access: `https://<your-orchestrator-frontend-host>/login`
 
-```
-                    ┌──────────────┐
-                    │   Slack      │
-                    │   Teams      │
-                    │   WhatsApp   │
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │    Bridge    │
-                    └──────┬───────┘
-                           │
-┌──────────────────────────▼───────────────────────────┐
-│                    ORCHESTRATOR                       │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│  │   Swarm     │  │   Agent     │  │    API      │   │
-│  │   Engine    │  │   Config    │  │   Server    │   │
-│  └─────────────┘  └─────────────┘  └─────────────┘   │
-└──────────────────────────┬───────────────────────────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        ▼                  ▼                  ▼
-   ┌─────────┐       ┌─────────┐       ┌─────────┐
-   │   LLM   │       │   DB    │       │   MCP   │
-   │ Services│       │ (Postgres)      │ Servers │
-   └─────────┘       └─────────┘       └─────────┘
-```
+## Logging in with your wallet
 
-## Next Steps
+The orchestrator has no username or password — **your wallet is your login**. When you open the dashboard, it asks your wallet (MetaMask, Rabby, etc.) to sign a short message. The orchestrator verifies the signature and gives your browser a session token. From then on, only the wallet that owns an agent's NFT can modify that agent. If you transfer the NFT, the new owner immediately gains control and your old session becomes useless for that agent.
 
-- [Web3 Authentication](./authentication) - Connect your wallet
-- [Creating Agents](./creating-agent) - Mint your first agent
-- [Agent Configuration](./agent-configuration) - Set up LLM, prompts, and more
-- [Actions Menu](./actions-menu) - Available operations on agents
-- [API Reference](./api-reference) - Programmatic access
+There is nothing to reset if you lose your wallet — lose the wallet, lose the agents. Use a dedicated wallet for production agents and store its recovery phrase carefully.
+
+For the protocol-level details (SIWE flow, JWT claims, scripting token generation), see the [Developer Authentication Reference](../../developers/api-reference/authentication.md).
+
+## Next steps
+
+- **[Creating Agents](./creating-agent.md)** — mint your first agent
+- **[Agent Configuration](./agent-configuration.md)** — LLM, database, prompts, MCPs
+- **[Actions Menu](./actions-menu.md)** — the ⋮ menu on each agent card
+
+For programmatic access (JWT generation, context management, memory hydration), see the [Developer API Reference](../../developers/api-reference/intro.md).

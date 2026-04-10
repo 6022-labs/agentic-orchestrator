@@ -5,399 +5,109 @@ sidebar_position: 9
 
 # Prompt Writing Guide
 
-> Part of [Agent Prompting](./intro.md) documentation
+Practical patterns that work across agent types. Read this once, then use [Prompt Templates](./prompt-templates.md) as your starting point.
 
-## Introduction
+## Four principles
 
-Writing effective prompts is both an art and a science. This guide provides proven patterns, common mistakes to avoid, and practical techniques for creating reliable agent behaviors.
+1. **Be specific.** `"Help the customer"` is useless. `"Provide the customer's order status and expected delivery date"` is a job.
+2. **Be structured.** Use numbered steps, not dense paragraphs. The model follows lists more reliably than prose.
+3. **Say what not to do.** Constraint sections (`Never ...`, `Do NOT ...`) reliably prevent the most common failures — overstepping the role, repeating information, inventing data.
+4. **Use dynamic variables.** Never hardcode a name, email, or agent identifier. Every variable you reference resolves at runtime — see [Dynamic Fields](./prompt-dynamic-fields.md).
 
----
+## Structure of a good System prompt
 
-## Core Principles
+Six sections, each one line to a few lines:
 
-### 1. Be Specific
+1. **Identity** — who am I, what's my specialisation
+2. **Context** — channel, initial request, other agents
+3. **Mission** — one sentence, concrete
+4. **Rules** — explicit constraints, "never do X"
+5. **Signature** — an emoji or prefix so responses are visually distinguishable
+6. **Length cap** — `Maximum 1500 characters` tends to actually work
 
-Vague prompts lead to unpredictable behavior.
+The other prompt types (Default, Conclude, Context Not Found, Context Found) follow the same shape but compress harder — most are under 20 lines.
 
-```
-❌ Bad:  "Help the customer"
-✅ Good: "Provide the customer's order status and expected delivery date"
-```
+## Five common mistakes
 
-### 2. Be Structured
-
-Use clear sections and steps.
-
-```
-❌ Bad:  Long paragraph with multiple instructions mixed together
-
-✅ Good:
-Step 1: Identify the customer
-Step 2: Retrieve order information
-Step 3: Formulate response
-```
-
-### 3. Be Explicit About Constraints
-
-Define what the agent should NOT do.
+### 1. No exit condition
 
 ```
-What you must NEVER do:
-- Make assumptions about data you don't have
-- Propose solutions without verification
-- Repeat information already shared
+❌ "Keep gathering information until you're satisfied."
+✅ "Gather information until confidence ≥ 8/10 OR 3 expert calls made.
+    Then write :end:."
 ```
 
-### 4. Use Dynamic Variables
+Without an explicit stop, the facilitator loops forever or hits the timeout instead of ending cleanly.
 
-Never hardcode information that might change.
+### 2. Overstepping the role
 
-```
-❌ Bad:  "Contact John at john@company.com"
-✅ Good: "Contact {{ .LatestRequest.Author.Name }}"
-```
-
----
-
-## Prompt Structure Template
+Experts writing customer-facing responses, facilitators inventing customer data. Add a hard rule to the System prompt:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   RECOMMENDED STRUCTURE                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  1. IDENTITY (Who am I?)                                    │
-│     • Name and role                                         │
-│     • Specialization                                        │
-│                                                             │
-│  2. CONTEXT (What's happening?)                             │
-│     • Channel/meeting description                           │
-│     • Initial request                                       │
-│     • Available participants                                │
-│                                                             │
-│  3. MISSION (What should I do?)                             │
-│     • Primary objective                                     │
-│     • Secondary goals                                       │
-│                                                             │
-│  4. STEPS (How should I do it?)                             │
-│     • Step-by-step process                                  │
-│     • Decision points                                       │
-│                                                             │
-│  5. CONSTRAINTS (What must I avoid?)                        │
-│     • Prohibited actions                                    │
-│     • Limitations                                           │
-│                                                             │
-│  6. FORMAT (How should I respond?)                          │
-│     • Output structure                                      │
-│     • Signature/emoji                                       │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Do NOT propose responses to the customer. That is the facilitator's job.
 ```
 
----
+### 3. Repetitive responses
 
-## Common Mistakes
-
-### Mistake 1: Infinite Loops
-
-**Problem:** Agent calls itself or creates circular dependencies.
+The model will happily repeat what it already said. Counter it explicitly:
 
 ```
-❌ Bad:
-"If you're unsure, ask for help from any agent including yourself"
-
-✅ Good:
-"If you're unsure, ask for help from another expert agent.
- You cannot mention your own name."
+If you've already shared this information in this thread,
+write "Already provided above" instead of repeating.
 ```
 
-**Prevention:**
+### 4. Self-calls and infinite loops
 
-- Explicitly forbid self-calls
-- Limit the number of agent calls
-- Add call count tracking
+Agents calling themselves, or two experts bouncing the same question. Forbid self-calls in the System prompt and cap the number of agent calls per turn in the Default prompt.
 
-### Mistake 2: No Exit Condition
+### 5. Oversize System prompt
 
-**Problem:** Conversation never concludes.
+Hardcoding a list of 50 agents blows the context window. Use `{{ range .ChannelMembers }}` to render the list dynamically.
 
-```
-❌ Bad:
-"Keep gathering information until you're satisfied"
+## Patterns that work
 
-✅ Good:
-"Gather information until:
- • Confidence ≥ 8/10, OR
- • 3 expert calls made, OR
- • Timeout reached
- Then write :end:"
-```
-
-**Prevention:**
-
-- Define explicit ending criteria
-- Set maximum iterations
-- Rely on timeout as fallback
-
-### Mistake 3: Repetitive Responses
-
-**Problem:** Agent repeats the same information.
+### Confidence rating
 
 ```
-❌ Bad:
-"Provide all relevant information about the customer"
+On a scale of 1-10, rate your confidence in answering
+"{{ .InitialRequest.Content }}".
 
-✅ Good:
-"Provide relevant information about the customer.
- If you've already shared this information in this thread,
- state 'Already provided above' instead of repeating."
+If ≥ 8: respond. If < 8: call the most relevant expert for missing info.
 ```
 
-**Prevention:**
-
-- Add "don't repeat" instruction
-- Reference previous responses
-- Track what's been shared
-
-### Mistake 4: Overstepping Role
-
-**Problem:** Expert proposes solutions meant for facilitator.
+### Step-by-step synthesis
 
 ```
-❌ Bad:
-"Help the customer resolve their issue"
-
-✅ Good:
-"Provide factual information about the customer's account.
- Do NOT propose solutions or write customer responses.
- That is the facilitator's responsibility."
+📋 Synthesis: list the facts you've gathered.
+❓ Gaps: list what's still missing.
+📞 Action: call the right expert, or write :end: if complete.
 ```
 
-**Prevention:**
+### Explicit handoff
 
-- Define role boundaries clearly
-- Specify what NOT to do
-- Separate data from decisions
-
-### Mistake 5: Token Overflow
-
-**Problem:** Prompt is too large for LLM context window.
+When calling another agent, always include the context they need — don't make them guess.
 
 ```
-❌ Bad:
-System prompt with 50+ agents listed in detail
-
-✅ Good:
-System prompt with essential agents only, using variables
+❌ "@expert.eth, help please"
+✅ "@expert.eth, I need the order status for customer C45653
+     who says their package hasn't arrived."
 ```
 
-**Prevention:**
+### Signature consistency
 
-- Keep System prompts concise
-- Use variables instead of static lists
-- Monitor token usage
+Give each prompt type a distinctive emoji so responses are scannable:
 
----
+- 🔍 Context Not Found (searching)
+- 👍 Context Found (answering)
+- ⭐ Synthesis
+- 📫 Final response to the user
 
-## Proven Patterns
+## Length limits
 
-### Pattern 1: Confidence Rating
+System prompts are part of every inference, so a 1000-token System prompt costs tokens and latency on every turn. Rough budgets:
 
-```
-On a scale of 1-10, rate your confidence in answering:
-"{{ .InitialRequest.Content }}"
+- **System:** 200-500 tokens (hard cap ~800)
+- **Default / Context Found / Context Not Found:** 100-300 tokens
+- **Conclude:** 150-400 tokens
 
-If confidence ≥ 8: Proceed with response
-If confidence < 8: Call expert for missing information
-```
-
-### Pattern 2: Step-by-Step Synthesis
-
-```
-Step 1: 📋 SYNTHESIS
-List key facts gathered so far:
-• [Fact 1]
-• [Fact 2]
-
-Step 2: ❓ GAPS
-Identify what's still missing:
-• [Gap 1]
-
-Step 3: 📞 ACTION
-Call the appropriate expert OR conclude if complete.
-```
-
-### Pattern 3: Cross-Verification
-
-```
-Be skeptical of single-source information.
-If one agent provides critical data, verify with a second agent.
-
-"@expert2.eth, can you confirm what @expert1.eth said about X?"
-```
-
-### Pattern 4: Explicit Handoff
-
-```
-When mentioning another agent, provide context:
-
-❌ Bad:  "@expert.eth, help please"
-✅ Good: "@expert.eth, I need the order status for customer C45653
-         who claims they haven't received their package"
-```
-
-### Pattern 5: Signature Consistency
-
-```
-Start each response with a consistent signature:
-
-🔍 for Context Not Found (searching)
-👍 for Context Found (answering)
-⭐ for Synthesis
-📫 for Final response
-```
-
----
-
-## Variable Usage
-
-### Essential Variables
-
-| Variable                        | Use In            | Purpose          |
-| ------------------------------- | ----------------- | ---------------- |
-| `{{ .InitialRequest.Content }}` | All prompts       | Original request |
-| `{{ .LatestRequest.Content }}`  | Response prompts  | Current message  |
-| `{{ .ContextKey }}`             | Context Found     | Locked key       |
-| `{{ .ContextKeys }}`            | Context Not Found | Available keys   |
-| `{{ .ChannelMembers }}`         | System            | Participants     |
-
-### Conditional Logic
-
-```
-{{- if .LatestRequest.Author.IsAgent }}
-  Responding to agent: {{ .LatestRequest.Author.EnsDomain }}
-{{ else }}
-  Responding to user: {{ .LatestRequest.Author.Name }}
-{{ end }}
-```
-
-### Iteration
-
-```
-Available experts:
-{{- range .ChannelMembers }}
-{{- if .IsAgent }}
-  • {{ .Name }}: {{ .Mission }}
-{{- end }}
-{{- end }}
-```
-
----
-
-## Length Guidelines
-
-| Prompt Type           | Recommended Length | Maximum    |
-| --------------------- | ------------------ | ---------- |
-| **System**            | 200-500 tokens     | 800 tokens |
-| **Default**           | 100-300 tokens     | 500 tokens |
-| **Conclude**          | 150-400 tokens     | 600 tokens |
-| **Context Not Found** | 100-250 tokens     | 400 tokens |
-| **Context Found**     | 100-200 tokens     | 400 tokens |
-
-### Why Length Matters
-
-- **Token limits** — LLMs have context windows
-- **Clarity** — Shorter prompts are clearer
-- **Cost** — Longer prompts cost more
-- **Speed** — More tokens = slower responses
-
----
-
-## Testing Prompts
-
-### Before Deployment
-
-1. **Dry run** — Test with sample messages
-2. **Edge cases** — Try unusual inputs
-3. **Loop detection** — Verify no infinite loops
-4. **Role boundaries** — Confirm agents stay in lane
-
-### Test Scenarios
-
-| Test              | What to Check            |
-| ----------------- | ------------------------ |
-| **Empty message** | Agent handles gracefully |
-| **Multiple keys** | Correct disambiguation   |
-| **Unknown key**   | Proper fallback behavior |
-| **Agent offline** | Timeout handling         |
-| **Long thread**   | Memory management        |
-
-### Monitoring
-
-After deployment:
-
-- Review conversation logs
-- Check for unexpected behaviors
-- Monitor token usage
-- Gather user feedback
-
----
-
-## Checklist
-
-### System Prompt
-
-- [ ] Identity clearly defined
-- [ ] Role and specialization stated
-- [ ] Dynamic variables for participants
-- [ ] Constraints listed
-- [ ] Not too long (< 800 tokens)
-
-### Default/Context Prompts
-
-- [ ] Clear steps provided
-- [ ] Exit condition defined
-- [ ] No self-call possible
-- [ ] Role boundaries respected
-- [ ] Signature/emoji specified
-
-### Conclude Prompt
-
-- [ ] Synthesis step included
-- [ ] Output format defined
-- [ ] User-facing tone
-- [ ] No reopening questions
-- [ ] Quality guidelines included
-
----
-
-## Quick Reference
-
-### Do's
-
-✅ Use dynamic variables
-✅ Define explicit constraints
-✅ Structure with steps
-✅ Add exit conditions
-✅ Include signatures
-✅ Test edge cases
-✅ Monitor after deployment
-
-### Don'ts
-
-❌ Hardcode names/values
-❌ Allow self-calls
-❌ Create circular logic
-❌ Exceed token limits
-❌ Mix role responsibilities
-❌ Forget fallback behavior
-❌ Skip testing
-
----
-
-## Related Documentation
-
-- [Facilitator Prompts](./facilitator-prompts.md) — Specific facilitator guidance
-- [Expert Prompts](./expert-prompts.md) — Specific expert guidance
-- [Prompt Variables](./prompt-dynamic-fields) — Complete variable reference
-- [Prompt Templates](./prompt-templates.md) — Ready-to-use examples
+If you're hitting the cap, the fix is almost always to move content from the System prompt into the turn-specific prompts.

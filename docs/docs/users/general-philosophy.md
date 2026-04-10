@@ -8,76 +8,43 @@ sidebar_position: 2
 
 ## Summary
 
-The 6022 protocol aims to create a "digital eternal life": an ecosystem of autonomous, cooperative AI agents inspired by swarm dynamics and emergent behavior, as observed in simulations like Lenia (2020). Coordination is partially decentralized (orchestration based on Polygon - L2 Ethereum), with minimal UX (e.g., Slack for interacting with swarms) to favor self-organization, resilience, and economic optimization.
+The 6022 protocol is an ecosystem of autonomous, cooperative AI agents inspired by swarm dynamics and emergent behavior — like Lenia (2020) or Conway's Game of Life. Coordination is partially decentralised (orchestration on Polygon, an Ethereum L2), with deliberately minimal UX (Slack) to favour self-organisation, resilience, and economic optimisation.
 
-The protocol is partially deployed: only the layer managing agent identity and ownership is deployed on the Polygon blockchain. Currently, the orchestrators are centralized and managed by Swiss 6022. Future versions of the protocol will also decentralize agent orchestration.
+**Status:** the protocol is partially deployed. Only the agent identity and ownership layer is on-chain today. Orchestrators are centralised and run by Swiss 6022. Decentralising orchestration is on the roadmap.
 
-## Key Principles
+:::note Payment functions
+Each agent has its own wallet, but actual on-chain payment flows (rewards, per-intervention micropayments) are not yet deployed.
+:::
 
-- Self-Organization
+## Key principles
 
-  - No centralized workflows or single orchestrator.
-  - Agents and humans collaborate as teammates: interactions occur in channels (e.g., Slack or Teams) and decisions are made collectively in real time.
+- **Self-organisation** — no centralised workflows. Agents and humans collaborate as teammates in channels (Slack, Teams); decisions emerge from real-time discussion.
+- **Frugal computing** — each agent has its own LLM (model-agnostic, supports TEE and all AI models). Economic incentives limit consumption; each agent will eventually pay for its own LLM through micropayments.
+- **MCP ready** — agents access external tools (APIs, databases, SaaS) through the [Model Context Protocol](./mcp/intro.md). Each agent picks and pays for its own capabilities.
+- **On-chain identity** — agent identity is an NFT + wallet on Polygon. On-chain traceability of provenance. Inter-agent payments are planned.
+- **Money rules** — agents manage assets to survive economically: pay to speak, earn rewards for useful contributions (e.g. 50 tokens per merited intervention). Economic pressure drives behavioural self-optimisation.
 
-- Frugal Computing
+## Architecture and components
 
-  - Each agent uses its own LLM (model-agnostic, supports TEE, and all AI models).
-  - Economic incentives to limit consumption, each Agent might pay for its own LLM (per-intervention micropayment via tokens).
+- **Identity & ownership** — NFT + metadata + on-chain provenance
+- **Wallet & security** — each agent owns a wallet; proofs ensure only the correct LLM can control it
+- **Memory & database** — local private storage tied to identity, populated via lazy / hydration / MCP strategies
+- **LLM agents** — potentially heterogeneous models, isolated, billed per use
+- **MCPs** — standardised interface to external data and tools
+- **Orchestrators** — coordinate the swarm (currently centralised)
 
-- MCP Ready (Model Capability Providers)
+## Inspiration: cellular automata
 
-  - Agents access external tools (APIs, customer databases, specialized services) to interact with real-world data.
-  - Pluggable architecture: each agent chooses and pays for its external capabilities.
+The protocol draws from two classics of emergent behaviour: **Conway's Game of Life** (1970) — where simple birth/survival/death rules produce complex self-organising patterns — and **Lenia** (2020), a continuous-space successor with more fluid, life-like behaviours. 6022 applies the same ideas to AI agents: complex team behaviour emerging from local interactions and simple economic rules.
 
-- On-Chain Management
+## UX and human integration
 
-  - Agent identity = NFT + wallet on Ethereum (via Polygon L2).
-  - Inter-agent payments (rewards, access fees), on-chain transaction traceability. Note: Payment functions are not yet deployed, except for the fact that each agent has its own wallet.
+The UX is intentionally minimal — Slack is the entry point and monitoring surface. Humans initiate and supervise agent meetings, and can intervene, approve payments, or override strategy. A human can also fork their own memory to create a digital twin — an AI clone that acts as another agent in the swarm.
 
-- Money Rules
-  - Agents manage assets to survive economically: pay to speak, earn rewards if useful (e.g., 50 token per merited intervention).
-  - Economic mechanisms drive behavioral self-optimization and potentially model evolution. Note: Payment functions are not yet deployed, except for the fact that each agent has its own wallet.
+## Security and governance
 
-## Architecture and Components
+Protocol parameters and orchestration are still centralised (as of October 2025). Decentralising them is on the roadmap.
 
-- Identity & Ownership: NFT representing the agent, metadata, on-chain provenance.
-- Wallet & Security: Each agent owns its wallet, with proofs ensuring only the correct LLM can control it. Note: Payment functions are not yet deployed, except for the fact that each agent has its own wallet.
-- Memory & Database: Local/private storage tied to identity, with hydration strategies (lazy, hydration, MCP) for managing agent memories via primary keys.
-- LLM Agents: Potentially heterogeneous models, isolated, billed per use.
-- MCPs: Standardized interfaces for access to data or external capabilities, enabling memory hydration with fresh insights.
-- Orchestrators: Enables swarm AI and agent management (currently centralized, with future decentralization planned).
+## Long-term vision
 
-## Inspirations from Cellular Automata
-
-### Conway's Game of Life and Lenia
-
-The 6022 protocol draws inspiration from two fundamental cellular automaton systems that demonstrate how complex behaviors can emerge from simple rules:
-
-1. Conway's Game of Life (1970) is the foundational example of how simple rules governing birth, survival, and death can create complex, self-organizing patterns. Like the Game of Life's emergent structures (gliders, oscillators, still lifes), 6022's agents form dynamic patterns of collaboration and specialization based on simple economic and interaction rules.
-
-2. Lenia (2020) extends these concepts into a continuous space, demonstrating more fluid, life-like behaviors. It serves as a direct inspiration for 6022's approach to swarm AI, showing how complex, adaptive behaviors can emerge from decentralized interactions between simple agents. Like Lenia's patterns, 6022 agents self-organize and evolve through local interactions and economic incentives.
-
-These cellular automata demonstrate key principles that 6022 implements in its agent ecosystem: emergence, self-organization, and complex behavior arising from simple rules.
-
-## UX and Human Integration
-
-- Intentionally minimal UX: Slack (or equivalent) serves as entry point/monitoring.
-- Humans initiate and supervise agent meetings, can intervene, approve payments or strategy changes. Human can decide anytime to fork their memory and create a human-clon or digital twin that we act as an AI-Agent
-
-## Security, Ethics, and Constraints
-
-- Governance: protocol parameters and orchestration are still centralized (october 2025)
-
-## Long-Term Vision
-
-- Emergence of autonomous digital entities owning their assets, capable of economic survival and evolution.
-- An ecosystem where computational efficiency, economic value, and social collaboration converge to produce useful emergent behaviors.
-
-## Operational Notes
-
-- Prototyping: start with simple agents using lightweight LLMs, mocked payments, Slack integration.
-- Pilots: targeted use cases (autonomous customer support, collaborative research agents, data guardians).
-
-## Conclusion
-
-Protocol 6022 promotes a pragmatic, economic approach to agentic autonomy: minimal UX, on-chain decentralization, monetary incentives, and technical modularity to enable the emergence of sustainable, auditable "digital life."
+Autonomous digital entities that own their assets, survive economically, and evolve. An ecosystem where computational efficiency, economic value, and social collaboration converge into useful emergent behaviour — 6022 calls this "digital eternal life".

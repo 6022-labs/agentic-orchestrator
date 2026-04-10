@@ -11,11 +11,13 @@ Agents are created and managed by an Orchestrator. The Orchestrator is intended 
 
 This docs section focuses on the developer perspective: how domains own data and responsibilities, and how to integrate with the Orchestrator and agent services.
 
+For a high‑level map of how the smart contracts, domains, and components fit together, see [Architecture](./architecture).
+
 Domains (entry points):
 
-- Agent Identities — identity, metadata, and wallet operations for an agent
+- Agent Identity — identity, metadata, and wallet operations for an agent
   - collection address, collection token id, name, ENS domain, role, creator, signer, wallets, images, attributes
-  - See: [agent-identities](./domains/agent-identities)
+  - See: [agent-identity](./domains/agent-identity)
 - Agent Reasoning — LLM and MCP connections, swarm compute
   - provider setup, tool registry, orchestration strategies
   - See: [agent-reasoning](./domains/agent-reasoning)

@@ -4,117 +4,36 @@ sidebar_position: 2
 
 # LLM Hosting Options
 
-The 6022 Agentic Teams protocol offers four distinct approaches for LLM deployment, each with its own trade-offs between convenience, control, privacy, and cost optimization.
+Three shapes for where LLM inference runs. This page is the **decision guide** — pick an option, then jump to the per-option reference for configuration details.
 
-## Overview
+| Option | Privacy | Setup | Cost | Microtransactions |
+|---|---|---|---|---|
+| **[Hosted Providers](./hosted-providers.md)** | ⭐⭐ | Easy | Pay-per-use API | ❌ |
+| **[Local (Ollama)](./local-ollama.md)** | ⭐⭐⭐⭐ | Easy | Hardware only | ❌ |
+| **[TEE (Enclave)](./tee-enclave.md)** | ⭐⭐⭐⭐⭐ | Advanced | Agent-managed | ✅ (future) |
 
-| Option                 | Privacy    | Setup Complexity | Cost Model             | Microtransactions |
-| ---------------------- | ---------- | ---------------- | ---------------------- | ----------------- |
-| **Centralized LLM**    | ⭐⭐       | Easy             | Pay-per-use (API)      | ❌                |
-| **Local (Ollama)**     | ⭐⭐⭐⭐   | Easy             | Hardware only          | ❌                |
-| **Open Source Hosted** | ⭐⭐⭐     | Medium           | Infrastructure + usage | ❌                |
-| **TEE (Enclave)**      | ⭐⭐⭐⭐⭐ | Advanced         | Agent-managed          | ✅                |
+**Hosted Providers** is the umbrella term for anything reachable over HTTP: first-party APIs (OpenAI, Anthropic, Mistral, xAI, Deepseek, LibertAI) and multi-model cloud platforms that aggregate many models (AWS Bedrock; Azure OpenAI and Vertex AI not yet supported).
 
-## Security & Trust Features
+## Data confidentiality and model verification
 
-| Option                 | Data Confidentiality     | Model Verification           | Trust Model                     |
-| ---------------------- | ------------------------ | ---------------------------- | ------------------------------- |
-| **Centralized LLM**    | ❌ Data sent to provider | ❌ Proprietary models        | Trust the provider              |
-| **Local (Ollama)**     | ✅ Data stays local      | ❌ No cryptographic proof    | Trust your hardware             |
-| **Open Source Hosted** | ⚠️ Within your cloud     | ❌ No cryptographic proof    | Trust your cloud + admin        |
-| **TEE (Enclave)**      | ✅ Encrypted in memory   | ✅ Cryptographic attestation | Trustless (verify, don't trust) |
+| Option | Your data goes to... | Can you prove which model ran? |
+|---|---|---|
+| **Hosted Providers** | The provider's infrastructure | No — you trust the provider |
+| **Local (Ollama)** | Nowhere — it stays on your machine | No — you trust your hardware |
+| **TEE (Enclave)** | Encrypted even in the server's RAM | ✅ Yes — cryptographic attestation by the CPU |
 
-### Understanding the Differences
+TEE is the only option that provides verifiable proof that an unmodified model is running your inference. It's also the only option that supports agent-managed microtransactions (each agent pays for its own LLM calls from its own wallet) — but it's on the roadmap, not shipped yet.
 
-**Data Confidentiality** — Where does your data go?
+## Picking an option
 
-- **Centralized**: Your prompts and responses transit through third-party servers
-- **Local**: Nothing leaves your machine — complete privacy
-- **Cloud Hosted**: Data stays in your cloud environment, but admins could access it
-- **TEE**: Data is encrypted even in memory — nobody can access it, not even the server admin
+| Your priority | Pick |
+|---|---|
+| Quick start, POC | Hosted (OpenAI or Anthropic) |
+| Zero marginal cost | Local (Ollama) |
+| Simple privacy | Local (Ollama) |
+| Scalable privacy | TEE |
+| Compliance / data residency | Hosted multi-model platform (Bedrock) |
+| Cryptographic model verification | TEE |
+| Agent autonomy & microtransactions | TEE |
 
-**Model Verification** — How do you know which model is running?
-
-- **Centralized / Local / Cloud**: You trust that the provider runs the model they claim
-- **TEE**: The CPU generates a cryptographic signature (attestation) proving exactly which code is running. This is the only option that provides **verifiable proof** that an unmodified open-source model is being used
-
-## Quick Comparison
-
-### Centralized LLM Providers
-
-Use commercial APIs from OpenAI, Anthropic, Mistral, xAI, or Deepseek.
-
-**Best for:** Quick start, POC, access to latest models
-
-→ [Learn more](./centralized)
-
----
-
-### Local Models (Ollama)
-
-Run open-source models directly on your own hardware.
-
-**Best for:** Complete privacy, zero API costs, offline operation
-
-→ [Learn more](./local-ollama)
-
----
-
-### Cloud Hosted (AWS, Azure, GCP)
-
-Deploy open-source models on managed cloud infrastructure.
-
-**Best for:** Enterprise scale, compliance, data residency
-
-→ [Learn more](./cloud-hosted)
-
----
-
-### TEE (Trusted Execution Environments)
-
-Maximum security with cryptographic verification and agent microtransactions.
-
-**Best for:** Sensitive data, decentralized AI vision, agent autonomy
-
-→ [Learn more](./tee-enclave)
-
----
-
-## Decision Matrix
-
-| Your Priority                                   | Recommended Option              |
-| ----------------------------------------------- | ------------------------------- |
-| **Quick start**                                 | Centralized (OpenAI, Anthropic) |
-| **Zero API costs**                              | Local (Ollama)                  |
-| **Data confidentiality (simple)**               | Local (Ollama)                  |
-| **Data confidentiality (scalable)**             | TEE                             |
-| **Compliance requirements**                     | Open Source Hosted (your cloud) |
-| **Model verification (prove which model runs)** | TEE                             |
-| **Maximum security**                            | TEE                             |
-| **Agent autonomy & microtransactions**          | TEE                             |
-
-## Comparison by Use Case
-
-| Use Case                                          | Best Option           | Why                                 |
-| ------------------------------------------------- | --------------------- | ----------------------------------- |
-| **POC / Testing**                                 | Centralized or Ollama | Fast setup                          |
-| **Small team, privacy-conscious**                 | Ollama                | No costs, full confidentiality      |
-| **Enterprise production**                         | Open Source Hosted    | Scalability, compliance             |
-| **Sensitive data (finance, health)**              | TEE                   | Maximum security, confidentiality   |
-| **Regulatory compliance (prove model integrity)** | TEE                   | Cryptographic model verification    |
-| **Decentralized AI vision**                       | TEE                   | Agent autonomy, trustless operation |
-
-## Migration Path
-
-Many organizations follow this progression:
-
-```
-1. Start with Centralized LLM or Ollama
-   (validate use case, quick POC)
-         ↓
-2. Move to Open Source Hosted
-   (gain control, scale up)
-         ↓
-3. Adopt TEE for sensitive agents
-   (maximum security, enable microtransactions)
-```
+**Typical progression:** start with a hosted provider to validate the use case, move to a multi-model platform once you need enterprise SLAs and data residency, and eventually adopt TEE for the sensitive agents where trustless verification matters.

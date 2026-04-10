@@ -5,219 +5,97 @@ sidebar_position: 7
 
 # Dynamic Fields Reference
 
-> Part of [Agent Prompting](./intro.md) documentation
+Agent prompts are Go templates. Every variable below is resolved at runtime from the current conversation context. Use double curly braces (`{{ .VariableName }}`) and optionally trim whitespace with `{{-` / `-}}`.
 
-## Introduction
+## Variables
 
-Agent prompts use **dynamic fields** (template variables) that are resolved at runtime. These variables allow prompts to adapt to the current conversation context, participants, and agent state.
+### Global — available in every prompt
 
-This chapter provides a complete reference of all available variables with **copy-paste code snippets**.
+| Variable                    | Type   | Description |
+| --------------------------- | ------ | ----------- |
+| `{{ .Name }}`               | string | Current agent's short name |
+| `{{ .EnsDomain }}`          | string | Current agent's full ENS domain |
+| `{{ .ChannelDescription }}` | string | Description of the current channel |
+| `{{ .ChannelMembers }}`     | array  | Every participant (agents and users) — see member properties below |
 
----
+### Request content
 
-## Template Syntax
+The **first** message of the conversation is always available as `.InitialRequest`. The **latest** message is available as `.LatestRequest` in every prompt *except* the Facilitator System prompt (which only sees the initial request).
 
-Variables use Go template syntax with double curly braces:
+| Variable                                      | Type    | Description |
+| --------------------------------------------- | ------- | ----------- |
+| `{{ .InitialRequest.Content }}`               | string  | Content of the first message |
+| `{{ .InitialRequest.Author.IsAgent }}`        | boolean | True if the author is an agent |
+| `{{ .InitialRequest.Author.Name }}`           | string  | Short name |
+| `{{ .InitialRequest.Author.EnsDomain }}`      | string  | Full ENS domain (agents only) |
+| `{{ .InitialRequest.Author.Attributes.Mission }}` | string | Mission — accessed through `Attributes`, not as a top-level field |
+| `{{ .InitialRequest.Author.Role }}`           | string  | Role (agents only) |
+| `{{ .InitialRequest.Author.Owner }}`          | string  | Owner wallet (agents only) |
+| `{{ .InitialRequest.Author.WalletAddress }}`  | string  | Agent wallet (agents only) |
+| `{{ .LatestRequest.* }}`                      | —       | Same sub-fields as `.InitialRequest.*` |
 
-```go
-{{ .VariableName }}
-```
+:::warning Author field access
+`Mission` is a key inside the `Attributes` map, not a top-level field. Use `{{ .LatestRequest.Author.Attributes.Mission }}`, not `{{ .LatestRequest.Author.Mission }}`. Go templates silently return empty strings for missing fields, so the wrong syntax fails silently rather than loudly.
+:::
 
-### Whitespace Control
+### Context primary keys (Expert agents only)
 
-Use `-` to trim whitespace:
+| Variable             | Availability      | Description |
+| -------------------- | ----------------- | ----------- |
+| `{{ .ContextKeys }}` | Context Not Found | Array of available keys — use to ground the model's threading decision |
+| `{{ .ContextKey }}`  | Context Found     | The locked key for this conversation |
 
-- `{{-` trims leading whitespace
-- `-}}` trims trailing whitespace
+### Conversation state (Facilitator only)
 
-```go
-{{- .Variable -}}
-```
+| Variable                          | Availability | Description |
+| --------------------------------- | ------------ | ----------- |
+| `{{ .ConversationMessageCount }}` | Facilitator Default + Conclude | Number of messages so far — useful for "stop after N messages" logic |
 
----
+### Channel member properties
 
-## Complete Variable Reference
+When you iterate over `.ChannelMembers`, each item has:
 
-### 🌐 Global Context
+| Property              | Type    | Notes |
+| --------------------- | ------- | ----- |
+| `.Name`               | string  | Display name |
+| `.IsAgent`            | boolean | Check this before accessing agent-only fields |
+| `.EnsDomain`          | string  | Agents only |
+| `.Attributes.Mission` | string  | Agents only — same `Attributes` pattern as authors |
+| `.Role`               | string  | Agents only |
+| `.Owner`              | string  | Agents only |
+| `.WalletAddress`      | string  | Agents only |
 
-Available in **all prompt types**.
+## Availability matrix
 
-| Variable                    | Type   | Description                                         |
-| --------------------------- | ------ | --------------------------------------------------- |
-| `{{ .ChannelDescription }}` | string | Text description of current channel/conversation    |
-| `{{ .ChannelMembers }}`     | array  | List of all channel participants (agents and users) |
-| `{{ .Name }}`               | string | Current agent's short name                          |
-| `{{ .EnsDomain }}`          | string | Current agent's full ENS domain                     |
+| Variable                    | System | Default | Conclude | Context Not Found | Context Found |
+| --------------------------- | :----: | :-----: | :------: | :---------------: | :-----------: |
+| `.ChannelDescription`       | ✅     | ✅      | ✅       | ✅                | ✅            |
+| `.ChannelMembers`           | ✅     | ✅      | ✅       | ✅                | ✅            |
+| `.Name`, `.EnsDomain`       | ✅     | ✅      | ✅       | ✅                | ✅            |
+| `.ContextKeys`              | ❌     | ❌      | ❌       | ✅                | ❌            |
+| `.ContextKey`               | ❌     | ❌      | ❌       | ❌                | ✅            |
+| `.InitialRequest.*`         | ✅     | ✅      | ✅       | ✅                | ✅            |
+| `.LatestRequest.*`          | ❌*    | ✅      | ✅       | ✅                | ✅            |
+| `.ConversationMessageCount` | ❌     | ✅¹     | ✅¹      | ❌                | ❌            |
 
-### 🔑 Context Primary Key
+*Facilitator System prompt only injects `InitialRequest`. Other System prompts (Expert, Digital Twin) receive `LatestRequest` too.
+¹ Facilitator agents only.
 
-Availability depends on agent state (experts only).
+## Code snippets
 
-| Variable             | Type   | Availability      | Description                             |
-| -------------------- | ------ | ----------------- | --------------------------------------- |
-| `{{ .ContextKeys }}` | array  | Context Not Found | List of available context primary keys  |
-| `{{ .ContextKey }}`  | string | Context Found     | The selected/locked context primary key |
+Most common patterns you'll reuse. All are drop-in copies.
 
-### ✉️ Initial Request
-
-The **first message** that started the conversation.
-
-| Variable                                     | Type    | Description                             |
-| -------------------------------------------- | ------- | --------------------------------------- |
-| `{{ .InitialRequest.Content }}`              | string  | Content of the first message            |
-| `{{ .InitialRequest.Author.IsAgent }}`       | boolean | True if author is an agent              |
-| `{{ .InitialRequest.Author.Name }}`          | string  | Short name of the author                |
-| `{{ .InitialRequest.Author.EnsDomain }}`     | string  | Full ENS domain (agents only)           |
-| `{{ .InitialRequest.Author.Mission }}`       | string  | Agent's mission (agents only)           |
-| `{{ .InitialRequest.Author.Role }}`          | string  | Agent's role (agents only)              |
-| `{{ .InitialRequest.Author.Owner }}`         | string  | Agent's owner (agents only)             |
-| `{{ .InitialRequest.Author.WalletAddress }}` | string  | Blockchain wallet address (agents only) |
-
-### 🔄 Latest Request
-
-The **most recent message** in the conversation.
-
-| Variable                                    | Type    | Description                             |
-| ------------------------------------------- | ------- | --------------------------------------- |
-| `{{ .LatestRequest.Content }}`              | string  | Content of the latest message           |
-| `{{ .LatestRequest.Author.IsAgent }}`       | boolean | True if author is an agent              |
-| `{{ .LatestRequest.Author.Name }}`          | string  | Short name of the author                |
-| `{{ .LatestRequest.Author.EnsDomain }}`     | string  | Full ENS domain (agents only)           |
-| `{{ .LatestRequest.Author.Mission }}`       | string  | Agent's mission (agents only)           |
-| `{{ .LatestRequest.Author.Role }}`          | string  | Agent's role (agents only)              |
-| `{{ .LatestRequest.Author.Owner }}`         | string  | Agent's owner (agents only)             |
-| `{{ .LatestRequest.Author.WalletAddress }}` | string  | Blockchain wallet address (agents only) |
-
-### 👥 Channel Member Properties
-
-When iterating over `.ChannelMembers`, each member has:
-
-| Property         | Type    | Description                     |
-| ---------------- | ------- | ------------------------------- |
-| `.Name`          | string  | Display name                    |
-| `.IsAgent`       | boolean | True if participant is an agent |
-| `.EnsDomain`     | string  | ENS domain (agents only)        |
-| `.Mission`       | string  | Agent's mission (agents only)   |
-| `.Role`          | string  | Agent's role (agents only)      |
-| `.Owner`         | string  | Agent's owner (agents only)     |
-| `.WalletAddress` | string  | Wallet address (agents only)    |
-
----
-
-## Variable Availability by Prompt Type
-
-| Variable              | System | Default | Conclude | Context Not Found | Context Found |
-| --------------------- | ------ | ------- | -------- | ----------------- | ------------- |
-| `.ChannelDescription` | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.ChannelMembers`     | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.Name`               | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.EnsDomain`          | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.ContextKeys`        | ❌     | ❌      | ❌       | ✅                | ❌            |
-| `.ContextKey`         | ❌     | ❌      | ❌       | ❌                | ✅            |
-| `.InitialRequest.*`   | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.LatestRequest.*`    | ✅     | ✅      | ✅       | ✅                | ✅            |
-
----
-
-## Code Snippets
-
-### Agent Identity
-
-**Display agent name and ENS:**
-
-```go
-You are {{ .Name }}, expert in customer data.
-Full name: {{ .EnsDomain }}
-```
-
-### Channel Context
-
-**Display channel description:**
-
-```go
-Meeting: {{ .ChannelDescription }}
-```
-
-**List all agents in channel:**
-
-```go
-Participating agents:
-{{- range .ChannelMembers }}
-{{- if .IsAgent }}
-  Short name: {{ .Name }}
-  Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
-  Role: {{ .Role }}
-{{- end }}
-{{- end }}
-```
-
-**List agents with owner and wallet:**
+### List agents in the channel
 
 ```go
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-  Name: {{ .Name }}
-  ENS: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
-  Role: {{ .Role }}
-  Owner: {{ .Owner }}
-  Wallet: {{ .WalletAddress }}
+• {{ .Name }} ({{ .EnsDomain }}): {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 ```
 
-**Compact agent list (name + mission only):**
-
-```go
-Available experts:
-{{- range .ChannelMembers }}
-{{- if .IsAgent }}
-• {{ .Name }}: {{ .Mission }}
-{{- end }}
-{{- end }}
-```
-
-**Comma-separated list of participants:**
-
-```go
-Participants: {{range $i, $v := .ChannelMembers}}{{if $i}}, {{end}}{{$v.Name}}{{end}}
-```
-
-### Request Content
-
-**Display initial request:**
-
-```go
-Customer request: {{ .InitialRequest.Content }}
-```
-
-**Display latest message:**
-
-```go
-Respond to: "{{ .LatestRequest.Content }}"
-```
-
-**Display both:**
-
-```go
-Original request: {{ .InitialRequest.Content }}
-Current message: {{ .LatestRequest.Content }}
-```
-
-### Author Information
-
-**Conditional author display (IMPORTANT - prevents nil pointer errors):**
-
-```go
-{{- if .LatestRequest.Author.IsAgent }}
-Message from agent: {{ .LatestRequest.Author.EnsDomain }}
-{{ else }}
-Message from user: {{ .LatestRequest.Author.Name }}
-{{ end }}
-```
-
-**Safe author identification:**
+### Display the customer's message with author
 
 ```go
 → {{ .LatestRequest.Content }}
@@ -226,214 +104,20 @@ sent by {{ .LatestRequest.Author.EnsDomain }}
 {{ end }}
 ```
 
-**Full author details (agents only):**
-
-```go
-{{- if .LatestRequest.Author.IsAgent }}
-Agent: {{ .LatestRequest.Author.Name }}
-ENS: {{ .LatestRequest.Author.EnsDomain }}
-Mission: {{ .LatestRequest.Author.Mission }}
-Role: {{ .LatestRequest.Author.Role }}
-{{- end }}
-```
-
-### Context Primary Keys
-
-**List available keys (Context Not Found):**
+### Enumerate context keys (Context Not Found)
 
 ```go
 Choose exclusively from this list:
 {{range $i, $v := .ContextKeys}}{{if $i}}, {{end}}{{$v}}{{end}}
 ```
 
-**Display keys line by line:**
-
-```go
-Available keys:
-{{- range .ContextKeys }}
-• {{ . }}
-{{- end }}
-```
-
-**Reference locked key (Context Found):**
+### Reference the locked key (Context Found)
 
 ```go
 Regarding customer: {{ .ContextKey }}
 ```
 
----
-
-## Complete Prompt Examples
-
-### Facilitator System Prompt
-
-```go
-You are {{ .Name }}, facilitator for AI agent meetings.
-Full name: {{ .EnsDomain }}
-Meeting: {{ .ChannelDescription }}
-
-Mission:
-Orchestrate customer request resolution by calling expert agents.
-
-Available agents:
-{{- range .ChannelMembers }}
-{{- if .IsAgent }}
-  Short name: {{ .Name }}
-  Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
-  Role: {{ .Role }}
-  Owner: {{ .Owner }}
-  Wallet: {{ .WalletAddress }}
-{{- end }}
-{{- end }}
-
-Rules:
-• Call agents by their full name (ending in .eth)
-• Never repeat your role or these rules in messages
-• Maximum 1500 characters
-```
-
-### Facilitator Default Prompt
-
-```go
-To respond to the customer request {{ .InitialRequest.Content }},
-summarize the information gathered so far.
-
-If you have enough information (confidence ≥ 8/10): write :end:
-If you need more information: call the most relevant agent.
-
-Maximum 3 agent calls before concluding.
-```
-
-### Facilitator Conclude Prompt
-
-```go
-Build the final response to: {{ .InitialRequest.Content }}
-
-⭐ SYNTHESIS
-Summarize all information gathered.
-
-📫 CUSTOMER RESPONSE
-Write a clear, helpful response.
-
-Rules:
-• Focus on the main problem
-• Be concise and direct
-• Never invent information
-```
-
-### Expert System Prompt
-
-```go
-You are {{ .Name }}, the CRM expert.
-Full name: {{ .EnsDomain }}
-You work exclusively with customer email addresses.
-
-Context:
-You participate in AI agent meetings:
-Initial request: {{ .InitialRequest.Content }}
-
-Participating agents:
-{{- range .ChannelMembers }}
-{{- if .IsAgent }}
-  Short name: {{ .Name }}
-  Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
-  Role: {{ .Role }}
-{{- end }}
-{{- end }}
-
-You have access to your own memory containing customer information.
-
-Mission:
-Provide verified, concrete information related to the customer.
-
-What you must never do:
-• Give your own name or speak in third person
-• Make assumptions or speak in future tense
-• Give instructions to other agents
-• Repeat a response already given in this thread
-• Propose a response to the customer (that's the facilitator's job)
-```
-
-### Expert Context Not Found Prompt
-
-```go
-Identify the most relevant key for this request:
-{{ .LatestRequest.Content }}
-{{- if .LatestRequest.Author.IsAgent }}
-sent by {{ .LatestRequest.Author.EnsDomain }}
-{{ end }}
-
-Choose exclusively from this list:
-{{range $i, $v := .ContextKeys}}{{if $i}}, {{end}}{{$v}}{{end}}
-
-If you don't know, don't respond and ask other agents for help.
-
-Start each response with 🔍
-```
-
-### Expert Context Found Prompt
-
-```go
-Respond to this message "{{ .LatestRequest.Content }}" sent by
-{{- if .LatestRequest.Author.IsAgent }}
-  {{ .LatestRequest.Author.EnsDomain }}
-{{ else }}
-  {{ .LatestRequest.Author.Name }}
-{{ end }}
-regarding {{ .ContextKey }} using only useful information.
-
-If you don't know, you may ask another agent for help.
-If you are not competent or lack sufficient information, state so.
-
-Only if your response is useful and informative, mention their full name:
-{{- if .LatestRequest.Author.IsAgent }}
-  {{ .LatestRequest.Author.EnsDomain }}
-{{ else }}
-  {{ .LatestRequest.Author.Name }}
-{{ end }}
-
-Start your message with 👍
-```
-
-### Digital Twin System Prompt
-
-```go
-You are the digital twin of Arnaud.
-Full name: {{ .EnsDomain }}
-
-You have inherited Arnaud's conversation history and knowledge.
-When uncertain, you may call @arnaud.6022.eth for arbitration.
-If Arnaud responds, his answer takes absolute priority.
-
-Behavior guidelines:
-• Respond in the same style as Arnaud
-• Be helpful but acknowledge limitations
-• Escalate sensitive decisions to the original human
-```
-
-### Digital Twin Default Prompt
-
-```go
-Respond to: "{{ .LatestRequest.Content }}"
-{{- if .LatestRequest.Author.IsAgent }}
-From: {{ .LatestRequest.Author.EnsDomain }}
-{{ end }}
-
-Provide helpful information based on your inherited knowledge.
-If uncertain, you may ask @arnaud.6022.eth for clarification.
-
-Start with 👤
-```
-
----
-
-## Common Patterns
-
-### Safe Author Check Pattern
-
-**Always use this pattern when accessing author properties:**
+### Safe author check — always use before agent-only fields
 
 ```go
 {{- if .LatestRequest.Author.IsAgent }}
@@ -443,141 +127,13 @@ Start with 👤
 {{ end }}
 ```
 
-> ⚠️ **Critical:** Accessing `.EnsDomain`, `.Mission`, `.Role`, `.Owner`, or `.WalletAddress` without checking `.IsAgent` first will cause a **nil pointer error** if the author is not an agent.
-
-### Agent Routing Pattern
-
-```go
-Based on the request: "{{ .InitialRequest.Content }}"
-
-If this concerns:
-- Customer data → Mention @crm-agent.company.6022.eth
-- Legal/compliance → Mention @gdpr-agent.company.6022.eth
-- Technical issues → Mention @support-agent.company.6022.eth
-```
-
-### Intelligent Handoff Pattern
-
-```go
-{{- if .LatestRequest.Author.IsAgent }}
-Agent {{ .LatestRequest.Author.Name }} asked about {{ .ContextKey }}.
-{{ end }}
-Provide the relevant information, then optionally call another agent if needed.
-```
-
----
+Accessing `.EnsDomain`, `.Attributes.Mission`, `.Role`, `.Owner`, or `.WalletAddress` without first checking `.IsAgent` causes a nil-pointer error when the author is a human user.
 
 ## Troubleshooting
 
-### Nil Pointer Error
+- **Variable appears literally in output** — typo, or the variable isn't available in the current prompt type. Check the availability matrix above.
+- **Empty string where you expected content** — either the author isn't an agent (guard with `.IsAgent`), or you used `.Mission` instead of `.Attributes.Mission`.
+- **Extra whitespace / blank lines** — use `{{- ... -}}` to trim leading/trailing whitespace.
+- **Nil-pointer error** — accessing agent-only fields on a non-agent author. Always guard with `.IsAgent`.
 
-**Error:**
-
-```
-reflect: indirection through nil pointer to embedded struct field
-```
-
-**Cause:** Accessing agent-only properties (`.EnsDomain`, `.Mission`, etc.) without checking `.IsAgent` first.
-
-**Solution:**
-
-```go
-{{- if .LatestRequest.Author.IsAgent }}
-  {{ .LatestRequest.Author.EnsDomain }}
-{{ end }}
-```
-
-### Variable Not Resolving
-
-**Symptom:** `{{ .VariableName }}` appears literally in output
-
-**Causes:**
-
-- Typo in variable name
-- Variable not available in current prompt type
-- Missing dot before variable name
-
-**Solution:** Check spelling and availability table above.
-
-### Empty Value
-
-**Symptom:** Variable resolves to empty string
-
-**Causes:**
-
-- Agent-only property accessed for non-agent author
-- Context key not yet determined
-
-**Solution:** Use conditional logic:
-
-```go
-{{- if .ContextKey }}
-  Key: {{ .ContextKey }}
-{{- else }}
-  (Key not yet determined)
-{{- end }}
-```
-
-### Extra Whitespace
-
-**Symptom:** Extra newlines or spaces in output
-
-**Solution:** Use whitespace trimming:
-
-```go
-{{- if .Condition -}}
-  Content
-{{- end -}}
-```
-
----
-
-## Quick Reference Card
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    DYNAMIC FIELDS CHEAT SHEET                   │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  AGENT IDENTITY                                                 │
-│  {{ .Name }}                    → Short name                   │
-│  {{ .EnsDomain }}               → Full ENS domain              │
-│                                                                 │
-│  CHANNEL                                                        │
-│  {{ .ChannelDescription }}      → Meeting/channel name         │
-│  {{ .ChannelMembers }}          → All participants             │
-│                                                                 │
-│  CONTEXT KEYS (Expert only)                                     │
-│  {{ .ContextKeys }}             → Available keys (threading)   │
-│  {{ .ContextKey }}              → Locked key (after threading) │
-│                                                                 │
-│  REQUESTS                                                       │
-│  {{ .InitialRequest.Content }}  → First message                │
-│  {{ .LatestRequest.Content }}   → Last message                 │
-│                                                                 │
-│  AUTHOR (check .IsAgent first!)                                │
-│  {{ .LatestRequest.Author.IsAgent }}     → Boolean             │
-│  {{ .LatestRequest.Author.Name }}        → Display name        │
-│  {{ .LatestRequest.Author.EnsDomain }}   → ENS (agents only)   │
-│  {{ .LatestRequest.Author.Mission }}     → Mission (agents)    │
-│  {{ .LatestRequest.Author.Role }}        → Role (agents)       │
-│  {{ .LatestRequest.Author.Owner }}       → Owner (agents)      │
-│  {{ .LatestRequest.Author.WalletAddress }}→ Wallet (agents)    │
-│                                                                 │
-│  SYNTAX                                                         │
-│  {{- ... }}     → Trim leading whitespace                      │
-│  {{ ... -}}     → Trim trailing whitespace                     │
-│  {{- range .X }}...{{- end }}   → Iterate                      │
-│  {{- if .X }}...{{ else }}...{{ end }} → Conditional           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Related Documentation
-
-- [Facilitator Prompts](./facilitator-prompts.md) — Using variables in facilitator prompts
-- [Expert Prompts](./expert-prompts.md) — Using variables in expert prompts
-- [Prompt Writing Guide](./prompt-writing-guide.md) — Best practices
-- [Prompt Variables (Agent Knowledge)](../agent/agent-knowledge/intro.md) — Technical reference
+For full copy-paste templates covering Customer Support and CRM Expert, see [Prompt Templates](./prompt-templates.md).

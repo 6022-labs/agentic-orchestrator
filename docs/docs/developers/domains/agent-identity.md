@@ -1,7 +1,7 @@
 ---
-id: agent-identities
-title: Domain — Agent Identities
-sidebar_label: Agent Identities
+id: agent-identity
+title: Domain — Agent Identity
+sidebar_label: Agent Identity
 ---
 
 This domain curates everything that makes an agent recognizable: canonical metadata, ownership signals, and brand assets. It does not run inference; it simply keeps the public-facing profile accurate and reproducible.
