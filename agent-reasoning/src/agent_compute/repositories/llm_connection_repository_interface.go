@@ -1,0 +1,14 @@
+package repositories
+
+import (
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
+	"github.com/google/uuid"
+)
+
+type LLMConnectionRepositoryInterface interface {
+	Save(entity *models.LLMConnection) (*models.LLMConnection, error)
+	GetByAgentId(agentId uuid.UUID) (*models.LLMConnection, error)
+	GetSetupStatusByAgentId(agentId uuid.UUID) (*enums.LLMConnectionSetupStatus, error)
+	DeleteByAgentId(agentId uuid.UUID) error
+}
