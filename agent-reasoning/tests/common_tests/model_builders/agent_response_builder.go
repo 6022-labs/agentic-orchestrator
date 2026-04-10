@@ -1,8 +1,8 @@
 package model_builders
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/models/enums"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/compute/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/use_cases/responses"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 )

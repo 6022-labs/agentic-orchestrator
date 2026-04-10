@@ -1,0 +1,36 @@
+package configurations
+
+import (
+	orchestrator_agent_compute_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/configurations"
+	orchestrator_agent_compute_db_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_db/configurations"
+	orchestrator_agent_compute_host_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_host/settings"
+	orchestrator_agent_compute_http_agent_identity_registry_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_agent_identity_registry/configurations"
+	orchestrator_agent_compute_http_agent_knowledge_database_connector_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_agent_knowledge_database_connector/configurations"
+	orchestrator_agent_compute_http_inference_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_inference/configurations"
+	orchestrator_agent_compute_http_mcp_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_mcp/configurations"
+	orchestrator_agent_compute_mvc_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_mvc/configurations"
+	orchestrator_agent_compute_vault_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_vault/configurations"
+
+	"github.com/knadh/koanf/v2"
+	"go.uber.org/dig"
+)
+
+func ConfigureDI(config *koanf.Koanf) *dig.Container {
+	container := dig.New()
+
+	container.Provide(orchestrator_agent_compute_host_settings.NewHostSettings)
+	container.Provide(func() *koanf.Koanf {
+		return config
+	})
+
+	orchestrator_agent_compute_configuration.AddAgentComputeConfiguration(container)
+	orchestrator_agent_compute_db_configuration.AddAgentComputeDbConfiguration(container)
+	orchestrator_agent_compute_mvc_configuration.AddAgentComputeMvcConfiguration(container)
+	orchestrator_agent_compute_vault_configuration.AddAgentComputeVaultConfiguration(container)
+	orchestrator_agent_compute_http_mcp_configuration.AddAgentComputeHttpMcpConfiguration(container)
+	orchestrator_agent_compute_http_inference_configuration.AddAgentComputeHttpInferenceConfiguration(container)
+	orchestrator_agent_compute_http_agent_knowledge_database_connector_configuration.AddAgentComputeHttpAgentKnowledgeDatabaseConnectorConfiguration(container)
+	orchestrator_agent_compute_http_agent_identity_registry_configuration.AddAgentComputeHttpAgentIdentityRegistryConfiguration(container)
+
+	return container
+}

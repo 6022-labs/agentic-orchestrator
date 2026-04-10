@@ -92,7 +92,7 @@ services:
   agent-compute-host:
     build:
       context: ./agent-reasoning
-      dockerfile: ./src/compute_host/Dockerfile
+      dockerfile: ./src/agent_compute_host/Dockerfile
     container_name: orchestrator-agent-compute-host
     ports:
       - "5002:5000"
