@@ -4,7 +4,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_vault/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_vault/settings"
-	vault_settings "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_vault/settings"
 	vault "github.com/hashicorp/vault/api"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -12,7 +11,7 @@ import (
 
 func AddAgentComputeVaultConfiguration(container *dig.Container) {
 	// Settings
-	err := container.Provide(vault_settings.NewVaultSettings)
+	err := container.Provide(settings.NewVaultSettings)
 	if err != nil {
 		panic(err)
 	}
