@@ -1,0 +1,49 @@
+name: Go Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.5"
+          cache-dependency-path: |
+            agent-identity/go.sum
+            agent-knowledge/go.sum
+            agent-reasoning/go.sum
+            channels-and-integrations/slack-bridge/go.sum
+            gateway/go.sum
+
+      - name: Build all modules
+        shell: bash
+        run: |
+          set -e
+          for module in \
+            agent-identity \
+            agent-knowledge \
+            agent-reasoning \
+            channels-and-integrations/slack-bridge \
+            gateway; do
+            echo "::group::Building $module"
+            pushd "$module" >/dev/null
+            targets=(./src/...)
+            if [ -d tools ]; then
+              targets+=(./tools/...)
+            fi
+            go build "${targets[@]}"
+            popd >/dev/null
+            echo "::endgroup::"
+          done
