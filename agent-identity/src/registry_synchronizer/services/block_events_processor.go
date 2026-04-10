@@ -105,35 +105,35 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		}
 
 		if err := p.syncAgentCollectionsManagerCollectionCreatedEvents(item.AgentCollectionsManagerCollectionCreatedEvents); err != nil {
-			return fmt.Errorf("failed to sync collection created events: %w", err)
+			return fmt.Errorf("failed to sync collection created events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1MintedEvents(item.AgentCollectionV1MintedEvents); err != nil {
-			return fmt.Errorf("failed to sync minted events: %w", err)
+			return fmt.Errorf("failed to sync minted events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1TransferEvents(item.AgentCollectionV1TransferEvents); err != nil {
-			return fmt.Errorf("failed to sync transfer events: %w", err)
+			return fmt.Errorf("failed to sync transfer events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1AgentImageUpdatedEvents(item.AgentCollectionV1AgentImageUpdatedEvents); err != nil {
-			return fmt.Errorf("failed to sync agent image updated events: %w", err)
+			return fmt.Errorf("failed to sync agent image updated events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1AgentSignerUpdatedEvents(item.AgentCollectionV1AgentSignerUpdatedEvents); err != nil {
-			return fmt.Errorf("failed to sync agent signer updated events: %w", err)
+			return fmt.Errorf("failed to sync agent signer updated events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1MintProposalCreatedEvents(item.AgentCollectionV1MintProposalCreatedEvents); err != nil {
-			return fmt.Errorf("failed to sync mint proposal created events: %w", err)
+			return fmt.Errorf("failed to sync mint proposal created events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1MintProposalRemovedEvents(item.AgentCollectionV1MintProposalRemovedEvents); err != nil {
-			return fmt.Errorf("failed to sync mint proposal removed events: %w", err)
+			return fmt.Errorf("failed to sync mint proposal removed events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1AgentAttributeUpdatedEvents(item.AgentCollectionV1AgentAttributeUpdatedEvents); err != nil {
-			return fmt.Errorf("failed to sync agent attribute updated events: %w", err)
+			return fmt.Errorf("failed to sync agent attribute updated events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.saveOrUpdateSyncCheckpoint(blockNumber); err != nil {
