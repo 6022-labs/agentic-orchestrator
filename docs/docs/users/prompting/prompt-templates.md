@@ -40,7 +40,7 @@ Orchestrate customer request resolution by coordinating expert agents.
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }} ({{ .EnsDomain }}): {{ Attributes.Mission }}
+• {{ .Name }} ({{ .EnsDomain }}): {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -133,7 +133,7 @@ Context:
 Participants:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ Attributes.Mission }}
+• {{ .Name }}: {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -278,7 +278,7 @@ Coordinate technical issue resolution through expert agents.
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ Attributes.Mission }}
+• {{ .Name }}: {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 
@@ -425,13 +425,11 @@ Start with 👍
 ### Adapting Templates
 
 1. **Replace placeholders:**
-
    - `{{ .Name }}` → Keep (dynamic)
    - "CRM" → Your domain name
    - Email format → Your identifier format
 
 2. **Adjust constraints:**
-
    - Add domain-specific rules
    - Remove irrelevant restrictions
    - Match your compliance requirements
