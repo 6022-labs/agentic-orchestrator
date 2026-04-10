@@ -27,5 +27,14 @@ jobs:
             channels-and-integrations/slack-bridge/go.sum
             gateway/go.sum
 
+      - name: Initialize Go workspace
+        run: |
+          go work init \
+            ./agent-identity \
+            ./agent-knowledge \
+            ./agent-reasoning \
+            ./channels-and-integrations/slack-bridge \
+            ./gateway
+
       - name: Build all workspace modules
         run: go build ./...
