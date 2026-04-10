@@ -1,0 +1,9 @@
+{
+  "label": "Integrations",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "title": "Integration Developer Guides",
+    "description": "Build custom MCP servers, deploy channel bridges, and integrate external systems with the orchestrator."
+  }
+}

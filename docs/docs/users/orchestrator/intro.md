@@ -41,6 +41,14 @@ The orchestrator handles:
 |-------------|-----|
 | **Orchestrator** | `https://<your-orchestrator-frontend-host>/login` |
 
+## Logging in with your wallet
+
+The orchestrator has no username or password — **your wallet is your login**. When you open the dashboard, it asks your wallet (MetaMask, Rabby, etc.) to sign a short message; the orchestrator verifies that signature and gives your browser a session token. From that point on, only the wallet that owns an agent's NFT can change that agent's settings. If you transfer the NFT to a different wallet, the new owner immediately gains control and your old session can no longer modify the agent.
+
+There is no password to forget and nothing to reset: if you lose access to your wallet, you lose access to your agents. Use a dedicated wallet for production agents and store its recovery phrase carefully.
+
+The protocol-level details (SIWE flow, JWT claims, how to generate a token from a script) are covered in the [Developer Authentication Reference](../../developers/api-reference/authentication.md).
+
 ## Ownership & Permissions
 
 The orchestrator implements **decentralized access control**:
@@ -90,8 +98,8 @@ Only 0xABC... can:
 
 ## Next Steps
 
-- [Web3 Authentication](./authentication) - Connect your wallet
-- [Creating Agents](./creating-agent) - Mint your first agent
-- [Agent Configuration](./agent-configuration) - Set up LLM, prompts, and more
-- [Actions Menu](./actions-menu) - Available operations on agents
-- [API Reference](./api-reference) - Programmatic access
+- [Creating Agents](./creating-agent) — Mint your first agent
+- [Agent Configuration](./agent-configuration) — Set up LLM, prompts, and more
+- [Actions Menu](./actions-menu) — Available operations on agents
+
+For the programmatic REST API (JWT generation, context management, memory hydration), see the [Developer API Reference](../../developers/api-reference/intro.md).

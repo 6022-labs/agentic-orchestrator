@@ -1,12 +1,13 @@
 ---
-sidebar_position: 5
+sidebar_position: 1
+title: Building a Custom MCP Server
 ---
 
-# Building Custom MCPs
+# Building a Custom MCP Server
 
-When no existing MCP fits your needs, you can build your own. This guide covers the basics of creating an MCP server compatible with 6022 Agentic Teams.
+When no existing MCP fits your needs, you can author your own and register it with the orchestrator the same way you'd register a third-party one. This guide is for **developers writing a server**; if you're configuring a server someone else built, see the [user-facing MCP configuration guide](../../users/mcp/configuration.md) instead.
 
-## When to Build Custom
+## When to build custom
 
 Build a custom MCP when you need to:
 
@@ -95,11 +96,11 @@ def handle_tools_call(tool_name, arguments):
             limit=arguments.get("limit", 10)
         )
         return {"content": [{"type": "text", "text": json.dumps(results)}]}
-    
+
     elif tool_name == "get_document":
         doc = fetch_document(arguments.get("document_id"))
         return {"content": [{"type": "text", "text": doc}]}
-    
+
     else:
         raise ValueError(f"Unknown tool: {tool_name}")
 ```
@@ -135,7 +136,7 @@ def mcp_handler():
     method = data.get('method')
     params = data.get('params', {})
     request_id = data.get('id')
-    
+
     try:
         if method == 'tools/list':
             result = {
@@ -164,37 +165,38 @@ def mcp_handler():
                     }
                 ]
             }
-        
+
         elif method == 'tools/call':
             tool_name = params.get('name')
             arguments = params.get('arguments', {})
-            
+
             if tool_name == 'search_policies':
                 data = search_policies(arguments.get('query'))
                 result = {"content": [{"type": "text", "text": json.dumps(data)}]}
-            
+
             elif tool_name == 'get_policy':
                 data = get_policy(arguments.get('policy_id'))
                 result = {"content": [{"type": "text", "text": json.dumps(data)}]}
-            
+
             else:
                 raise ValueError(f"Unknown tool: {tool_name}")
-        
+
         else:
             raise ValueError(f"Unknown method: {method}")
-        
+
         return jsonify({
             "jsonrpc": "2.0",
             "result": result,
-            "id": request_id
+            "id": request_id,
         })
-    
+
     except Exception as e:
         return jsonify({
             "jsonrpc": "2.0",
             "error": {"code": -32000, "message": str(e)},
-            "id": request_id
+            "id": request_id,
         }), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
@@ -207,6 +209,7 @@ Protect your MCP with authentication:
 ```python
 from functools import wraps
 
+
 def require_api_key(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -216,25 +219,31 @@ def require_api_key(f):
         return f(*args, **kwargs)
     return decorated
 
+
 @app.route('/mcp', methods=['POST'])
 @require_api_key
 def mcp_handler():
-    # ... handler code
+    ...  # handler code
 ```
 
-Then configure in orchestrator:
-- Authentication: Custom Header
-- Header Key: `x-api-key`
-- Header Value: `your-secret-key`
+Then configure the orchestrator side through the dashboard:
+
+- **Authentication:** Custom Header
+- **Header Key:** `x-api-key`
+- **Header Value:** `your-secret-key`
+
+The orchestrator stores the header value in its secret vault; see the [user-facing MCP configuration guide](../../users/mcp/configuration.md) for the exact form fields.
 
 ## Deployment Options
 
-### Railway (Recommended)
+The orchestrator **only accepts HTTPS URLs** for MCP connections — HTTP is rejected at the validation layer. Make sure whichever host you pick exposes TLS. The examples below all satisfy that by default.
+
+### Railway (recommended for quick starts)
 
 1. Push your code to GitHub
-2. Connect repo to Railway
+2. Connect the repo to Railway
 3. Deploy automatically
-4. Use the Railway URL: `https://your-app.up.railway.app/mcp`
+4. Use the Railway URL: `https://<your-app>.up.railway.app/mcp`
 
 ### Docker
 
@@ -256,7 +265,7 @@ flyctl deploy
 
 ## Tool Design Best Practices
 
-### Good Tool Descriptions
+### Good tool descriptions
 
 The LLM uses descriptions to decide when to call tools:
 
@@ -264,17 +273,17 @@ The LLM uses descriptions to decide when to call tools:
 # ❌ Bad - vague
 {
     "name": "search",
-    "description": "Search stuff"
+    "description": "Search stuff",
 }
 
 # ✅ Good - specific and actionable
 {
     "name": "search_customer_tickets",
-    "description": "Search customer support tickets by customer email, ticket ID, or keywords. Returns ticket ID, status, subject, and creation date."
+    "description": "Search customer support tickets by customer email, ticket ID, or keywords. Returns ticket ID, status, subject, and creation date.",
 }
 ```
 
-### Clear Input Schemas
+### Clear input schemas
 
 Define what parameters each tool accepts:
 
@@ -301,7 +310,7 @@ Define what parameters each tool accepts:
 }
 ```
 
-### Return Structured Data
+### Return structured data
 
 Return data that the LLM can easily parse:
 
@@ -312,7 +321,7 @@ return {
         "type": "text",
         "text": json.dumps({
             "customer": {"name": "John", "email": "john@example.com"},
-            "tickets": [{"id": "T-001", "status": "open"}]
+            "tickets": [{"id": "T-001", "status": "open"}],
         })
     }]
 }
@@ -321,6 +330,8 @@ return {
 ## Testing Your MCP
 
 ### Local Testing
+
+Local development is fine on plain HTTP — the HTTPS requirement only kicks in when you register the server with the orchestrator for a real agent.
 
 ```bash
 # Start your server
@@ -349,3 +360,9 @@ npx @modelcontextprotocol/inspector http://localhost:3000/mcp
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [Example MCP Servers](https://github.com/modelcontextprotocol/servers)
+
+## See also
+
+- [User-facing MCP configuration](../../users/mcp/configuration.md) — how to register your finished server with an agent
+- [Available MCPs](../../users/mcp/available-mcps.md) — catalogue of pre-built MCPs you can use instead of building
+- [MCP best practices](../../users/mcp/best-practice.md) — tool count limits, specialization strategies

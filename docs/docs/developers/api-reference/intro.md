@@ -1,109 +1,155 @@
 ---
-title: Introduction
+title: API Reference Overview
 sidebar_position: 1
 ---
 
-# Introduction
+# API Reference Overview
 
-The 6022 Orchestrator exposes REST endpoints for managing agents programmatically. This document mirrors the original reference from the user guide and is the canonical location for developers.
+The 6022 Orchestrator exposes a REST API for programmatic access to agent management. Use it for:
+
+- Memory hydration (injecting messages into an agent's context)
+- Batch context creation
+- Integration with external systems
+- CI/CD pipelines
+
+All resource endpoints live behind two path parameters: the **agent collection address** (the NFT contract) and the **agent token ID** (the agent's index in that collection). You'll find both in the orchestrator dashboard for any agent you own.
+
+## Base URLs
+
+| Environment              | API Base URL                                |
+| ------------------------ | ------------------------------------------- |
+| **Production (Polygon)** | `https://<your-orchestrator-api-host>`      |
+| **Testnet (Amoy)**       | `https://<your-orchestrator-api-host-amoy>` |
+
+Replace the placeholders with the deployment URLs your team operates.
 
 ## Authentication
 
-All API requests require JWT (JSON Web Token) authentication.
+Every request requires a JWT obtained by signing a SIWE message with the wallet that owns the agent. The full two-step flow, JWT claim structure, and helper-script usage is documented on a dedicated page:
 
-### Generating a JWT
+→ **[Authentication](./authentication.md)** — the SIWE/JWT flow and how to generate a token
+
+Short version:
+
+1. `POST /auth/jwt/init` → returns a nonce + SIWE message
+2. Sign the message locally with the wallet that owns the agent
+3. `POST /auth/jwt/finish` → returns a JWT
+4. Send `Authorization: Bearer <token>` on every subsequent call
+
+Tokens are bound to their `chainId` — a Polygon JWT is rejected by an Amoy orchestrator and vice versa. Tokens expire after `JWT__LIVING_TIME` seconds (deployment-configured); repeat the SIWE flow to get a new one.
 
 ```bash
-# Clone the repository
-git clone https://github.com/6022protocol/py-generate-jwt
-
-# Install dependencies
-cd py-generate-jwt
-pip install -r requirements.txt
-
-# Generate token
-python generate_jwt.py \
-  --chain-id 137 \
-  --api-base-url https://<your-orchestrator-api-host>/
+curl -X GET \
+  "https://<your-orchestrator-api-host>/agent/0xCOLLECTION/1/contexts/keys" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-| Network         | Chain ID |
-| --------------- | -------- |
-| Polygon Mainnet | `137`    |
-| Amoy Testnet    | `80002`  |
+:::warning Security
+Use a dedicated wallet for API access. Never expose your main wallet's private key in scripts, CI variables, or `.env` files you don't control.
+:::
 
-### JWT Properties
+---
 
-| Property | Value                                                                        |
-| -------- | ---------------------------------------------------------------------------- |
-| Validity | Controlled by `JWT__LIVING_TIME` (seconds) on the orchestrator deployment    |
-| Scope    | Per owner wallet (not per agent); chain-bound (`cId` claim)                  |
-| Signing  | Orchestrator HMAC secret `JWT__HASH`, signed after SIWE message verification |
+## Dedicated reference pages
 
-Include the token in the `Authorization` header: `Authorization: Bearer <token>`.
+Rather than document every endpoint on this page, the detailed reference lives in topic-specific pages:
 
-A token issued for one chain (e.g. Polygon mainnet `137`) is **not** accepted by an orchestrator instance running against a different chain (e.g. Amoy `80002`) — the `cId` claim is verified on every request.
+| Page | What it covers |
+|---|---|
+| **[Authentication](./authentication.md)** | SIWE nonce flow, JWT claims, `JWT__HASH` / `JWT__LIVING_TIME`, helper script, Python sample |
+| **[Context Primary Keys API](./context-primary-keys.md)** | `GET /contexts/keys`, `POST /context`, pagination/search/sort parameters, bulk provisioning, administrative DB access |
+| **[Memory Hydration API](./memory-hydration.md)** | `POST /context/:key/message`, role enum (`user` / `system` / `assistant`), hydration patterns, bulk templates |
 
-## Endpoints
+Start with **Authentication**, then pick whichever resource page matches what you're integrating.
 
-### List Context Primary Keys
+---
+
+## Context Management — quick reference
+
+For convenience, here's the single-page cheat sheet for the two most common endpoint groups. The dedicated reference pages above have the full parameter documentation.
+
+### List context keys
 
 ```http
-GET /agent/{agentCollectionAddress}/{agentTokenId}/contexts/keys
-Authorization: Bearer
+GET /agent/:agentCollectionAddress/:agentCollectionTokenId/contexts/keys
+Authorization: Bearer <token>
 ```
 
-### Create Context Primary Key
+Internal context keys (anything under the `conversation-context-discovery/` prefix) are filtered out of the response. Returns a paginated envelope — see [Context Primary Keys API](./context-primary-keys.md) for query parameters.
+
+### Create a context
 
 ```http
-POST /agent/{agentCollectionAddress}/{agentTokenId}/context
-Authorization: Bearer
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context
+Authorization: Bearer <token>
 Content-Type: application/json
+
+{ "key": "POL-2024-123456" }
 ```
 
-Request body:
-
-```json
-{ "key": "C45653" }
-```
-
-### Add Message to Agent Memory
+### Append a message to a context (memory hydration)
 
 ```http
-POST /agent/{agentCollectionAddress}/{agentTokenId}/context/{contextKey}/message
-Authorization: Bearer
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context/:contextKey/message
+Authorization: Bearer <token>
 Content-Type: application/json
-```
 
-Request body:
-
-```json
 {
-  "message": "Content of the message to add",
+  "message": "Customer called about policy renewal",
   "role": "user"
 }
 ```
 
-### Response Codes
+`role` must be one of `user`, `system`, or `assistant`. `message` and `contextKey` must each be at least 2 characters. The context key must already exist; create it first via the endpoint above.
 
-| Status | Meaning                                                            |
-| ------ | ------------------------------------------------------------------ |
-| `200`  | Success (resource created or message appended). The orchestrator's gateway controllers always return `200 OK` for successful POSTs — there is no `201 Created` |
-| `400`  | Bad request (validation failure, duplicate key, etc.)              |
-| `401`  | Unauthorized (JWT missing, invalid, or chain-id mismatch)          |
-| `403`  | Forbidden (your wallet does not own this agent)                    |
-| `404`  | Not found (agent or context key missing)                           |
-| `500`  | Internal server error                                              |
+---
 
-## Python Client
+## Code Examples
 
-`role` accepts `user`, `system`, or `assistant` — the orchestrator validates against the `AgentContextMessageRole` enum and rejects any other value.
+### Python
+
+```python
+import requests
+
+BASE_URL = "https://<your-orchestrator-api-host>"
+TOKEN = "your_jwt_token"
+COLLECTION = "0xCOLLECTION"
+TOKEN_ID = 1
+
+headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "Content-Type": "application/json",
+}
+
+# Create a context
+requests.post(
+    f"{BASE_URL}/agent/{COLLECTION}/{TOKEN_ID}/context",
+    headers=headers,
+    json={"key": "POL-2024-123456"},
+)
+
+# Hydrate it with a message
+requests.post(
+    f"{BASE_URL}/agent/{COLLECTION}/{TOKEN_ID}/context/POL-2024-123456/message",
+    headers=headers,
+    json={
+        "message": "Customer inquiry about coverage",
+        "role": "user",
+    },
+)
+```
+
+### Python client class
+
+For longer-running integrations, a small wrapper class keeps things tidy:
 
 ```python
 import requests
 
 
 class AgentMemoryAPI:
+    """Minimal client for the orchestrator's context/memory endpoints."""
+
     def __init__(self, base_url: str, agent_address: str, agent_token_id: str, jwt: str):
         self.base_url = base_url
         self.agent_address = agent_address
@@ -127,11 +173,12 @@ class AgentMemoryAPI:
         if response.status_code == 200:
             return True
         if response.status_code == 400 and "already exists" in response.text:
-            return False  # Key already present, treat as idempotent success
+            return False  # Treat duplicates as idempotent success
         response.raise_for_status()
         return False
 
     def add_memory(self, key: str, message: str, role: str = "assistant") -> None:
+        """role must be one of: user, system, assistant."""
         url = f"{self.base_url}/agent/{self.agent_address}/{self.agent_token_id}/context/{key}/message"
         response = requests.post(url, headers=self.headers, json={"message": message, "role": role})
         response.raise_for_status()
@@ -150,9 +197,6 @@ api = AgentMemoryAPI(
     jwt="your_jwt_token",
 )
 
-keys = api.list_keys()
-print("Existing keys:", keys)
-
 api.create_key("C99999")
 api.hydrate("C99999", [
     {"role": "user", "message": "Remember: Customer C99999 is a VIP"},
@@ -160,57 +204,101 @@ api.hydrate("C99999", [
 ])
 ```
 
-## JavaScript Client
+### JavaScript / Node.js
 
 ```javascript
 const axios = require("axios");
 
-class AgentMemoryAPI {
-  constructor(baseUrl, agentAddress, agentTokenId, jwt) {
-    this.baseUrl = baseUrl;
-    this.agentAddress = agentAddress;
-    this.agentTokenId = agentTokenId;
-    this.headers = {
-      Authorization: `Bearer ${jwt}`,
-      "Content-Type": "application/json",
-    };
-  }
+const BASE_URL = "https://<your-orchestrator-api-host>";
+const TOKEN = "your_jwt_token";
+const COLLECTION = "0xCOLLECTION";
+const TOKEN_ID = 1;
 
-  async listKeys() {
-    const url = `${this.baseUrl}/agent/${this.agentAddress}/${this.agentTokenId}/contexts/keys`;
-    const response = await axios.get(url, { headers: this.headers });
-    return response.data.contextKeys || [];
-  }
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    Authorization: `Bearer ${TOKEN}`,
+    "Content-Type": "application/json",
+  },
+});
 
-  async createKey(key) {
-    const url = `${this.baseUrl}/agent/${this.agentAddress}/${this.agentTokenId}/context`;
-    try {
-      await axios.post(url, { key }, { headers: this.headers });
-      return true;
-    } catch (error) {
-      if (error.response?.data?.message?.includes("already exists")) {
-        return false;
-      }
-      throw error;
-    }
-  }
+await api.post(`/agent/${COLLECTION}/${TOKEN_ID}/context`, {
+  key: "POL-2024-123456",
+});
 
-  // role must be "user", "system", or "assistant"
-  async addMemory(key, message, role = "assistant") {
-    const url = `${this.baseUrl}/agent/${this.agentAddress}/${this.agentTokenId}/context/${key}/message`;
-    await axios.post(url, { message, role }, { headers: this.headers });
-  }
-}
-
-module.exports = AgentMemoryAPI;
+// role must be "user", "system", or "assistant"
+await api.post(
+  `/agent/${COLLECTION}/${TOKEN_ID}/context/POL-2024-123456/message`,
+  { message: "Hello", role: "user" },
+);
 ```
 
-## Troubleshooting
+### cURL
 
-| Error                                     | Cause                        | Solution                                     |
-| ----------------------------------------- | ---------------------------- | -------------------------------------------- |
-| `agent context with key X already exists` | Key previously created       | Skip or reuse the existing key               |
-| `You are not the owner of this agent`     | JWT signed with wrong wallet | Regenerate JWT with owner's private key      |
-| `Unauthorized`                            | Missing or invalid JWT       | Check the `Authorization` header             |
-| `Context not found`                       | Context key missing          | Create the key first                         |
-| `Internal Server Error`                   | Database or sync issue       | Inspect orchestrator logs or contact support |
+```bash
+TOKEN="your_jwt_token"
+BASE="https://<your-orchestrator-api-host>"
+COLLECTION="0xCOLLECTION"
+TOKEN_ID=1
+
+# List context keys
+curl -X GET "$BASE/agent/$COLLECTION/$TOKEN_ID/contexts/keys" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Create context
+curl -X POST "$BASE/agent/$COLLECTION/$TOKEN_ID/context" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "POL-2024-123456"}'
+
+# Append a message (hydration)
+curl -X POST "$BASE/agent/$COLLECTION/$TOKEN_ID/context/POL-2024-123456/message" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Customer message", "role": "user"}'
+```
+
+---
+
+## Other endpoints
+
+The orchestrator also exposes administrative endpoints used by the dashboard UI and the Slack bridge:
+
+| Concern                             | Endpoints                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| LLM settings                        | `GET/POST /agent/:agentCollectionAddress/:agentCollectionTokenId/llm/settings`         |
+| Database setup (two-step)           | `POST .../database/settings/first-step`, `POST .../database/settings/second-step`      |
+| Prompt templates                    | `GET/POST /agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key` |
+| MCP connections                     | `GET .../mcp/connections`, `POST .../mcp/connection`, `DELETE .../mcp/connection/:id`  |
+| Wallet verification (Slack pairing) | `POST /wallet/verify`                                                                  |
+
+These are consumed internally today — most integrators do not need to call them directly. If you need the full request/response shapes, read the gateway source under `gateway/src/gateway_mvc/`.
+
+---
+
+## Error Handling
+
+### Common response codes
+
+| Status | Meaning                                                                                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200`  | Success. The orchestrator's gateway controllers always return `200 OK` for successful POSTs — there is **no** `201 Created`, regardless of what older references may say. |
+| `400`  | Bad request (validation failure, duplicate key, schema error)                                                                                   |
+| `401`  | Unauthorized — JWT missing, invalid, expired, or chain-id mismatch                                                                              |
+| `403`  | Forbidden — your wallet does not own this agent                                                                                                 |
+| `404`  | Agent or context not found                                                                                                                      |
+| `500`  | Internal server error                                                                                                                           |
+
+### Error response format
+
+The orchestrator currently surfaces errors as plain text or short JSON depending on the controller. Future versions may standardise on a single shape — don't rely on a specific JSON structure beyond `Authorization`-related codes.
+
+### Troubleshooting table
+
+| Error                                     | Cause                             | Fix                                            |
+| ----------------------------------------- | --------------------------------- | ---------------------------------------------- |
+| `agent context with key X already exists` | Key previously created            | Treat as success, skip duplicates              |
+| `You are not the owner of this agent`     | JWT signed with wrong wallet      | Regenerate JWT with the current owner          |
+| `Unauthorized`                            | Missing or invalid JWT            | Refresh token, confirm `Authorization` header  |
+| `Context not found`                       | Key missing when hydrating memory | Create the key first via `POST /context`       |
+| `Internal Server Error`                   | Database or downstream sync issue | Check orchestrator logs, open a ticket if needed |

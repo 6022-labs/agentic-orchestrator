@@ -173,8 +173,9 @@ To support private channels, ensure `message.groups` is included in your app man
 
 In this section, you'll learn how to:
 
-1. **[Configure the App Manifest](./manifest)** - Define commands, permissions, and events
-2. **[Use Slash Commands](./commands)** - Manage agents in channels
+1. **[Use Slash Commands](./commands)** — manage agents in channels once the bridge is wired up
+
+Configuring the Slack app itself (manifest JSON, OAuth scopes, event subscriptions, bridge deployment) is a deployer task rather than an end-user one — see [Slack Bridge Setup](../../developers/integrations/slack-bridge-setup.md) in the developer docs.
 
 ---
 
@@ -185,7 +186,7 @@ If you want to get started quickly:
 ```bash
 # 1. Create a Slack app at https://api.slack.com/apps
 
-# 2. Copy the app manifest (see next page)
+# 2. Copy the app manifest (see developers/integrations/slack-bridge-setup)
 
 # 3. Install the app to your workspace
 

@@ -35,7 +35,7 @@ Memory encompasses everything an agent "knows" and "remembers" across conversati
 
 ### For Developers
 
-- [API Endpoints Reference](../../developers/api-reference/intro.md#endpoints)
+- [API Reference Overview](../../developers/api-reference/intro.md)
 - [Bulk key creation](../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
 
 ### For Business Users

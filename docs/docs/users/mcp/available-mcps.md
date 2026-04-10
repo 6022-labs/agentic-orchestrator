@@ -239,7 +239,7 @@ A Heymondo-style MCP for insurance claims:
 If you need an MCP for a service not listed here:
 
 1. **Check if the service offers an MCP** — Many SaaS platforms are adding MCP support
-2. **Build a custom MCP** — See [Building Custom MCPs](./buildings)
+2. **Build a custom MCP** — See [Building a Custom MCP Server](../../developers/integrations/building-mcps.md) in the developer docs
 3. **Contact 6022 support** — We may be able to help build or recommend solutions
 
 ## MCP Resources

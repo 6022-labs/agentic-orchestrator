@@ -1,8 +1,9 @@
 ---
 sidebar_position: 2
+title: Authentication
 ---
 
-# Web3 Authentication
+# Authentication
 
 Every write request to the orchestrator API is gated by a JWT that you obtain by signing a Sign-In With Ethereum (SIWE) message with the wallet that owns the agent. There is no username/password — your wallet **is** the credential.
 
@@ -184,5 +185,7 @@ JWTs expire after `JWT__LIVING_TIME` seconds (configured on the orchestrator). W
 
 ## See also
 
-- [API Reference](./api-reference.md) — every endpoint requires the `Authorization: Bearer` header described here.
-- [Creating Agents](./creating-agent.md) — the wallet that mints an agent is the wallet that authenticates against it.
+- [API Reference overview](./intro.md) — every endpoint requires the `Authorization: Bearer` header described here.
+- [Context Primary Keys API](./context-primary-keys.md) — the main resource you'll call once you have a token.
+- [Memory Hydration API](./memory-hydration.md) — bulk knowledge injection.
+- [User-facing orchestrator intro](../../users/orchestrator/intro.md) — for the one-paragraph "your wallet is your login" explanation.

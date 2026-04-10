@@ -213,10 +213,10 @@ Body: { "key": "POL-2024-123456" }
 
 # Append a message to a context (how memory hydration works)
 POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context/:contextKey/message
-Body: { "role": "user", "content": "..." }
+Body: { "message": "...", "role": "user" }
 ```
 
-See [API Reference](./api-reference.md) for the full endpoint documentation, parameter list, and code samples.
+See the [Developer API Reference](../../developers/api-reference/intro.md) for the full endpoint documentation, parameter list, and code samples.
 
 ---
 

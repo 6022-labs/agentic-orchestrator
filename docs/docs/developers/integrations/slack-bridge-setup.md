@@ -1,14 +1,17 @@
 ---
 sidebar_position: 2
+title: Slack Bridge Setup
 ---
 
-# App Manifest
+# Slack Bridge Setup
 
-The app manifest defines your Slack app's configuration: display name, slash commands, permissions, and event subscriptions.
+This page is for **whoever deploys the Slack bridge for a workspace**. It covers the Slack app manifest, OAuth scopes, event subscriptions, and common pitfalls. If you just want to use slash commands in an already-wired-up channel, the [user-facing Slack docs](../../users/slack/intro.md) are what you want instead.
+
+The bridge itself is an HTTP service that lives in `channels-and-integrations/slack-bridge/`. Before any of this manifest work matters, you need the bridge running and reachable from Slack over HTTPS (see the repo README for deployment, Vault/Redis dependencies, and required environment variables).
 
 ## Complete Manifest
 
-Copy this manifest and customize the URLs to point to your Slack Bridge:
+Copy this manifest and replace the URL placeholder with your bridge's public hostname:
 
 ```json
 {
@@ -103,6 +106,10 @@ Copy this manifest and customize the URLs to point to your Slack Bridge:
 }
 ```
 
+:::warning Critical — `/verify-wallet` URL
+The URL path for `/verify-wallet` is **`/command-handler/verify-wallet-ownership`**, not `/command-handler/verify-wallet`. The shorter form was documented in older revisions and still appears in some examples online — if you paste it into Slack verbatim, the bridge will return 404 and the command will silently break. Always use the `-ownership` suffix.
+:::
+
 ---
 
 ## Manifest Sections Explained
@@ -134,7 +141,7 @@ Copy this manifest and customize the URLs to point to your Slack Bridge:
 }
 ```
 
-The bot user posts messages on behalf of AI agents. Each agent's response shows the agent's name and avatar (via `chat:write.customize`).
+The bot user posts messages on behalf of AI agents. Each agent's response shows the agent's name and avatar (via `chat:write.customize` — the bridge passes `username` and `icon_url` on every `chat.postMessage` call).
 
 ---
 
@@ -160,20 +167,21 @@ The bot user posts messages on behalf of AI agents. Each agent's response shows 
 | `/verify-wallet`                  | `/command-handler/verify-wallet-ownership`        | Verify wallet ownership        |
 | `/pair-slack-user-to-human-agent` | `/command-handler/pair-slack-user-to-human-agent` | Link Slack user to human agent |
 
-:::warning URL Format
+:::warning URL format
 Do **not** include `< >` brackets in URLs. Use:
 
 ```
-https://slack-bridge.up.railway.app/command-handler/add-agent-to-channel
+https://slack-bridge.example.com/command-handler/add-agent-to-channel
 ```
 
 Not:
 
 ```
-https://<slack-bridge>.up.railway.app/command-handler/add-agent-to-channel
+https://<slack-bridge>.example.com/command-handler/add-agent-to-channel
 ```
-
 :::
+
+For the user-facing command syntax (parameters, examples, error messages), see [Slack Commands](../../users/slack/commands.md).
 
 ---
 
@@ -207,7 +215,7 @@ https://<slack-bridge>.up.railway.app/command-handler/add-agent-to-channel
 }
 ```
 
-#### Scope Explanations
+#### Scope explanations
 
 | Scope                   | Purpose                           |
 | ----------------------- | --------------------------------- |
@@ -232,7 +240,7 @@ https://<slack-bridge>.up.railway.app/command-handler/add-agent-to-channel
 | `mpim:read`             | Read group DMs (for future use)   |
 
 :::note Unused scopes
-The current bridge implementation does not call APIs that require `files:read`, `links:read`, `links:write`, `metadata.message:read`, `mpim:read`, or `app_mentions:read`. They are listed for future expansion and can be removed if you prefer to follow the principle of least privilege.
+The current bridge implementation does not call APIs that require `files:read`, `links:read`, `links:write`, `metadata.message:read`, `mpim:read`, or `app_mentions:read`. They're listed for future expansion and can be removed if you prefer to follow the principle of least privilege — the bridge won't break without them.
 :::
 
 ---
@@ -254,9 +262,9 @@ The current bridge implementation does not call APIs that require `files:read`, 
 }
 ```
 
-#### Event Types
+#### Event types
 
-| Event                | Triggered When                    |
+| Event                | Triggered when                    |
 | -------------------- | --------------------------------- |
 | `message.channels`   | Message posted in public channel  |
 | `message.groups`     | Message posted in private channel |
@@ -270,12 +278,12 @@ The current bridge implementation does not call APIs that require `files:read`, 
 Subscribing to `message.channels` and `message.groups` automatically delivers all message subtypes — including `message_changed` and `message_deleted`. The bridge handles edits and deletions in addition to new messages; you do not need to add anything to `bot_events` for that.
 :::
 
-:::tip Private Channel Support
+:::tip Private channel support
 To receive messages from private channels, **both** conditions must be met:
 
 1. `message.groups` is in `bot_events`
 2. The bot is invited to the private channel
-   :::
+:::
 
 ---
 
@@ -292,11 +300,13 @@ After reinstalling:
 
 - The Bot Token usually stays the same
 - New permissions take effect immediately
-- No need to reconfigure the bridge
+- No need to restart or reconfigure the bridge service
 
 ---
 
 ## Environment-Specific Manifests
+
+Use separate Slack apps for dev and prod. Each points its slash command and event URLs at a different bridge deployment.
 
 ### Development (Amoy Testnet)
 
@@ -348,9 +358,17 @@ After reinstalling:
 
 ## Common Mistakes
 
-| Mistake                  | Solution                                                         |
-| ------------------------ | ---------------------------------------------------------------- |
-| Including `< >` in URLs  | Remove brackets: `https://bridge.app` not `https://<bridge>.app` |
-| Wrong event handler path | Use `/event-handler` not `/events`                               |
-| Missing `message.groups` | Add it to support private channels                               |
-| Forgetting to reinstall  | After scope changes, reinstall the app                           |
+| Mistake                           | Fix                                                              |
+| --------------------------------- | ---------------------------------------------------------------- |
+| Including `< >` in URLs           | Remove brackets: `https://bridge.app` not `https://<bridge>.app` |
+| `/verify-wallet` URL missing `-ownership` suffix | Use `/command-handler/verify-wallet-ownership`      |
+| Wrong event handler path          | Use `/event-handler` not `/events`                               |
+| Missing `message.groups` scope    | Add it to support private channels                               |
+| Forgetting to reinstall           | After scope changes, reinstall the app                           |
+
+---
+
+## See also
+
+- [User-facing Slack integration overview](../../users/slack/intro.md) — architecture, prerequisites, channel types
+- [Slash commands reference](../../users/slack/commands.md) — syntax, parameters, error messages

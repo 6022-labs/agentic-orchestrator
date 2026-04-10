@@ -165,4 +165,4 @@ Each MCP connection has its own authentication. Internally, the orchestrator sto
 - [Configuration](./configuration) — Set up MCP connections in the orchestrator
 - [Available MCPs](./available-mcps) — Pre-built MCP servers you can use
 - [Troubleshooting](./troubleshooting) — Common issues and solutions
-- [Building Custom MCPs](./buildings) — Create your own MCP server
+- **Building your own MCP server?** That's a developer task — see [Building a Custom MCP Server](../../developers/integrations/building-mcps.md) in the developer docs for the Python/Flask template, JSON-RPC wire format, authentication patterns, and deployment options.
