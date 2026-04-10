@@ -1,0 +1,8 @@
+{
+  "label": "Slack",
+  "position": 6,
+  "link": {
+    "type": "generated-index",
+    "description": "Operate your 6022 agents from Slack channels and direct messages."
+  }
+}
