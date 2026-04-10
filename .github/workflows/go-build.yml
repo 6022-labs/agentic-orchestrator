@@ -28,6 +28,7 @@ jobs:
             gateway/go.sum
 
       - name: Build all modules
+        shell: bash
         run: |
           set -e
           for module in \
@@ -37,6 +38,12 @@ jobs:
             channels-and-integrations/slack-bridge \
             gateway; do
             echo "::group::Building $module"
-            (cd "$module" && go build ./...)
+            pushd "$module" >/dev/null
+            targets=(./src/...)
+            if [ -d tools ]; then
+              targets+=(./tools/...)
+            fi
+            go build "${targets[@]}"
+            popd >/dev/null
             echo "::endgroup::"
           done
