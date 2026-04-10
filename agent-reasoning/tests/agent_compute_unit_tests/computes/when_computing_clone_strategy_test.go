@@ -133,7 +133,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.setupPromptParametersBuilder()
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
-				ParseExpertSystem(agentId, gomock.Any()).
+				ParseCloneSystem(agentId, gomock.Any()).
 				Return(&systemPrompt, nil)
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
@@ -208,7 +208,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.setupPromptParametersBuilder()
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
-				ParseExpertSystem(agentId, gomock.Any()).
+				ParseCloneSystem(agentId, gomock.Any()).
 				Return(&systemPrompt, nil)
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
@@ -271,7 +271,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.setupPromptParametersBuilder()
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
-				ParseExpertSystem(agentId, gomock.Any()).
+				ParseCloneSystem(agentId, gomock.Any()).
 				Return(&systemPrompt, nil)
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
@@ -333,7 +333,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.setupPromptParametersBuilder()
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().
-				ParseExpertSystem(agentId, gomock.Any()).
+				ParseCloneSystem(agentId, gomock.Any()).
 				Return(&systemPrompt, nil)
 
 			suite.mockPromptFromPromptTemplateParser.EXPECT().

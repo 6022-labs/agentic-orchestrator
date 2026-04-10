@@ -156,9 +156,9 @@ func (cs *CloneComputeStrategy) addSystemPrompt(
 		return nil, fmt.Errorf("failed to build prompt parameters: %w", err)
 	}
 
-	systemPrompt, err := cs.promptFromPromptTemplateParser.ParseExpertSystem(agent.ID, promptParameters)
+	systemPrompt, err := cs.promptFromPromptTemplateParser.ParseCloneSystem(agent.ID, promptParameters)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse expert system prompt: %w", err)
+		return nil, fmt.Errorf("failed to parse clone system prompt: %w", err)
 	}
 
 	messages = append(messages, &models.AgentContextMessage{
