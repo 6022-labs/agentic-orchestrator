@@ -27,14 +27,16 @@ jobs:
             channels-and-integrations/slack-bridge/go.sum
             gateway/go.sum
 
-      - name: Initialize Go workspace
+      - name: Build all modules
         run: |
-          go work init \
-            ./agent-identity \
-            ./agent-knowledge \
-            ./agent-reasoning \
-            ./channels-and-integrations/slack-bridge \
-            ./gateway
-
-      - name: Build all workspace modules
-        run: go build ./...
+          set -e
+          for module in \
+            agent-identity \
+            agent-knowledge \
+            agent-reasoning \
+            channels-and-integrations/slack-bridge \
+            gateway; do
+            echo "::group::Building $module"
+            (cd "$module" && go build ./...)
+            echo "::endgroup::"
+          done
