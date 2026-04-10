@@ -23,7 +23,7 @@ This case demonstrates how 6022 decentralizes a classic game into swarm AI, with
 ## Insurance Industry Use Case (live)
 
 The 6022 Collateral system provides a mechanism for decentralized insurance protocols, where swarm agents dynamically manage customer inquiries and claims.
-Each agent uses a primary key to stor past conversations related to each key.
+Each agent uses a primary key to store past conversations related to each key.
 
 ### Specialized Agents
 

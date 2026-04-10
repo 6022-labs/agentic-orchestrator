@@ -29,7 +29,7 @@ pip install -r requirements.txt
 # Generate token
 python generate_jwt.py \
   --chain-id 137 \
-  --api-base-url https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app/
+  --api-base-url https://<your-orchestrator-api-host>/
 ```
 
 | Network         | Chain ID |
@@ -41,10 +41,10 @@ Tokens are currently valid for one month (planned to decrease to one day). Rotat
 
 ## REST Endpoints
 
-All endpoints live under the orchestrator API base URL:
+All endpoints live under the orchestrator API base URL — replace the placeholder with the host your team operates:
 
 ```
-https://orchestrator-api-{network}-orchestrator-{project}.up.railway.app/
+https://<your-orchestrator-api-host>/
 ```
 
 Swagger documentation: `{base_url}/swagger/index.html`
@@ -113,14 +113,14 @@ Deletion is intentionally not exposed through the public API. Use database tooli
 ```python
 import requests
 
-BASE_URL = "https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app"
-AGENT_ADDRESS = "0x0bd248B276b7Ba8E9E4A94df8dd73CFe9dD2E18a"
+BASE_URL = "https://<your-orchestrator-api-host>"
+AGENT_ADDRESS = "0xCOLLECTION"
 AGENT_TOKEN_ID = "2"
 JWT = "your_jwt_token_here"
 
 headers = {
     "Authorization": f"Bearer {JWT}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
 }
 
 keys_to_create = ["C45653", "C78901", "C12345", "C67890"]
@@ -129,13 +129,13 @@ for key in keys_to_create:
     response = requests.post(
         f"{BASE_URL}/agent/{AGENT_ADDRESS}/{AGENT_TOKEN_ID}/context",
         headers=headers,
-        json={"key": key}
+        json={"key": key},
     )
 
-  if response.status_code == 200:
+    if response.status_code == 200:
         print(f"✅ Created: {key}")
-  elif response.status_code == 400 and "already exists" in response.text:
-    print(f"⏭️  Skipped (exists): {key}")
+    elif response.status_code == 400 and "already exists" in response.text:
+        print(f"⏭️  Skipped (exists): {key}")
     else:
         print(f"❌ Error for {key}: {response.text}")
 ```
@@ -152,15 +152,17 @@ When building automations, always validate the key format locally before calling
 
 ## Administrative Access (Direct DB)
 
-Direct database queries should only be used for break-glass situations. Typical queries:
+Direct database queries should only be used for break-glass situations. **Each agent has its own isolated PostgreSQL database** — there is no `agent_id` discriminator column on `agent_contexts`. The agent identity is the database connection itself, so connect to the correct per-agent database first, then query:
 
 ```sql
--- View all contexts for an agent
-SELECT * FROM agent_contexts WHERE agent_id = 'agent-uuid';
+-- Connect to the agent's own database, then:
+SELECT key, created_at, updated_at FROM agent_contexts;
 
 -- Count context primary keys
-SELECT COUNT(*) FROM agent_contexts WHERE agent_id = 'agent-uuid';
+SELECT COUNT(*) FROM agent_contexts;
 ```
+
+Internal threading scratchpads stored under the `conversation-context-discovery/` prefix will appear in raw queries but are filtered out of the user-facing API response (`LIST /contexts/keys`).
 
 Coordinate with the platform team before running manual SQL to avoid violating tenant isolation guarantees.
 

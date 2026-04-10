@@ -88,7 +88,7 @@ Participating agents:
 {{- if .IsAgent }}
   Short name: {{ .Name }}
   Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
 {{- end }}
 {{- end }}
@@ -526,7 +526,7 @@ Expert prompts work with the memory system:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-See [Agent Knowledge](../agent/agent-knowledge/intro.md) for memory management details.
+See [Memory](../memory/intro.md) for memory management details.
 
 ---
 
@@ -535,4 +535,4 @@ See [Agent Knowledge](../agent/agent-knowledge/intro.md) for memory management d
 - [Agent Types](./agent-types.md) — Understanding expert role
 - [Conversation Flow](./conversation-flow.md) — Threading phase details
 - [Dynamic Fields Reference](./prompt-dynamic-fields) — All template variables with code snippets
-- [Context Primary Keys](../agent/agent-knowledge/context-primary-keys.md) — Key design
+- [Context Primary Keys](../memory/context-primary-keys.md) — Key design

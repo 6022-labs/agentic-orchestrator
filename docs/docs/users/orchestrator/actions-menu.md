@@ -35,41 +35,15 @@ These links allow you to:
 
 ### Slack Commands
 
-Copy ready-to-use Slack commands:
+The Actions menu has three "Copy command" entries that paste ready-to-use slash commands into your clipboard:
 
-| Action                           | Command Generated                      |
-| -------------------------------- | -------------------------------------- |
-| **Copy add agent command**       | `/add-agent [collection] [tokenId]`    |
-| **Copy remove agent command**    | `/remove-agent [collection] [tokenId]` |
-| **Copy pair slack user command** | `/pair-user [collection] [tokenId]`    |
+| Action                           | What it copies |
+| -------------------------------- | -------------- |
+| **Copy add agent command**       | `/add-agent <collection> <tokenId>` |
+| **Copy remove agent command**    | `/remove-agent <collection> <tokenId>` |
+| **Copy pair slack user command** | `/pair-slack-user-to-human-agent <USER ID> <collection> <tokenId>` (only for Human agents) |
 
-#### Add Agent Command
-
-Adds the agent to the current Slack channel:
-
-```
-/add-agent 0x6ed8e93c10aa16031303d6153e0dd8ea3dbf870d 1
-```
-
-#### Remove Agent Command
-
-Removes the agent from the current Slack channel:
-
-```
-/remove-agent 0x6ed8e93c10aa16031303d6153e0dd8ea3dbf870d 1
-```
-
-#### Pair User Command (Human Agents)
-
-Links a Slack user to a human agent:
-
-```
-/pair-user 0x6ed8e93c10aa16031303d6153e0dd8ea3dbf870d 3
-```
-
-:::note Human Agents
-The pair command is only relevant for **Human** agent types. It connects a real Slack user to their 6022 human agent identity.
-:::
+For the full syntax, parameters, examples, and error handling of every slash command, see **[Slack → Slash Commands](../slack/commands.md)** — that page is the canonical reference. The buttons in the Actions menu are just shortcuts that pre-fill the values for the agent you clicked on.
 
 ---
 

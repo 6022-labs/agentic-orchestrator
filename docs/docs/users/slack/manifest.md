@@ -45,7 +45,7 @@ Copy this manifest and customize the URLs to point to your Slack Bridge:
       },
       {
         "command": "/verify-wallet",
-        "url": "https://YOUR-SLACK-BRIDGE.up.railway.app/command-handler/verify-wallet",
+        "url": "https://YOUR-SLACK-BRIDGE.up.railway.app/command-handler/verify-wallet-ownership",
         "description": "Verify your wallet ownership",
         "should_escape": false
       },
@@ -157,7 +157,7 @@ The bot user posts messages on behalf of AI agents. Each agent's response shows 
 | `/add-agent`                      | `/command-handler/add-agent-to-channel`           | Add agent to channel           |
 | `/remove-agent`                   | `/command-handler/remove-agent-from-channel`      | Remove agent                   |
 | `/list-agents`                    | `/command-handler/list-agents-in-channel`         | List agents                    |
-| `/verify-wallet`                  | `/command-handler/verify-wallet`                  | Verify wallet ownership        |
+| `/verify-wallet`                  | `/command-handler/verify-wallet-ownership`        | Verify wallet ownership        |
 | `/pair-slack-user-to-human-agent` | `/command-handler/pair-slack-user-to-human-agent` | Link Slack user to human agent |
 
 :::warning URL Format
@@ -231,6 +231,10 @@ https://<slack-bridge>.up.railway.app/command-handler/add-agent-to-channel
 | `users:read.email`      | Access user emails                |
 | `mpim:read`             | Read group DMs (for future use)   |
 
+:::note Unused scopes
+The current bridge implementation does not call APIs that require `files:read`, `links:read`, `links:write`, `metadata.message:read`, `mpim:read`, or `app_mentions:read`. They are listed for future expansion and can be removed if you prefer to follow the principle of least privilege.
+:::
+
 ---
 
 ### Event Subscriptions
@@ -261,6 +265,10 @@ https://<slack-bridge>.up.railway.app/command-handler/add-agent-to-channel
 | `channel_archive`    | Channel archived                  |
 | `channel_left`       | Bot removed from channel          |
 | `channel_id_changed` | Channel ID changed (rare)         |
+
+:::note Message subtypes
+Subscribing to `message.channels` and `message.groups` automatically delivers all message subtypes — including `message_changed` and `message_deleted`. The bridge handles edits and deletions in addition to new messages; you do not need to add anything to `bot_events` for that.
+:::
 
 :::tip Private Channel Support
 To receive messages from private channels, **both** conditions must be met:
@@ -301,13 +309,13 @@ After reinstalling:
     "slash_commands": [
       {
         "command": "/add-agent",
-        "url": "https://slack-bridge-amoy-orchestrator-dev.up.railway.app/command-handler/add-agent-to-channel"
+        "url": "https://<your-dev-slack-bridge-host>/command-handler/add-agent-to-channel"
       }
     ]
   },
   "settings": {
     "event_subscriptions": {
-      "request_url": "https://slack-bridge-amoy-orchestrator-dev.up.railway.app/event-handler"
+      "request_url": "https://<your-dev-slack-bridge-host>/event-handler"
     }
   }
 }
@@ -324,13 +332,13 @@ After reinstalling:
     "slash_commands": [
       {
         "command": "/add-agent",
-        "url": "https://slack-bridge-polygon-orchestrator-prod.up.railway.app/command-handler/add-agent-to-channel"
+        "url": "https://<your-prod-slack-bridge-host>/command-handler/add-agent-to-channel"
       }
     ]
   },
   "settings": {
     "event_subscriptions": {
-      "request_url": "https://slack-bridge-polygon-orchestrator-prod.up.railway.app/event-handler"
+      "request_url": "https://<your-prod-slack-bridge-host>/event-handler"
     }
   }
 }

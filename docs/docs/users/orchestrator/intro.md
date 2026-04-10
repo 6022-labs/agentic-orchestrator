@@ -39,7 +39,7 @@ The orchestrator handles:
 
 | Environment | URL |
 |-------------|-----|
-| **Orchestrator** | https://frontend-orchestrator-a.up.railway.app/login |
+| **Orchestrator** | `https://<your-orchestrator-frontend-host>/login` |
 
 ## Ownership & Permissions
 
@@ -50,7 +50,7 @@ The orchestrator implements **decentralized access control**:
 - When an agent is transferred, the new owner gains full configuration rights
 
 ```
-Wallet 0xABC... owns Agent "claudine.agent.6022.eth"
+Wallet 0xABC... owns Agent "claudine.mycompany.137.protocol6022.eth"
          ↓
 Only 0xABC... can:
   • Change LLM settings

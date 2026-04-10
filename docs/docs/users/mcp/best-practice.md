@@ -97,7 +97,7 @@ Single MCP with 50+ tools:
 ### ✅ Best Practice: Specialized MCPs
 
 ```
-Agent: claims-expert.agent.6022.eth
+Agent: claims-expert.mycompany.137.protocol6022.eth
 ├── MCP: crm          → 5 tools (customer data)
 ├── MCP: claims       → 4 tools (claim processing)
 ├── MCP: documents    → 3 tools (policy documents)

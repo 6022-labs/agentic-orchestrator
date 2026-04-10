@@ -77,21 +77,20 @@ Start with a premium model for your Facilitator (it orchestrates everything), th
 
 ## Supported Providers
 
-The orchestrator currently supports the following LLM providers:
+The orchestrator currently supports the following LLM providers. The platform string in the right column is the literal value the orchestrator stores in its `Platform` field — copy it exactly when configuring an agent through the API.
 
-| Provider        | Models                          | MCP Support | Notes                                |
-| --------------- | ------------------------------- | ----------- | ------------------------------------ |
-| **OpenAI**      | GPT-4, GPT-4o, GPT-5            | ✅ Full     | Recommended for quick start          |
-| **Anthropic**   | Claude 3, Claude 3.5, Claude 4  | ✅ Full     | Requires custom header configuration |
-| **xAI**         | Grok                            | ✅ Full     | Good alternative for MCP             |
-| **Mistral**     | mistral-medium-latest           | ✅ Full     | OpenAI-compatible interface          |
-| **Deepseek**    | deepseek-chat                   | ✅ Full     | Cost-effective option                |
-| **AWS Bedrock** | Llama, Mistral, Claude, Titan   | ✅ Full     | Enterprise cloud hosting             |
-| **Ollama**      | Llama 3, Mistral, Mixtral, etc. | ✅ Full     | Local deployment                     |
+| Provider        | Models                          | Platform string  | MCP Support |
+| --------------- | ------------------------------- | ---------------- | ----------- |
+| **OpenAI**      | GPT-4, GPT-4o, GPT-5            | `open-ai`        | ✅ Native (via `/v1/responses`) |
+| **Anthropic**   | Claude 3, Claude 3.5, Claude 4  | `anthropic`      | ✅ Native — requires custom header (`x-api-key`) |
+| **AWS Bedrock** | Llama, Mistral, Claude, Titan   | `amazon-bedrock` | ⚙️ Function-call loop (Converse API) |
+| **xAI**         | Grok                            | `x`              | ⚙️ Function-call loop (model-dependent) |
+| **Mistral**     | mistral-medium-latest           | `mistral`        | ⚙️ Function-call loop (model-dependent) |
+| **Deepseek**    | deepseek-chat                   | `deepseek`       | ⚙️ Function-call loop (model-dependent) |
+| **LibertAI**    | Open-source models              | `libert-ai`      | ⚙️ Function-call loop (model-dependent) |
+| **Ollama**      | Llama 3, Mistral, Mixtral, etc. | `ollama`         | ⚙️ Function-call loop (model-dependent) |
 
-:::tip MCP Compatibility
-MCP (Model Context Protocol) is now supported on **all LLM providers** in the 6022 protocol.
-:::
+**Native** routing means the orchestrator hands your MCP server definitions directly to the provider. **Function-call loop** means the orchestrator runs its own loop and asks the model to emit tool calls — so whether MCP works depends on whether the chosen model supports function calling.
 
 ## Configuring an LLM
 
@@ -106,7 +105,7 @@ MCP (Model Context Protocol) is now supported on **all LLM providers** in the 60
 
 | Parameter    | Description              | Example                         |
 | ------------ | ------------------------ | ------------------------------- |
-| **Provider** | The LLM service provider | `openai`, `anthropic`, `ollama` |
+| **Provider** | The LLM service provider | `open-ai`, `anthropic`, `ollama` (see the Platform string column above) |
 | **API URL**  | Endpoint URL             | `https://api.openai.com/v1`     |
 | **Model**    | Specific model to use    | `gpt-4o`, `llama3`              |
 | **API Key**  | Your provider's API key  | `sk-...`                        |
@@ -125,8 +124,8 @@ MCP (Model Context Protocol) is now supported on **all LLM providers** in the 60
 
 Explore the different hosting options available:
 
-- [Hosting Options Overview](./hosting-options) - Compare all 4 deployment approaches
-- [Centralized Providers](./centralized) - OpenAI, Anthropic, Mistral, xAI, Deepseek
-- [Local with Ollama](./local-ollama) - Run models on your own hardware
-- [Cloud Hosted](./cloud-hosted) - AWS Bedrock and other cloud providers
-- [TEE Enclaves](./tee-enclave) - Maximum security with microtransactions
+- [Hosting Options](./hosting-options) — Decision guide: hosted vs local vs TEE
+- [Hosted Providers](./hosted-providers) — Configuration reference for OpenAI, Anthropic, Mistral, xAI, Deepseek, LibertAI, AWS Bedrock, and more
+- [Local with Ollama](./local-ollama) — Run models on your own hardware
+- [TEE Enclaves](./tee-enclave) — Maximum security with microtransactions (future)
+- [Troubleshooting](./troubleshooting) — Per-provider HTTP errors, token limits, and env vars

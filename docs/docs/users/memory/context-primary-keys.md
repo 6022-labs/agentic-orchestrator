@@ -104,7 +104,7 @@ The interface also allows you to:
 
 ### Method 2: Automations (Ask Engineering)
 
-Need to import thousands of keys or sync them from an external system? Share your requirements with a developer and point them to the [Programmatic Context Primary Keys guide](../../../developers/api-reference/context-primary-keys.md).
+Need to import thousands of keys or sync them from an external system? Share your requirements with a developer and point them to the [Programmatic Context Primary Keys guide](../../developers/api-reference/context-primary-keys.md).
 
 Provide them with:
 
@@ -116,48 +116,13 @@ Provide them with:
 
 ## Key Detection: The Threading Phase
 
-When an expert agent is mentioned in a conversation, it must identify which context primary key applies. This is called the **threading phase**.
+When an expert agent is first mentioned in a conversation, it runs a "threading" routine to identify which context primary key applies. The full step-by-step walkthrough (flowchart, key-identification methods, MCP lookup) lives in **[Threading Phase](./threading-phase.md)** — that page is the canonical source.
 
-### How Threading Works
+The short version: the agent runs its **Context Not Found** prompt, attempts to extract or match a context primary key from the message, and if it succeeds the orchestrator persists a row in `agent_context_conversation_mappings` linking the conversation to that key for the rest of its lifetime. There is no mutex or distributed lock — concurrent threading attempts on the same conversation are not guarded.
 
-1. Agent receives a message and enters `THREADING` state
-2. The **Context Not Found** prompt analyzes the message
-3. Agent attempts to extract/match a context primary key
-4. If found → key is locked for the conversation
-5. If not found → agent can ask other agents for help
+Regex patterns like the ones in the section above (UUID, contract number, email) are used **inside the prompt template** to teach the agent what a valid key looks like — they are not enforced by the API. `CreateAgentContextRequest.Validate()` only checks that the key is non-empty and does not start with the reserved `conversation-context-discovery/` prefix.
 
-### Configuring Key Detection
-
-In the agent's **Manage prompts** settings, configure the **Context Not Found** prompt:
-
-**Example for Contract-Based Keys:**
-
-```
-Analyze this message: "{{.LatestRequest.Content}}"
-
-Identify the contract number using this regex pattern: ^C[0-9]{5}$
-
-If you find a valid contract number, use it as the context primary key.
-If you cannot identify a contract number, ask the facilitator for clarification.
-```
-
-**Example for UUID-Based Keys:**
-
-```
-The context primary key follows this UUID format:
-^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
-
-Extract the UUID from the message if present.
-If not found, query the MCP to verify the customer exists.
-```
-
-### Using MCP for Key Validation
-
-MCP servers are accessible during threading, enabling:
-
-- Validation of context primary keys against external databases
-- Lookup of customer IDs from partial information
-- Cross-referencing with CRM or ERP systems
+For prompt configuration examples (Context Not Found, Context Found, regex helpers, MCP-assisted lookup), see [Expert Prompts](../prompting/expert-prompts.md).
 
 ---
 
@@ -175,15 +140,15 @@ GET /agent/{agentCollectionAddress}/{agentTokenId}/contexts/keys
 
 ### Database Direct Access
 
-For advanced operations, administrators can access the PostgreSQL database:
+For advanced troubleshooting, administrators can connect directly to the agent's PostgreSQL database. Each agent has its **own isolated database** — there is no `agent_id` column on `agent_contexts` because the discriminator is the database connection itself.
 
 ```sql
--- View all contexts for an agent
-SELECT * FROM agent_contexts WHERE agent_id = 'agent-uuid';
-
--- Count context primary keys
-SELECT COUNT(*) FROM agent_contexts WHERE agent_id = 'agent-uuid';
+-- Connect to the agent's own database, then:
+SELECT key FROM agent_contexts;
+SELECT COUNT(*) FROM agent_contexts;
 ```
+
+Internal threading scratchpads stored under the `conversation-context-discovery/` prefix will appear in raw queries but are filtered out of the user-facing API response.
 
 **Note:** Direct database access is strongly discouraged and should only be used in exceptional cases for troubleshooting.
 

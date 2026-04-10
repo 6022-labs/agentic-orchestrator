@@ -87,7 +87,7 @@ Available agents:
 {{- if .IsAgent }}
   Short name: {{ .Name }}
   Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
   Owner: {{ .Owner }}
   Wallet: {{ .WalletAddress }}
@@ -402,7 +402,7 @@ Full name: ellen.support.137.protocol6022.eth
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ .Mission }}
+• {{ .Name }}: {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 

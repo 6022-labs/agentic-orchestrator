@@ -4,109 +4,114 @@ sidebar_position: 6
 
 # API Reference
 
-The orchestrator provides a REST API for programmatic access to agent management. This is useful for:
+The orchestrator exposes a REST API for programmatic access to agent management. Use it for:
 
-- Automated memory updates
+- Memory hydration (injecting messages into an agent's context)
 - Batch context creation
 - Integration with external systems
 - CI/CD pipelines
 
+All endpoints live behind two path parameters: the **agent collection address** (the NFT contract) and the **agent token ID** (the agent's index in that collection). You will find both in the orchestrator dashboard for any agent you own.
+
 ## Base URLs
 
-| Environment | API Base URL |
-|-------------|--------------|
-| **Production (Polygon)** | `https://orchestrator-api-polygon.up.railway.app` |
-| **Testnet (Amoy)** | `https://orchestrator-api-amoy.up.railway.app` |
+| Environment              | API Base URL                                |
+| ------------------------ | ------------------------------------------- |
+| **Production (Polygon)** | `https://<your-orchestrator-api-host>`      |
+| **Testnet (Amoy)**       | `https://<your-orchestrator-api-host-amoy>` |
+
+Replace the placeholders with the deployment URLs your team operates.
 
 ## Authentication
 
-All API requests require a JWT token signed by the agent owner's wallet.
+Every request requires a JWT issued by the SIWE flow described in **[Web3 Authentication](./authentication.md)**. The flow is:
 
-### Generating a JWT Token
+1. `POST /auth/jwt/init` → returns a nonce + SIWE message
+2. Sign the message locally with the wallet that owns the agent
+3. `POST /auth/jwt/finish` → returns a JWT
+4. Send `Authorization: Bearer <token>` on every subsequent call
 
-Use the 6022 JWT generator script:
+You can run the flow manually (see Authentication for examples) or use the helper script:
 
 ```bash
 git clone https://github.com/6022protocol/py-generate-jwt
 cd py-generate-jwt
 
 python generate_jwt.py \
-  --private-key YOUR_PRIVATE_KEY \
+  --private-key 0x<your private key> \
   --chain-id 137 \
-  --api-base-url https://orchestrator-api-polygon.up.railway.app/
+  --api-base-url https://<your-orchestrator-api-host>/
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `--private-key` | Wallet private key (owner of the agent) |
-| `--chain-id` | `137` for Polygon, `80002` for Amoy |
-| `--api-base-url` | Orchestrator API URL |
+| Parameter        | Description                               |
+| ---------------- | ----------------------------------------- |
+| `--private-key`  | Wallet private key (owner of the agent)   |
+| `--chain-id`     | `137` for Polygon, `80002` for Amoy       |
+| `--api-base-url` | Orchestrator API URL, with trailing slash |
 
-### Using the Token
-
-Include the JWT in the `Authorization` header:
+Tokens are bound to their `chainId` — a Polygon JWT is rejected by an Amoy orchestrator and vice versa.
 
 ```bash
 curl -X GET \
-  https://orchestrator-api-polygon.up.railway.app/agent/1/contexts/keys \
+  "https://<your-orchestrator-api-host>/agent/0xCOLLECTION/1/contexts/keys" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 :::warning Security
-Use a dedicated wallet for API access. Never expose your main wallet's private key in scripts.
+Use a dedicated wallet for API access. Never expose your main wallet's private key in scripts, CI variables, or `.env` files you don't control.
 :::
 
 ---
 
 ## Context Management Endpoints
 
-### List Context Keys
+All paths take **two** path parameters: `:agentCollectionAddress` (the contract) and `:agentCollectionTokenId` (the agent's token ID inside that contract).
+
+### List context keys
 
 Get all context keys for an agent.
 
 ```http
-GET /agent/:tokenId/contexts/keys
+GET /agent/:agentCollectionAddress/:agentCollectionTokenId/contexts/keys
 ```
 
-**Parameters:**
-| Name | Type | Description |
-|------|------|-------------|
-| `tokenId` | path | Agent's token ID in the collection |
+**Path parameters**
 
-**Response:**
+| Name                     | Description                               |
+| ------------------------ | ----------------------------------------- |
+| `agentCollectionAddress` | NFT collection contract address (`0x...`) |
+| `agentCollectionTokenId` | Agent's token ID inside the collection    |
+
+**Response**
+
 ```json
 {
-  "keys": [
-    "POL-2024-123456",
-    "POL-2024-789012",
-    "INV-2024-001"
-  ]
+  "keys": ["POL-2024-123456", "POL-2024-789012", "INV-2024-001"]
 }
 ```
 
+Internal context keys (anything under the `conversation-context-discovery/` prefix) are filtered out of the response.
+
 ---
 
-### Create Context
+### Create a context
 
 Create a new context key for an agent.
 
 ```http
-POST /agent/:tokenId/context
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context
 ```
 
-**Parameters:**
-| Name | Type | Description |
-|------|------|-------------|
-| `tokenId` | path | Agent's token ID |
+**Body**
 
-**Body:**
 ```json
 {
   "key": "POL-2024-123456"
 }
 ```
 
-**Response:**
+**Response**
+
 ```json
 {
   "success": true,
@@ -114,124 +119,59 @@ POST /agent/:tokenId/context
 }
 ```
 
-**Errors:**
-| Code | Description |
-|------|-------------|
-| 400 | Context key already exists |
-| 401 | Unauthorized (invalid JWT) |
-| 403 | Not owner of agent |
+**Errors**
+
+| Code  | Cause                                                                                 |
+| ----- | ------------------------------------------------------------------------------------- |
+| `400` | The key is empty or starts with the reserved `conversation-context-discovery/` prefix |
+| `400` | A context with the same key already exists for this agent                             |
+| `401` | Missing or invalid JWT                                                                |
+| `403` | The wallet in your JWT does not own this agent                                        |
 
 ---
 
-### Add Memory to Context
+### Append a message to a context (memory hydration)
 
-Append a message to an agent's context memory.
-
-```http
-POST /agent/:tokenId/context/:key/memory
-```
-
-**Parameters:**
-| Name | Type | Description |
-|------|------|-------------|
-| `tokenId` | path | Agent's token ID |
-| `key` | path | Context key |
-
-**Body:**
-```json
-{
-  "role": "user",
-  "content": "Customer called about policy renewal"
-}
-```
-
-**Roles:**
-| Role | Description |
-|------|-------------|
-| `user` | External input (customer, user) |
-| `assistant` | Agent's response |
-| `system` | System message |
-
-**Response:**
-```json
-{
-  "success": true,
-  "messageId": "msg_abc123"
-}
-```
-
----
-
-### Get Context History
-
-Retrieve conversation history for a context.
+Add a message to an agent's context memory. **This is the endpoint to use for hydration** — there is no separate `/hydrate` endpoint. Call it once per message.
 
 ```http
-GET /agent/:tokenId/context/:key/history
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context/:contextKey/message
 ```
 
-**Parameters:**
-| Name | Type | Description |
-|------|------|-------------|
-| `tokenId` | path | Agent's token ID |
-| `key` | path | Context key |
+**Path parameters**
 
-**Response:**
+| Name                     | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `agentCollectionAddress` | NFT collection contract address                   |
+| `agentCollectionTokenId` | Agent's token ID                                  |
+| `contextKey`             | The context key to append to (must already exist) |
+
+**Body**
+
 ```json
 {
-  "key": "POL-2024-123456",
-  "messages": [
-    {
-      "role": "user",
-      "content": "What is the status of my claim?",
-      "timestamp": "2024-01-15T10:30:00Z"
-    },
-    {
-      "role": "assistant",
-      "content": "Your claim is currently under review...",
-      "timestamp": "2024-01-15T10:30:05Z"
-    }
-  ]
+  "message": "Customer called about policy renewal",
+  "role": "user"
 }
 ```
 
----
+`message` and the context key must each be at least 2 characters. The role enum is enforced server-side.
 
-## Memory Hydration
+**Roles**
 
-For bulk memory updates, use the hydration endpoint.
+| Role        | Description                         |
+| ----------- | ----------------------------------- |
+| `user`      | External input (customer, end user) |
+| `assistant` | Agent's response                    |
+| `system`    | System message                      |
 
-### Hydrate Agent Memory
+**Response**
 
-```http
-POST /agent/:tokenId/hydrate
+```
+200 OK
 ```
 
-**Body:**
-```json
-{
-  "contexts": [
-    {
-      "key": "POL-2024-001",
-      "messages": [
-        {"role": "system", "content": "Policy created on 2024-01-01"},
-        {"role": "user", "content": "Initial claim filed"}
-      ]
-    },
-    {
-      "key": "POL-2024-002",
-      "messages": [
-        {"role": "system", "content": "Policy created on 2024-02-01"}
-      ]
-    }
-  ]
-}
-```
-
-**Use cases:**
-- Initial data migration
-- Restoring from backup
-- Syncing from external CRM
+If the context key does not exist, you'll get `400` with an error message — create the context first via the endpoint above.
 
 ---
 
@@ -242,131 +182,116 @@ POST /agent/:tokenId/hydrate
 ```python
 import requests
 
-BASE_URL = "https://orchestrator-api-polygon.up.railway.app"
+BASE_URL = "https://<your-orchestrator-api-host>"
 TOKEN = "your_jwt_token"
-AGENT_ID = 1
+COLLECTION = "0xCOLLECTION"
+TOKEN_ID = 1
 
 headers = {
     "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
 }
 
 # Create a context
-response = requests.post(
-    f"{BASE_URL}/agent/{AGENT_ID}/context",
+requests.post(
+    f"{BASE_URL}/agent/{COLLECTION}/{TOKEN_ID}/context",
     headers=headers,
-    json={"key": "POL-2024-123456"}
+    json={"key": "POL-2024-123456"},
 )
-print(response.json())
 
-# Add memory
-response = requests.post(
-    f"{BASE_URL}/agent/{AGENT_ID}/context/POL-2024-123456/memory",
+# Hydrate it with a message
+requests.post(
+    f"{BASE_URL}/agent/{COLLECTION}/{TOKEN_ID}/context/POL-2024-123456/message",
     headers=headers,
     json={
+        "message": "Customer inquiry about coverage",
         "role": "user",
-        "content": "Customer inquiry about coverage"
-    }
+    },
 )
-print(response.json())
 ```
 
 ### JavaScript / Node.js
 
 ```javascript
-const axios = require('axios');
+const axios = require("axios");
 
-const BASE_URL = 'https://orchestrator-api-polygon.up.railway.app';
-const TOKEN = 'your_jwt_token';
-const AGENT_ID = 1;
+const BASE_URL = "https://<your-orchestrator-api-host>";
+const TOKEN = "your_jwt_token";
+const COLLECTION = "0xCOLLECTION";
+const TOKEN_ID = 1;
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
-    'Authorization': `Bearer ${TOKEN}`,
-    'Content-Type': 'application/json'
-  }
+    Authorization: `Bearer ${TOKEN}`,
+    "Content-Type": "application/json",
+  },
 });
 
-// Create a context
-async function createContext(key) {
-  const response = await api.post(`/agent/${AGENT_ID}/context`, { key });
-  return response.data;
-}
+await api.post(`/agent/${COLLECTION}/${TOKEN_ID}/context`, {
+  key: "POL-2024-123456",
+});
 
-// Add memory
-async function addMemory(key, role, content) {
-  const response = await api.post(
-    `/agent/${AGENT_ID}/context/${key}/memory`,
-    { role, content }
-  );
-  return response.data;
-}
-
-// Usage
-createContext('POL-2024-123456')
-  .then(() => addMemory('POL-2024-123456', 'user', 'Hello'))
-  .then(console.log);
+await api.post(
+  `/agent/${COLLECTION}/${TOKEN_ID}/context/POL-2024-123456/message`,
+  { message: "Hello", role: "user" },
+);
 ```
 
 ### cURL
 
 ```bash
-# Set variables
 TOKEN="your_jwt_token"
-BASE="https://orchestrator-api-polygon.up.railway.app"
-AGENT=1
+BASE="https://<your-orchestrator-api-host>"
+COLLECTION="0xCOLLECTION"
+TOKEN_ID=1
 
 # List context keys
-curl -X GET "$BASE/agent/$AGENT/contexts/keys" \
+curl -X GET "$BASE/agent/$COLLECTION/$TOKEN_ID/contexts/keys" \
   -H "Authorization: Bearer $TOKEN"
 
 # Create context
-curl -X POST "$BASE/agent/$AGENT/context" \
+curl -X POST "$BASE/agent/$COLLECTION/$TOKEN_ID/context" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"key": "POL-2024-123456"}'
 
-# Add memory
-curl -X POST "$BASE/agent/$AGENT/context/POL-2024-123456/memory" \
+# Append a message (hydration)
+curl -X POST "$BASE/agent/$COLLECTION/$TOKEN_ID/context/POL-2024-123456/message" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"role": "user", "content": "Customer message"}'
+  -d '{"message": "Customer message", "role": "user"}'
 ```
+
+---
+
+## Other endpoints
+
+The orchestrator also exposes administrative endpoints used by the dashboard UI:
+
+| Concern                             | Endpoints                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| LLM settings                        | `GET/POST /agent/:agentCollectionAddress/:agentCollectionTokenId/llm/settings`         |
+| Database setup (two-step)           | `POST .../database/settings/first-step`, `POST .../database/settings/second-step`      |
+| Prompt templates                    | `GET/POST /agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key` |
+| MCP connections                     | `GET .../mcp/connections`, `POST .../mcp/connection`, `DELETE .../mcp/connection/:id`  |
+| Wallet verification (Slack pairing) | `POST /wallet/verify`                                                                  |
+
+These are used by the dashboard and the Slack bridge — most users do not need to call them directly. If you need the full request/response shapes, read the gateway source under `gateway/src/gateway_mvc/` or the developer reference.
 
 ---
 
 ## Error Handling
 
-### Common Error Codes
+### Common error codes
 
-| Code | Meaning | Solution |
-|------|---------|----------|
-| 400 | Bad Request | Check request body format |
-| 401 | Unauthorized | JWT invalid or expired |
-| 403 | Forbidden | Not owner of agent |
-| 404 | Not Found | Agent or context doesn't exist |
-| 409 | Conflict | Context key already exists |
-| 500 | Server Error | Contact support |
+| Code  | Meaning                                                 | Solution                                      |
+| ----- | ------------------------------------------------------- | --------------------------------------------- |
+| `400` | Bad request — body schema, validation, or duplicate key | Check the response message                    |
+| `401` | Unauthorized — JWT invalid, expired, or missing         | Re-issue a JWT (see Authentication)           |
+| `403` | Forbidden — your wallet does not own this agent         | Confirm NFT ownership in the dashboard        |
+| `404` | Agent or context does not exist                         | Check the collection address / token ID / key |
 
-### Error Response Format
+### Error response format
 
-```json
-{
-  "error": true,
-  "message": "Context key already exists",
-  "code": "CONTEXT_EXISTS"
-}
-```
-
----
-
-## Rate Limits
-
-| Endpoint | Limit |
-|----------|-------|
-| Context operations | 100 requests/minute |
-| Memory operations | 500 requests/minute |
-| Hydration | 10 requests/minute |
-
-Exceeding limits returns `429 Too Many Requests`.
+The orchestrator currently surfaces errors as plain text or short JSON depending on the controller. Future versions may standardise on a single shape — do not rely on a specific JSON structure beyond `Authorization`-related codes.

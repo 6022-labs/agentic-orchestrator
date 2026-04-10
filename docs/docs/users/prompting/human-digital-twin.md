@@ -27,8 +27,8 @@ A **Human Agent** represents a real person participating in conversations via Sl
 │    ┌──────────────┐         ┌──────────────┐               │
 │    │    SLACK     │         │  HUMAN AGENT │               │
 │    │    /TEAMS    │◄───────▶│              │               │
-│    │              │         │  arnaud.6022 │               │
-│    │   UI Input   │         │     .eth     │               │
+│    │              │         │ arnaud.myco. │               │
+│    │   UI Input   │         │ 137.proto... │               │
 │    └──────────────┘         └──────────────┘               │
 │                                    │                        │
 │                                    ▼                        │
@@ -108,7 +108,7 @@ Replace `[USER ID]` with your Slack User ID and execute the command in Slack:
 Test by mentioning the human's ENS in a conversation:
 
 ```
-@arnaud.6022.eth, can you confirm this policy?
+@arnaud.mycompany.137.protocol6022.eth, can you confirm this policy?
 ```
 
 ### Human Behaviors
@@ -166,8 +166,8 @@ A **Digital Twin** is an AI clone of a human agent, created by duplicating the h
 │  ┌───────────────┐      FORK       ┌───────────────┐       │
 │  │  HUMAN AGENT  │ ──────────────▶ │ DIGITAL TWIN  │       │
 │  │               │                 │               │       │
-│  │ arnaud.6022   │                 │ arnaud.clone  │       │
-│  │    .eth       │                 │   .6022.eth   │       │
+│  │ arnaud.myco.  │                 │ arnaud-twin.  │       │
+│  │ 137.proto...  │                 │ myco.137.p... │       │
 │  │               │                 │               │       │
 │  │  ┌─────────┐  │   Copy entire   │  ┌─────────┐  │       │
 │  │  │ Memory  │──┼────────────────▶│  │ Memory  │  │       │
@@ -183,17 +183,17 @@ A **Digital Twin** is an AI clone of a human agent, created by duplicating the h
 
 ### Key Characteristics
 
-| Property                | Description                                                |
-| ----------------------- | ---------------------------------------------------------- |
-| **Origin**              | Created by FORK operation on human agent                   |
-| **On-Chain Identity**   | Own NFT + ENS + wallet (e.g., `arnaud.clone.6022.eth`)     |
-| **Prompts**             | System + Default (both written by human counterpart)       |
-| **Threading**           | None — context primary key is automatic (interlocutor set) |
-| **LLM**                 | Configurable by owner                                      |
-| **Memory**              | Inherits full human history + accumulates new              |
-| **Context Primary Key** | Participant addresses (automatic, like human)              |
-| **Human Link**          | Original human in whitelist for arbitration                |
-| **Interaction Limits**  | Cannot self-call                                           |
+| Property                | Description                                                            |
+| ----------------------- | ---------------------------------------------------------------------- |
+| **Origin**              | Created by FORK operation on human agent                               |
+| **On-Chain Identity**   | Own NFT + ENS + wallet (e.g., `arnaud.mycompany.137.protocol6022.eth`) |
+| **Prompts**             | System + Default (both written by human counterpart)                   |
+| **Threading**           | None — context primary key is automatic (interlocutor set)             |
+| **LLM**                 | Configurable by owner                                                  |
+| **Memory**              | Inherits full human history + accumulates new                          |
+| **Context Primary Key** | Participant addresses (automatic, like human)                          |
+| **Human Link**          | Original human in whitelist for arbitration                            |
+| **Interaction Limits**  | Cannot self-call                                                       |
 
 ### FORK Operation
 
@@ -219,7 +219,7 @@ The digital twin has a special relationship with its original human for arbitrat
 
 ```
 Digital Twin: "I'm not confident about this edge case.
-              @arnaud.6022.eth, could you clarify?"
+              @arnaud.mycompany.137.protocol6022.eth, could you clarify?"
 
 Case 1: Human responds
         → Human's answer takes absolute priority
@@ -240,10 +240,10 @@ Defines the twin's identity and general behavior:
 
 ```
 You are the digital twin of Arnaud.
-Full name: arnaud.clone.6022.eth
+Full name: arnaud.mycompany.137.protocol6022.eth
 
 You have inherited Arnaud's conversation history and knowledge.
-When uncertain, you may call @arnaud.6022.eth for arbitration.
+When uncertain, you may call @arnaud.mycompany.137.protocol6022.eth for arbitration.
 If Arnaud responds, his answer takes absolute priority.
 
 Behavior guidelines:
@@ -263,7 +263,7 @@ From: {{ .LatestRequest.Author.EnsDomain }}
 {{ end }}
 
 Provide helpful information based on your inherited knowledge.
-If uncertain, you may ask @arnaud.6022.eth for clarification.
+If uncertain, you may ask @arnaud.mycompany.137.protocol6022.eth for clarification.
 
 Start with 👤
 ```
@@ -466,4 +466,4 @@ Step 6: Deploy Twin
 
 - [Agent Types](./agent-types.md) — All agent types overview
 - [Conversation Flow](./conversation-flow.md) — Restart mechanics
-- [Memory Hydration](../agent/agent-knowledge/memory-hydration.md) — Pre-loading twin knowledge
+- [Memory Hydration](../memory/memory-hydration.md) — Pre-loading twin knowledge

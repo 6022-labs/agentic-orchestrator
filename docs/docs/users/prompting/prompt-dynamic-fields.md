@@ -62,60 +62,69 @@ Availability depends on agent state (experts only).
 
 The **first message** that started the conversation.
 
-| Variable                                     | Type    | Description                             |
-| -------------------------------------------- | ------- | --------------------------------------- |
-| `{{ .InitialRequest.Content }}`              | string  | Content of the first message            |
-| `{{ .InitialRequest.Author.IsAgent }}`       | boolean | True if author is an agent              |
-| `{{ .InitialRequest.Author.Name }}`          | string  | Short name of the author                |
-| `{{ .InitialRequest.Author.EnsDomain }}`     | string  | Full ENS domain (agents only)           |
-| `{{ .InitialRequest.Author.Mission }}`       | string  | Agent's mission (agents only)           |
-| `{{ .InitialRequest.Author.Role }}`          | string  | Agent's role (agents only)              |
-| `{{ .InitialRequest.Author.Owner }}`         | string  | Agent's owner (agents only)             |
-| `{{ .InitialRequest.Author.WalletAddress }}` | string  | Blockchain wallet address (agents only) |
+| Variable                                          | Type    | Description                             |
+| ------------------------------------------------- | ------- | --------------------------------------- |
+| `{{ .InitialRequest.Content }}`                   | string  | Content of the first message            |
+| `{{ .InitialRequest.Author.IsAgent }}`            | boolean | True if author is an agent              |
+| `{{ .InitialRequest.Author.Name }}`               | string  | Short name of the author                |
+| `{{ .InitialRequest.Author.EnsDomain }}`          | string  | Full ENS domain (agents only)           |
+| `{{ .InitialRequest.Author.Attributes.Mission }}` | string  | Agent's mission (agents only)           |
+| `{{ .InitialRequest.Author.Role }}`               | string  | Agent's role (agents only)              |
+| `{{ .InitialRequest.Author.Owner }}`              | string  | Agent's owner (agents only)             |
+| `{{ .InitialRequest.Author.WalletAddress }}`      | string  | Blockchain wallet address (agents only) |
 
 ### 🔄 Latest Request
 
 The **most recent message** in the conversation.
 
-| Variable                                    | Type    | Description                             |
-| ------------------------------------------- | ------- | --------------------------------------- |
-| `{{ .LatestRequest.Content }}`              | string  | Content of the latest message           |
-| `{{ .LatestRequest.Author.IsAgent }}`       | boolean | True if author is an agent              |
-| `{{ .LatestRequest.Author.Name }}`          | string  | Short name of the author                |
-| `{{ .LatestRequest.Author.EnsDomain }}`     | string  | Full ENS domain (agents only)           |
-| `{{ .LatestRequest.Author.Mission }}`       | string  | Agent's mission (agents only)           |
-| `{{ .LatestRequest.Author.Role }}`          | string  | Agent's role (agents only)              |
-| `{{ .LatestRequest.Author.Owner }}`         | string  | Agent's owner (agents only)             |
-| `{{ .LatestRequest.Author.WalletAddress }}` | string  | Blockchain wallet address (agents only) |
+| Variable                                         | Type    | Description                             |
+| ------------------------------------------------ | ------- | --------------------------------------- |
+| `{{ .LatestRequest.Content }}`                   | string  | Content of the latest message           |
+| `{{ .LatestRequest.Author.IsAgent }}`            | boolean | True if author is an agent              |
+| `{{ .LatestRequest.Author.Name }}`               | string  | Short name of the author                |
+| `{{ .LatestRequest.Author.EnsDomain }}`          | string  | Full ENS domain (agents only)           |
+| `{{ .LatestRequest.Author.Attributes.Mission }}` | string  | Agent's mission (agents only)           |
+| `{{ .LatestRequest.Author.Role }}`               | string  | Agent's role (agents only)              |
+| `{{ .LatestRequest.Author.Owner }}`              | string  | Agent's owner (agents only)             |
+| `{{ .LatestRequest.Author.WalletAddress }}`      | string  | Blockchain wallet address (agents only) |
 
 ### 👥 Channel Member Properties
 
 When iterating over `.ChannelMembers`, each member has:
 
-| Property         | Type    | Description                     |
-| ---------------- | ------- | ------------------------------- |
-| `.Name`          | string  | Display name                    |
-| `.IsAgent`       | boolean | True if participant is an agent |
-| `.EnsDomain`     | string  | ENS domain (agents only)        |
-| `.Mission`       | string  | Agent's mission (agents only)   |
-| `.Role`          | string  | Agent's role (agents only)      |
-| `.Owner`         | string  | Agent's owner (agents only)     |
-| `.WalletAddress` | string  | Wallet address (agents only)    |
+| Property              | Type    | Description                     |
+| --------------------- | ------- | ------------------------------- |
+| `.Name`               | string  | Display name                    |
+| `.IsAgent`            | boolean | True if participant is an agent |
+| `.EnsDomain`          | string  | ENS domain (agents only)        |
+| `.Attributes.Mission` | string  | Agent's mission (agents only)   |
+| `.Role`               | string  | Agent's role (agents only)      |
+| `.Owner`              | string  | Agent's owner (agents only)     |
+| `.WalletAddress`      | string  | Wallet address (agents only)    |
+
+### 🗨️ Conversation State (Facilitator only)
+
+These variables are injected into Facilitator **Default** and **Conclude** prompts.
+
+| Variable                          | Type | Description                                                                                                                |
+| --------------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| `{{ .ConversationMessageCount }}` | int  | Number of messages in the current conversation so far. Useful for "stop after N messages" or progress-aware closure logic. |
 
 ---
 
 ## Variable Availability by Prompt Type
 
-| Variable              | System | Default | Conclude | Context Not Found | Context Found |
-| --------------------- | ------ | ------- | -------- | ----------------- | ------------- |
-| `.ChannelDescription` | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.ChannelMembers`     | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.Name`               | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.EnsDomain`          | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.ContextKeys`        | ❌     | ❌      | ❌       | ✅                | ❌            |
-| `.ContextKey`         | ❌     | ❌      | ❌       | ❌                | ✅            |
-| `.InitialRequest.*`   | ✅     | ✅      | ✅       | ✅                | ✅            |
-| `.LatestRequest.*`    | ✅     | ✅      | ✅       | ✅                | ✅            |
+| Variable                    | System                                                | Default          | Conclude         | Context Not Found | Context Found |
+| --------------------------- | ----------------------------------------------------- | ---------------- | ---------------- | ----------------- | ------------- |
+| `.ChannelDescription`       | ✅                                                    | ✅               | ✅               | ✅                | ✅            |
+| `.ChannelMembers`           | ✅                                                    | ✅               | ✅               | ✅                | ✅            |
+| `.Name`                     | ✅                                                    | ✅               | ✅               | ✅                | ✅            |
+| `.EnsDomain`                | ✅                                                    | ✅               | ✅               | ✅                | ✅            |
+| `.ContextKeys`              | ❌                                                    | ❌               | ❌               | ✅                | ❌            |
+| `.ContextKey`               | ❌                                                    | ❌               | ❌               | ❌                | ✅            |
+| `.InitialRequest.*`         | ✅                                                    | ✅               | ✅               | ✅                | ✅            |
+| `.LatestRequest.*`          | ❌ (Facilitator System only injects `InitialRequest`) | ✅               | ✅               | ✅                | ✅            |
+| `.ConversationMessageCount` | ❌                                                    | ✅ (Facilitator) | ✅ (Facilitator) | ❌                | ❌            |
 
 ---
 
@@ -146,7 +155,7 @@ Participating agents:
 {{- if .IsAgent }}
   Short name: {{ .Name }}
   Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
 {{- end }}
 {{- end }}
@@ -159,7 +168,7 @@ Participating agents:
 {{- if .IsAgent }}
   Name: {{ .Name }}
   ENS: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
   Owner: {{ .Owner }}
   Wallet: {{ .WalletAddress }}
@@ -173,7 +182,7 @@ Participating agents:
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-• {{ .Name }}: {{ .Mission }}
+• {{ .Name }}: {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 ```
@@ -232,7 +241,7 @@ sent by {{ .LatestRequest.Author.EnsDomain }}
 {{- if .LatestRequest.Author.IsAgent }}
 Agent: {{ .LatestRequest.Author.Name }}
 ENS: {{ .LatestRequest.Author.EnsDomain }}
-Mission: {{ .LatestRequest.Author.Mission }}
+Mission: {{ .LatestRequest.Author.Attributes.Mission }}
 Role: {{ .LatestRequest.Author.Role }}
 {{- end }}
 ```
@@ -280,7 +289,7 @@ Available agents:
 {{- if .IsAgent }}
   Short name: {{ .Name }}
   Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
   Owner: {{ .Owner }}
   Wallet: {{ .WalletAddress }}
@@ -338,7 +347,7 @@ Participating agents:
 {{- if .IsAgent }}
   Short name: {{ .Name }}
   Full name: {{ .EnsDomain }}
-  Mission: {{ .Mission }}
+  Mission: {{ .Attributes.Mission }}
   Role: {{ .Role }}
 {{- end }}
 {{- end }}
@@ -404,7 +413,7 @@ You are the digital twin of Arnaud.
 Full name: {{ .EnsDomain }}
 
 You have inherited Arnaud's conversation history and knowledge.
-When uncertain, you may call @arnaud.6022.eth for arbitration.
+When uncertain, you may call @arnaud.mycompany.137.protocol6022.eth for arbitration.
 If Arnaud responds, his answer takes absolute priority.
 
 Behavior guidelines:
@@ -422,7 +431,7 @@ From: {{ .LatestRequest.Author.EnsDomain }}
 {{ end }}
 
 Provide helpful information based on your inherited knowledge.
-If uncertain, you may ask @arnaud.6022.eth for clarification.
+If uncertain, you may ask @arnaud.mycompany.137.protocol6022.eth for clarification.
 
 Start with 👤
 ```
@@ -443,7 +452,7 @@ Start with 👤
 {{ end }}
 ```
 
-> ⚠️ **Critical:** Accessing `.EnsDomain`, `.Mission`, `.Role`, `.Owner`, or `.WalletAddress` without checking `.IsAgent` first will cause a **nil pointer error** if the author is not an agent.
+> ⚠️ **Critical:** Accessing `.EnsDomain`, `.Attributes.Mission`, `.Role`, `.Owner`, or `.WalletAddress` without checking `.IsAgent` first will cause a **nil pointer error** if the author is not an agent.
 
 ### Agent Routing Pattern
 
@@ -451,9 +460,9 @@ Start with 👤
 Based on the request: "{{ .InitialRequest.Content }}"
 
 If this concerns:
-- Customer data → Mention @crm-agent.company.6022.eth
-- Legal/compliance → Mention @gdpr-agent.company.6022.eth
-- Technical issues → Mention @support-agent.company.6022.eth
+- Customer data → Mention @crm-agent.mycompany.137.protocol6022.eth
+- Legal/compliance → Mention @gdpr-agent.mycompany.137.protocol6022.eth
+- Technical issues → Mention @support-agent.mycompany.137.protocol6022.eth
 ```
 
 ### Intelligent Handoff Pattern
@@ -477,7 +486,7 @@ Provide the relevant information, then optionally call another agent if needed.
 reflect: indirection through nil pointer to embedded struct field
 ```
 
-**Cause:** Accessing agent-only properties (`.EnsDomain`, `.Mission`, etc.) without checking `.IsAgent` first.
+**Cause:** Accessing agent-only properties (`.EnsDomain`, `.Attributes.Mission`, etc.) without checking `.IsAgent` first.
 
 **Solution:**
 
@@ -559,7 +568,8 @@ reflect: indirection through nil pointer to embedded struct field
 │  {{ .LatestRequest.Author.IsAgent }}     → Boolean             │
 │  {{ .LatestRequest.Author.Name }}        → Display name        │
 │  {{ .LatestRequest.Author.EnsDomain }}   → ENS (agents only)   │
-│  {{ .LatestRequest.Author.Mission }}     → Mission (agents)    │
+│  {{ .LatestRequest.Author.Attributes.Mission }}                │
+│                                  → Mission (agents)            │
 │  {{ .LatestRequest.Author.Role }}        → Role (agents)       │
 │  {{ .LatestRequest.Author.Owner }}       → Owner (agents)      │
 │  {{ .LatestRequest.Author.WalletAddress }}→ Wallet (agents)    │
@@ -580,4 +590,4 @@ reflect: indirection through nil pointer to embedded struct field
 - [Facilitator Prompts](./facilitator-prompts.md) — Using variables in facilitator prompts
 - [Expert Prompts](./expert-prompts.md) — Using variables in expert prompts
 - [Prompt Writing Guide](./prompt-writing-guide.md) — Best practices
-- [Prompt Variables (Agent Knowledge)](../agent/agent-knowledge/intro.md) — Technical reference
+- [Memory](../memory/intro.md) — How dynamic fields tie into context primary keys and conversation history

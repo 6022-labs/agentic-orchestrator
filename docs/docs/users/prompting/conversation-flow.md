@@ -431,4 +431,4 @@ Only humans can restart a concluded conversation:
 - [Agent Types](./agent-types.md) — Detailed agent characteristics
 - [Facilitator Prompts](./facilitator-prompts.md) — Configuring orchestration
 - [Expert Prompts](./expert-prompts.md) — Configuring domain experts
-- [Context Primary Keys](../agent/agent-knowledge/context-primary-keys.md) — Key design patterns
+- [Context Primary Keys](../memory/context-primary-keys.md) — Key design patterns

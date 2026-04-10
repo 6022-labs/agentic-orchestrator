@@ -75,9 +75,9 @@ GRANT ALL PRIVILEGES ON DATABASE claudine_db TO agent_claudine;
 
 ### Hosted Option
 
-6022 provides hosted PostgreSQL on Railway:
+6022 can provide a hosted PostgreSQL instance on request:
 
-- Host: `yamabiko.proxy.rlwy.net`
+- Host: `<provided by 6022>`
 - Contact 6022 admin for credentials
 
 ---
@@ -146,84 +146,9 @@ Confidence level: 8/10
 
 ## Dynamic Variables
 
-Prompts can include dynamic variables that are replaced at runtime.
+Prompts can include dynamic variables (Go `text/template` syntax) that are replaced at runtime — channel description, channel members, context keys, request content, author info, etc.
 
-### Global Context Variables
-
-| Variable                    | Description                           |
-| --------------------------- | ------------------------------------- |
-| `{{ .ChannelDescription }}` | Description of the Slack channel      |
-| `{{ .ChannelMembers }}`     | List of agents in the channel         |
-| `{{ .ContextKeys }}`        | All known context keys for this agent |
-| `{{ .ContextKey }}`         | Current context key (when found)      |
-
-### Request Variables (Initial)
-
-Information about the first message in the conversation:
-
-| Variable                                     | Description                  |
-| -------------------------------------------- | ---------------------------- |
-| `{{ .InitialRequest.Content }}`              | The message content          |
-| `{{ .InitialRequest.Author.Name }}`          | Author's display name        |
-| `{{ .InitialRequest.Author.EnsDomain }}`     | Author's ENS address         |
-| `{{ .InitialRequest.Author.IsAgent }}`       | Boolean: is author an agent? |
-| `{{ .InitialRequest.Author.Mission }}`       | Author's mission (if agent)  |
-| `{{ .InitialRequest.Author.Role }}`          | Author's role (if agent)     |
-| `{{ .InitialRequest.Author.Owner }}`         | Owner wallet (if agent)      |
-| `{{ .InitialRequest.Author.WalletAddress }}` | Author's wallet address      |
-
-### Request Variables (Latest)
-
-Same variables but for the most recent message:
-
-| Variable                                | Description                      |
-| --------------------------------------- | -------------------------------- |
-| `{{ .LatestRequest.Content }}`          | Latest message content           |
-| `{{ .LatestRequest.Author.Name }}`      | Latest author's name             |
-| `{{ .LatestRequest.Author.EnsDomain }}` | Latest author's ENS              |
-| ...                                     | (same pattern as InitialRequest) |
-
-### Channel Members Loop
-
-To list all agents in a channel:
-
-```go
-{{- range .ChannelMembers }}
-  {{- if .IsAgent }}
-    Name: {{ .Name }}
-    ENS: {{ .EnsDomain }}
-    Mission: {{ .Mission }}
-    Role: {{ .Role }}
-  {{- end }}
-{{- end }}
-```
-
-### Example: Expert System Prompt
-
-```
-You are {{ .InitialRequest.Author.Name }}, an expert agent.
-
-## Your Identity
-- ENS: {{ .InitialRequest.Author.EnsDomain }}
-- Role: {{ .InitialRequest.Author.Role }}
-- Mission: {{ .InitialRequest.Author.Mission }}
-
-## Channel Context
-{{ .ChannelDescription }}
-
-## Team Members
-{{- range .ChannelMembers }}
-  {{- if .IsAgent }}
-- {{ .Name }} ({{ .Role }}): {{ .Mission }}
-  {{- end }}
-{{- end }}
-
-## Known Context Keys
-{{ .ContextKeys }}
-
-## Current Context
-{{ .ContextKey }}
-```
+The complete reference (every variable, where it's available, and the full availability matrix by prompt type) lives in **[Prompt Dynamic Fields](../prompting/prompt-dynamic-fields.md)**. Don't duplicate it here — the canonical list is the one Phase B / Phase C maintains in that page.
 
 ---
 
@@ -280,16 +205,18 @@ For **Expert agents**, context keys determine how conversations are threaded.
 
 ```bash
 # List all context keys
-GET /agent/:tokenId/contexts/keys
+GET /agent/:agentCollectionAddress/:agentCollectionTokenId/contexts/keys
 
 # Create a new context
-POST /agent/:tokenId/context
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context
 Body: { "key": "POL-2024-123456" }
 
-# Add memory to a context
-POST /agent/:tokenId/context/:key/memory
+# Append a message to a context (how memory hydration works)
+POST /agent/:agentCollectionAddress/:agentCollectionTokenId/context/:contextKey/message
 Body: { "role": "user", "content": "..." }
 ```
+
+See [API Reference](./api-reference.md) for the full endpoint documentation, parameter list, and code samples.
 
 ---
 

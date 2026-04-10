@@ -32,7 +32,7 @@ In the 6022 framework, each agent can connect to multiple MCP servers:
 ```
 ┌─────────────────────────────────────────────────────┐
 │                      AGENT                          │
-│              claudine.agent.6022.eth                │
+│       claudine.mycompany.137.protocol6022.eth       │
 └───────────────────────┬─────────────────────────────┘
                         │
         ┌───────────────┼───────────────┐
@@ -46,21 +46,16 @@ In the 6022 framework, each agent can connect to multiple MCP servers:
 
 ## LLM Compatibility
 
-:::warning Important
-MCP is not supported by all LLM providers. Check compatibility before configuring.
-:::
+The orchestrator distinguishes between **native MCP routing** (the orchestrator forwards your MCP server definitions directly to the provider) and **function-call loop routing** (the orchestrator runs its own loop and asks the model to emit tool calls). The single source of truth lives in **[LLM Introduction → Supported Providers](../llm/intro.md#supported-providers)** — that page is the canonical compatibility reference.
 
-| LLM Provider    | MCP Support | Notes                                    |
-| --------------- | :---------: | ---------------------------------------- |
-| **OpenAI**      |     ✅      | Native support via `/v1/responses`       |
-| **Anthropic**   |     ✅      | Supported (requires proper token limits) |
-| **AWS Bedrock** |     ✅      | Supported                                |
-| **Mistral**     |     ❌      | Not yet supported                        |
-| **Deepseek**    |     ❌      | Not yet supported                        |
-| **xAI (Grok)**  |     ❌      | Not yet supported                        |
-| **Ollama**      |     ❌      | Not yet supported                        |
+| LLM Provider                                                     | MCP Routing                                                             |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **OpenAI**                                                       | ✅ Native (via `/v1/responses`)                                         |
+| **Anthropic**                                                    | ✅ Native (custom-header configuration required)                        |
+| **AWS Bedrock**                                                  | ⚙️ Function-call loop (Converse API)                                    |
+| **xAI** / **Mistral** / **Deepseek** / **LibertAI** / **Ollama** | ⚙️ Function-call loop — depends on the model's function-calling support |
 
-If you configure MCP on an agent using an unsupported LLM, the MCP parameters will be saved but will not be sent to the LLM server.
+If you configure MCP on an agent whose model does not actually support function calling, the orchestrator will still attempt to invoke the loop; tools will simply never be selected by the model.
 
 ## Use Cases
 
@@ -163,7 +158,7 @@ MCP servers describe their tools with names, descriptions, and parameter schemas
 
 ### Authentication Is Per-Connection
 
-Each MCP connection can have its own authentication method (Bearer token, API key, custom header). Credentials are stored securely in the orchestrator.
+Each MCP connection has its own authentication. Internally, the orchestrator stores authentication as a generic set of HTTP header key/value pairs (`HeaderAuth map[string]string`). The "None / API Key (Bearer) / Custom Header / Basic Auth" labels you see in the UI are presentation conventions on top of that single map — they all resolve to headers that get attached to every MCP request. Header values are stored separately in the orchestrator's secret vault, not in the database.
 
 ## Next Steps
 

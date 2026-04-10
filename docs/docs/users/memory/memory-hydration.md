@@ -61,7 +61,7 @@ Before you ask engineering to hydrate memory, gather:
 
 1. **The context primary keys** that should receive the knowledge
 2. **The conversation snippets** you want the agent to "remember"
-3. **The responsible developer** who can run the API calls (share the [Memory Hydration API guide](../../../developers/api-reference/memory-hydration.md))
+3. **The responsible developer** who can run the API calls (share the [Memory Hydration API guide](../../developers/api-reference/memory-hydration.md))
 
 ---
 
@@ -87,7 +87,7 @@ Then inject the confirmation:
 ```json
 {
   "message": "Yes, duly noted. I will remind you of this if you ask me again.",
-  "role": "agent"
+  "role": "assistant"
 }
 ```
 
@@ -109,7 +109,7 @@ For regulatory or procedural knowledge:
 ```json
 {
   "message": "Yes, duly noted. I have stored the content of GDPR chapter 3.1 regarding individual privacy rights.",
-  "role": "agent"
+  "role": "assistant"
 }
 ```
 
@@ -122,13 +122,13 @@ For complex knowledge requiring context:
 { "message": "What are the steps for processing a refund request?", "role": "user" }
 
 // Message 2
-{ "message": "The refund process has 4 steps: 1) Verify purchase within 30 days, 2) Check item condition, 3) Process in CRM, 4) Confirm with customer.", "role": "agent" }
+{ "message": "The refund process has 4 steps: 1) Verify purchase within 30 days, 2) Check item condition, 3) Process in CRM, 4) Confirm with customer.", "role": "assistant" }
 
 // Message 3
 { "message": "What if the item is damaged?", "role": "user" }
 
 // Message 4
-{ "message": "For damaged items, skip step 2 and escalate to supervisor before processing. Document damage with photos.", "role": "agent" }
+{ "message": "For damaged items, skip step 2 and escalate to supervisor before processing. Document damage with photos.", "role": "assistant" }
 ```
 
 ### Pattern 4: Persona Establishment
@@ -140,7 +140,7 @@ Shape the agent's personality and approach:
 { "message": "Remember that you should always be empathetic with customers who have complaints.", "role": "user" }
 
 // Message 2
-{ "message": "Understood. I will approach all complaints with empathy and understanding, acknowledging the customer's frustration before offering solutions.", "role": "agent" }
+{ "message": "Understood. I will approach all complaints with empathy and understanding, acknowledging the customer's frustration before offering solutions.", "role": "assistant" }
 ```
 
 ---
@@ -151,7 +151,7 @@ Shape the agent's personality and approach:
 import requests
 
 # Configuration
-BASE_URL = "https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app"
+BASE_URL = "https://<your-orchestrator-api-host>"
 AGENT_ADDRESS = "0x0bd248B276b7Ba8E9E4A94df8dd73CFe9dD2E18a"
 AGENT_TOKEN_ID = "2"
 CONTEXT_KEY = "Article-15"  # Must already exist
@@ -192,7 +192,7 @@ add_memory(
     "data subject access requests: confirm processing, provide data copy, explain purposes, "
     "list categories and recipients, state retention period, and inform of their rights "
     "including rectification, erasure, and lodging complaints.",
-    "agent"
+    "assistant"
 )
 
 print("✅ Memory hydration complete")
@@ -211,7 +211,7 @@ hydration_data = [
         "context_key": "C45653",
         "messages": [
             {"role": "user", "message": "Customer Albert Kali, contract C45653, VIP status, prefers email contact."},
-            {"role": "agent", "message": "Noted: Albert Kali (C45653) is a VIP customer with email preference."},
+            {"role": "assistant", "message": "Noted: Albert Kali (C45653) is a VIP customer with email preference."},
         ]
     },
     # Customer C78901
@@ -219,7 +219,7 @@ hydration_data = [
         "context_key": "C78901",
         "messages": [
             {"role": "user", "message": "Customer Marie Dubois, contract C78901, standard tier, phone contact preferred."},
-            {"role": "agent", "message": "Noted: Marie Dubois (C78901) is standard tier, prefers phone calls."},
+            {"role": "assistant", "message": "Noted: Marie Dubois (C78901) is standard tier, prefers phone calls."},
         ]
     },
 ]
@@ -330,10 +330,10 @@ To update previously hydrated information:
 
 ```python
 # Original hydration
-add_memory("Customer C45653 email is john.doe-old@example.com", "agent")
+add_memory("Customer C45653 email is john.doe-old@example.com", "assistant")
 
 # Later update
-add_memory("Update: Customer C45653 has changed email to john.doe-new@example.com", "agent")
+add_memory("Update: Customer C45653 has changed email to john.doe-new@example.com", "assistant")
 ```
 
 For complete replacement, you may need to clear the context and re-hydrate (requires database access).

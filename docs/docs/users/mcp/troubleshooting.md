@@ -29,7 +29,9 @@ Bad API   tools/list  Server   URL/Network
 
 ## Error 401: Unauthorized
 
-**Error message:**
+The orchestrator's MCP client returns a plain Go error string when an MCP server responds with 401 (something like `unexpected MCP list tools status code: 401`). The structured JSON below is what you see when the **upstream OpenAI Responses API** wraps the same failure on its own behalf — it is not produced by the orchestrator directly. Both surfaces point to the same root cause.
+
+**Error message (upstream-formatted):**
 ```json
 {
   "error": {
@@ -62,7 +64,9 @@ Bad API   tools/list  Server   URL/Network
 
 ## Error 424: Failed Dependency
 
-**Error message:**
+Same framing as 401 — the orchestrator's MCP client raises a generic Go error for any upstream status > 206, and the structured JSON below is the format you'll see in the OpenAI Responses API wrapper, not the orchestrator's own response shape. The 424 status itself comes from the MCP server (or its backend), not from the orchestrator.
+
+**Error message (upstream-formatted):**
 ```json
 {
   "error": {
@@ -93,7 +97,9 @@ Bad API   tools/list  Server   URL/Network
 
 ## Error 500: Server Error
 
-**Error message:**
+The orchestrator's own MCP controllers return plain `Internal Server Error` strings on failure (not structured JSON). The shape below — `"type": "server_error"` — is again the OpenAI-API wrapper. Treat it as a signal that *something* went wrong upstream, not as an orchestrator-level error contract you can pattern-match against.
+
+**Error message (upstream-formatted):**
 ```json
 {
   "error": {
@@ -219,11 +225,11 @@ Bad API   tools/list  Server   URL/Network
 
 **Error:** Request fails when using Anthropic with MCP
 
-**Cause:** Anthropic has stricter token limits than OpenAI.
+**Cause:** Anthropic counts tokens differently from OpenAI — for the same logical context, Anthropic typically reports a higher count. See [LLM Troubleshooting → Token Management](../llm/troubleshooting.md#token-management) for the canonical explanation.
 
-**Solution:** 
-1. Reduce `MAX_TOKENS_PER_REQUEST` environment variable to 50,000 (from default 100,000)
-2. Or switch to a model with larger context window
+**Solution:**
+1. Lower the `TOKEN__MAX_TOKENS_PER_REQUEST` environment variable on the orchestrator (the `TOKEN__` prefix is required) to e.g. `50000` from the default `100000`.
+2. Or switch to an Anthropic model with a larger context window.
 
 ---
 

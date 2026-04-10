@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 6
 ---
 
 # Troubleshooting & Advanced Configuration
@@ -8,26 +8,26 @@ This page covers common issues and advanced configuration options for LLM manage
 
 ## Token Management
 
-### MAX_TOKENS_PER_REQUEST
+### `TOKEN__MAX_TOKENS_PER_REQUEST`
 
-The orchestrator includes a `MAX_TOKENS_PER_REQUEST` environment variable to limit context size.
+The orchestrator caps the number of tokens it will send in a single LLM request via the env var **`TOKEN__MAX_TOKENS_PER_REQUEST`** (the `TOKEN__` prefix is required — koanf maps `TOKEN__MAX_TOKENS_PER_REQUEST` onto the `token.max_tokens_per_request` setting). Setting the bare `MAX_TOKENS_PER_REQUEST` has no effect.
 
 | Setting | Value | Use Case |
-|---------|-------|----------|
-| Default | 100,000 | Most providers |
-| Anthropic recommended | 50,000 | Due to different token calculation |
-| Low memory | 25,000 | For smaller models |
+|---|---|---|
+| Default | `100000` | Most providers |
+| Anthropic guideline | `50000` | Due to different token calculation (see below) |
+| Low memory | `25000` | For smaller models |
 
-:::note Token Calculation
-Anthropic uses a different token calculation method than OpenAI. If you experience context size errors with Anthropic, reduce the max tokens value.
+:::note Anthropic-specific behavior
+Anthropic uses a different token-counting method than OpenAI — for the same logical context, Anthropic typically reports a higher token count. The limit above is **global**, not per-provider, so if any of your agents use Anthropic models you may need to lower the cap for everyone. There is no per-provider override in the codebase today.
 :::
 
 ### Adjusting Token Limits
 
-In Railway, update the environment variable in the **LLM Connector** service:
+Update the orchestrator environment variable:
 
 ```
-MAX_TOKENS_PER_REQUEST=50000
+TOKEN__MAX_TOKENS_PER_REQUEST=50000
 ```
 
 ---
@@ -95,7 +95,7 @@ When multiple agents share the same API key:
 
 # Context too long
 "error": "context_length_exceeded"
-→ Reduce MAX_TOKENS_PER_REQUEST or simplify prompts
+→ Reduce TOKEN__MAX_TOKENS_PER_REQUEST or simplify prompts
 
 # Invalid API key
 "error": "invalid_api_key"
@@ -128,16 +128,16 @@ Header Value: [your-api-key]
 
 **Problem:** Context too large errors
 
-**Solution:** Anthropic calculates tokens differently. Reduce `MAX_TOKENS_PER_REQUEST` to 50,000.
+**Solution:** Anthropic calculates tokens differently. Reduce `TOKEN__MAX_TOKENS_PER_REQUEST` to `50000`.
 
 ### AWS Bedrock Issues
 
 **Problem:** Authentication fails
 
 **Solutions:**
-1. Check credentials haven't expired (90-day limit)
-2. Verify IAM role has Bedrock permissions
-3. Ensure model is enabled in your region
+1. Verify the API key stored in the orchestrator vault is current — rotate it on whatever schedule your IAM policy requires (the orchestrator does not model a fixed expiration window).
+2. Verify IAM permissions include Bedrock access
+3. Ensure the model is enabled in your region
 
 **Problem:** Model not available
 

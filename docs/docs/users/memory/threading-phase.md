@@ -21,10 +21,11 @@ This document explains the importance of context primary keys during threading a
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  1. Agent is mentioned          2. Agent enters              3. Agent searches    │
-│     in conversation                THREADING state              for context key   │
+│     in conversation              context-discovery state        for context key   │
 │                                                                     │
-│     "@claudine can you           Context = "THREADING"         "C45653" found     │
-│      help with C45653?"                                        in message         │
+│     "@claudine can you           Context =                    "C45653" found     │
+│      help with C45653?"          conversation-context-        in message         │
+│                                  discovery/{conversationId}                       │
 │            │                            │                            │            │
 │            ▼                            ▼                            ▼            │
 │     ┌───────────┐               ┌───────────────┐            ┌───────────────┐   │
@@ -58,7 +59,7 @@ When an expert agent is first mentioned in a conversation, it triggers the threa
 2. **Agent analyzes the message** — Looks for clues about which context primary key applies
 3. **Key is identified** — Extracts or determines the correct context primary key
 4. **Memory is loaded** — All associated memory for that key becomes available
-5. **Key is locked** — Remains fixed for the duration of the conversation
+5. **Conversation is bound to the key** — the orchestrator persists a row in `agent_context_conversation_mappings` linking this conversation to the chosen context key. The binding remains for the lifetime of the conversation. There is no mutex; concurrent threading attempts on the same conversation ID are not guarded by a distributed lock.
 
 ---
 
@@ -110,7 +111,7 @@ Once the context primary key is identified and locked:
 
 ## Configuration
 
-Detailed configuration of key detection, prompt design, and MCP integration is covered in the **[Agent Prompting](../agent-prompting/intro.md)** section.
+Detailed configuration of key detection, prompt design, and MCP integration is covered in the **[Prompting](../prompting/intro.md)** section — see specifically [Expert Prompts](../prompting/expert-prompts.md) for the Context Not Found / Context Found prompt templates.
 
 ---
 
@@ -129,5 +130,5 @@ Without proper threading, agents cannot distinguish between different customers,
 ## Related Documentation
 
 - [Context Primary Keys](./context-primary-keys.md) - Creating and managing keys
-- [Agent Prompting](../agent-prompting/intro.md) - Configuring key detection and prompts
-- [Memory Strategies](./memory-strategies.md) - How memory is populated for a locked context
+- [Expert Prompts](../prompting/expert-prompts.md) - Configuring key detection and prompts
+- [Memory Strategies](./memory-strategies.md) - How memory is populated once a context is bound

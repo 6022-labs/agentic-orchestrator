@@ -35,8 +35,8 @@ Memory encompasses everything an agent "knows" and "remembers" across conversati
 
 ### For Developers
 
-- [API Endpoints Reference](../../../developers/api-reference/intro.md#endpoints)
-- [Bulk key creation](../../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
+- [API Endpoints Reference](../../developers/api-reference/intro.md#endpoints)
+- [Bulk key creation](../../developers/api-reference/context-primary-keys.md#bulk-provisioning-example-python)
 
 ### For Business Users
 
@@ -48,25 +48,10 @@ Memory encompasses everything an agent "knows" and "remembers" across conversati
 
 ## Key Concepts at a Glance
 
-### Context Primary Key
-
-A unique identifier that creates an isolated memory space for an agent. Example: contract number `C45653` groups all conversations about that specific contract.
-
-### Memory Strategy
-
-The approach used to populate an agent's memory:
-
-- **Lazy** - Memory grows organically through real conversations
-- **Hydration** - Memory is pre-loaded with synthetic past conversations
-- **MCP** - Memory is refreshed dynamically from external data sources
-
-### Threading
-
-The process by which an expert agent identifies the relevant context primary key when first mentioned in a conversation.
-
-### Context Window
-
-The LLM's working memory containing the full conversation history for a given context primary key.
+- **Context Primary Key** — a unique identifier that creates an isolated memory space for an agent (e.g. contract number `C45653`). Full definition and design rules: [Context Primary Keys](./context-primary-keys.md).
+- **Memory Strategy** — Lazy, Hydration, or MCP. Full taxonomy with selection guide: [Memory Strategies](./memory-strategies.md).
+- **Threading** — the process by which an expert agent identifies the relevant context primary key when first mentioned. Full walkthrough: [Threading Phase](./threading-phase.md).
+- **Context Window** — the LLM's working memory containing the full conversation history for a given context primary key.
 
 ---
 

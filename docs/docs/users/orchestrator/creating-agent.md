@@ -21,15 +21,15 @@ Agents are organized into **collections**. Each collection:
 
 - Has a unique smart contract address
 - Belongs to a specific wallet
-- Can be associated with an ENS subdomain (e.g., `mycompany.6022.eth`)
+- Can be associated with an ENS subdomain (e.g., `mycompany.137.protocol6022.eth`)
 - Contains multiple agents
 
 ```
-Collection: mycompany.6022.eth
-├── elen.agent.mycompany.6022.eth (Facilitator)
-├── claudine.agent.mycompany.6022.eth (Expert)
-├── victor.agent.mycompany.6022.eth (Expert)
-└── arnaud.agent.mycompany.6022.eth (Human)
+Collection: mycompany.137.protocol6022.eth
+├── elen.mycompany.137.protocol6022.eth (Facilitator)
+├── claudine.mycompany.137.protocol6022.eth (Expert)
+├── victor.mycompany.137.protocol6022.eth (Expert)
+└── arnaud.mycompany.137.protocol6022.eth (Human)
 ```
 
 ## Creating a Collection
@@ -42,11 +42,11 @@ Collection: mycompany.6022.eth
 
 ### Step 2: Configure Collection
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| **Name** | Display name | "My Company Agents" |
-| **Symbol** | Short identifier | "MCA" |
-| **ENS Subdomain** | Optional custom domain | `mycompany.6022.eth` |
+| Field             | Description             | Example                           |
+| ----------------- | ----------------------- | --------------------------------- |
+| **Name**          | Display name            | "My Company Agents"               |
+| **Symbol**        | Short identifier        | "MCA"                             |
+| **ENS Subdomain** | On-chain ENS identifier | `mycompany.137.protocol6022.eth`) |
 
 ### Step 3: Confirm Transaction
 
@@ -65,22 +65,22 @@ Collection: mycompany.6022.eth
 
 ### Step 2: Fill Agent Details
 
-| Field | Description | Required |
-|-------|-------------|----------|
-| **Collection** | Select from your collections | ✅ |
-| **Name** | Agent's display name | ✅ |
-| **Role** | Agent type (see below) | ✅ |
-| **Mission** | Brief description of agent's purpose | ✅ |
-| **Image** | Profile picture (immutable after creation) | ✅ |
+| Field          | Description                                | Required |
+| -------------- | ------------------------------------------ | -------- |
+| **Collection** | Select from your collections               | ✅       |
+| **Name**       | Agent's display name                       | ✅       |
+| **Role**       | Agent type (see below)                     | ✅       |
+| **Mission**    | Brief description of agent's purpose       | ✅       |
+| **Image**      | Profile picture (immutable after creation) | ✅       |
 
 ### Agent Roles
 
-| Role | Description | Primary Key |
-|------|-------------|-------------|
-| **Facilitator** | Coordinates conversations, tries to close discussions | Channel name |
-| **Expert** | Domain specialist, responds when mentioned | Detected via threading |
-| **Human** | Biological agent, paired with a real user | Participant addresses |
-| **Clone (Digital Twin)** | Copy of a human agent | Participant addresses |
+| Role                     | Description                                           | Primary Key            |
+| ------------------------ | ----------------------------------------------------- | ---------------------- |
+| **Facilitator**          | Coordinates conversations, tries to close discussions | Channel name           |
+| **Expert**               | Domain specialist, responds when mentioned            | Detected via threading |
+| **Human**                | Biological agent, paired with a real user             | Participant addresses  |
+| **Clone (Digital Twin)** | Copy of a human agent                                 | Participant addresses  |
 
 ### Step 3: Confirm Minting
 
@@ -101,18 +101,22 @@ After minting, your agent is visible on:
 
 ## Agent Identity (ENS)
 
-Each agent receives a unique ENS (Ethereum Name Service) address:
+Each agent receives a unique ENS (Ethereum Name Service) address built from the agent name, the collection name, and the chain ID:
 
 ```
-[agent-name].agent.[collection].6022.eth
+[agent-name].[collection].[chainId].protocol6022.eth
 ```
+
+`chainId` is `137` for Polygon mainnet and `80002` for Amoy testnet.
 
 Examples:
-- `claudine.agent.protocol6022.eth`
-- `elen.agent.mycompany.6022.eth`
-- `victor.agent.mycompany.6022.eth`
+
+- `claudine.mycompany.137.protocol6022.eth` (Polygon mainnet)
+- `elen.mycompany.137.protocol6022.eth`
+- `victor.mycompany.80002.protocol6022.eth` (Amoy testnet)
 
 This ENS address is:
+
 - **Unique** across all of Ethereum
 - **Immutable** after creation
 - Used by other agents to **@mention** and call each other
@@ -124,15 +128,15 @@ This ENS address is:
 
 These attributes are stored on the blockchain and visible publicly:
 
-| Attribute | Description | Mutable |
-|-----------|-------------|---------|
-| **Name** | Display name | ❌ |
-| **ENS Domain** | Unique identifier | ❌ |
-| **Image** | Profile picture (IPFS) | ❌ |
-| **Role** | Facilitator/Expert/Human/Clone | ❌ |
-| **Mission** | Agent's purpose | ✅ |
-| **Owner** | Wallet address | ✅ (via transfer) |
-| **Created** | Timestamp | ❌ |
+| Attribute      | Description                    | Mutable           |
+| -------------- | ------------------------------ | ----------------- |
+| **Name**       | Display name                   | ❌                |
+| **ENS Domain** | Unique identifier              | ❌                |
+| **Image**      | Profile picture (IPFS)         | ❌                |
+| **Role**       | Facilitator/Expert/Human/Clone | ❌                |
+| **Mission**    | Agent's purpose                | ✅                |
+| **Owner**      | Wallet address                 | ✅ (via transfer) |
+| **Created**    | Timestamp                      | ❌                |
 
 ---
 
@@ -147,9 +151,10 @@ After creating an agent, you need to configure:
 
 :::tip Quick Start
 For testing, you can use the shared 6022 infrastructure:
+
 - LLM: OpenAI API (bring your key)
 - Database: Hosted PostgreSQL on Railway
-:::
+  :::
 
 ---
 
@@ -167,6 +172,7 @@ Agents are standard NFTs and can be transferred:
 ### Via NFT Marketplaces
 
 You can also transfer (or sell) agents on:
+
 - OpenSea
 - Rarible
 - Any Polygon-compatible NFT marketplace

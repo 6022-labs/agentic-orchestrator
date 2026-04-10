@@ -33,7 +33,7 @@ Add an AI agent to the current channel.
 **Response:**
 
 ```
-✅ Agent elen.agent.6022.eth has been added to #customer-support
+✅ Agent elen.mycompany.137.protocol6022.eth has been added to #customer-support
 ```
 
 :::tip Copy Command from Orchestrator
@@ -61,7 +61,7 @@ Remove an AI agent from the current channel.
 **Response:**
 
 ```
-✅ Agent elen.agent.6022.eth has been removed from #customer-support
+✅ Agent elen.mycompany.137.protocol6022.eth has been removed from #customer-support
 ```
 
 ---
@@ -80,9 +80,9 @@ Show all agents currently in the channel.
 
 ```
 Agents in #customer-support:
-• elen.agent.6022.eth (facilitator)
-• claudine.agent.6022.eth (expert)
-• victor.agent.6022.eth (expert)
+• elen.mycompany.137.protocol6022.eth (facilitator)
+• claudine.mycompany.137.protocol6022.eth (expert)
+• victor.mycompany.137.protocol6022.eth (expert)
 ```
 
 If no agents are present:
@@ -159,7 +159,7 @@ Link a Slack user to a human agent. The human agent will then participate in swa
 **Response:**
 
 ```
-✅ Slack user @john.doe is now paired with arnaud.agent.6022.eth
+✅ Slack user @john.doe is now paired with arnaud.mycompany.137.protocol6022.eth
 ```
 
 ---
@@ -225,10 +225,10 @@ Format: `U09BDFS3VGA` (starts with `U`)
 
 2. Pair Slack user to human agent:
    /pair-slack-user-to-human-agent U09BDFS3VGA 0xb533A244... 9
-   → John is now arnaud.agent.6022.eth
+   → John is now arnaud.mycompany.137.protocol6022.eth
 
 3. In conversations, agents can @mention John:
-   "Let me ask @arnaud.agent.6022.eth for clarification..."
+   "Let me ask @arnaud.mycompany.137.protocol6022.eth for clarification..."
 
 4. John sees the message and can respond
    → His response is recorded in the swarm conversation
@@ -238,14 +238,14 @@ Format: `U09BDFS3VGA` (starts with `U`)
 
 ## Error Messages
 
-| Error                                 | Cause                                | Solution                                  |
-| ------------------------------------- | ------------------------------------ | ----------------------------------------- |
-| `Agent not found`                     | Wrong collection address or token ID | Verify the correct values in orchestrator |
-| `You are not the owner of this agent` | Wallet doesn't own the agent NFT     | Check NFT ownership, may need to re-sync  |
-| `Channel not found`                   | Bot isn't in the channel             | Invite the bot to the channel             |
-| `Already exists`                      | Agent already added to channel       | Use `/list-agents` to verify              |
-| `Invalid Slack user ID`               | Wrong user ID format                 | Copy the ID from Slack profile            |
-| `Wallet not verified`                 | Haven't run `/verify-wallet`         | Run verification first                    |
+The bridge surfaces raw error strings through Slack and the exact text may change between versions. The most common failure modes:
+
+| Failure mode | Likely cause | What to try |
+| --- | --- | --- |
+| Command returns "Failed to handle command" | Generic backend error — the agent could not be added/removed/listed | Verify the collection address and token ID against the orchestrator dashboard |
+| Pairing fails with a wallet error | Caller hasn't verified wallet ownership, or doesn't own the agent NFT | Run `/verify-wallet` first and confirm the agent is in your wallet |
+| Add/remove fails silently | Bot is not in the channel | Invite the bot to the channel |
+| `/pair-slack-user-to-human-agent` rejects the user ID | Wrong format — must be a raw Slack user ID like `U09BDFS3VGA`, not a `@mention` | Copy the ID from the user's Slack profile (More → Copy member ID) |
 
 ---
 
@@ -277,6 +277,6 @@ Recommended setup:
 
 ### Security
 
-- Only channel admins should add/remove agents
+- The bridge does not enforce any role-based authorization on `/add-agent` or `/remove-agent` — any workspace member who can use slash commands in the channel can run them. Lock the bot down with channel membership instead of relying on a doc convention.
 - Verify wallet ownership before pairing human agents
 - Don't share collection addresses publicly if sensitive

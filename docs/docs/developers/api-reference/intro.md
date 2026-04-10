@@ -24,7 +24,7 @@ pip install -r requirements.txt
 # Generate token
 python generate_jwt.py \
   --chain-id 137 \
-  --api-base-url https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app/
+  --api-base-url https://<your-orchestrator-api-host>/
 ```
 
 | Network         | Chain ID |
@@ -34,13 +34,15 @@ python generate_jwt.py \
 
 ### JWT Properties
 
-| Property | Value                            |
-| -------- | -------------------------------- |
-| Validity | 1 month                          |
-| Scope    | Per owner wallet (not per agent) |
-| Signing  | Owner's private key              |
+| Property | Value                                                                        |
+| -------- | ---------------------------------------------------------------------------- |
+| Validity | Controlled by `JWT__LIVING_TIME` (seconds) on the orchestrator deployment    |
+| Scope    | Per owner wallet (not per agent); chain-bound (`cId` claim)                  |
+| Signing  | Orchestrator HMAC secret `JWT__HASH`, signed after SIWE message verification |
 
-Include the token in the `Authorization` header (`Authorization: Bearer`).
+Include the token in the `Authorization` header: `Authorization: Bearer <token>`.
+
+A token issued for one chain (e.g. Polygon mainnet `137`) is **not** accepted by an orchestrator instance running against a different chain (e.g. Amoy `80002`) — the `cId` claim is verified on every request.
 
 ## Endpoints
 
@@ -84,18 +86,22 @@ Request body:
 
 ### Response Codes
 
-| Status | Meaning                                        |
-| ------ | ---------------------------------------------- |
-| `200`  | Success (message appended or resource created) |
-| `400`  | Bad request (validation failure, duplicates)   |
-| `401`  | Unauthorized (JWT missing or invalid)          |
-| `404`  | Not found (context key missing)                |
-| `500`  | Internal server error                          |
+| Status | Meaning                                                            |
+| ------ | ------------------------------------------------------------------ |
+| `200`  | Success (resource created or message appended). The orchestrator's gateway controllers always return `200 OK` for successful POSTs — there is no `201 Created` |
+| `400`  | Bad request (validation failure, duplicate key, etc.)              |
+| `401`  | Unauthorized (JWT missing, invalid, or chain-id mismatch)          |
+| `403`  | Forbidden (your wallet does not own this agent)                    |
+| `404`  | Not found (agent or context key missing)                           |
+| `500`  | Internal server error                                              |
 
 ## Python Client
 
+`role` accepts `user`, `system`, or `assistant` — the orchestrator validates against the `AgentContextMessageRole` enum and rejects any other value.
+
 ```python
 import requests
+
 
 class AgentMemoryAPI:
     def __init__(self, base_url: str, agent_address: str, agent_token_id: str, jwt: str):
@@ -104,27 +110,28 @@ class AgentMemoryAPI:
         self.agent_token_id = agent_token_id
         self.headers = {
             "Authorization": f"Bearer {jwt}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def list_keys(self) -> list:
         url = f"{self.base_url}/agent/{self.agent_address}/{self.agent_token_id}/contexts/keys"
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
-      payload = response.json()
-      return payload.get("contextKeys", [])
+        payload = response.json()
+        return payload.get("contextKeys", [])
 
     def create_key(self, key: str) -> bool:
         url = f"{self.base_url}/agent/{self.agent_address}/{self.agent_token_id}/context"
         response = requests.post(url, headers=self.headers, json={"key": key})
 
-      if response.status_code == 200:
+        if response.status_code == 200:
             return True
-      if response.status_code == 400 and "already exists" in response.text:
-            return False  # Key already present
+        if response.status_code == 400 and "already exists" in response.text:
+            return False  # Key already present, treat as idempotent success
         response.raise_for_status()
+        return False
 
-    def add_memory(self, key: str, message: str, role: str = "agent") -> None:
+    def add_memory(self, key: str, message: str, role: str = "assistant") -> None:
         url = f"{self.base_url}/agent/{self.agent_address}/{self.agent_token_id}/context/{key}/message"
         response = requests.post(url, headers=self.headers, json={"message": message, "role": role})
         response.raise_for_status()
@@ -134,12 +141,13 @@ class AgentMemoryAPI:
         for msg in conversation:
             self.add_memory(key, msg["message"], msg["role"])
 
+
 # Usage
 api = AgentMemoryAPI(
-    base_url="https://orchestrator-api-polygon-orchestrator-myproject.up.railway.app",
-    agent_address="0x0bd248B276b7Ba8E9E4A94df8dd73CFe9dD2E18a",
+    base_url="https://<your-orchestrator-api-host>",
+    agent_address="0xCOLLECTION",
     agent_token_id="2",
-    jwt="your_jwt_token"
+    jwt="your_jwt_token",
 )
 
 keys = api.list_keys()
@@ -148,7 +156,7 @@ print("Existing keys:", keys)
 api.create_key("C99999")
 api.hydrate("C99999", [
     {"role": "user", "message": "Remember: Customer C99999 is a VIP"},
-    {"role": "agent", "message": "Noted. C99999 is flagged as VIP."}
+    {"role": "assistant", "message": "Noted. C99999 is flagged as VIP."},
 ])
 ```
 
@@ -187,7 +195,8 @@ class AgentMemoryAPI {
     }
   }
 
-  async addMemory(key, message, role = "agent") {
+  // role must be "user", "system", or "assistant"
+  async addMemory(key, message, role = "assistant") {
     const url = `${this.baseUrl}/agent/${this.agentAddress}/${this.agentTokenId}/context/${key}/message`;
     await axios.post(url, { message, role }, { headers: this.headers });
   }

@@ -1,10 +1,16 @@
 ---
-sidebar_position: 6
+sidebar_position: 5
 ---
 
 # TEE (Trusted Execution Environments)
 
-Deploy LLM inference within secure enclaves (TEE - Trusted Execution Environments). This approach provides maximum privacy and security, with the unique ability for agents to manage their own compute costs through 6022 microtransactions.
+:::warning Draft — feature in development
+TEE / enclave deployment is on the 6022 roadmap but **not yet shipped**. There is no `tee-enclave` platform value in the orchestrator, no enclave routing code, no attestation flow, and no in-orchestrator microtransaction logic. The configuration block in this page is forward-looking, not something you can paste into the dashboard today.
+
+The conceptual vehicle for this roadmap is **[LibertAI](./hosted-providers.md#libertai)** — LibertAI is implemented today as a regular hosted-API provider, and the TEE / attestation layer will be built on top of it. If you want to start experimenting against LibertAI inference (without TEE guarantees), use the `libert-ai` provider in [Hosted Providers](./hosted-providers.md#libertai).
+:::
+
+Deploy LLM inference within secure enclaves (TEE - Trusted Execution Environments). This approach is intended to provide maximum privacy and security, with the unique ability for agents to manage their own compute costs through 6022 microtransactions.
 
 ## What is a TEE?
 
@@ -75,9 +81,11 @@ With TEE deployment, agents can **pay for their own LLM usage** using their bloc
 
 ## Configuration (Future)
 
+The example below is **not yet a real platform**. It illustrates the shape of the future configuration; do not paste it into the dashboard today.
+
 ```yaml
-Provider: tee-enclave
-Enclave URL: https://enclave.6022.eth
+Provider: <future tee enum value, not yet defined>
+Enclave URL: https://<your-tee-enclave>
 Model: llama-3-70b
 Authentication: Agent Wallet Signature
 Payment: 6022 tokens (per request)
@@ -88,29 +96,14 @@ Budget: 500 tokens/conversation
 
 ## TEE Providers
 
-The 6022 protocol is designed to work with decentralized TEE providers. Two solutions are currently available:
+The 6022 protocol is designed to work with decentralized TEE providers. Two are on the radar:
 
 | Provider | Technology | Description |
-|----------|------------|-------------|
-| **Libertai** | TEE Inference | Decentralized AI inference network with privacy-preserving computation |
-| **Phala** | Phat Contracts | Web3 cloud computing platform with TEE-based confidential smart contracts |
+|---|---|---|
+| **LibertAI** | TEE Inference | Decentralized AI inference network with privacy-preserving computation. **This is the partner the 6022 roadmap is built around.** Available today as a regular hosted-API provider — see [Hosted Providers → LibertAI](./hosted-providers.md#libertai). |
+| **Phala** | Phat Contracts | Web3 cloud computing platform with TEE-based confidential smart contracts. Aspirational — not currently integrated. |
 
-### Libertai
-
-[Libertai](https://libertai.io) provides decentralized AI inference with:
-- Privacy-preserving model execution
-- Open-source model support
-- Integration with blockchain payments
-
-### Phala Network
-
-[Phala](https://phala.network) offers:
-- Phat Contracts for confidential computation
-- TEE-based execution environment
-- Native Web3 integration
-- Cross-chain compatibility
-
-Both providers enable the **trustless verification** of model execution that is central to the 6022 vision of autonomous agents.
+Both providers are intended to enable the **trustless verification** of model execution that is central to the 6022 vision of autonomous agents. Right now, only the LibertAI side has a code path in the orchestrator (via the `libert-ai` platform), and that code path does not yet involve attestation or enclave verification.
 
 ---
 
@@ -144,12 +137,13 @@ TEE integration with microtransactions is part of the 6022 protocol roadmap.
 :::
 
 | Milestone | Status |
-|-----------|--------|
-| TEE proof of concept | ✅ Validated |
-| Enclave testing | ✅ Successful |
-| Orchestrator integration | 🔄 In progress |
-| Microtransaction smart contracts | 📋 Planned |
-| Production deployment | 📋 Planned |
+|---|---|
+| LibertAI as a regular hosted-API provider | ✅ Implemented (`libert-ai` platform) |
+| TEE proof of concept | 🔜 In design |
+| Enclave attestation | 🔜 In design |
+| Orchestrator TEE platform (`tee-*` enum value) | 🔜 Not started |
+| Microtransaction smart contracts | 🔜 Not started |
+| Production deployment | 🔜 Not started |
 
 ---
 

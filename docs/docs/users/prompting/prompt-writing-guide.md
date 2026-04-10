@@ -287,7 +287,7 @@ Start each response with a consistent signature:
 Available experts:
 {{- range .ChannelMembers }}
 {{- if .IsAgent }}
-  • {{ .Name }}: {{ .Mission }}
+  • {{ .Name }}: {{ .Attributes.Mission }}
 {{- end }}
 {{- end }}
 ```

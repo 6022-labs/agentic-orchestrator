@@ -101,6 +101,21 @@ Before setting up the Slack integration, you need:
 | **6022 Orchestrator** | A running orchestrator instance |
 | **Slack Bridge** | Deployed bridge service (Railway, Docker, etc.) |
 | **Agent Collection** | At least one collection with agents created |
+| **HashiCorp Vault** | Both bridge services require `VAULT_ADDR` and `VAULT_TOKEN` to read/write secrets |
+| **Redis** | Both bridge services require Redis for caching Slack user/channel synchronization |
+
+The Slack-side environment variables the bridge expects:
+
+| Variable | Where to find it |
+|---|---|
+| `SLACK_APP_ID` | Slack app **Basic Information** → App Credentials. **Required at startup — the bridge will refuse to boot without it.** |
+| `SLACK_CLIENT_SECRET` | Slack app **Basic Information** → App Credentials |
+| `SLACK_SIGNING_SECRET` | Slack app **Basic Information** → App Credentials |
+| `SLACK_BOT_TOKEN` | Slack app **OAuth & Permissions** → Bot User OAuth Token (`xoxb-...`) |
+| `PUBLIC_KEY` | Public key used by the verify-wallet flow |
+| `ORCHESTRATOR_FRONT_BASE_URL` | Public URL of your orchestrator frontend (used for the verify-wallet redirect) |
+| `ORCHESTRATOR_API_BASE_URL` | Internal URL of the gateway service |
+| `ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL` | Internal URL of the agent-compute service |
 
 ---
 
@@ -145,8 +160,8 @@ Special commands typed in Slack that trigger actions:
 |--------------|:---------:|----------------|
 | Public channels | ✅ | `message.channels` |
 | Private channels | ✅ | `message.groups` |
-| Direct messages | ❌ | Not supported |
-| Group DMs | ❌ | Not supported |
+| Direct messages | ❌ | The bridge does not currently process DMs — messages in 1:1 channels are ignored downstream because the channel is never registered via `/add-agent`. |
+| Group DMs | ❌ | Same as above — group DM channels are not registered, so the bridge has nothing to route to. |
 
 :::tip Private Channels
 To support private channels, ensure `message.groups` is included in your app manifest's `bot_events` array. The bot must also be invited to the private channel.

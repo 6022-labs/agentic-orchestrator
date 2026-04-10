@@ -137,7 +137,7 @@ Common issues and solutions are covered in:
 
 ## Related Documentation
 
-- [Agent Knowledge](../agent/agent-knowledge/intro.md) — Memory and context management
+- [Memory](../memory/intro.md) — Memory and context management
 - [Prompt Variables](./prompt-dynamic-fields) — Dynamic variables reference
 
 ---
@@ -146,7 +146,7 @@ Common issues and solutions are covered in:
 
 | Term           | Definition                                                        |
 | -------------- | ----------------------------------------------------------------- |
-| **ENS Domain** | Ethereum Name Service identifier (e.g., `agent.company.6022.eth`) |
+| **ENS Domain** | Ethereum Name Service identifier (e.g., `agent-name.collection.137.protocol6022.eth`) |
 | **Threading**  | Process of detecting context primary key                          |
 | **Conclude**   | Final phase where facilitator generates response                  |
 | **Timeout**    | Automatic conversation ending after delay                         |
