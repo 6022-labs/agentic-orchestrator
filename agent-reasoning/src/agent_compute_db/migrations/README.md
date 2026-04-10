@@ -1,6 +1,6 @@
 # Database migrations
 
-This directory contains the SQL migrations used by the compute database (`agent_compute_db` module). Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. The `atlas.hcl` file describes how the schema is loaded and where migrations are written.
+This directory contains the SQL migrations used by agent the compute database (`agent_compute_db` module). Migrations are managed using [Atlas](https://github.com/ariga/atlas) together with the [Goose](https://github.com/pressly/goose) formatter. The `atlas.hcl` file describes how the schema is loaded and where migrations are written.
 
 ## Creating a new migration
 
