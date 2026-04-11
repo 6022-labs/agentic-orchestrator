@@ -28,3 +28,14 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Make doc images visible against the page background */
+.markdown img {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .markdown img {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15),
+              0 2px 12px rgba(0, 0, 0, 0.6);
+}
