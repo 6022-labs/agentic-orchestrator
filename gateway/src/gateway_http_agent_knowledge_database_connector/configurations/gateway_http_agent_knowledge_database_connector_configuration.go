@@ -61,14 +61,6 @@ func AddGatewayHttpAgentKnowledgeDatabaseConnectorConfiguration(container *dig.C
 		panic(err)
 	}
 
-	err = container.Provide(
-		http_agent_database_connector_services.NewAgentContextConversationMappingRequester,
-		dig.As(new(interfaces.AgentContextConversationMappingRequesterInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	// Http clients
 	err = container.Provide(func() *http.Client {
 		return http.DefaultClient

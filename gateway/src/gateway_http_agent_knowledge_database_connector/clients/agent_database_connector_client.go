@@ -23,8 +23,6 @@ const (
 	CREATE_AGENT_CONTEXT_ENDPOINT_ENDPOINT            = "/agent/context"
 	GET_AGENT_CONTEXTS_ENDPOINT_ENDPOINT              = "/agent/%s/contexts"
 	GET_AGENT_CONTEXT_BY_KEY_ENDPOINT                 = "/agent/%s/context/%s"
-	LINK_CONVERSATION_TO_AGENT_CONTEXT_ENDPOINT       = "/agent/context/link-conversation"
-	GET_LINKED_AGENT_CONTEXT_OF_CONVERSATION_ENDPOINT = "/agent/context/linked-conversation"
 )
 
 type AgentDatabaseConnectorClientInterface interface {
@@ -38,8 +36,6 @@ type AgentDatabaseConnectorClientInterface interface {
 	GetAgentContextMessages(request *models.ExternalGetAgentContextMessagesRequest) (*models.ExternalGetAgentContextMessageResponses, error)
 	SaveAgentPromptTemplate(request *models.ExternalSaveAgentPromptTemplateRequest) error
 	GetAgentPromptTemplate(request *models.ExternalGetAgentPromptTemplateRequest) (*models.ExternalGetAgentPromptTemplateResponse, error)
-	GetLinkedAgentContextOfConversation(request *models.ExternalGetLinkedAgentContextOfConversationRequest) (*models.ExternalGetLinkedAgentContextOfConversationResponse, error)
-	LinkConversationToAgentContext(request *models.ExternalLinkConversationToAgentContextRequest) error
 	GetDatabaseConnectionSetupStatus(request *models.ExternalAgentIdRequest) (*models.ExternalGetDatabaseConnectionSetupStatusResponse, error)
 }
 
@@ -440,75 +436,6 @@ func (client *AgentDatabaseConnectorClient) GetAgentPromptTemplate(request *mode
 	}
 
 	return &response, nil
-}
-
-func (client *AgentDatabaseConnectorClient) GetLinkedAgentContextOfConversation(request *models.ExternalGetLinkedAgentContextOfConversationRequest) (*models.ExternalGetLinkedAgentContextOfConversationResponse, error) {
-	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + GET_LINKED_AGENT_CONTEXT_OF_CONVERSATION_ENDPOINT + "?"
-	url += "agentId=" + request.AgentId.String()
-	url += "&conversationId=" + request.ConversationId
-
-	client.logger.Debug("Sending GetLinkedAgentContextOfConversation request",
-		zap.String("method", http.MethodGet),
-		zap.String("url", url),
-	)
-
-	httpRequest, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
-	}
-	httpRequest.Header.Set("Content-Type", "application/json")
-
-	httpResponse, err := client.httpClient.Do(httpRequest)
-	if err != nil {
-		return nil, fmt.Errorf("HTTP request failed: %w", err)
-	}
-	defer httpResponse.Body.Close()
-
-	if httpResponse.StatusCode > 299 {
-		responseBody, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(responseBody))
-	}
-
-	var response models.ExternalGetLinkedAgentContextOfConversationResponse
-	if err := json.NewDecoder(httpResponse.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &response, nil
-}
-
-func (client *AgentDatabaseConnectorClient) LinkConversationToAgentContext(request *models.ExternalLinkConversationToAgentContextRequest) error {
-	url := client.agentKnowledgeDatabaseConnectorSettings.BaseUrl + LINK_CONVERSATION_TO_AGENT_CONTEXT_ENDPOINT
-
-	requestBody, err := json.Marshal(request)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request: %w", err)
-	}
-
-	client.logger.Debug("Sending LinkConversationToAgentContext request",
-		zap.String("method", http.MethodPost),
-		zap.String("url", url),
-		zap.Any("body", request),
-	)
-
-	httpRequest, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(requestBody))
-	if err != nil {
-		return fmt.Errorf("failed to create HTTP request: %w", err)
-	}
-	httpRequest.Header.Set("Content-Type", "application/json")
-
-	httpResponse, err := client.httpClient.Do(httpRequest)
-	if err != nil {
-		return fmt.Errorf("HTTP request failed: %w", err)
-	}
-	defer httpResponse.Body.Close()
-
-	if httpResponse.StatusCode > 299 {
-		responseBody, _ := io.ReadAll(httpResponse.Body)
-		return fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(responseBody))
-	}
-
-	return nil
 }
 
 func (client *AgentDatabaseConnectorClient) GetDatabaseConnectionSetupStatus(request *models.ExternalAgentIdRequest) (*models.ExternalGetDatabaseConnectionSetupStatusResponse, error) {

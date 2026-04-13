@@ -17,26 +17,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewBlockchainSettings)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(settings.NewOrchestratorSettings)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(settings.NewAgentCollectionSettings)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(settings.NewDecentralizedDomainNameProviderSettings)
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(settings.NewRateLimitSettings)
 	if err != nil {
 		panic(err)
@@ -52,14 +32,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewWalletCreator,
-		dig.As(new(interfaces.WalletCreatorInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		jwt.NewJwtManager,
 		dig.As(new(interfaces.JwtManagerInterface)),
 	)
@@ -68,48 +40,8 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewMintSigner,
-		dig.As(new(interfaces.MintSignerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewSignedMessageValidator,
 		dig.As(new(interfaces.SignedMessageValidatorInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewAgentPrivateKeyStorage,
-		dig.As(new(interfaces.AgentPrivateKeyStorageInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewOrchestratorPrivateKeyFetcher,
-		dig.As(new(interfaces.OrchestratorPrivateKeyFetcherInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewDecentralizedDomainNameBuilder,
-		dig.As(new(interfaces.DecentralizedDomainNameBuilderInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewEIP712SignatureHelper,
-		dig.As(new(interfaces.EIP712SignatureHelperInterface)),
 	)
 	if err != nil {
 		panic(err)
