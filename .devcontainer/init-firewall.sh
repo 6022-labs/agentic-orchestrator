@@ -57,14 +57,14 @@ gh_ranges=$(curl -fsSL --retry 3 --retry-delay 2 \
 GITHUB_FALLBACK_DOMAINS=()
 if [ -n "$gh_ranges" ] && echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null 2>&1; then
     echo "Processing GitHub IPs from api.github.com/meta..."
-while read -r cidr; do
-    if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
-        echo "ERROR: Invalid CIDR range from GitHub meta: $cidr"
-        exit 1
-    fi
-    echo "Adding GitHub range $cidr"
-    ipset add -exist allowed-domains "$cidr"
-done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
+    while read -r cidr; do
+        if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
+            echo "ERROR: Invalid CIDR range from GitHub meta: $cidr"
+            exit 1
+        fi
+        echo "Adding GitHub range $cidr"
+        ipset add -exist allowed-domains "$cidr"
+    done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 else
     echo "WARN: api.github.com/meta unavailable; falling back to DNS for GitHub hostnames"
     GITHUB_FALLBACK_DOMAINS=(
@@ -84,6 +84,7 @@ for domain in \
     "api.anthropic.com" \
     "console.anthropic.com" \
     "claude.ai" \
+    "openaipublic.blob.core.windows.net" \
     "sentry.io" \
     "statsig.anthropic.com" \
     "statsig.com" \
