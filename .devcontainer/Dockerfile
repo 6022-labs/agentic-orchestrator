@@ -112,6 +112,13 @@ RUN set -eux; \
   chmod +x /usr/local/share/npm-global/bin/railway; \
   rm -rf /tmp/railway.tar.gz /tmp/railway-extract
 
+# Preinstall Go tools used by the VS Code Go extension (firewall blocks proxy.golang.org at runtime)
+RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
+  go install github.com/josharian/impl@v1.4.0 && \
+  go install github.com/haya14busa/goplay/cmd/goplay@v1.0.0 && \
+  go install github.com/go-delve/delve/cmd/dlv@latest && \
+  go install golang.org/x/tools/gopls@latest && \
+  go clean -cache -modcache -testcache
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
