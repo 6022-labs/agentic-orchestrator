@@ -281,7 +281,7 @@ services:
         condition: service_started
 
   db:
-    image: "postgres:16-alpine"
+    image: "postgres:18-alpine"
     container_name: orchestrator-db
     environment:
       POSTGRES_USER: "postgres"
@@ -300,7 +300,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   pgadmin:
-    image: "dpage/pgadmin4"
+    image: "dpage/pgadmin4:9.14"
     container_name: orchestrator-pgadmin
     user: "root"
     depends_on:
@@ -318,7 +318,7 @@ services:
       - ./pgadmin-servers.json:/pgadmin4/servers.json
 
   vault:
-    image: hashicorp/vault:1.18
+    image: hashicorp/vault:1.21
     container_name: orchestrator-vault
     ports:
       - "8200:8200"
@@ -337,7 +337,7 @@ services:
       wait"
 
   redis:
-    image: "redis:alpine"
+    image: "redis:8-alpine"
     container_name: orchestrator-redis
     ports:
       - "6379:6379"
@@ -345,7 +345,7 @@ services:
       orchestrator-network:
 
   evm-node:
-    image: ghcr.io/foundry-rs/foundry:v1.0.0
+    image: ghcr.io/foundry-rs/foundry:v1.5.0
     container_name: orchestrator-evm-node
     ports:
       - "8545:8545"
@@ -359,7 +359,7 @@ services:
       orchestrator-network:
 
   kubo:
-    image: ipfs/kubo:v0.34.1
+    image: ipfs/kubo:v0.40.1
     container_name: orchestrator-kubo
     ports:
       - "4001:4001"
