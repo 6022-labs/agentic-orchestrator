@@ -82,9 +82,11 @@ for domain in \
     "backboard.railway.app" \
     "proxy.golang.org" \
     "sum.golang.org" \
+    "storage.googleapis.com" \
     "go.dev" \
     "pkg.go.dev" \
-    "golang.org"; do
+    "golang.org" \
+    "google.golang.org"; do
     echo "Resolving $domain..."
     ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
     if [ -z "$ips" ]; then
