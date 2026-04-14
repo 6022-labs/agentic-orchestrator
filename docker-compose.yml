@@ -3,7 +3,7 @@ services:
     build:
       context: ./gateway
       dockerfile: ./src/orchestrator_gateway_host/Dockerfile
-    container_name: orchestrator-gateway-host
+    container_name: gateway-host
     ports:
       - "5000:5000"
     environment:
@@ -60,7 +60,7 @@ services:
     build:
       context: ./gateway
       dockerfile: ./src/orchestrator_sc_sync_host/Dockerfile
-    container_name: orchestrator-sc-sync-host
+    container_name: sc-sync-host
     ports:
       - "3001:3000"
     environment:
@@ -93,7 +93,7 @@ services:
     build:
       context: ./agent-reasoning
       dockerfile: ./src/agent_compute_host/Dockerfile
-    container_name: orchestrator-agent-compute-host
+    container_name: agent-compute-host
     ports:
       - "5002:5000"
     environment:
@@ -121,7 +121,7 @@ services:
     build:
       context: ./agent-knowledge
       dockerfile: ./src/database_connector_host/Dockerfile
-    container_name: orchestrator-agent-database-connector-host
+    container_name: agent-database-connector-host
     ports:
       - "5003:5000"
     environment:
@@ -143,7 +143,7 @@ services:
     build:
       context: ./agent-identity
       dockerfile: ./src/registry_host/Dockerfile
-    container_name: orchestrator-registry-host
+    container_name: registry-host
     ports:
       - "5005:5000"
     environment:
@@ -173,7 +173,7 @@ services:
     build:
       context: ./agent-identity
       dockerfile: ./src/images_generator_host/Dockerfile
-    container_name: orchestrator-images-generator-host
+    container_name: images-generator-host
     ports:
       - "5004:5000"
     environment:
@@ -187,7 +187,7 @@ services:
     build:
       context: ./channels-and-integrations/slack-bridge
       dockerfile: ./src/slack_bridge_internal_host/Dockerfile
-    container_name: orchestrator-slack-bridge-internal-host
+    container_name: slack-bridge-internal-host
     ports:
       - "5101:3000"
     environment:
@@ -224,7 +224,7 @@ services:
     build:
       context: ./channels-and-integrations/slack-bridge
       dockerfile: ./src/slack_bridge_external_host/Dockerfile
-    container_name: orchestrator-slack-bridge-external-host
+    container_name: slack-bridge-external-host
     ports:
       - "5102:3000"
     environment:
@@ -271,7 +271,7 @@ services:
         VITE_AGENT_COLLECTION_CREATOR_ADDRESS: 0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
         VITE_AGENT_COLLECTIONS_MANAGER_ADDRESS: 0x39DD75a025145770a8b8278Cc8BA705116443Ea7
         VITE_CHAIN_ID: "80002"
-    container_name: orchestrator-web-ui
+    container_name: web-ui
     ports:
       - "3000:80"
     networks:
@@ -282,7 +282,7 @@ services:
 
   db:
     image: "postgres:18-alpine"
-    container_name: orchestrator-db
+    container_name: db
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "root"
@@ -301,7 +301,7 @@ services:
 
   pgadmin:
     image: "dpage/pgadmin4:9.14"
-    container_name: orchestrator-pgadmin
+    container_name: pgadmin
     user: "root"
     depends_on:
       db:
@@ -319,7 +319,7 @@ services:
 
   vault:
     image: hashicorp/vault:1.21
-    container_name: orchestrator-vault
+    container_name: vault
     ports:
       - "8200:8200"
     environment:
@@ -338,7 +338,7 @@ services:
 
   redis:
     image: "redis:8-alpine"
-    container_name: orchestrator-redis
+    container_name: redis
     ports:
       - "6379:6379"
     networks:
@@ -346,7 +346,7 @@ services:
 
   evm-node:
     image: ghcr.io/foundry-rs/foundry:v1.5.0
-    container_name: orchestrator-evm-node
+    container_name: evm-node
     ports:
       - "8545:8545"
     environment:
@@ -360,7 +360,7 @@ services:
 
   kubo:
     image: ipfs/kubo:v0.40.1
-    container_name: orchestrator-kubo
+    container_name: kubo
     ports:
       - "4001:4001"
       - "5001:5001"
