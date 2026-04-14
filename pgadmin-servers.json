@@ -1,7 +1,7 @@
 {
   "Servers": {
     "postgres": {
-      "Name": "agentic-orchestrator-db",
+      "Name": "[LOCAL] : agentic-orchestrator",
       "Group": "Servers",
       "Port": 5432,
       "Username": "postgres",
