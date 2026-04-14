@@ -40,20 +40,23 @@ iptables -A OUTPUT -o lo -j ACCEPT
 # Create ipset with CIDR support
 ipset create allowed-domains hash:net
 
-# Fetch GitHub meta information and aggregate + add their IP ranges
+# Fetch GitHub meta information and aggregate + add their IP ranges.
+# Unauthenticated GitHub API is rate-limited to 60 req/hour/IP; use a token
+# when available. If the endpoint is down or rate-limited, fall back to
+# DNS-resolving GitHub hostnames so the container still boots.
 echo "Fetching GitHub IP ranges..."
-gh_ranges=$(curl -s https://api.github.com/meta)
-if [ -z "$gh_ranges" ]; then
-    echo "ERROR: Failed to fetch GitHub IP ranges"
-    exit 1
+GH_AUTH_HEADER=()
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+    GH_AUTH_HEADER=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
 fi
+gh_ranges=$(curl -fsSL --retry 3 --retry-delay 2 \
+    -H "Accept: application/vnd.github+json" \
+    "${GH_AUTH_HEADER[@]}" \
+    https://api.github.com/meta 2>/dev/null || true)
 
-if ! echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null; then
-    echo "ERROR: GitHub API response missing required fields"
-    exit 1
-fi
-
-echo "Processing GitHub IPs..."
+GITHUB_FALLBACK_DOMAINS=()
+if [ -n "$gh_ranges" ] && echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null 2>&1; then
+    echo "Processing GitHub IPs from api.github.com/meta..."
 while read -r cidr; do
     if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
         echo "ERROR: Invalid CIDR range from GitHub meta: $cidr"
@@ -62,9 +65,21 @@ while read -r cidr; do
     echo "Adding GitHub range $cidr"
     ipset add -exist allowed-domains "$cidr"
 done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
+else
+    echo "WARN: api.github.com/meta unavailable; falling back to DNS for GitHub hostnames"
+    GITHUB_FALLBACK_DOMAINS=(
+        "github.com"
+        "api.github.com"
+        "codeload.github.com"
+        "objects.githubusercontent.com"
+        "raw.githubusercontent.com"
+        "ghcr.io"
+    )
+fi
 
 # Resolve and add other allowed domains
 for domain in \
+    ${GITHUB_FALLBACK_DOMAINS[@]+"${GITHUB_FALLBACK_DOMAINS[@]}"} \
     "registry.npmjs.org" \
     "api.anthropic.com" \
     "console.anthropic.com" \
