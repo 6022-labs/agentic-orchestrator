@@ -1,0 +1,17 @@
+{
+  "gopls": {
+    "build.directoryFilters": ["-worktrees", "-.worktrees"]
+  },
+  "files.exclude": {
+    "**/worktrees/**": true,
+    "**/.worktrees/**": true
+  },
+  "files.watcherExclude": {
+    "**/worktrees/**": true,
+    "**/.worktrees/**": true
+  },
+  "search.exclude": {
+    "**/worktrees/**": true,
+    "**/.worktrees/**": true
+  }
+}

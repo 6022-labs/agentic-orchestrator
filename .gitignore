@@ -118,13 +118,6 @@ appsettings*
 ### Skill Creator ###
 *.skill
 
-### Speckit ###
-.specify/
-.github/agents/
-.github/prompts/
-specs/
-.vscode/settings.json
-
 ### Git Worktrees ###
 worktrees/
 .claude/worktrees/
