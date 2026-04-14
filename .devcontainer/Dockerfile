@@ -27,6 +27,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   nano \
   vim \
   openssh-client \
+  ca-certificates \
+  curl \
+  && install -m 0755 -d /etc/apt/keyrings \
+  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+  && chmod a+r /etc/apt/keyrings/docker.asc \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list \
+  && apt-get update && apt-get install -y --no-install-recommends \
+    docker-ce-cli \
+    docker-buildx-plugin \
+    docker-compose-plugin \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Pre-populate github.com host keys so ssh-agent-forwarded git calls don't prompt
@@ -120,10 +130,10 @@ RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
   go install golang.org/x/tools/gopls@latest && \
   go clean -cache -modcache -testcache
 
-# Copy and set up firewall script
-COPY init-firewall.sh /usr/local/bin/
+# Copy and set up firewall + docker socket init scripts
+COPY init-firewall.sh init-docker-socket.sh /usr/local/bin/
 USER root
-RUN chmod +x /usr/local/bin/init-firewall.sh && \
-  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
-  chmod 0440 /etc/sudoers.d/node-firewall
+RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/init-docker-socket.sh && \
+  printf "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\nnode ALL=(root) NOPASSWD: /usr/local/bin/init-docker-socket.sh\n" > /etc/sudoers.d/node-init && \
+  chmod 0440 /etc/sudoers.d/node-init
 USER node
