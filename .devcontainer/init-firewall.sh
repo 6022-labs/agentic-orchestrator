@@ -133,6 +133,15 @@ echo "Host network detected as: $HOST_NETWORK"
 iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
 iptables -A OUTPUT -d "$HOST_NETWORK" -j ACCEPT
 
+# Allow Docker Desktop host gateway (host.docker.internal) so testcontainers
+# can reach the Ryuk reaper published on the host on a random port.
+DOCKER_HOST_GW=$(getent hosts host.docker.internal | awk '{print $1}' || true)
+if [ -n "$DOCKER_HOST_GW" ]; then
+    echo "Allowing Docker host gateway: $DOCKER_HOST_GW"
+    iptables -A OUTPUT -d "$DOCKER_HOST_GW" -j ACCEPT
+    iptables -A INPUT -s "$DOCKER_HOST_GW" -j ACCEPT
+fi
+
 # Set default policies to DROP first
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
