@@ -29,6 +29,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssh-client \
   ca-certificates \
   curl \
+  chromium \
+  && printf '#!/bin/sh\nexec /usr/bin/chromium --no-sandbox --disable-dev-shm-usage "$@"\n' > /usr/local/bin/chromium-wrapper \
+  && chmod +x /usr/local/bin/chromium-wrapper \
+  && ln -sf /usr/local/bin/chromium-wrapper /usr/local/bin/google-chrome \
+  && ln -sf /usr/local/bin/chromium-wrapper /usr/local/bin/chromium \
+  && ln -sf /usr/local/bin/chromium-wrapper /usr/local/bin/chromium-browser \
+  && ln -sf /usr/local/bin/chromium-wrapper /usr/local/bin/chrome \
   && install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
   && chmod a+r /etc/apt/keyrings/docker.asc \
