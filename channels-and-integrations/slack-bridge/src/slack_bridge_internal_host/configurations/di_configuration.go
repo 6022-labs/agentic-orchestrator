@@ -9,7 +9,6 @@ import (
 	slack_bridge_internal_http_agent_reasoning_agent_compute_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_agent_reasoning_agent_compute/configurations"
 	slack_bridge_internal_mvc_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc/configurations"
 	slack_bridge_redis_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
-	slack_bridge_vault_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_vault/configurations"
 
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
@@ -26,7 +25,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	slack_bridge_configurations.AddSlackBridgeConfiguration(container)
 	slack_bridge_db_configurations.AddSlackBridgeDbConfiguration(container)
 	slack_bridge_redis_configurations.AddSlackBridgeRedisConfiguration(container)
-	slack_bridge_vault_configurations.AddSlackBridgeVaultConfiguration(container)
 	slack_bridge_internal_configurations.AddSlackBridgeInternalConfiguration(container)
 	slack_bridge_http_slack_configurations.AddSlackBridgeHttpSlackConfiguration(container)
 	slack_bridge_internal_mvc_configurations.AddSlackBridgeInternalMvcConfiguration(container)

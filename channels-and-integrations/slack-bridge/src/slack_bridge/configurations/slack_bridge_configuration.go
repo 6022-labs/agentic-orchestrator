@@ -14,23 +14,10 @@ func AddSlackBridgeConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewOrchestratorSettings)
-	if err != nil {
-		panic(err)
-	}
-
 	// Services
 	err = container.Provide(
 		services.NewECDSASignature,
 		dig.As(new(interfaces.ECDSASignatureInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		services.NewOrchestratorPrivateKeyFetcher,
-		dig.As(new(interfaces.OrchestratorPrivateKeyFetcherInterface)),
 	)
 	if err != nil {
 		panic(err)
