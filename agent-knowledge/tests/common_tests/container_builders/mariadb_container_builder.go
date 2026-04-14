@@ -127,13 +127,11 @@ func (b *MariaDBContainerBuilder) GetHost() string {
 	return host
 }
 
-func (b *MariaDBContainerBuilder) GetPort() int {
+func (b *MariaDBContainerBuilder) GetPort() uint16 {
 	portNat, err := b.container.MappedPort(context.Background(), "3306")
 	if err != nil {
 		panic(err)
 	}
 
-	port := portNat.Int()
-
-	return port
+	return portNat.Num()
 }

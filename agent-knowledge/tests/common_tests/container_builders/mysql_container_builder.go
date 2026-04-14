@@ -129,13 +129,11 @@ func (b *MySQLContainerBuilder) GetHost() string {
 	return host
 }
 
-func (b *MySQLContainerBuilder) GetPort() int {
+func (b *MySQLContainerBuilder) GetPort() uint16 {
 	portNat, err := b.container.MappedPort(context.Background(), "3306")
 	if err != nil {
 		panic(err)
 	}
 
-	port := portNat.Int()
-
-	return port
+	return portNat.Num()
 }

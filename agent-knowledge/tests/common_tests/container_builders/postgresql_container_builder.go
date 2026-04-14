@@ -127,13 +127,11 @@ func (b *PostgresContainerBuilder) GetHost() string {
 	return host
 }
 
-func (b *PostgresContainerBuilder) GetPort() int {
+func (b *PostgresContainerBuilder) GetPort() uint16 {
 	portNat, err := b.container.MappedPort(context.Background(), "5432")
 	if err != nil {
 		panic(err)
 	}
 
-	port := portNat.Int()
-
-	return port
+	return portNat.Num()
 }

@@ -308,7 +308,7 @@ func TestWhenCreatingAgentDbClient(t *testing.T) {
 					databaseConnection := model_builders.NewDatabaseConnectionBuilder().
 						WithAgentId(agentId).
 						WithHost(suite.databaseContainerBuilder.GetHost()).
-						WithPort(uint16(suite.databaseContainerBuilder.GetPort())).
+						WithPort(suite.databaseContainerBuilder.GetPort()).
 						WithDriver(testCase.driver).
 						Build()
 
@@ -349,7 +349,7 @@ func TestWhenCreatingAgentDbClient(t *testing.T) {
 					databaseConnection := model_builders.NewDatabaseConnectionBuilder().
 						WithAgentId(agentId).
 						WithHost(suite.databaseContainerBuilder.GetHost()).
-						WithPort(uint16(suite.databaseContainerBuilder.GetPort())).
+						WithPort(suite.databaseContainerBuilder.GetPort()).
 						WithDriver(testCase.driver).
 						Build()
 
@@ -396,7 +396,7 @@ func TestWhenCreatingAgentDbClient(t *testing.T) {
 					databaseConnection := model_builders.NewDatabaseConnectionBuilder().
 						WithAgentId(agentId).
 						WithHost(suite.databaseContainerBuilder.GetHost()).
-						WithPort(uint16(suite.databaseContainerBuilder.GetPort())).
+						WithPort(suite.databaseContainerBuilder.GetPort()).
 						WithDriver(testCase.driver).
 						Build()
 
@@ -449,7 +449,7 @@ func TestWhenCreatingAgentDbClient(t *testing.T) {
 					databaseConnection := model_builders.NewDatabaseConnectionBuilder().
 						WithAgentId(agentId).
 						WithHost(suite.databaseContainerBuilder.GetHost()).
-						WithPort(uint16(suite.databaseContainerBuilder.GetPort())).
+						WithPort(suite.databaseContainerBuilder.GetPort()).
 						WithDriver(testCase.driver).
 						Build()
 
