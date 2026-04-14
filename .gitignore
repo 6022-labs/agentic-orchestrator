@@ -124,3 +124,8 @@ appsettings*
 .github/prompts/
 specs/
 .vscode/settings.json
+
+### Git Worktrees ###
+worktrees/
+.claude/worktrees/
+.claude/.worktrees/
