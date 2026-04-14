@@ -96,6 +96,22 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 # Install Claude
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
+# Install Railway CLI (direct binary — npm postinstall 404s on aarch64 because only musl assets are published)
+ARG RAILWAY_VERSION=4.36.1
+RUN set -eux; \
+  case "$(dpkg --print-architecture)" in \
+    amd64) RAILWAY_TARGET=x86_64-unknown-linux-musl ;; \
+    arm64) RAILWAY_TARGET=aarch64-unknown-linux-musl ;; \
+    *) echo "unsupported arch"; exit 1 ;; \
+  esac; \
+  mkdir -p /tmp/railway-extract; \
+  wget -qO /tmp/railway.tar.gz "https://github.com/railwayapp/cli/releases/download/v${RAILWAY_VERSION}/railway-v${RAILWAY_VERSION}-${RAILWAY_TARGET}.tar.gz"; \
+  tar -xzf /tmp/railway.tar.gz -C /tmp/railway-extract; \
+  RAILWAY_BIN=$(find /tmp/railway-extract -type f -name railway | head -n1); \
+  mv "$RAILWAY_BIN" /usr/local/share/npm-global/bin/railway; \
+  chmod +x /usr/local/share/npm-global/bin/railway; \
+  rm -rf /tmp/railway.tar.gz /tmp/railway-extract
+
 
 # Copy and set up firewall script
 COPY init-firewall.sh /usr/local/bin/
