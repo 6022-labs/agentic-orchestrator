@@ -8,16 +8,10 @@ if [ ! -S "$SOCKET" ]; then
   exit 0
 fi
 
-SOCK_GID=$(stat -c '%g' "$SOCKET")
-
-if ! getent group "$SOCK_GID" >/dev/null; then
-  groupadd -g "$SOCK_GID" docker-host
-fi
-
-GROUP_NAME=$(getent group "$SOCK_GID" | cut -d: -f1)
-
-if ! id -nG node | tr ' ' '\n' | grep -qx "$GROUP_NAME"; then
-  usermod -aG "$GROUP_NAME" node
-fi
-
-echo "init-docker-socket: node added to group $GROUP_NAME (gid $SOCK_GID) for $SOCKET"
+# Grant rw to all users on the socket. usermod -aG only takes effect on new
+# login sessions, which is unreliable here: VS Code terminals may be spawned
+# before postStartCommand completes, and docker group GID on Docker Desktop
+# for Mac is 0 (root) which makes the group workaround semantically wrong.
+# Single-user dev container — permissive mode is acceptable.
+chmod 666 "$SOCKET"
+echo "init-docker-socket: chmod 666 $SOCKET"
