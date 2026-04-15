@@ -6,12 +6,18 @@ import (
 	"os"
 
 	"ariga.io/atlas-provider-gorm/gormschema"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 )
 
 // loader prints the GORM schema for atlas to diff against the migrations dir.
-// Models are added in C2.
 func main() {
-	stmts, err := gormschema.New("postgres").Load()
+	stmts, err := gormschema.New("postgres").Load(
+		&models.Bridge{},
+		&models.Participant{},
+		&models.Conversation{},
+		&models.ConversationParticipant{},
+		&models.ConversationMessage{},
+	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)
 		os.Exit(1)
