@@ -42,7 +42,7 @@ func (m *MockParticipantRepositoryInterface) EXPECT() *MockParticipantRepository
 }
 
 // GetByCollectionAddressAndCollectionTokenId mocks base method.
-func (m *MockParticipantRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId string) (*models.Participant, error) {
+func (m *MockParticipantRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Participant, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByCollectionAddressAndCollectionTokenId", collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.Participant)

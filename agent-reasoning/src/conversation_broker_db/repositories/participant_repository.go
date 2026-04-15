@@ -32,7 +32,7 @@ func (r *ParticipantRepository) GetById(id uuid.UUID) (*models.Participant, erro
 
 func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 	collectionAddress string,
-	collectionTokenId string,
+	collectionTokenId uint64,
 ) (*models.Participant, error) {
 	var entity models.Participant
 	err := r.client.GetDB().

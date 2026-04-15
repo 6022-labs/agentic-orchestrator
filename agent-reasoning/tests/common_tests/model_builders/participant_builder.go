@@ -14,7 +14,7 @@ import (
 type ParticipantBuilder struct {
 	id                uuid.UUID
 	collectionAddress *string
-	collectionTokenId *string
+	collectionTokenId *uint64
 	ensDomain         *string
 	role              *enums.ParticipantRole
 	displayName       *string
@@ -27,7 +27,7 @@ type ParticipantBuilder struct {
 // NewParticipantBuilder builds a minted participant with role=clone by default.
 func NewParticipantBuilder() *ParticipantBuilder {
 	collectionAddress := fmt.Sprintf("0x%040x", rand.Uint64())
-	collectionTokenId := fmt.Sprintf("%d", rand.Uint64())
+	collectionTokenId := rand.Uint64()
 	ensDomain := faker.Word() + ".eth"
 	role := enums.ParticipantRoleClone
 

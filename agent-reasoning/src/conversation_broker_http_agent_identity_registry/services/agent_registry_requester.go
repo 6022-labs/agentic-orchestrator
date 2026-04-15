@@ -2,11 +2,11 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/clients"
+	"github.com/samber/lo"
 )
 
 type AgentRegistryRequester struct {
@@ -31,20 +31,11 @@ func (r *AgentRegistryRequester) GetMintedAgent(collectionAddress string, collec
 		return nil, fmt.Errorf("registry returned invalid role: %w", err)
 	}
 
-	collectionAddressCopy := external.CollectionAddress
-	ensDomainCopy := external.EnsDomain
-
-	var collectionTokenIdStr *string
-	if external.CollectionTokenId != nil {
-		s := strconv.FormatUint(*external.CollectionTokenId, 10)
-		collectionTokenIdStr = &s
-	}
-
 	return &models.Participant{
-		ID:                external.ID,
-		CollectionAddress: &collectionAddressCopy,
-		CollectionTokenId: collectionTokenIdStr,
-		EnsDomain:         &ensDomainCopy,
 		Role:              &role,
+		ID:                external.ID,
+		CollectionTokenId: external.CollectionTokenId,
+		EnsDomain:         lo.ToPtr(external.EnsDomain),
+		CollectionAddress: lo.ToPtr(external.CollectionAddress),
 	}, nil
 }
