@@ -2,7 +2,9 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
+	domain_repositories "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/factories"
+	db_repositories "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/settings"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -35,5 +37,44 @@ func AddConversationBrokerDbConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	// Repository registrations land in C3.
+	// Repositories
+	err = container.Provide(
+		db_repositories.NewBridgeRepository,
+		dig.As(new(domain_repositories.BridgeRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		db_repositories.NewParticipantRepository,
+		dig.As(new(domain_repositories.ParticipantRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		db_repositories.NewConversationRepository,
+		dig.As(new(domain_repositories.ConversationRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		db_repositories.NewConversationParticipantRepository,
+		dig.As(new(domain_repositories.ConversationParticipantRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		db_repositories.NewConversationMessageRepository,
+		dig.As(new(domain_repositories.ConversationMessageRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
