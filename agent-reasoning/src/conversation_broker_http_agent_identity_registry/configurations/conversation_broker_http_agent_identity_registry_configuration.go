@@ -3,6 +3,9 @@ package configurations
 import (
 	"net/http"
 
+	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/clients"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/settings"
 	"go.uber.org/dig"
 )
@@ -20,5 +23,19 @@ func AddConversationBrokerHttpAgentIdentityRegistryConfiguration(container *dig.
 		panic(err)
 	}
 
-	// Client + requester service registrations land in C5.
+	err = container.Provide(
+		clients.NewAgentIdentityRegistryClient,
+		dig.As(new(clients.AgentIdentityRegistryClientInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewAgentRegistryRequester,
+		dig.As(new(service_interfaces.AgentRegistryRequesterInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
