@@ -3,6 +3,9 @@ package configurations
 import (
 	"net/http"
 
+	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_reasoning_agent_compute/clients"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_reasoning_agent_compute/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_reasoning_agent_compute/settings"
 	"go.uber.org/dig"
 )
@@ -15,10 +18,24 @@ func AddConversationBrokerHttpAgentReasoningAgentComputeConfiguration(container 
 
 	err = container.Provide(func() *http.Client {
 		return http.DefaultClient
-	}, dig.Name("agent-compute-http-client"))
+	}, dig.Name("agent-reasoning-agent-compute-http-client"))
 	if err != nil {
 		panic(err)
 	}
 
-	// Client + requester service registrations land in C5.
+	err = container.Provide(
+		clients.NewAgentReasoningAgentComputeClient,
+		dig.As(new(clients.AgentReasoningAgentComputeClientInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewAgentCompletionsRequester,
+		dig.As(new(service_interfaces.AgentCompletionsRequesterInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
