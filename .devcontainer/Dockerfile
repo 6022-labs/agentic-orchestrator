@@ -142,11 +142,15 @@ RUN set -eux; \
   mv /tmp/atlas /usr/local/share/npm-global/bin/atlas
 
 # Preinstall Go tools used by the VS Code Go extension (firewall blocks proxy.golang.org at runtime)
+ARG MOCKGEN_VERSION=v0.6.0
+ARG DEEPSEARCH_MOCKGEN_VERSION=v1.0.1
 RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
   go install github.com/josharian/impl@v1.4.0 && \
   go install github.com/haya14busa/goplay/cmd/goplay@v1.0.0 && \
   go install github.com/go-delve/delve/cmd/dlv@latest && \
   go install golang.org/x/tools/gopls@latest && \
+  go install go.uber.org/mock/mockgen@${MOCKGEN_VERSION} && \
+  go install github.com/FournyP/deepsearch-mockgen-cli@${DEEPSEARCH_MOCKGEN_VERSION} && \
   go clean -cache -modcache -testcache
 
 # Copy and set up firewall + docker socket init scripts
