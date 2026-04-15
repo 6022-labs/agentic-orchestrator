@@ -129,6 +129,18 @@ RUN set -eux; \
   chmod +x /usr/local/share/npm-global/bin/railway; \
   rm -rf /tmp/railway.tar.gz /tmp/railway-extract
 
+# Install Atlas CLI (community edition, Apache-2.0) for database migrations
+ARG ATLAS_VERSION=v1.2.0
+RUN set -eux; \
+  case "$(dpkg --print-architecture)" in \
+    amd64) ATLAS_ARCH=amd64 ;; \
+    arm64) ATLAS_ARCH=arm64 ;; \
+    *) echo "unsupported arch"; exit 1 ;; \
+  esac; \
+  wget -qO /tmp/atlas "https://release.ariga.io/atlas/atlas-community-linux-${ATLAS_ARCH}-${ATLAS_VERSION}"; \
+  chmod +x /tmp/atlas; \
+  mv /tmp/atlas /usr/local/share/npm-global/bin/atlas
+
 # Preinstall Go tools used by the VS Code Go extension (firewall blocks proxy.golang.org at runtime)
 RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
   go install github.com/josharian/impl@v1.4.0 && \
