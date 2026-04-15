@@ -84,6 +84,8 @@ for domain in \
     "api.anthropic.com" \
     "console.anthropic.com" \
     "claude.ai" \
+    "claude.com" \
+    "platform.claude.com" \
     "openaipublic.blob.core.windows.net" \
     "sentry.io" \
     "statsig.anthropic.com" \

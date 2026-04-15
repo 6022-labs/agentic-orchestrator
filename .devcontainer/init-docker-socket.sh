@@ -1,6 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
+# Force `localhost` to resolve to IPv4 only. Node.js picks the first matching
+# entry from /etc/hosts, and Linux containers list ::1 first — so Claude Code's
+# OAuth callback server binds to IPv6 only, while VS Code's port-forwarding
+# tunnel connects via IPv4 and hangs. See anthropics/claude-code#44844.
+if grep -qE '^::1[[:space:]].*\blocalhost\b' /etc/hosts; then
+  # /etc/hosts is a bind-mounted file in Docker, so `sed -i` can't rename over
+  # it ("Device or resource busy"). Rewrite in place via cat instead.
+  tmp=$(mktemp)
+  grep -vE '^::1[[:space:]].*\blocalhost\b' /etc/hosts > "$tmp"
+  cat "$tmp" > /etc/hosts
+  rm -f "$tmp"
+  echo "init-docker-socket: removed ::1 localhost from /etc/hosts"
+fi
+
 SOCKET=/var/run/docker.sock
 
 if [ ! -S "$SOCKET" ]; then
