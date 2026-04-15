@@ -18,16 +18,28 @@ import (
 type WhenCallingCompletionsTestingSuite struct {
 	sut    *clients.AgentReasoningAgentComputeClient
 	server *httptest.Server
+
+	handler http.HandlerFunc
 }
 
-func WhenCallingCompletionsBeforeEach(handler http.HandlerFunc) *WhenCallingCompletionsTestingSuite {
-	server := httptest.NewServer(handler)
-	sut := clients.NewAgentReasoningAgentComputeClient(clients.NewAgentReasoningAgentComputeClientParams{
+func WhenCallingCompletionsBeforeEach() *WhenCallingCompletionsTestingSuite {
+	suite := &WhenCallingCompletionsTestingSuite{}
+
+	suite.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if suite.handler == nil {
+			http.NotFound(w, r)
+			return
+		}
+		suite.handler(w, r)
+	}))
+
+	suite.sut = clients.NewAgentReasoningAgentComputeClient(clients.NewAgentReasoningAgentComputeClientParams{
 		Logger:                             zap.NewNop(),
 		HttpClient:                         http.DefaultClient,
-		AgentReasoningAgentComputeSettings: &settings.AgentReasoningAgentComputeSettings{BaseUrl: server.URL},
+		AgentReasoningAgentComputeSettings: &settings.AgentReasoningAgentComputeSettings{BaseUrl: suite.server.URL},
 	})
-	return &WhenCallingCompletionsTestingSuite{sut: sut, server: server}
+
+	return suite
 }
 
 func WhenCallingCompletionsAfterEach(suite *WhenCallingCompletionsTestingSuite) {
@@ -40,12 +52,11 @@ func TestWhenCallingCompletions(t *testing.T) {
 	t.Run("Given the upstream returns 200", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should POST to /agent/{addr}/{tokenId}/compute and decode the response", func(t *testing.T) {
-			t.Parallel()
+		var capturedPath string
+		var capturedBody []byte
 
-			var capturedPath string
-			var capturedBody []byte
-			suite := WhenCallingCompletionsBeforeEach(func(w http.ResponseWriter, r *http.Request) {
+		initSuite := func(suite *WhenCallingCompletionsTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, r *http.Request) {
 				capturedPath = r.URL.Path
 				capturedBody, _ = io.ReadAll(r.Body)
 				w.Header().Set("Content-Type", "application/json")
@@ -53,8 +64,15 @@ func TestWhenCallingCompletions(t *testing.T) {
 					IsFinal:   true,
 					Responses: []*string{lo.ToPtr("ok")},
 				})
-			})
+			}
+		}
+
+		t.Run("Should POST to /agent/{addr}/{tokenId}/compute and decode the response", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCallingCompletionsBeforeEach()
 			defer WhenCallingCompletionsAfterEach(suite)
+			initSuite(suite)
 
 			result, err := suite.sut.Completions("0xabc", uint64(7), &models.ExternalAgentComputeRequest{
 				Platform: "slack",
@@ -70,13 +88,18 @@ func TestWhenCallingCompletions(t *testing.T) {
 	t.Run("Given the upstream returns non-200", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenCallingCompletionsTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}
+
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenCallingCompletionsBeforeEach(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(http.StatusInternalServerError)
-			})
+			suite := WhenCallingCompletionsBeforeEach()
 			defer WhenCallingCompletionsAfterEach(suite)
+			initSuite(suite)
 
 			_, err := suite.sut.Completions("0xabc", uint64(1), &models.ExternalAgentComputeRequest{})
 

@@ -17,20 +17,27 @@ import (
 type WhenCallingPostCompletionTestingSuite struct {
 	sut    *clients.BridgeCallbackClient
 	server *httptest.Server
+
+	handler http.HandlerFunc
 }
 
-func WhenCallingPostCompletionBeforeEach(handler http.HandlerFunc) *WhenCallingPostCompletionTestingSuite {
-	server := httptest.NewServer(handler)
+func WhenCallingPostCompletionBeforeEach() *WhenCallingPostCompletionTestingSuite {
+	suite := &WhenCallingPostCompletionTestingSuite{}
 
-	sut := clients.NewBridgeCallbackClient(clients.NewBridgeCallbackClientParams{
+	suite.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if suite.handler == nil {
+			http.NotFound(w, r)
+			return
+		}
+		suite.handler(w, r)
+	}))
+
+	suite.sut = clients.NewBridgeCallbackClient(clients.NewBridgeCallbackClientParams{
 		Logger:     zap.NewNop(),
 		HttpClient: http.DefaultClient,
 	})
 
-	return &WhenCallingPostCompletionTestingSuite{
-		sut:    sut,
-		server: server,
-	}
+	return suite
 }
 
 func WhenCallingPostCompletionAfterEach(suite *WhenCallingPostCompletionTestingSuite) {
@@ -43,19 +50,25 @@ func TestWhenCallingPostCompletion(t *testing.T) {
 	t.Run("Given the bridge returns 2xx", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should POST the payload to the callback URL", func(t *testing.T) {
-			t.Parallel()
+		var capturedMethod string
+		var capturedPath string
+		var capturedBody []byte
 
-			var capturedMethod string
-			var capturedPath string
-			var capturedBody []byte
-			suite := WhenCallingPostCompletionBeforeEach(func(w http.ResponseWriter, r *http.Request) {
+		initSuite := func(suite *WhenCallingPostCompletionTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, r *http.Request) {
 				capturedMethod = r.Method
 				capturedPath = r.URL.Path
 				capturedBody, _ = io.ReadAll(r.Body)
 				w.WriteHeader(http.StatusNoContent)
-			})
+			}
+		}
+
+		t.Run("Should POST the payload to the callback URL", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCallingPostCompletionBeforeEach()
 			defer WhenCallingPostCompletionAfterEach(suite)
+			initSuite(suite)
 
 			body := &models.ExternalCompletionCallbackRequest{
 				ConversationId: uuid.New(),
@@ -80,13 +93,18 @@ func TestWhenCallingPostCompletion(t *testing.T) {
 	t.Run("Given the bridge returns non-2xx", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenCallingPostCompletionTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}
+
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenCallingPostCompletionBeforeEach(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(http.StatusInternalServerError)
-			})
+			suite := WhenCallingPostCompletionBeforeEach()
 			defer WhenCallingPostCompletionAfterEach(suite)
+			initSuite(suite)
 
 			err := suite.sut.PostCompletion(suite.server.URL, &models.ExternalCompletionCallbackRequest{})
 
