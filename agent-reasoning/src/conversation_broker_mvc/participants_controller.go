@@ -8,72 +8,77 @@ import (
 )
 
 const (
-	REGISTER_MINTED_PARTICIPANT_ENDPOINT     = "/participants/minted"
-	REGISTER_NON_MINTED_PARTICIPANT_ENDPOINT = "/participants/non-minted"
+	REGISTER_AGENT_ENDPOINT = "/participants/agents"
+	REGISTER_USER_ENDPOINT  = "/participants/users"
 )
 
 type ParticipantsController struct {
-	logger                       *zap.Logger
-	registerMintedParticipant    use_cases.RegisterMintedParticipantInterface
-	registerNonMintedParticipant use_cases.RegisterNonMintedParticipantInterface
+	logger          *zap.Logger
+	registerAgent   use_cases.RegisterAgentInterface
+	registerUser    use_cases.RegisterUserInterface
 }
 
 func NewParticipantsController(
 	logger *zap.Logger,
-	registerMintedParticipant use_cases.RegisterMintedParticipantInterface,
-	registerNonMintedParticipant use_cases.RegisterNonMintedParticipantInterface,
+	registerAgent use_cases.RegisterAgentInterface,
+	registerUser use_cases.RegisterUserInterface,
 ) *ParticipantsController {
 	return &ParticipantsController{
-		logger:                       logger,
-		registerMintedParticipant:    registerMintedParticipant,
-		registerNonMintedParticipant: registerNonMintedParticipant,
+		logger:        logger,
+		registerAgent: registerAgent,
+		registerUser:  registerUser,
 	}
 }
 
 func (c *ParticipantsController) InitRoutes(app fiber.Router) {
-	app.Post(REGISTER_MINTED_PARTICIPANT_ENDPOINT, c.RegisterMinted)
-	app.Post(REGISTER_NON_MINTED_PARTICIPANT_ENDPOINT, c.RegisterNonMinted)
+	app.Post(REGISTER_AGENT_ENDPOINT, c.RegisterAgent)
+	app.Post(REGISTER_USER_ENDPOINT, c.RegisterUser)
 }
 
-// @Summary Register Minted Participant
-// @Description Registers a minted participant by NFT identity. Broker fetches role + ENS from the agent-identity registry.
+// @Summary Register Agent Participant
+// @Description Upserts an agent participant by NFT identity. Returns 200 if the agent was already known, 201 if newly created. Broker fetches role + ENS from the agent-identity registry on first registration.
 // @Tags Participants
 // @Accept json
 // @Produce json
-// @Param request body requests.RegisterMintedParticipantRequest true "Register Minted Participant Request"
+// @Param request body requests.RegisterAgentRequest true "Register Agent Request"
+// @Success 200 {object} models.Participant
 // @Success 201 {object} models.Participant
 // @Failure 400 {object} errors.ValidationError
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /participants/minted [post]
-func (c *ParticipantsController) RegisterMinted(ctx *fiber.Ctx) error {
-	req := new(requests.RegisterMintedParticipantRequest)
+// @Router /participants/agents [post]
+func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
+	req := new(requests.RegisterAgentRequest)
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, err := c.registerMintedParticipant.Register(req)
+	p, existed, err := c.registerAgent.Register(req)
 	if err != nil {
 		return mapError(c.logger, ctx, err)
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(p)
+	status := fiber.StatusCreated
+	if existed {
+		status = fiber.StatusOK
+	}
+	return ctx.Status(status).JSON(p)
 }
 
-// @Summary Register Non-Minted Participant
-// @Description Registers a human participant identified only by display name (not minted on-chain).
+// @Summary Register User Participant
+// @Description Creates a user participant identified only by display name. No dedup — bridges must cache the returned id locally to avoid duplicates.
 // @Tags Participants
 // @Accept json
 // @Produce json
-// @Param request body requests.RegisterNonMintedParticipantRequest true "Register Non-Minted Participant Request"
+// @Param request body requests.RegisterUserRequest true "Register User Request"
 // @Success 201 {object} models.Participant
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /participants/non-minted [post]
-func (c *ParticipantsController) RegisterNonMinted(ctx *fiber.Ctx) error {
-	req := new(requests.RegisterNonMintedParticipantRequest)
+// @Router /participants/users [post]
+func (c *ParticipantsController) RegisterUser(ctx *fiber.Ctx) error {
+	req := new(requests.RegisterUserRequest)
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, err := c.registerNonMintedParticipant.Register(req)
+	p, err := c.registerUser.Register(req)
 	if err != nil {
 		return mapError(c.logger, ctx, err)
 	}

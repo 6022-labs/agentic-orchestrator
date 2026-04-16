@@ -63,7 +63,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				GetNextMintedParticipantToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any()).
 				Return(nil, gorm.ErrRecordNotFound).
 				Times(1)
 		}
@@ -82,11 +82,11 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 	t.Run("Given the next participant has no processable conversations", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				GetNextMintedParticipantToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any()).
 				Return(participant, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
@@ -124,12 +124,12 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 	t.Run("Given the next participant has processable conversations", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conv1 := model_builders.NewConversationBuilder().Build()
 		conv2 := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
-			suite.mockParticipantRepository.EXPECT().GetNextMintedParticipantToProcess(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().GetNextAgentToProcess(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(participant, uint64(30)).
@@ -154,11 +154,11 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 	t.Run("Given one conversation processor call fails", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conv := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
-			suite.mockParticipantRepository.EXPECT().GetNextMintedParticipantToProcess(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().GetNextAgentToProcess(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(participant, uint64(30)).

@@ -7,12 +7,12 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 )
 
-type RegisterMintedParticipantRequest struct {
+type RegisterAgentRequest struct {
 	CollectionAddress string `json:"collectionAddress"`
 	CollectionTokenId string `json:"collectionTokenId"`
 }
 
-func (r *RegisterMintedParticipantRequest) Validate() error {
+func (r *RegisterAgentRequest) Validate() error {
 	if strings.TrimSpace(r.CollectionAddress) == "" {
 		return errors.NewValidationError("collectionAddress", "must not be empty")
 	}
@@ -25,7 +25,7 @@ func (r *RegisterMintedParticipantRequest) Validate() error {
 	return nil
 }
 
-func (r *RegisterMintedParticipantRequest) ParsedCollectionTokenId() uint64 {
+func (r *RegisterAgentRequest) ParsedCollectionTokenId() uint64 {
 	v, _ := strconv.ParseUint(r.CollectionTokenId, 10, 64)
 	return v
 }

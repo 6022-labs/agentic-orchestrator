@@ -71,19 +71,19 @@ func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetById(id any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetById), id)
 }
 
-// GetNextMintedParticipantToProcess mocks base method.
-func (m *MockParticipantRepositoryInterface) GetNextMintedParticipantToProcess(processingIntervalSeconds uint64) (*models.Participant, error) {
+// GetNextAgentToProcess mocks base method.
+func (m *MockParticipantRepositoryInterface) GetNextAgentToProcess(processingIntervalSeconds uint64) (*models.Participant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNextMintedParticipantToProcess", processingIntervalSeconds)
+	ret := m.ctrl.Call(m, "GetNextAgentToProcess", processingIntervalSeconds)
 	ret0, _ := ret[0].(*models.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetNextMintedParticipantToProcess indicates an expected call of GetNextMintedParticipantToProcess.
-func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetNextMintedParticipantToProcess(processingIntervalSeconds any) *gomock.Call {
+// GetNextAgentToProcess indicates an expected call of GetNextAgentToProcess.
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetNextAgentToProcess(processingIntervalSeconds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextMintedParticipantToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetNextMintedParticipantToProcess), processingIntervalSeconds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAgentToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetNextAgentToProcess), processingIntervalSeconds)
 }
 
 // ListByConversationId mocks base method.

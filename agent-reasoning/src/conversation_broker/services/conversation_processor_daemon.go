@@ -94,7 +94,7 @@ func (d *ConversationProcessorDaemon) runLoop() {
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant() {
-	participant, err := d.participantRepository.GetNextMintedParticipantToProcess(d.processingSettings.ParticipantProcessingInterval)
+	participant, err := d.participantRepository.GetNextAgentToProcess(d.processingSettings.ParticipantProcessingInterval)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		d.logger.Debug("No participants to process at the moment")
 		return

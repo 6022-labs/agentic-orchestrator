@@ -80,7 +80,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given the conversation is past the force-conclude threshold", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now().Add(-2 * time.Hour)
 
@@ -103,7 +103,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given the bridge does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 
@@ -127,7 +127,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given there are no processable messages for the participant", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
@@ -156,7 +156,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 		t.Parallel()
 
 		humanRole := enums.ParticipantRoleHuman
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		participant.Role = &humanRole
 
 		conversation := model_builders.NewConversationBuilder().Build()
@@ -198,7 +198,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given an AI participant produces completions that conclude the conversation", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build() // role = clone by default
+		participant := model_builders.NewAgentParticipantBuilder().Build() // role = clone by default
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
@@ -249,7 +249,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given an AI participant produces completions that keep the conversation going", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
@@ -291,7 +291,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given the conversation got concluded between compute and reload", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
@@ -331,7 +331,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 	t.Run("Given agent_compute fails", func(t *testing.T) {
 		t.Parallel()
 
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()

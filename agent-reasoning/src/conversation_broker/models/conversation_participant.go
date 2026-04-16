@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// ConversationParticipant attaches a Participant (AI agent, minted human, or
-// non-minted human) to a Conversation. Composite primary key.
+// ConversationParticipant attaches a Participant (agent or user) to a
+// Conversation. Composite primary key.
 type ConversationParticipant struct {
 	ConversationID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"conversationId"`
 	ParticipantID  uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"participantId"`

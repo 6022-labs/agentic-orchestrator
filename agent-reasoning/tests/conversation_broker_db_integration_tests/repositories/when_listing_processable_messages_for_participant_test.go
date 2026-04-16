@@ -50,10 +50,10 @@ func (s *WhenListingProcessableMessagesForParticipantTestingSuite) seed(agentEns
 	conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
 	_, _ = s.conversations.Save(conv)
 
-	human := model_builders.NewNonMintedParticipantBuilder().Build()
+	human := model_builders.NewUserParticipantBuilder().Build()
 	_, _ = s.participants.Save(human)
 
-	agent := model_builders.NewParticipantBuilder().Build()
+	agent := model_builders.NewAgentParticipantBuilder().Build()
 	agent.EnsDomain = lo.ToPtr(agentEnsDomain)
 	_, _ = s.participants.Save(agent)
 

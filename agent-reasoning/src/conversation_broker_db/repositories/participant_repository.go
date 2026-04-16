@@ -45,10 +45,11 @@ func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 	return &entity, nil
 }
 
-// GetNextMintedParticipantToProcess returns the oldest minted participant
-// (role IS NOT NULL) that is not currently processing and whose last run is
-// older than processingIntervalSeconds. Non-minted humans are never returned.
-func (r *ParticipantRepository) GetNextMintedParticipantToProcess(
+// GetNextAgentToProcess returns the oldest agent participant (role IS NOT
+// NULL) that is not currently processing and whose last run is older than
+// processingIntervalSeconds. User participants (display-name only) are never
+// returned.
+func (r *ParticipantRepository) GetNextAgentToProcess(
 	processingIntervalSeconds uint64,
 ) (*models.Participant, error) {
 	var entity models.Participant

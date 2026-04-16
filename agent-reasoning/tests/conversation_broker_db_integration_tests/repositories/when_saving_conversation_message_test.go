@@ -52,7 +52,7 @@ func TestWhenSavingConversationMessage(t *testing.T) {
 			_, _ = suite.bridges.Save(bridge)
 			conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
 			_, _ = suite.conversations.Save(conv)
-			part := model_builders.NewParticipantBuilder().Build()
+			part := model_builders.NewAgentParticipantBuilder().Build()
 			_, _ = suite.participants.Save(part)
 
 			now := time.Now()

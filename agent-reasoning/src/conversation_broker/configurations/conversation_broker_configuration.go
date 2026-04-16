@@ -43,12 +43,12 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewRegisterMintedParticipant, dig.As(new(use_cases.RegisterMintedParticipantInterface)))
+	err = container.Provide(use_cases.NewRegisterAgent, dig.As(new(use_cases.RegisterAgentInterface)))
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewRegisterNonMintedParticipant, dig.As(new(use_cases.RegisterNonMintedParticipantInterface)))
+	err = container.Provide(use_cases.NewRegisterUser, dig.As(new(use_cases.RegisterUserInterface)))
 	if err != nil {
 		panic(err)
 	}

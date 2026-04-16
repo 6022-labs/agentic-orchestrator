@@ -40,7 +40,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 
 		bridge := model_builders.NewBridgeBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
-		agent := model_builders.NewParticipantBuilder().Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenPostingCompletionCallbackTestingSuite) {
 			suite.mockClient.EXPECT().
@@ -66,7 +66,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 
 		bridge := model_builders.NewBridgeBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
-		agent := model_builders.NewParticipantBuilder().Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
 		content := "completed response"
 
 		initSuite := func(suite *WhenPostingCompletionCallbackTestingSuite) {

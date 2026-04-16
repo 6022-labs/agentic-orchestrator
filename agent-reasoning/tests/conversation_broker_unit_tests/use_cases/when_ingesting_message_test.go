@@ -143,7 +143,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 		t.Parallel()
 
 		conversation := model_builders.NewConversationBuilder().Build()
-		participant := model_builders.NewParticipantBuilder().Build()
+		participant := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)

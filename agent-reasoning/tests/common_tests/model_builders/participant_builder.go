@@ -24,8 +24,8 @@ type ParticipantBuilder struct {
 	updatedAt         time.Time
 }
 
-// NewParticipantBuilder builds a minted participant with role=clone by default.
-func NewParticipantBuilder() *ParticipantBuilder {
+// NewAgentParticipantBuilder builds an agent participant with role=clone by default.
+func NewAgentParticipantBuilder() *ParticipantBuilder {
 	collectionAddress := fmt.Sprintf("0x%040x", rand.Uint64())
 	collectionTokenId := rand.Uint64()
 	ensDomain := faker.Word() + ".eth"
@@ -42,8 +42,8 @@ func NewParticipantBuilder() *ParticipantBuilder {
 	}
 }
 
-// NewNonMintedParticipantBuilder builds a non-minted human participant.
-func NewNonMintedParticipantBuilder() *ParticipantBuilder {
+// NewUserParticipantBuilder builds a user participant (display-name only).
+func NewUserParticipantBuilder() *ParticipantBuilder {
 	displayName := faker.Name()
 	return &ParticipantBuilder{
 		id:          uuid.New(),

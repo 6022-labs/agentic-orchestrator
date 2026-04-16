@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_conversation_broker/settings"
@@ -16,8 +17,8 @@ import (
 
 const (
 	REGISTER_BRIDGE_ENDPOINT                    = "/bridges"
-	REGISTER_MINTED_PARTICIPANT_ENDPOINT        = "/participants/minted"
-	REGISTER_NON_MINTED_PARTICIPANT_ENDPOINT    = "/participants/non-minted"
+	REGISTER_AGENT_ENDPOINT                     = "/participants/agents"
+	REGISTER_USER_ENDPOINT                      = "/participants/users"
 	REGISTER_CONVERSATION_ENDPOINT              = "/conversations"
 	GET_CONVERSATION_ENDPOINT                   = "/conversations/%s"
 	UPDATE_CONVERSATION_DESCRIPTION_ENDPOINT    = "/conversations/%s/description"
@@ -29,8 +30,8 @@ const (
 
 type ConversationBrokerClientInterface interface {
 	RegisterBridge(body *models.ExternalRegisterBridgeRequest) (*models.ExternalBridgeResponse, error)
-	RegisterMintedParticipant(body *models.ExternalRegisterMintedParticipantRequest) (*models.ExternalParticipantResponse, error)
-	RegisterNonMintedParticipant(body *models.ExternalRegisterNonMintedParticipantRequest) (*models.ExternalParticipantResponse, error)
+	RegisterAgent(body *models.ExternalRegisterAgentRequest) (*models.ExternalParticipantResponse, error)
+	RegisterUser(body *models.ExternalRegisterUserRequest) (*models.ExternalParticipantResponse, error)
 	RegisterConversation(body *models.ExternalRegisterConversationRequest) (*models.ExternalConversationResponse, error)
 	GetConversation(conversationId uuid.UUID) (*models.ExternalConversationResponse, error)
 	UpdateConversationDescription(conversationId uuid.UUID, body *models.ExternalUpdateConversationDescriptionRequest) error
@@ -70,17 +71,19 @@ func (c *ConversationBrokerClient) RegisterBridge(body *models.ExternalRegisterB
 	return &out, nil
 }
 
-func (c *ConversationBrokerClient) RegisterMintedParticipant(body *models.ExternalRegisterMintedParticipantRequest) (*models.ExternalParticipantResponse, error) {
+// RegisterAgent is idempotent on the broker side: 200 if the agent was already
+// known, 201 if newly created. Both are success.
+func (c *ConversationBrokerClient) RegisterAgent(body *models.ExternalRegisterAgentRequest) (*models.ExternalParticipantResponse, error) {
 	var out models.ExternalParticipantResponse
-	if err := c.doJSON(http.MethodPost, REGISTER_MINTED_PARTICIPANT_ENDPOINT, body, &out, http.StatusCreated); err != nil {
+	if err := c.doJSON(http.MethodPost, REGISTER_AGENT_ENDPOINT, body, &out, http.StatusOK, http.StatusCreated); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (c *ConversationBrokerClient) RegisterNonMintedParticipant(body *models.ExternalRegisterNonMintedParticipantRequest) (*models.ExternalParticipantResponse, error) {
+func (c *ConversationBrokerClient) RegisterUser(body *models.ExternalRegisterUserRequest) (*models.ExternalParticipantResponse, error) {
 	var out models.ExternalParticipantResponse
-	if err := c.doJSON(http.MethodPost, REGISTER_NON_MINTED_PARTICIPANT_ENDPOINT, body, &out, http.StatusCreated); err != nil {
+	if err := c.doJSON(http.MethodPost, REGISTER_USER_ENDPOINT, body, &out, http.StatusCreated); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -132,7 +135,7 @@ func (c *ConversationBrokerClient) IngestMessage(conversationId uuid.UUID, body 
 	return &out, nil
 }
 
-func (c *ConversationBrokerClient) doJSON(method, endpoint string, body any, out any, expectedStatus int) error {
+func (c *ConversationBrokerClient) doJSON(method, endpoint string, body any, out any, expectedStatuses ...int) error {
 	url := c.conversationBrokerSettings.BaseUrl + endpoint
 
 	var reqBody io.Reader
@@ -158,7 +161,7 @@ func (c *ConversationBrokerClient) doJSON(method, endpoint string, body any, out
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != expectedStatus {
+	if !slices.Contains(expectedStatuses, resp.StatusCode) {
 		responseBody, _ := io.ReadAll(resp.Body)
 		c.logger.Warn(
 			"Unexpected status from conversation broker",

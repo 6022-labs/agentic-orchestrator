@@ -29,7 +29,7 @@ func (r *AgentCompletionsRequester) Completions(
 	forceCompletion bool,
 ) ([]*string, bool, error) {
 	if agent == nil || agent.CollectionAddress == nil || agent.CollectionTokenId == nil {
-		return nil, false, fmt.Errorf("agent participant must be minted")
+		return nil, false, fmt.Errorf("participant is not an agent (missing on-chain identity)")
 	}
 
 	participantsById := lo.SliceToMap(participants, func(participant *models.Participant) (uuid.UUID, *models.Participant) {
@@ -51,11 +51,11 @@ func (r *AgentCompletionsRequester) Completions(
 		}
 	}
 
-	mintedAgents := make([]*http_compute_models.ExternalAgentComputeContextConversationAgentRequest, 0, len(participants))
+	agentRequests := make([]*http_compute_models.ExternalAgentComputeContextConversationAgentRequest, 0, len(participants))
 	channelMembers := make([]string, 0, len(participants))
 	for _, p := range participants {
 		if p.CollectionAddress != nil && p.CollectionTokenId != nil {
-			mintedAgents = append(mintedAgents, &http_compute_models.ExternalAgentComputeContextConversationAgentRequest{
+			agentRequests = append(agentRequests, &http_compute_models.ExternalAgentComputeContextConversationAgentRequest{
 				CollectionAddress: *p.CollectionAddress,
 				CollectionTokenId: *p.CollectionTokenId,
 			})
@@ -76,7 +76,7 @@ func (r *AgentCompletionsRequester) Completions(
 		Platform: platform,
 		ConversationContext: &http_compute_models.ExternalAgentComputeContextConversationContextRequest{
 			Id:     conversation.ID.String(),
-			Agents: mintedAgents,
+			Agents: agentRequests,
 		},
 		ForceConclusion: forceCompletion,
 		Inputs:          inputs,

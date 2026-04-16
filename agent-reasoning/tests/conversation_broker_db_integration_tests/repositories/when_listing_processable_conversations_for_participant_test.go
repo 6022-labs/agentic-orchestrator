@@ -76,7 +76,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			suite := WhenListingProcessableConversationsForParticipantBeforeEach()
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
-			facilitator := model_builders.NewParticipantBuilder().
+			facilitator := model_builders.NewAgentParticipantBuilder().
 				WithRole(enums.ParticipantRoleFacilitator).
 				Build()
 			_, _ = suite.participants.Save(facilitator)
@@ -100,7 +100,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			bridge := model_builders.NewBridgeBuilder().Build()
 			_, _ = suite.bridges.Save(bridge)
 
-			facilitator := model_builders.NewParticipantBuilder().
+			facilitator := model_builders.NewAgentParticipantBuilder().
 				WithRole(enums.ParticipantRoleFacilitator).
 				Build()
 			_, _ = suite.participants.Save(facilitator)
@@ -133,7 +133,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				facilitator := model_builders.NewParticipantBuilder().
+				facilitator := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleFacilitator).
 					Build()
 				_, _ = suite.participants.Save(facilitator)
@@ -158,7 +158,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				facilitator := model_builders.NewParticipantBuilder().
+				facilitator := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleFacilitator).
 					Build()
 				_, _ = suite.participants.Save(facilitator)
@@ -184,7 +184,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				facilitator := model_builders.NewParticipantBuilder().
+				facilitator := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleFacilitator).
 					Build()
 				_, _ = suite.participants.Save(facilitator)
@@ -214,13 +214,13 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				human := model_builders.NewParticipantBuilder().
+				human := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleHuman).
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
 				_, _ = suite.participants.Save(human)
 
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -245,12 +245,12 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				human := model_builders.NewParticipantBuilder().
+				human := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleHuman).
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
 				_, _ = suite.participants.Save(human)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -275,7 +275,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				human := model_builders.NewParticipantBuilder().
+				human := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleHuman).
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
@@ -303,12 +303,12 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				human := model_builders.NewParticipantBuilder().
+				human := model_builders.NewAgentParticipantBuilder().
 					WithRole(enums.ParticipantRoleHuman).
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
 				_, _ = suite.participants.Save(human)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -338,10 +338,10 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				agent := model_builders.NewParticipantBuilder().Build()
+				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
 				_, _ = suite.participants.Save(agent)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -366,10 +366,10 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				agent := model_builders.NewParticipantBuilder().Build()
+				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
 				_, _ = suite.participants.Save(agent)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -395,10 +395,10 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				agent := model_builders.NewParticipantBuilder().Build()
+				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
 				_, _ = suite.participants.Save(agent)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -425,7 +425,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				agent := model_builders.NewParticipantBuilder().Build()
+				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
 				_, _ = suite.participants.Save(agent)
 
@@ -452,10 +452,10 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 				bridge := model_builders.NewBridgeBuilder().Build()
 				_, _ = suite.bridges.Save(bridge)
-				agent := model_builders.NewParticipantBuilder().Build()
+				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
 				_, _ = suite.participants.Save(agent)
-				other := model_builders.NewParticipantBuilder().Build()
+				other := model_builders.NewAgentParticipantBuilder().Build()
 				_, _ = suite.participants.Save(other)
 
 				conv := suite.seedConversation(bridge.ID)
@@ -481,10 +481,10 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 			bridge := model_builders.NewBridgeBuilder().Build()
 			_, _ = suite.bridges.Save(bridge)
-			facilitator := model_builders.NewParticipantBuilder().
+			facilitator := model_builders.NewAgentParticipantBuilder().
 				WithRole(enums.ParticipantRoleFacilitator).
 				Build()
-			outsider := model_builders.NewParticipantBuilder().Build()
+			outsider := model_builders.NewAgentParticipantBuilder().Build()
 			_, _ = suite.participants.Save(facilitator)
 			_, _ = suite.participants.Save(outsider)
 

@@ -113,6 +113,21 @@ func (mr *MockConversationBrokerClientInterfaceMockRecorder) IngestMessage(conve
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IngestMessage", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).IngestMessage), conversationId, body)
 }
 
+// RegisterAgent mocks base method.
+func (m *MockConversationBrokerClientInterface) RegisterAgent(body *models.ExternalRegisterAgentRequest) (*models.ExternalParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterAgent", body)
+	ret0, _ := ret[0].(*models.ExternalParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterAgent indicates an expected call of RegisterAgent.
+func (mr *MockConversationBrokerClientInterfaceMockRecorder) RegisterAgent(body any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).RegisterAgent), body)
+}
+
 // RegisterBridge mocks base method.
 func (m *MockConversationBrokerClientInterface) RegisterBridge(body *models.ExternalRegisterBridgeRequest) (*models.ExternalBridgeResponse, error) {
 	m.ctrl.T.Helper()
@@ -143,34 +158,19 @@ func (mr *MockConversationBrokerClientInterfaceMockRecorder) RegisterConversatio
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterConversation", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).RegisterConversation), body)
 }
 
-// RegisterMintedParticipant mocks base method.
-func (m *MockConversationBrokerClientInterface) RegisterMintedParticipant(body *models.ExternalRegisterMintedParticipantRequest) (*models.ExternalParticipantResponse, error) {
+// RegisterUser mocks base method.
+func (m *MockConversationBrokerClientInterface) RegisterUser(body *models.ExternalRegisterUserRequest) (*models.ExternalParticipantResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterMintedParticipant", body)
+	ret := m.ctrl.Call(m, "RegisterUser", body)
 	ret0, _ := ret[0].(*models.ExternalParticipantResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegisterMintedParticipant indicates an expected call of RegisterMintedParticipant.
-func (mr *MockConversationBrokerClientInterfaceMockRecorder) RegisterMintedParticipant(body any) *gomock.Call {
+// RegisterUser indicates an expected call of RegisterUser.
+func (mr *MockConversationBrokerClientInterfaceMockRecorder) RegisterUser(body any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterMintedParticipant", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).RegisterMintedParticipant), body)
-}
-
-// RegisterNonMintedParticipant mocks base method.
-func (m *MockConversationBrokerClientInterface) RegisterNonMintedParticipant(body *models.ExternalRegisterNonMintedParticipantRequest) (*models.ExternalParticipantResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterNonMintedParticipant", body)
-	ret0, _ := ret[0].(*models.ExternalParticipantResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegisterNonMintedParticipant indicates an expected call of RegisterNonMintedParticipant.
-func (mr *MockConversationBrokerClientInterfaceMockRecorder) RegisterNonMintedParticipant(body any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterNonMintedParticipant", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).RegisterNonMintedParticipant), body)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockConversationBrokerClientInterface)(nil).RegisterUser), body)
 }
 
 // UpdateConversationDescription mocks base method.

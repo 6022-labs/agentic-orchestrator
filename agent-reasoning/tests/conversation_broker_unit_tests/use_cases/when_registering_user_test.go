@@ -13,33 +13,33 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type WhenRegisteringNonMintedParticipantTestingSuite struct {
-	sut *use_cases.RegisterNonMintedParticipant
+type WhenRegisteringUserTestingSuite struct {
+	sut *use_cases.RegisterUser
 
 	mockParticipantRepository *repositories_mocks.MockParticipantRepositoryInterface
 }
 
-func WhenRegisteringNonMintedParticipantBeforeEach(t *testing.T) *WhenRegisteringNonMintedParticipantTestingSuite {
+func WhenRegisteringUserBeforeEach(t *testing.T) *WhenRegisteringUserTestingSuite {
 	mockController := gomock.NewController(t)
 
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 
-	sut := use_cases.NewRegisterNonMintedParticipant(mockParticipantRepository)
+	sut := use_cases.NewRegisterUser(mockParticipantRepository)
 
-	return &WhenRegisteringNonMintedParticipantTestingSuite{
+	return &WhenRegisteringUserTestingSuite{
 		sut: sut,
 
 		mockParticipantRepository: mockParticipantRepository,
 	}
 }
 
-func generateValidRegisterNonMintedParticipantRequest() *requests.RegisterNonMintedParticipantRequest {
-	return &requests.RegisterNonMintedParticipantRequest{
+func generateValidRegisterUserRequest() *requests.RegisterUserRequest {
+	return &requests.RegisterUserRequest{
 		DisplayName: "Pierre",
 	}
 }
 
-func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
+func TestWhenRegisteringUser(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Given request is invalid", func(t *testing.T) {
@@ -48,8 +48,8 @@ func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
 		t.Run("Because displayName is empty", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRegisteringNonMintedParticipantBeforeEach(t)
-			request := generateValidRegisterNonMintedParticipantRequest()
+			suite := WhenRegisteringUserBeforeEach(t)
+			request := generateValidRegisterUserRequest()
 			request.DisplayName = ""
 
 			_, err := suite.sut.Register(request)
@@ -62,7 +62,7 @@ func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
 	t.Run("Given saving the participant fails", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenRegisteringNonMintedParticipantTestingSuite) {
+		initSuite := func(suite *WhenRegisteringUserTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
 				Save(gomock.Any()).
 				Return(nil, errors.New("boom")).
@@ -72,8 +72,8 @@ func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
 		t.Run("Should propagate the error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRegisteringNonMintedParticipantBeforeEach(t)
-			request := generateValidRegisterNonMintedParticipantRequest()
+			suite := WhenRegisteringUserBeforeEach(t)
+			request := generateValidRegisterUserRequest()
 			initSuite(suite)
 
 			_, err := suite.sut.Register(request)
@@ -85,7 +85,7 @@ func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
 	t.Run("Given request is valid", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenRegisteringNonMintedParticipantTestingSuite, request *requests.RegisterNonMintedParticipantRequest) {
+		initSuite := func(suite *WhenRegisteringUserTestingSuite, request *requests.RegisterUserRequest) {
 			suite.mockParticipantRepository.EXPECT().
 				Save(gomock.Any()).
 				DoAndReturn(func(p *models.Participant) (*models.Participant, error) {
@@ -99,11 +99,11 @@ func TestWhenRegisteringNonMintedParticipant(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should persist participant with displayName only and minted fields nil", func(t *testing.T) {
+		t.Run("Should persist participant with displayName only and on-chain identity fields nil", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRegisteringNonMintedParticipantBeforeEach(t)
-			request := generateValidRegisterNonMintedParticipantRequest()
+			suite := WhenRegisteringUserBeforeEach(t)
+			request := generateValidRegisterUserRequest()
 			initSuite(suite, request)
 
 			_, err := suite.sut.Register(request)

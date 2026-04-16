@@ -145,24 +145,24 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			var bridge models.Bridge
 			assert.NoError(t, json.Unmarshal(body, &bridge))
 
-			// 2. Register a minted participant (broker fetches data from registry stub)
-			//    + a non-minted one
-			mintedId := uuid.New()
+			// 2. Register an agent participant (broker fetches data from registry stub)
+			//    + a user participant
+			agentId := uuid.New()
 			tokenId := uint64(1)
 			suite.registryAgent = &registry_models.ExternalAgentResponse{
-				ID:                mintedId,
+				ID:                agentId,
 				Role:              "clone",
 				EnsDomain:         "demo.eth",
 				CollectionAddress: "0xabc",
 				CollectionTokenId: &tokenId,
 			}
-			resp, _ = suite.do(http.MethodPost, "/participants/minted", &requests.RegisterMintedParticipantRequest{
+			resp, _ = suite.do(http.MethodPost, "/participants/agents", &requests.RegisterAgentRequest{
 				CollectionAddress: "0xabc",
 				CollectionTokenId: "1",
 			})
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
-			resp, body = suite.do(http.MethodPost, "/participants/non-minted", &requests.RegisterNonMintedParticipantRequest{
+			resp, body = suite.do(http.MethodPost, "/participants/users", &requests.RegisterUserRequest{
 				DisplayName: "Pierre",
 			})
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -174,7 +174,7 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			resp, body = suite.do(http.MethodPost, "/conversations", &requests.RegisterConversationRequest{
 				BridgeID:       bridge.ID,
 				Description:    &desc,
-				ParticipantIDs: []uuid.UUID{mintedId, human.ID},
+				ParticipantIDs: []uuid.UUID{agentId, human.ID},
 			})
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 			var conv models.Conversation

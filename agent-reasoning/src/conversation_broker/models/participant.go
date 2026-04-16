@@ -8,15 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// Participant is anyone involved in a Conversation: a minted AI agent, a
-// minted human, or a non-minted human (display-name only).
+// Participant is anyone involved in a Conversation: an agent (AI clone,
+// expert, facilitator, or human paired to an NFT) or a user (display-name
+// only).
 //
 // Invariant (enforced at the app layer):
-//   - Minted: CollectionAddress, CollectionTokenId, Role all non-nil.
-//   - Non-minted: DisplayName non-nil; minted fields all nil.
+//   - Agent: CollectionAddress, CollectionTokenId, Role all non-nil.
+//   - User: DisplayName non-nil; on-chain identity fields all nil.
 //
-// When minted, ID equals the agent-identity service's UUID. For non-minted
-// participants, the broker generates the UUID.
+// For agents, ID equals the agent-identity service's UUID. For users, the
+// broker generates the UUID.
 type Participant struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 

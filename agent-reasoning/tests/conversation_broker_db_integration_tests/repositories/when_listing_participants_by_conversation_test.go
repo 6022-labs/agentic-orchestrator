@@ -56,15 +56,15 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 			_, _ = suite.conversations.Save(conv)
 			_, _ = suite.conversations.Save(otherConv)
 
-			minted := model_builders.NewParticipantBuilder().Build()
-			human := model_builders.NewNonMintedParticipantBuilder().Build()
-			outsider := model_builders.NewParticipantBuilder().Build()
-			_, _ = suite.sut.Save(minted)
+			agent := model_builders.NewAgentParticipantBuilder().Build()
+			human := model_builders.NewUserParticipantBuilder().Build()
+			outsider := model_builders.NewAgentParticipantBuilder().Build()
+			_, _ = suite.sut.Save(agent)
 			_, _ = suite.sut.Save(human)
 			_, _ = suite.sut.Save(outsider)
 
 			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
-				WithConversationID(conv.ID).WithParticipantID(minted.ID).Build())
+				WithConversationID(conv.ID).WithParticipantID(agent.ID).Build())
 			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
 				WithConversationID(conv.ID).WithParticipantID(human.ID).Build())
 			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
@@ -76,7 +76,7 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 			assert.Len(t, result, 2)
 
 			ids := []uuid.UUID{result[0].ID, result[1].ID}
-			assert.Contains(t, ids, minted.ID)
+			assert.Contains(t, ids, agent.ID)
 			assert.Contains(t, ids, human.ID)
 			assert.NotContains(t, ids, outsider.ID)
 		})

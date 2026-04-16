@@ -37,27 +37,27 @@ func WhenRequestingAgentCompletionsBeforeEach(t *testing.T) *WhenRequestingAgent
 func TestWhenRequestingAgentCompletions(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given the agent participant is not minted", func(t *testing.T) {
+	t.Run("Given the participant is not an agent", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRequestingAgentCompletionsBeforeEach(t)
-			agent := model_builders.NewNonMintedParticipantBuilder().Build()
+			agent := model_builders.NewUserParticipantBuilder().Build()
 			conversation := model_builders.NewConversationBuilder().Build()
 
 			_, _, err := suite.sut.Completions("slack", agent, conversation, nil, nil, false)
 
 			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "must be minted")
+			assert.Contains(t, err.Error(), "missing on-chain identity")
 		})
 	})
 
 	t.Run("Given the underlying client fails", func(t *testing.T) {
 		t.Parallel()
 
-		agent := model_builders.NewParticipantBuilder().Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenRequestingAgentCompletionsTestingSuite) {
@@ -82,9 +82,9 @@ func TestWhenRequestingAgentCompletions(t *testing.T) {
 	t.Run("Given a conversation with messages and mixed participants", func(t *testing.T) {
 		t.Parallel()
 
-		agent := model_builders.NewParticipantBuilder().Build()
-		otherMintedAgent := model_builders.NewParticipantBuilder().Build()
-		human := model_builders.NewNonMintedParticipantBuilder().Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
+		otherAgent := model_builders.NewAgentParticipantBuilder().Build()
+		human := model_builders.NewUserParticipantBuilder().Build()
 
 		descriptionValue := "engineering channel"
 		conversation := model_builders.NewConversationBuilder().Build()
@@ -97,11 +97,11 @@ func TestWhenRequestingAgentCompletions(t *testing.T) {
 			Build()
 		agentMessage := model_builders.NewConversationMessageBuilder().
 			WithConversationID(conversation.ID).
-			WithParticipantID(otherMintedAgent.ID).
+			WithParticipantID(otherAgent.ID).
 			WithContent("hi pierre").
 			Build()
 		messages := []*domain_models.ConversationMessage{humanMessage, agentMessage}
-		participants := []*domain_models.Participant{agent, otherMintedAgent, human}
+		participants := []*domain_models.Participant{agent, otherAgent, human}
 
 		isFinalReturn := true
 		responsesReturn := []*string{lo.ToPtr("first"), lo.ToPtr("second")}
@@ -119,14 +119,14 @@ func TestWhenRequestingAgentCompletions(t *testing.T) {
 					channelMembers, ok := body.PromptParameters["ChannelMembers"].([]string)
 					assert.True(t, ok)
 					assert.Contains(t, channelMembers, *agent.EnsDomain)
-					assert.Contains(t, channelMembers, *otherMintedAgent.EnsDomain)
+					assert.Contains(t, channelMembers, *otherAgent.EnsDomain)
 					assert.Contains(t, channelMembers, *human.DisplayName)
 
 					assert.Len(t, body.Inputs, 2)
 					assert.Nil(t, body.Inputs[0].Author)
 					assert.Equal(t, "hello team", body.Inputs[0].Content)
 					assert.NotNil(t, body.Inputs[1].Author)
-					assert.Equal(t, *otherMintedAgent.EnsDomain, *body.Inputs[1].Author)
+					assert.Equal(t, *otherAgent.EnsDomain, *body.Inputs[1].Author)
 
 					return &http_compute_models.ExternalAgentComputeResponses{
 						IsFinal:   isFinalReturn,

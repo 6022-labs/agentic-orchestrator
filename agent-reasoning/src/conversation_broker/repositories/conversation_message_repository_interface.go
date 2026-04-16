@@ -10,7 +10,7 @@ type ConversationMessageRepositoryInterface interface {
 	ListByConversationId(conversationId uuid.UUID) ([]*models.ConversationMessage, error)
 
 	// ListProcessableForParticipantAndConversation returns messages the given
-	// minted participant should see when computing for a conversation.
+	// agent participant should see when computing for a conversation.
 	// Filtering follows the slack convention:
 	//   - facilitator: every message
 	//   - clone/expert: messages whose content mentions the participant's ENS domain

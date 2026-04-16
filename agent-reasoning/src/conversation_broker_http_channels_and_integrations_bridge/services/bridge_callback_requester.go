@@ -23,7 +23,7 @@ func (r *BridgeCallbackRequester) PostCompletion(
 	content string,
 ) error {
 	if agent.CollectionAddress == nil || agent.CollectionTokenId == nil {
-		return fmt.Errorf("agent participant must be minted to receive a callback")
+		return fmt.Errorf("participant is not an agent (missing on-chain identity); cannot send callback")
 	}
 
 	body := &http_callback_models.ExternalCompletionCallbackRequest{

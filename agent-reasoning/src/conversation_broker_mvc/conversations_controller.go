@@ -155,7 +155,7 @@ func (c *ConversationsController) ForceConclude(ctx *fiber.Ctx) error {
 }
 
 // @Summary Attach Participant to Conversation
-// @Description Adds a participant (minted or non-minted) to the conversation.
+// @Description Adds a participant (agent or user) to the conversation.
 // @Tags Conversations
 // @Accept json
 // @Produce json

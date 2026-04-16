@@ -17,7 +17,7 @@ func NewAgentRegistryRequester(client clients.AgentIdentityRegistryClientInterfa
 	return &AgentRegistryRequester{client: client}
 }
 
-func (r *AgentRegistryRequester) GetMintedAgent(collectionAddress string, collectionTokenId uint64) (*models.Participant, error) {
+func (r *AgentRegistryRequester) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.Participant, error) {
 	external, err := r.client.GetAgent(collectionAddress, collectionTokenId)
 	if err != nil {
 		return nil, err

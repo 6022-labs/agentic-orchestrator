@@ -145,8 +145,8 @@ func TestWhenRegisteringConversation(t *testing.T) {
 		t.Parallel()
 
 		bridge := model_builders.NewBridgeBuilder().Build()
-		participant1 := model_builders.NewParticipantBuilder().Build()
-		participant2 := model_builders.NewNonMintedParticipantBuilder().Build()
+		participant1 := model_builders.NewAgentParticipantBuilder().Build()
+		participant2 := model_builders.NewUserParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenRegisteringConversationTestingSuite, request *requests.RegisterConversationRequest) {
 			suite.mockBridgeRepository.EXPECT().GetById(bridge.ID).Return(bridge, nil).Times(1)

@@ -2,12 +2,12 @@ package models
 
 import "github.com/google/uuid"
 
-type ExternalRegisterMintedParticipantRequest struct {
+type ExternalRegisterAgentRequest struct {
 	CollectionAddress string `json:"collectionAddress"`
 	CollectionTokenId string `json:"collectionTokenId"`
 }
 
-type ExternalRegisterNonMintedParticipantRequest struct {
+type ExternalRegisterUserRequest struct {
 	DisplayName string `json:"displayName"`
 }
 
