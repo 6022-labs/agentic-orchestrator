@@ -56,6 +56,21 @@ func (mr *MockConversationRepositoryInterfaceMockRecorder) GetById(id any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).GetById), id)
 }
 
+// ListProcessableForParticipant mocks base method.
+func (m *MockConversationRepositoryInterface) ListProcessableForParticipant(participant *models.Participant, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListProcessableForParticipant", participant, facilitatorTickIntervalSeconds)
+	ret0, _ := ret[0].([]*models.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListProcessableForParticipant indicates an expected call of ListProcessableForParticipant.
+func (mr *MockConversationRepositoryInterfaceMockRecorder) ListProcessableForParticipant(participant, facilitatorTickIntervalSeconds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipant", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).ListProcessableForParticipant), participant, facilitatorTickIntervalSeconds)
+}
+
 // Save mocks base method.
 func (m *MockConversationRepositoryInterface) Save(entity *models.Conversation) (*models.Conversation, error) {
 	m.ctrl.T.Helper()

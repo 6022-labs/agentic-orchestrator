@@ -30,6 +30,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		services.NewConversationProcessorDaemon,
+		dig.As(new(service_interfaces.ConversationProcessorDaemonInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(use_cases.NewRegisterBridge, dig.As(new(use_cases.RegisterBridgeInterface)))
 	if err != nil {
 		panic(err)

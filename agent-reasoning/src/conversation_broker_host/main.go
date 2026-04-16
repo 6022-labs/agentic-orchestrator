@@ -26,6 +26,7 @@ func main() {
 	configurations.ConfigureLogging(container)
 	configurations.ConfigureServer(container)
 	configurations.ConfigureDatabase(container)
+	configurations.ConfigureDaemon(container)
 
 	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
 		apiPort := fmt.Sprintf("%d", hostSettings.ApiPort)
