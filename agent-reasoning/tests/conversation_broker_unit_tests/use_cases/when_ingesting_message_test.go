@@ -5,6 +5,7 @@ import (
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
@@ -136,6 +137,122 @@ func TestWhenIngestingMessage(t *testing.T) {
 			_, err := suite.sut.Ingest(request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
+		})
+	})
+
+	t.Run("Given conversation is concluded and message is from an unpaired user", func(t *testing.T) {
+		t.Parallel()
+
+		conversation := model_builders.NewConversationBuilder().Build()
+		conversation.Status = enums.ConversationStatusConcluded
+		userParticipant := model_builders.NewUserParticipantBuilder().Build()
+
+		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().GetById(userParticipant.ID).Return(userParticipant, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any()).
+				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+					assert.Equal(t, enums.ConversationStatusActive, c.Status)
+					assert.NotNil(t, c.UnconcludedAt)
+					return c, nil
+				}).
+				Times(1)
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
+				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+				Times(1)
+		}
+
+		t.Run("Should reopen the conversation and ingest the message", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenIngestingMessageBeforeEach(t)
+			request := &requests.IngestMessageRequest{
+				ConversationID: conversation.ID,
+				ParticipantID:  userParticipant.ID,
+				Content:        "back online",
+			}
+			initSuite(suite, request)
+
+			message, err := suite.sut.Ingest(request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, request.Content, message.Content)
+		})
+	})
+
+	t.Run("Given conversation is concluded and message is from a paired human-agent", func(t *testing.T) {
+		t.Parallel()
+
+		conversation := model_builders.NewConversationBuilder().Build()
+		conversation.Status = enums.ConversationStatusConcluded
+		humanAgent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleHuman).Build()
+
+		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().GetById(humanAgent.ID).Return(humanAgent, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any()).
+				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+					assert.Equal(t, enums.ConversationStatusActive, c.Status)
+					assert.NotNil(t, c.UnconcludedAt)
+					return c, nil
+				}).
+				Times(1)
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
+				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+				Times(1)
+		}
+
+		t.Run("Should reopen the conversation and ingest the message", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenIngestingMessageBeforeEach(t)
+			request := &requests.IngestMessageRequest{
+				ConversationID: conversation.ID,
+				ParticipantID:  humanAgent.ID,
+				Content:        "back online",
+			}
+			initSuite(suite, request)
+
+			message, err := suite.sut.Ingest(request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, request.Content, message.Content)
+		})
+	})
+
+	t.Run("Given conversation is concluded and message is from an AI agent", func(t *testing.T) {
+		t.Parallel()
+
+		conversation := model_builders.NewConversationBuilder().Build()
+		conversation.Status = enums.ConversationStatusConcluded
+		aiAgent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleClone).Build()
+
+		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().GetById(aiAgent.ID).Return(aiAgent, nil).Times(1)
+			// No Save on the conversation repository — AI agents must not reopen.
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
+				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+				Times(1)
+		}
+
+		t.Run("Should ingest the message without reopening the conversation", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenIngestingMessageBeforeEach(t)
+			request := &requests.IngestMessageRequest{
+				ConversationID: conversation.ID,
+				ParticipantID:  aiAgent.ID,
+				Content:        "final word",
+			}
+			initSuite(suite, request)
+
+			message, err := suite.sut.Ingest(request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, request.Content, message.Content)
 		})
 	})
 

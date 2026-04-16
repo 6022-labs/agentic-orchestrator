@@ -3,9 +3,11 @@ package use_cases
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"gorm.io/gorm"
@@ -38,7 +40,7 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*models
 		return nil, err
 	}
 
-	_, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
@@ -46,12 +48,22 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*models
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
 
-	_, err = uc.participantRepository.GetById(request.ParticipantID)
+	participant, err := uc.participantRepository.GetById(request.ParticipantID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to load participant: %w", err)
+	}
+
+	// Reopen the conversation when a human posts
+	if conversation.Status == enums.ConversationStatusConcluded && uc.isHumanAuthored(participant) {
+		now := time.Now()
+		conversation.Status = enums.ConversationStatusActive
+		conversation.UnconcludedAt = &now
+		if _, err := uc.conversationRepository.Save(conversation); err != nil {
+			return nil, fmt.Errorf("failed to reopen concluded conversation: %w", err)
+		}
 	}
 
 	message := &models.ConversationMessage{
@@ -65,4 +77,8 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*models
 		return nil, fmt.Errorf("failed to save message: %w", err)
 	}
 	return saved, nil
+}
+
+func (uc *IngestMessage) isHumanAuthored(participant *models.Participant) bool {
+	return participant.Role == nil || *participant.Role == enums.ParticipantRoleHuman
 }
