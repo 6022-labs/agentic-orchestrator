@@ -113,6 +113,23 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 # Install Claude
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
+# Rewrite `claude --yolo` to `claude --dangerously-skip-permissions`
+RUN cat >> /home/node/.zshrc <<'EOF'
+
+claude() {
+  local args=()
+  local a
+  for a in "$@"; do
+    if [[ "$a" == "--yolo" ]]; then
+      args+=("--dangerously-skip-permissions")
+    else
+      args+=("$a")
+    fi
+  done
+  command claude "${args[@]}"
+}
+EOF
+
 # Install Railway CLI (direct binary — npm postinstall 404s on aarch64 because only musl assets are published)
 ARG RAILWAY_VERSION=4.36.1
 RUN set -eux; \
