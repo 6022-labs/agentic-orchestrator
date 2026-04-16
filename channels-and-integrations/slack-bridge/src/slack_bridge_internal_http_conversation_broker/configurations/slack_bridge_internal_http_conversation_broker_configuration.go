@@ -1,0 +1,41 @@
+package configurations
+
+import (
+	"net/http"
+
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_conversation_broker/clients"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_conversation_broker/services"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_conversation_broker/settings"
+	"go.uber.org/dig"
+)
+
+func AddSlackBridgeInternalHttpConversationBrokerConfiguration(container *dig.Container) {
+	err := container.Provide(settings.NewConversationBrokerSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(func() *http.Client {
+		return http.DefaultClient
+	}, dig.Name("conversation-broker-http-client"))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		clients.NewConversationBrokerClient,
+		dig.As(new(clients.ConversationBrokerClientInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewBridgeRegistrar,
+		dig.As(new(interfaces.BridgeRegistrarInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+}

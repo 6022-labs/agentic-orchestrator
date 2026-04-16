@@ -58,6 +58,22 @@ func AddSlackBridgeDbConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		db_repositories.NewSlackConversationLinkRepository,
+		dig.As(new(repositories.SlackConversationLinkRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		db_repositories.NewSlackMessageLinkRepository,
+		dig.As(new(repositories.SlackMessageLinkRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err = container.Provide(
 		settings.NewDatabaseSettings,

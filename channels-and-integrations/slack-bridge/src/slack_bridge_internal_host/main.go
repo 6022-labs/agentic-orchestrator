@@ -37,7 +37,12 @@ func main() {
 		logger *zap.Logger,
 		hostSettings *settings.HostSettings,
 		slackThreadProcessorDaemon interfaces.SlackThreadProcessorDaemonInterface,
+		bridgeRegistrar interfaces.BridgeRegistrarInterface,
 	) error {
+		if _, err := bridgeRegistrar.Ensure(); err != nil {
+			return fmt.Errorf("failed to register bridge with conversation broker: %w", err)
+		}
+
 		slackThreadProcessorDaemon.Start()
 
 		port := fmt.Sprintf(":%d", hostSettings.ApiPort)

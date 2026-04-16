@@ -19,6 +19,8 @@ func main() {
 		&models.SlackThread{},
 		&models.SlackChannel{},
 		&models.SlackMessage{},
+		&models.SlackConversationLink{},
+		&models.SlackMessageLink{},
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)
