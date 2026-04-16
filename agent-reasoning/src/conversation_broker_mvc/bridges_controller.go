@@ -24,11 +24,12 @@ func (c *BridgesController) InitRoutes(app fiber.Router) {
 }
 
 // @Summary Register Bridge
-// @Description Registers a new bridge instance (slack, teams, ...). Multiple bridges of the same kind are allowed.
+// @Description Upserts a bridge instance. When the caller supplies `id` and the row already exists the broker returns 200 with the existing row; when the row does not exist (whether or not an id was provided) the broker returns 201 with the new row.
 // @Tags Bridges
 // @Accept json
 // @Produce json
 // @Param request body requests.RegisterBridgeRequest true "Register Bridge Request"
+// @Success 200 {object} models.Bridge
 // @Success 201 {object} models.Bridge
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
@@ -38,11 +39,15 @@ func (c *BridgesController) RegisterBridge(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	bridge, err := c.registerBridge.Register(req)
+	bridge, existed, err := c.registerBridge.Register(req)
 	if err != nil {
 		return mapError(c.logger, ctx, err)
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(bridge)
+	status := fiber.StatusCreated
+	if existed {
+		status = fiber.StatusOK
+	}
+	return ctx.Status(status).JSON(bridge)
 }
 
 // mapError centralizes the error-to-HTTP mapping for all controllers.

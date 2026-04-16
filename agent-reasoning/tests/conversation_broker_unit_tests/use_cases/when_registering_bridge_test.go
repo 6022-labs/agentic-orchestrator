@@ -9,9 +9,12 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"gorm.io/gorm"
 )
 
 type WhenRegisteringBridgeTestingSuite struct {
@@ -54,7 +57,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			request.Kind = enums.BridgeKind("unknown")
 
-			_, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "kind")
@@ -67,10 +70,24 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			request.CallbackUrl = ""
 
-			_, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "callbackUrl")
+		})
+
+		t.Run("Because id is the zero UUID", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRegisteringBridgeBeforeEach(t)
+			request := generateValidRegisterBridgeRequest()
+			zero := uuid.Nil
+			request.ID = &zero
+
+			_, _, err := suite.sut.Register(request)
+
+			assert.IsType(t, &cb_errors.ValidationError{}, err)
+			assert.Contains(t, err.Error(), "id")
 		})
 	})
 
@@ -91,13 +108,13 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			initSuite(suite)
 
-			_, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(request)
 
 			assert.Error(t, err)
 		})
 	})
 
-	t.Run("Given request is valid", func(t *testing.T) {
+	t.Run("Given request is valid and no id is provided", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, request *requests.RegisterBridgeRequest) {
@@ -111,18 +128,77 @@ func TestWhenRegisteringBridge(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should persist and return the bridge", func(t *testing.T) {
+		t.Run("Should create a new bridge and signal it did not exist", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRegisteringBridgeBeforeEach(t)
 			request := generateValidRegisterBridgeRequest()
 			initSuite(suite, request)
 
-			bridge, err := suite.sut.Register(request)
+			bridge, existed, err := suite.sut.Register(request)
 
 			assert.NoError(t, err)
+			assert.False(t, existed)
 			assert.Equal(t, request.Kind, bridge.Kind)
-			assert.Equal(t, request.CallbackUrl, bridge.CallbackUrl)
+		})
+	})
+
+	t.Run("Given request is valid and id is provided for an already-known bridge", func(t *testing.T) {
+		t.Parallel()
+
+		existing := model_builders.NewBridgeBuilder().Build()
+
+		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
+			suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
+			// No Save expectation — idempotent.
+		}
+
+		t.Run("Should return the existing bridge and signal it already existed", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRegisteringBridgeBeforeEach(t)
+			request := generateValidRegisterBridgeRequest()
+			id := existing.ID
+			request.ID = &id
+			initSuite(suite)
+
+			bridge, existed, err := suite.sut.Register(request)
+
+			assert.NoError(t, err)
+			assert.True(t, existed)
+			assert.Equal(t, existing.ID, bridge.ID)
+		})
+	})
+
+	t.Run("Given request is valid and id is provided for an unknown bridge", func(t *testing.T) {
+		t.Parallel()
+
+		newId := uuid.New()
+
+		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
+			suite.mockBridgeRepository.EXPECT().GetById(newId).Return(nil, gorm.ErrRecordNotFound).Times(1)
+			suite.mockBridgeRepository.EXPECT().
+				Save(gomock.Any()).
+				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
+					assert.Equal(t, newId, b.ID)
+					return b, nil
+				}).
+				Times(1)
+		}
+
+		t.Run("Should create the bridge using the supplied id", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRegisteringBridgeBeforeEach(t)
+			request := generateValidRegisterBridgeRequest()
+			request.ID = &newId
+			initSuite(suite)
+
+			bridge, existed, err := suite.sut.Register(request)
+
+			assert.NoError(t, err)
+			assert.False(t, existed)
+			assert.Equal(t, newId, bridge.ID)
 		})
 	})
 }
