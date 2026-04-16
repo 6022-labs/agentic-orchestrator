@@ -74,7 +74,8 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 				PostCompletion(bridge.CallbackUrl, gomock.Any()).
 				DoAndReturn(func(_ string, body *models.ExternalCompletionCallbackRequest) error {
 					assert.Equal(t, conversation.ID, body.ConversationId)
-					assert.Equal(t, agent.ID, body.ParticipantId)
+					assert.Equal(t, *agent.CollectionAddress, body.CollectionAddress)
+					assert.Equal(t, *agent.CollectionTokenId, body.CollectionTokenId)
 					assert.Equal(t, content, body.Content)
 					return nil
 				}).

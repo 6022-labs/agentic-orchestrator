@@ -71,9 +71,10 @@ func TestWhenCallingPostCompletion(t *testing.T) {
 			initSuite(suite)
 
 			body := &models.ExternalCompletionCallbackRequest{
-				ConversationId: uuid.New(),
-				ParticipantId:  uuid.New(),
-				Content:        "hello",
+				ConversationId:    uuid.New(),
+				CollectionAddress: "0xabc",
+				CollectionTokenId: uint64(42),
+				Content:           "hello",
 			}
 
 			err := suite.sut.PostCompletion(suite.server.URL+"/internal/broker/callback", body)
@@ -85,7 +86,8 @@ func TestWhenCallingPostCompletion(t *testing.T) {
 			var decoded models.ExternalCompletionCallbackRequest
 			assert.NoError(t, json.Unmarshal(capturedBody, &decoded))
 			assert.Equal(t, body.ConversationId, decoded.ConversationId)
-			assert.Equal(t, body.ParticipantId, decoded.ParticipantId)
+			assert.Equal(t, body.CollectionAddress, decoded.CollectionAddress)
+			assert.Equal(t, body.CollectionTokenId, decoded.CollectionTokenId)
 			assert.Equal(t, body.Content, decoded.Content)
 		})
 	})

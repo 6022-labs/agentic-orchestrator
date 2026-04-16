@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_channels_and_integrations_bridge/clients"
 	http_callback_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_channels_and_integrations_bridge/models"
@@ -20,10 +22,15 @@ func (r *BridgeCallbackRequester) PostCompletion(
 	agent *models.Participant,
 	content string,
 ) error {
+	if agent.CollectionAddress == nil || agent.CollectionTokenId == nil {
+		return fmt.Errorf("agent participant must be minted to receive a callback")
+	}
+
 	body := &http_callback_models.ExternalCompletionCallbackRequest{
-		ConversationId: conversation.ID,
-		ParticipantId:  agent.ID,
-		Content:        content,
+		ConversationId:    conversation.ID,
+		CollectionAddress: *agent.CollectionAddress,
+		CollectionTokenId: *agent.CollectionTokenId,
+		Content:           content,
 	}
 	return r.client.PostCompletion(bridge.CallbackUrl, body)
 }
