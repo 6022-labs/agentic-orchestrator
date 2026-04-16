@@ -86,6 +86,21 @@ func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetNextMintedParticipa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextMintedParticipantToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetNextMintedParticipantToProcess), processingIntervalSeconds)
 }
 
+// ListByConversationId mocks base method.
+func (m *MockParticipantRepositoryInterface) ListByConversationId(conversationId uuid.UUID) ([]*models.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByConversationId", conversationId)
+	ret0, _ := ret[0].([]*models.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByConversationId indicates an expected call of ListByConversationId.
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) ListByConversationId(conversationId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByConversationId", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ListByConversationId), conversationId)
+}
+
 // Save mocks base method.
 func (m *MockParticipantRepositoryInterface) Save(entity *models.Participant) (*models.Participant, error) {
 	m.ctrl.T.Helper()

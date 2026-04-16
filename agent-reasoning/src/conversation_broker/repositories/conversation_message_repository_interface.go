@@ -8,4 +8,12 @@ import (
 type ConversationMessageRepositoryInterface interface {
 	Save(entity *models.ConversationMessage) (*models.ConversationMessage, error)
 	ListByConversationId(conversationId uuid.UUID) ([]*models.ConversationMessage, error)
+
+	// ListProcessableForParticipantAndConversation returns messages the given
+	// minted participant should see when computing for a conversation.
+	// Filtering follows the slack convention:
+	//   - facilitator: every message
+	//   - clone/expert: messages whose content mentions the participant's ENS domain
+	//   - human: messages from this participant OR mentioning their ENS domain
+	ListProcessableForParticipantAndConversation(participant *models.Participant, conversationId uuid.UUID) ([]*models.ConversationMessage, error)
 }

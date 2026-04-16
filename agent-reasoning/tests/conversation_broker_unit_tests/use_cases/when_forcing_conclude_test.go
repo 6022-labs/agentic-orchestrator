@@ -1,38 +1,35 @@
 package use_cases_test
 
 import (
+	"errors"
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/repositories_mocks"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenForcingConcludeTestingSuite struct {
 	sut *use_cases.ForceConclude
 
-	mockConversationRepository *repositories_mocks.MockConversationRepositoryInterface
+	mockConversationConclude *interfaces_mocks.MockConversationConcludeInterface
 }
 
 func WhenForcingConcludeBeforeEach(t *testing.T) *WhenForcingConcludeTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
+	mockConversationConclude := interfaces_mocks.NewMockConversationConcludeInterface(mockController)
 
-	sut := use_cases.NewForceConclude(mockConversationRepository)
+	sut := use_cases.NewForceConclude(mockConversationConclude)
 
 	return &WhenForcingConcludeTestingSuite{
 		sut: sut,
 
-		mockConversationRepository: mockConversationRepository,
+		mockConversationConclude: mockConversationConclude,
 	}
 }
 
@@ -62,17 +59,17 @@ func TestWhenForcingConclude(t *testing.T) {
 		})
 	})
 
-	t.Run("Given conversation does not exist", func(t *testing.T) {
+	t.Run("Given the conclude service fails", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
-			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
-				Return(nil, gorm.ErrRecordNotFound).
+			suite.mockConversationConclude.EXPECT().
+				ConcludeIfExists(request.ConversationID).
+				Return(errors.New("boom")).
 				Times(1)
 		}
 
-		t.Run("Should return a not found error", func(t *testing.T) {
+		t.Run("Should propagate the error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForcingConcludeBeforeEach(t)
@@ -81,34 +78,26 @@ func TestWhenForcingConclude(t *testing.T) {
 
 			err := suite.sut.Conclude(request)
 
-			assert.IsType(t, &cb_errors.NotFoundError{}, err)
+			assert.Error(t, err)
 		})
 	})
 
-	t.Run("Given conversation exists", func(t *testing.T) {
+	t.Run("Given request is valid", func(t *testing.T) {
 		t.Parallel()
 
-		conversation := model_builders.NewConversationBuilder().Build()
-
-		initSuite := func(suite *WhenForcingConcludeTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
-					assert.Equal(t, enums.ConversationStatusConcluded, c.Status)
-					assert.NotNil(t, c.ConcludedAt)
-					assert.Nil(t, c.UnconcludedAt)
-					return c, nil
-				}).
+		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
+			suite.mockConversationConclude.EXPECT().
+				ConcludeIfExists(request.ConversationID).
+				Return(nil).
 				Times(1)
 		}
 
-		t.Run("Should set status=concluded and concluded_at", func(t *testing.T) {
+		t.Run("Should delegate to the conclude service", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForcingConcludeBeforeEach(t)
-			request := &requests.ConversationIdRequest{ConversationID: conversation.ID}
-			initSuite(suite)
+			request := generateValidForceConcludeRequest()
+			initSuite(suite, request)
 
 			err := suite.sut.Conclude(request)
 

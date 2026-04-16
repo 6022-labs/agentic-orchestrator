@@ -56,6 +56,21 @@ func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListByConversa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByConversationId", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListByConversationId), conversationId)
 }
 
+// ListProcessableForParticipantAndConversation mocks base method.
+func (m *MockConversationMessageRepositoryInterface) ListProcessableForParticipantAndConversation(participant *models.Participant, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListProcessableForParticipantAndConversation", participant, conversationId)
+	ret0, _ := ret[0].([]*models.ConversationMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListProcessableForParticipantAndConversation indicates an expected call of ListProcessableForParticipantAndConversation.
+func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListProcessableForParticipantAndConversation(participant, conversationId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipantAndConversation", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListProcessableForParticipantAndConversation), participant, conversationId)
+}
+
 // Save mocks base method.
 func (m *MockConversationMessageRepositoryInterface) Save(entity *models.ConversationMessage) (*models.ConversationMessage, error) {
 	m.ctrl.T.Helper()

@@ -1,12 +1,36 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services"
+	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"go.uber.org/dig"
 )
 
 func AddConversationBrokerConfiguration(container *dig.Container) {
-	err := container.Provide(use_cases.NewRegisterBridge, dig.As(new(use_cases.RegisterBridgeInterface)))
+	err := container.Provide(settings.NewProcessingSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewConversationConclude,
+		dig.As(new(service_interfaces.ConversationConcludeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewConversationProcessor,
+		dig.As(new(service_interfaces.ConversationProcessorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewRegisterBridge, dig.As(new(use_cases.RegisterBridgeInterface)))
 	if err != nil {
 		panic(err)
 	}
