@@ -2,7 +2,7 @@
 
 ## Priority Guidelines
 
-1. **Version Compatibility**: Every service is pinned to Go 1.24.x (see `go.work` and the `go.mod` files in `gateway`, `agent-knowledge/database-connector`, `agent-identity/images-generator`, `agent-reasoning/llm-connector`, and `channels-and-integrations/slack-bridge`). Frontend code targets React 19 / Vite 6 / TypeScript 5.7.2 (`ui/package.json`) and the docs site targets Docusaurus 3.9.2 with TypeScript 5.6.2 (`docs/package.json`). Never introduce APIs beyond those versions.
+1. **Version Compatibility**: Every service is pinned to Go 1.25.5 (see `go.work` and the `go.mod` files in `gateway`, `agent-identity`, `agent-knowledge`, `agent-reasoning`, and `channels-and-integrations/slack-bridge`). Frontend code targets React 19 / Vite 6 / TypeScript 5.7.2 (`ui/package.json`) and the docs site targets Docusaurus 3.9.2 with TypeScript 5.6.2 (`docs/package.json`). Never introduce APIs beyond those versions.
 2. **Context Files**: This document (`.github/copilot/copilot-instructions.md`) is the authoritative Copilot context. When it references patterns, use the cited source files (controllers under `*/mvc`, use cases under `*/use_cases`, repositories under `orchestrator_db/repositories`, UI components in `ui/src/components`, docs in `docs/docs`).
 3. **Codebase Patterns**: Keep the existing layering: HTTP controllers → use cases → services/interfaces → repositories/clients for Go microservices, context/provider driven state + hooks + `react-hook-form` for the UI, and Markdown with Docusaurus front matter for docs. This mirrors the repo’s hexagonal architecture (adapters on the outside, domain/use-case logic in the center). When unsure, copy the most recent example from the same folder.
 4. **Architectural Consistency**: Treat the repo as a microservices mono-repo that applies hexagonal boundaries. Preserve the host/driver split (`*_host`, `*_mvc`, `*_http_*`, `*_db`, `*_vault`, `*_redis`), keep adapters isolated from the core use cases, and never reach across a service boundary (e.g., gateway logic should call agent connectors via the HTTP client modules, not by importing their internals directly).
@@ -10,7 +10,7 @@
 
 ## Technology Version Detection
 
-- **Go toolchain**: `go.work` pins Go 1.24.3 for the workspace; slack-bridge currently uses 1.24.0. Use `go env GOVERSION` or the local `go.mod` before adopting features.
+- **Go toolchain**: `go.work` pins Go 1.25.5 for the workspace; all member modules match. Use `go env GOVERSION` or the local `go.mod` before adopting features.
 - **Gateway & agent services** (`gateway/go.mod`, `agent-knowledge/database-connector/go.mod`, `agent-reasoning/llm-connector/go.mod`, `agent-identity/images-generator/go.mod`, `channels-and-integrations/slack-bridge/go.mod`):
   - HTTP: `github.com/gofiber/fiber/v2 v2.52.8`, `github.com/gofiber/swagger v1.1.1`, `github.com/gofiber/contrib/fiberzap/v2 v2.1.6`.
   - Logging/DI/testing: `go.uber.org/zap v1.27.0`, `go.uber.org/dig v1.19.0`, `go.uber.org/mock v0.5.2`, `github.com/stretchr/testify v1.10.0`.
