@@ -24,7 +24,5 @@ COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/migrations/*.sql /migrations/
 ENV MIGRATIONS__FOLDER_PATH=/migrations
 
-EXPOSE 8000
-
 # Run the compiled binary at container start.
 ENTRYPOINT ["/app"]
