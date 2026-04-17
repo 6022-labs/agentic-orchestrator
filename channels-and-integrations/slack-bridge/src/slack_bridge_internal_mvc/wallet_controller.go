@@ -1,6 +1,8 @@
 package slack_bridge_internal_mvc
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/gofiber/fiber/v2"
@@ -38,6 +40,7 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 // @Produce      plain
 // @Param        request body requests.SetWalletOwnershipToSlackUserRequest true "Wallet ownership verification"
 // @Success      200 {string} string "OK"
+// @Failure      400 {string} string "Bad Request"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /wallet/set-ownership-to-slack-user [post]
 func (controller *WalletController) SetWalletOwnershipToSlackUser(c *fiber.Ctx) error {
@@ -54,6 +57,10 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c *fiber.Ctx) 
 
 	err := controller.setWalletOwnershipToSlackPlayer.Set(request)
 	if err != nil {
+		if errors.Is(err, requests.ErrValidation) {
+			controller.logger.Warn("Set wallet ownership failed validation", zap.Error(err))
+			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		}
 		controller.logger.Error("Failed to set wallet ownership", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}

@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -16,13 +16,13 @@ type PostBrokerCompletionToSlackRequest struct {
 
 func (r *PostBrokerCompletionToSlackRequest) Validate() error {
 	if r.ConversationId == uuid.Nil {
-		return errors.New("conversationId is required")
+		return fmt.Errorf("%w: conversationId is required", ErrValidation)
 	}
 	if strings.TrimSpace(r.CollectionAddress) == "" {
-		return errors.New("collectionAddress is required")
+		return fmt.Errorf("%w: collectionAddress is required", ErrValidation)
 	}
 	if strings.TrimSpace(r.Content) == "" {
-		return errors.New("content is required")
+		return fmt.Errorf("%w: content is required", ErrValidation)
 	}
 	return nil
 }

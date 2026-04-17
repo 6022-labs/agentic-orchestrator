@@ -52,6 +52,10 @@ func (c *BrokerCallbackController) Handle(ctx *fiber.Ctx) error {
 	}
 
 	if err := c.postBrokerCompletionToSlack.Post(request); err != nil {
+		if errors.Is(err, requests.ErrValidation) {
+			c.logger.Warn("Broker callback failed validation", zap.Error(err))
+			return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		}
 		if errors.Is(err, use_cases.ErrConversationLinkNotFound) || errors.Is(err, use_cases.ErrSlackAgentNotFound) {
 			c.logger.Warn("Broker callback referred to unknown entity", zap.Error(err))
 			return ctx.Status(fiber.StatusNotFound).SendString(err.Error())

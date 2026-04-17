@@ -67,7 +67,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req.ConversationId = uuid.Nil
 
 			err := suite.sut.Post(req)
-			assert.Error(t, err)
+			assert.ErrorIs(t, err, requests.ErrValidation)
 		})
 
 		t.Run("Because content is empty", func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req.Content = ""
 
 			err := suite.sut.Post(req)
-			assert.Error(t, err)
+			assert.ErrorIs(t, err, requests.ErrValidation)
 		})
 	})
 
