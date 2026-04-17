@@ -22,7 +22,7 @@ type Participant struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
 	CollectionAddress *string                `gorm:"type:text;uniqueIndex:idx_participants_collection" json:"collectionAddress,omitempty"`
-	CollectionTokenId *uint64                `gorm:"type:numeric(78,0);uniqueIndex:idx_participants_collection" json:"collectionTokenId,omitempty"`
+	CollectionTokenId *uint64                `gorm:"type:numeric;uniqueIndex:idx_participants_collection" json:"collectionTokenId,omitempty"`
 	EnsDomain         *string                `gorm:"type:text" json:"ensDomain,omitempty"`
 	Role              *enums.ParticipantRole `gorm:"type:text" json:"role,omitempty"`
 

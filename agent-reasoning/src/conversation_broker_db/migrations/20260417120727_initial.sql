@@ -31,7 +31,7 @@ CREATE INDEX "idx_conversations_status_updated" ON "public"."conversations" ("st
 CREATE TABLE "public"."participants" (
   "id" uuid NOT NULL,
   "collection_address" text NULL,
-  "collection_token_id" numeric(78) NULL,
+  "collection_token_id" numeric NULL,
   "ens_domain" text NULL,
   "role" text NULL,
   "display_name" text NULL,
