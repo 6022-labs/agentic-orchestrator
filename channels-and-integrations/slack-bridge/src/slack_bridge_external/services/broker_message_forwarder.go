@@ -128,7 +128,7 @@ func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
 	authorParticipantId uuid.UUID,
 ) (*uuid.UUID, error) {
 	conversation, err := f.slackConversationRepository.GetBySlackIds(slackChannel.Id, parentMessageTs)
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed to lookup slack conversation mapping: %w", err)
 	}
 	if conversation != nil {
