@@ -1,6 +1,7 @@
 package conversation_broker_mvc
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/gofiber/fiber/v2"
@@ -54,7 +55,14 @@ func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
 	}
 	p, existed, err := c.registerAgent.Register(req)
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	status := fiber.StatusCreated
 	if existed {
@@ -80,7 +88,14 @@ func (c *ParticipantsController) RegisterUser(ctx *fiber.Ctx) error {
 	}
 	p, err := c.registerUser.Register(req)
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(p)
 }

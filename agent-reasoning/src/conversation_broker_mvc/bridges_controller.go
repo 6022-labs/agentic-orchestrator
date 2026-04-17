@@ -41,23 +41,15 @@ func (c *BridgesController) RegisterBridge(ctx *fiber.Ctx) error {
 	}
 	bridge, existed, err := c.registerBridge.Register(req)
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	status := fiber.StatusCreated
 	if existed {
 		status = fiber.StatusOK
 	}
 	return ctx.Status(status).JSON(bridge)
-}
-
-// mapError centralizes the error-to-HTTP mapping for all controllers.
-func mapError(logger *zap.Logger, ctx *fiber.Ctx, err error) error {
-	if validationErr, ok := err.(*errors.ValidationError); ok {
-		return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-	}
-	if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-		return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
-	}
-	logger.Error("internal error", zap.Error(err))
-	return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
 }

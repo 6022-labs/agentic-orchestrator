@@ -1,6 +1,7 @@
 package conversation_broker_mvc
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/gofiber/fiber/v2"
@@ -84,7 +85,14 @@ func (c *ConversationsController) UpdateDescription(ctx *fiber.Ctx) error {
 	}
 	req.ConversationID = id
 	if err := c.updateConversationDescription.Update(req); err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
@@ -107,7 +115,14 @@ func (c *ConversationsController) Register(ctx *fiber.Ctx) error {
 	}
 	conv, err := c.registerConversation.Register(req)
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(conv)
 }
@@ -129,7 +144,14 @@ func (c *ConversationsController) Get(ctx *fiber.Ctx) error {
 	}
 	conv, err := c.getConversation.Get(&requests.ConversationIdRequest{ConversationID: id})
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.JSON(conv)
 }
@@ -149,7 +171,14 @@ func (c *ConversationsController) ForceConclude(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	if err := c.forceConclude.Conclude(&requests.ConversationIdRequest{ConversationID: id}); err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
@@ -177,7 +206,14 @@ func (c *ConversationsController) Attach(ctx *fiber.Ctx) error {
 	}
 	req.ConversationID = id
 	if err := c.attachParticipant.Attach(req); err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.SendStatus(fiber.StatusCreated)
 }
@@ -202,7 +238,14 @@ func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
 	}
 	req := &requests.ConversationParticipantRequest{ConversationID: convID, ParticipantID: partID}
 	if err := c.detachParticipant.Detach(req); err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
@@ -231,7 +274,14 @@ func (c *ConversationsController) Ingest(ctx *fiber.Ctx) error {
 	req.ConversationID = id
 	msg, err := c.ingestMessage.Ingest(req)
 	if err != nil {
-		return mapError(c.logger, ctx, err)
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(msg)
 }
