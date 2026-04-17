@@ -34,9 +34,12 @@ func WhenCallingConversationBrokerBeforeEach() *WhenCallingConversationBrokerTes
 	}))
 
 	suite.sut = clients.NewConversationBrokerClient(clients.NewConversationBrokerClientParams{
-		Logger:                     zap.NewNop(),
-		HttpClient:                 http.DefaultClient,
-		ConversationBrokerSettings: &settings.ConversationBrokerSettings{BaseUrl: suite.server.URL, CallbackUrl: "http://slack.local/cb"},
+		Logger:     zap.NewNop(),
+		HttpClient: http.DefaultClient,
+		ConversationBrokerSettings: &settings.ConversationBrokerSettings{
+			BaseUrl:     suite.server.URL,
+			CallbackUrl: "http://slack.local/cb",
+		},
 	})
 
 	return suite
