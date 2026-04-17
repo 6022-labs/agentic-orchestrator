@@ -32,7 +32,7 @@ func (r *SlackUserRepository) GetById(id string) (*models.SlackUser, error) {
 
 func (r *SlackUserRepository) ListByIds(ids []string) ([]*models.SlackUser, error) {
 	if len(ids) == 0 {
-		return nil, nil
+		return []*models.SlackUser{}, nil
 	}
 	var entities []*models.SlackUser
 	err := r.client.
