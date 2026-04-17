@@ -32,5 +32,5 @@ func (r *BridgeCallbackRequester) PostCompletion(
 		CollectionTokenId: *agent.CollectionTokenId,
 		Content:           content,
 	}
-	return r.client.PostCompletion(bridge.CallbackUrl, body)
+	return r.client.PostCompletion(bridge.BaseUrl, body)
 }

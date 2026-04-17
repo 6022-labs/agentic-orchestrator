@@ -7,8 +7,8 @@ import (
 
 // BridgeCallbackSettings holds shared HTTP-client tuning for outbound calls
 // to bridges. There is intentionally no `base_url` field — each bridge's
-// destination URL lives in the `bridges.callback_url` column and is resolved
-// per request from the database.
+// base URL lives in the `bridges.base_url` column and is resolved per
+// request from the database (the broker appends `/broker/callback`).
 const BridgeCallbackSettingsKey = "bridge_callback"
 
 type BridgeCallbackSettings struct {

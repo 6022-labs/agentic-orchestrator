@@ -13,17 +13,17 @@ import (
 // already known, or create it with that id otherwise. When ID is nil, the
 // broker generates a fresh id.
 type RegisterBridgeRequest struct {
-	ID          *uuid.UUID       `json:"id,omitempty"`
-	Kind        enums.BridgeKind `json:"kind"`
-	CallbackUrl string           `json:"callbackUrl"`
+	ID      *uuid.UUID       `json:"id,omitempty"`
+	Kind    enums.BridgeKind `json:"kind"`
+	BaseUrl string           `json:"baseUrl"`
 }
 
 func (r *RegisterBridgeRequest) Validate() error {
 	if !enums.GetAllBridgeKinds().Contains(r.Kind) {
 		return errors.NewValidationError("kind", "must be a valid bridge kind")
 	}
-	if strings.TrimSpace(r.CallbackUrl) == "" {
-		return errors.NewValidationError("callbackUrl", "must not be empty")
+	if strings.TrimSpace(r.BaseUrl) == "" {
+		return errors.NewValidationError("baseUrl", "must not be empty")
 	}
 	if r.ID != nil && *r.ID == uuid.Nil {
 		return errors.NewValidationError("id", "must not be the zero UUID")

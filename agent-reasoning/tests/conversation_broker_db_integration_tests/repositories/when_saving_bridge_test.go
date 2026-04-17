@@ -50,7 +50,7 @@ func TestWhenSavingBridge(t *testing.T) {
 
 			byId, err := suite.sut.GetById(entity.ID)
 			assert.NoError(t, err)
-			assert.Equal(t, entity.CallbackUrl, byId.CallbackUrl)
+			assert.Equal(t, entity.BaseUrl, byId.BaseUrl)
 		})
 	})
 

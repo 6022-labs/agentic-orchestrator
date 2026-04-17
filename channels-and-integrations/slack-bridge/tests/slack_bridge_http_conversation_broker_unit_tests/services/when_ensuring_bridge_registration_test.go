@@ -57,8 +57,8 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 					assert.NotNil(t, req.ID)
 					assert.Equal(t, suite.bridgeId, *req.ID)
 					assert.Equal(t, "slack", req.Kind)
-					assert.Equal(t, "http://slack.local/cb", req.CallbackUrl)
-					return &external_models.ExternalBridgeResponse{ID: *req.ID, Kind: "slack", CallbackUrl: req.CallbackUrl}, nil
+					assert.Equal(t, "http://slack.local/cb", req.BaseUrl)
+					return &external_models.ExternalBridgeResponse{ID: *req.ID, Kind: "slack", BaseUrl: req.BaseUrl}, nil
 				}).
 				Times(1)
 		}
@@ -100,7 +100,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 		initSuite := func(suite *WhenEnsuringBridgeRegistrationTestingSuite) {
 			suite.mockClient.EXPECT().
 				RegisterBridge(gomock.Any()).
-				Return(&external_models.ExternalBridgeResponse{ID: uuid.New(), Kind: "slack", CallbackUrl: "http://slack.local/cb"}, nil).
+				Return(&external_models.ExternalBridgeResponse{ID: uuid.New(), Kind: "slack", BaseUrl: "http://slack.local/cb"}, nil).
 				Times(1)
 		}
 

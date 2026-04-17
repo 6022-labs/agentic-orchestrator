@@ -36,10 +36,7 @@ func WhenCallingConversationBrokerBeforeEach() *WhenCallingConversationBrokerTes
 	suite.sut = clients.NewConversationBrokerClient(clients.NewConversationBrokerClientParams{
 		Logger:     zap.NewNop(),
 		HttpClient: http.DefaultClient,
-		ConversationBrokerSettings: &settings.ConversationBrokerSettings{
-			BaseUrl:     suite.server.URL,
-			CallbackUrl: "http://slack.local/cb",
-		},
+		ConversationBrokerSettings: &settings.ConversationBrokerSettings{BaseUrl: suite.server.URL},
 	})
 
 	return suite
@@ -70,7 +67,7 @@ func TestWhenCallingConversationBroker(t *testing.T) {
 				_ = json.NewEncoder(w).Encode(&models.ExternalBridgeResponse{
 					ID:          assignedId,
 					Kind:        "slack",
-					CallbackUrl: "http://slack.local/cb",
+					BaseUrl: "http://slack.local/cb",
 				})
 			}
 		}
@@ -84,7 +81,7 @@ func TestWhenCallingConversationBroker(t *testing.T) {
 
 			resp, err := suite.sut.RegisterBridge(&models.ExternalRegisterBridgeRequest{
 				Kind:        "slack",
-				CallbackUrl: "http://slack.local/cb",
+				BaseUrl: "http://slack.local/cb",
 			})
 
 			assert.NoError(t, err)

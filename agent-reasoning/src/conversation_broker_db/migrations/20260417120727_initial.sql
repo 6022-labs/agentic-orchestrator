@@ -3,7 +3,7 @@
 CREATE TABLE "public"."bridges" (
   "id" uuid NOT NULL,
   "kind" text NOT NULL,
-  "callback_url" text NOT NULL,
+  "base_url" text NOT NULL,
   "created_at" timestamptz NOT NULL,
   "updated_at" timestamptz NOT NULL,
   PRIMARY KEY ("id")

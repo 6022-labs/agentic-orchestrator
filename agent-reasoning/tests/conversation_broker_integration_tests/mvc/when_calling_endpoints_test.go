@@ -138,8 +138,8 @@ func TestWhenCallingEndpoints(t *testing.T) {
 
 			// 1. Register bridge
 			resp, body := suite.do(http.MethodPost, "/bridges", &requests.RegisterBridgeRequest{
-				Kind:        enums.BridgeKindSlack,
-				CallbackUrl: "http://slack-bridge.local/internal/broker/callback",
+				Kind:    enums.BridgeKindSlack,
+				BaseUrl: "http://slack-bridge.local",
 			})
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 			var bridge models.Bridge
@@ -220,8 +220,8 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			defer suite.teardown()
 
 			resp, _ := suite.do(http.MethodPost, "/bridges", &requests.RegisterBridgeRequest{
-				Kind:        enums.BridgeKindSlack,
-				CallbackUrl: "",
+				Kind:    enums.BridgeKindSlack,
+				BaseUrl: "",
 			})
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		})

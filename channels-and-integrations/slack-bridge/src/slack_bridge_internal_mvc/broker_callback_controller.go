@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	BROKER_CALLBACK_ENDPOINT = "/internal/broker/callback"
+	BROKER_CALLBACK_ENDPOINT = "/broker/callback"
 )
 
 type BrokerCallbackController struct {

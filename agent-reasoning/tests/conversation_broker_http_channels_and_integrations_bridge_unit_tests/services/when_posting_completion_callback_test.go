@@ -44,7 +44,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingCompletionCallbackTestingSuite) {
 			suite.mockClient.EXPECT().
-				PostCompletion(bridge.CallbackUrl, gomock.Any()).
+				PostCompletion(bridge.BaseUrl, gomock.Any()).
 				Return(errors.New("boom")).
 				Times(1)
 		}
@@ -71,7 +71,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingCompletionCallbackTestingSuite) {
 			suite.mockClient.EXPECT().
-				PostCompletion(bridge.CallbackUrl, gomock.Any()).
+				PostCompletion(bridge.BaseUrl, gomock.Any()).
 				DoAndReturn(func(_ string, body *models.ExternalCompletionCallbackRequest) error {
 					assert.Equal(t, conversation.ID, body.ConversationId)
 					assert.Equal(t, *agent.CollectionAddress, body.CollectionAddress)
@@ -82,7 +82,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should send the bridge.callback_url with the mapped payload", func(t *testing.T) {
+		t.Run("Should send the bridge.base_url with the mapped payload", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingCompletionCallbackBeforeEach(t)

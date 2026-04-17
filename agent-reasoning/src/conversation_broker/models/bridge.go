@@ -9,12 +9,12 @@ import (
 )
 
 // Bridge represents a connected bridge instance (e.g. slack-bridge-prod).
-// The broker posts completion callbacks to bridges.callback_url.
+// The broker posts completion callbacks to bridges.base_url + "/broker/callback".
 type Bridge struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
-	Kind        enums.BridgeKind `gorm:"type:text;not null;index:idx_bridges_kind" json:"kind"`
-	CallbackUrl string           `gorm:"type:text;not null" json:"callbackUrl"`
+	Kind    enums.BridgeKind `gorm:"type:text;not null;index:idx_bridges_kind" json:"kind"`
+	BaseUrl string           `gorm:"type:text;not null" json:"baseUrl"`
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`

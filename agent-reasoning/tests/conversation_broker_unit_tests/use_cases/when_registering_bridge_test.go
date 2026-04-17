@@ -40,7 +40,7 @@ func WhenRegisteringBridgeBeforeEach(t *testing.T) *WhenRegisteringBridgeTesting
 func generateValidRegisterBridgeRequest() *requests.RegisterBridgeRequest {
 	return &requests.RegisterBridgeRequest{
 		Kind:        enums.BridgeKindSlack,
-		CallbackUrl: "http://slack-bridge.local/internal/broker/callback",
+		BaseUrl: "http://slack-bridge.local/internal/broker/callback",
 	}
 }
 
@@ -63,17 +63,17 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			assert.Contains(t, err.Error(), "kind")
 		})
 
-		t.Run("Because callbackUrl is empty", func(t *testing.T) {
+		t.Run("Because baseUrl is empty", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRegisteringBridgeBeforeEach(t)
 			request := generateValidRegisterBridgeRequest()
-			request.CallbackUrl = ""
+			request.BaseUrl = ""
 
 			_, _, err := suite.sut.Register(request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
-			assert.Contains(t, err.Error(), "callbackUrl")
+			assert.Contains(t, err.Error(), "baseUrl")
 		})
 
 		t.Run("Because id is the zero UUID", func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 				Save(gomock.Any()).
 				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
 					assert.Equal(t, request.Kind, b.Kind)
-					assert.Equal(t, request.CallbackUrl, b.CallbackUrl)
+					assert.Equal(t, request.BaseUrl, b.BaseUrl)
 					return b, nil
 				}).
 				Times(1)
@@ -158,7 +158,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			existing := model_builders.NewBridgeBuilder().
 				WithKind(request.Kind).
-				WithCallbackUrl(request.CallbackUrl).
+				WithBaseUrl(request.BaseUrl).
 				Build()
 			id := existing.ID
 			request.ID = &id
@@ -175,13 +175,13 @@ func TestWhenRegisteringBridge(t *testing.T) {
 	t.Run("Given request is valid and id is provided for an already-known bridge with a different callback url", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge, newCallbackUrl string) {
+		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge, newBaseUrl string) {
 			suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
 			suite.mockBridgeRepository.EXPECT().
 				Save(gomock.Any()).
 				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
 					assert.Equal(t, existing.ID, b.ID)
-					assert.Equal(t, newCallbackUrl, b.CallbackUrl)
+					assert.Equal(t, newBaseUrl, b.BaseUrl)
 					return b, nil
 				}).
 				Times(1)
@@ -193,20 +193,20 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			suite := WhenRegisteringBridgeBeforeEach(t)
 			existing := model_builders.NewBridgeBuilder().
 				WithKind(enums.BridgeKindSlack).
-				WithCallbackUrl("http://old.local/cb").
+				WithBaseUrl("http://old.local/cb").
 				Build()
 			request := generateValidRegisterBridgeRequest()
-			request.CallbackUrl = "http://new.local/cb"
+			request.BaseUrl = "http://new.local/cb"
 			id := existing.ID
 			request.ID = &id
-			initSuite(suite, existing, request.CallbackUrl)
+			initSuite(suite, existing, request.BaseUrl)
 
 			bridge, existed, err := suite.sut.Register(request)
 
 			assert.NoError(t, err)
 			assert.True(t, existed)
 			assert.Equal(t, existing.ID, bridge.ID)
-			assert.Equal(t, "http://new.local/cb", bridge.CallbackUrl)
+			assert.Equal(t, "http://new.local/cb", bridge.BaseUrl)
 		})
 	})
 

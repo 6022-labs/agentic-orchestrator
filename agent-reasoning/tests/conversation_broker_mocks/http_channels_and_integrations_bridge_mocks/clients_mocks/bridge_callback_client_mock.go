@@ -41,15 +41,15 @@ func (m *MockBridgeCallbackClientInterface) EXPECT() *MockBridgeCallbackClientIn
 }
 
 // PostCompletion mocks base method.
-func (m *MockBridgeCallbackClientInterface) PostCompletion(callbackUrl string, body *models.ExternalCompletionCallbackRequest) error {
+func (m *MockBridgeCallbackClientInterface) PostCompletion(bridgeBaseUrl string, body *models.ExternalCompletionCallbackRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostCompletion", callbackUrl, body)
+	ret := m.ctrl.Call(m, "PostCompletion", bridgeBaseUrl, body)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PostCompletion indicates an expected call of PostCompletion.
-func (mr *MockBridgeCallbackClientInterfaceMockRecorder) PostCompletion(callbackUrl, body any) *gomock.Call {
+func (mr *MockBridgeCallbackClientInterfaceMockRecorder) PostCompletion(bridgeBaseUrl, body any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCompletion", reflect.TypeOf((*MockBridgeCallbackClientInterface)(nil).PostCompletion), callbackUrl, body)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCompletion", reflect.TypeOf((*MockBridgeCallbackClientInterface)(nil).PostCompletion), bridgeBaseUrl, body)
 }

@@ -35,10 +35,10 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 			return nil, false, fmt.Errorf("failed to load existing bridge: %w", err)
 		}
 		if existing != nil {
-			if existing.CallbackUrl == request.CallbackUrl && existing.Kind == request.Kind {
+			if existing.BaseUrl == request.BaseUrl && existing.Kind == request.Kind {
 				return existing, true, nil
 			}
-			existing.CallbackUrl = request.CallbackUrl
+			existing.BaseUrl = request.BaseUrl
 			existing.Kind = request.Kind
 			saved, err := uc.bridgeRepository.Save(existing)
 			if err != nil {
@@ -49,8 +49,8 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 	}
 
 	bridge := &models.Bridge{
-		Kind:        request.Kind,
-		CallbackUrl: request.CallbackUrl,
+		Kind:    request.Kind,
+		BaseUrl: request.BaseUrl,
 	}
 	if request.ID != nil {
 		bridge.ID = *request.ID

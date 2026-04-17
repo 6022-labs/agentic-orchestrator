@@ -39,14 +39,14 @@ func NewBridgeRegistrar(
 func (r *BridgeRegistrar) Ensure() (uuid.UUID, error) {
 	r.logger.Info("Upserting slack bridge with conversation broker",
 		zap.String("bridgeId", r.settings.BridgeID.String()),
-		zap.String("callbackUrl", r.settings.CallbackUrl),
+		zap.String("baseUrl", r.settings.CallbackUrl),
 	)
 
 	id := r.settings.BridgeID
 	bridge, err := r.client.RegisterBridge(&models.ExternalRegisterBridgeRequest{
-		ID:          &id,
-		Kind:        bridgeKindSlack,
-		CallbackUrl: r.settings.CallbackUrl,
+		ID:      &id,
+		Kind:    bridgeKindSlack,
+		BaseUrl: r.settings.CallbackUrl,
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to upsert bridge with broker: %w", err)

@@ -10,20 +10,20 @@ import (
 )
 
 type BridgeBuilder struct {
-	id          uuid.UUID
-	kind        enums.BridgeKind
-	callbackUrl string
-	createdAt   time.Time
-	updatedAt   time.Time
+	id        uuid.UUID
+	kind      enums.BridgeKind
+	baseUrl   string
+	createdAt time.Time
+	updatedAt time.Time
 }
 
 func NewBridgeBuilder() *BridgeBuilder {
 	return &BridgeBuilder{
-		id:          uuid.New(),
-		kind:        enums.BridgeKindSlack,
-		callbackUrl: faker.URL(),
-		createdAt:   time.Now(),
-		updatedAt:   time.Now(),
+		id:        uuid.New(),
+		kind:      enums.BridgeKindSlack,
+		baseUrl:   faker.URL(),
+		createdAt: time.Now(),
+		updatedAt: time.Now(),
 	}
 }
 
@@ -37,17 +37,17 @@ func (b *BridgeBuilder) WithKind(kind enums.BridgeKind) *BridgeBuilder {
 	return b
 }
 
-func (b *BridgeBuilder) WithCallbackUrl(url string) *BridgeBuilder {
-	b.callbackUrl = url
+func (b *BridgeBuilder) WithBaseUrl(url string) *BridgeBuilder {
+	b.baseUrl = url
 	return b
 }
 
 func (b *BridgeBuilder) Build() *models.Bridge {
 	return &models.Bridge{
-		ID:          b.id,
-		Kind:        b.kind,
-		CallbackUrl: b.callbackUrl,
-		CreatedAt:   b.createdAt,
-		UpdatedAt:   b.updatedAt,
+		ID:        b.id,
+		Kind:      b.kind,
+		BaseUrl:   b.baseUrl,
+		CreatedAt: b.createdAt,
+		UpdatedAt: b.updatedAt,
 	}
 }

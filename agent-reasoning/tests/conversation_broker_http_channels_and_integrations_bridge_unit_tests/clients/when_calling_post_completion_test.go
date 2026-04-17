@@ -77,11 +77,11 @@ func TestWhenCallingPostCompletion(t *testing.T) {
 				Content:           "hello",
 			}
 
-			err := suite.sut.PostCompletion(suite.server.URL+"/internal/broker/callback", body)
+			err := suite.sut.PostCompletion(suite.server.URL, body)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.MethodPost, capturedMethod)
-			assert.Equal(t, "/internal/broker/callback", capturedPath)
+			assert.Equal(t, clients.BridgeCallbackEndpoint, capturedPath)
 
 			var decoded models.ExternalCompletionCallbackRequest
 			assert.NoError(t, json.Unmarshal(capturedBody, &decoded))

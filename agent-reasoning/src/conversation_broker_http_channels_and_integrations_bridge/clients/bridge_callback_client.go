@@ -6,14 +6,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_channels_and_integrations_bridge/models"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
+// BridgeCallbackEndpoint is the path the broker appends to a bridge's
+// base URL when posting a completion callback.
+const BridgeCallbackEndpoint = "/broker/callback"
+
 type BridgeCallbackClientInterface interface {
-	PostCompletion(callbackUrl string, body *models.ExternalCompletionCallbackRequest) error
+	PostCompletion(bridgeBaseUrl string, body *models.ExternalCompletionCallbackRequest) error
 }
 
 type BridgeCallbackClient struct {
@@ -35,13 +40,15 @@ func NewBridgeCallbackClient(params NewBridgeCallbackClientParams) *BridgeCallba
 	}
 }
 
-func (client *BridgeCallbackClient) PostCompletion(callbackUrl string, body *models.ExternalCompletionCallbackRequest) error {
+func (client *BridgeCallbackClient) PostCompletion(bridgeBaseUrl string, body *models.ExternalCompletionCallbackRequest) error {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("failed to marshal callback body: %w", err)
 	}
 
-	httpRequest, err := http.NewRequest(http.MethodPost, callbackUrl, bytes.NewReader(bodyBytes))
+	url := strings.TrimRight(bridgeBaseUrl, "/") + BridgeCallbackEndpoint
+
+	httpRequest, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -49,7 +56,7 @@ func (client *BridgeCallbackClient) PostCompletion(callbackUrl string, body *mod
 
 	client.logger.Debug(
 		"Sending completion callback to bridge",
-		zap.String("url", callbackUrl),
+		zap.String("url", url),
 		zap.String("body", string(bodyBytes)),
 	)
 
@@ -63,7 +70,7 @@ func (client *BridgeCallbackClient) PostCompletion(callbackUrl string, body *mod
 		responseBody, _ := io.ReadAll(httpResponse.Body)
 		client.logger.Warn(
 			"Bridge callback returned non-2xx",
-			zap.String("url", callbackUrl),
+			zap.String("url", url),
 			zap.Int("status_code", httpResponse.StatusCode),
 			zap.String("body", string(responseBody)),
 		)
