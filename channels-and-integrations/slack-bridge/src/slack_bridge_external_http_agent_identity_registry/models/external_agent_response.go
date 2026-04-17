@@ -12,7 +12,6 @@ import (
 type ExternalAgentResponse struct {
 	ID uuid.UUID `json:"id"`
 
-	Name      string `json:"name"`
 	Role      string `json:"role"`
 	Owner     string `json:"owner"`
 	EnsDomain string `json:"ensDomain"`
@@ -34,7 +33,6 @@ func (e *ExternalAgentResponse) ToSlackAgent() (*models.SlackAgent, error) {
 
 	return &models.SlackAgent{
 		Role:              role,
-		Name:              e.Name,
 		OwnerWallet:       e.Owner,
 		EnsDomain:         e.EnsDomain,
 		CollectionTokenId: e.CollectionTokenId,

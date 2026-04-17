@@ -35,22 +35,6 @@ func AddSlackBridgeDbConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		db_repositories.NewSlackMessageRepository,
-		dig.As(new(repositories.SlackMessageRepositoryInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		db_repositories.NewSlackThreadRepository,
-		dig.As(new(repositories.SlackThreadRepositoryInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		db_repositories.NewSlackAgentRepository,
 		dig.As(new(repositories.SlackAgentRepositoryInterface)),
 	)
@@ -59,16 +43,16 @@ func AddSlackBridgeDbConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		db_repositories.NewSlackConversationLinkRepository,
-		dig.As(new(repositories.SlackConversationLinkRepositoryInterface)),
+		db_repositories.NewSlackConversationRepository,
+		dig.As(new(repositories.SlackConversationRepositoryInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		db_repositories.NewSlackMessageLinkRepository,
-		dig.As(new(repositories.SlackMessageLinkRepositoryInterface)),
+		db_repositories.NewSlackMessageRepository,
+		dig.As(new(repositories.SlackMessageRepositoryInterface)),
 	)
 	if err != nil {
 		panic(err)

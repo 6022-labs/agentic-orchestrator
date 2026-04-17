@@ -40,49 +40,19 @@ func (m *MockSlackMessageRepositoryInterface) EXPECT() *MockSlackMessageReposito
 	return m.recorder
 }
 
-// GetByThreadIdAndChannelId mocks base method.
-func (m *MockSlackMessageRepositoryInterface) GetByThreadIdAndChannelId(threadId, channelId string) ([]*models.SlackMessage, error) {
+// GetBySlackIds mocks base method.
+func (m *MockSlackMessageRepositoryInterface) GetBySlackIds(slackChannelId, slackMessageTs string) (*models.SlackMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByThreadIdAndChannelId", threadId, channelId)
-	ret0, _ := ret[0].([]*models.SlackMessage)
+	ret := m.ctrl.Call(m, "GetBySlackIds", slackChannelId, slackMessageTs)
+	ret0, _ := ret[0].(*models.SlackMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetByThreadIdAndChannelId indicates an expected call of GetByThreadIdAndChannelId.
-func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) GetByThreadIdAndChannelId(threadId, channelId any) *gomock.Call {
+// GetBySlackIds indicates an expected call of GetBySlackIds.
+func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) GetBySlackIds(slackChannelId, slackMessageTs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByThreadIdAndChannelId", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).GetByThreadIdAndChannelId), threadId, channelId)
-}
-
-// GetConversationByMessageId mocks base method.
-func (m *MockSlackMessageRepositoryInterface) GetConversationByMessageId(id string) ([]*models.SlackMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConversationByMessageId", id)
-	ret0, _ := ret[0].([]*models.SlackMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetConversationByMessageId indicates an expected call of GetConversationByMessageId.
-func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) GetConversationByMessageId(id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversationByMessageId", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).GetConversationByMessageId), id)
-}
-
-// GetProcessableMessagesForAgentAndThread mocks base method.
-func (m *MockSlackMessageRepositoryInterface) GetProcessableMessagesForAgentAndThread(agent *models.SlackAgent, threadId, channelId string) ([]*models.SlackMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProcessableMessagesForAgentAndThread", agent, threadId, channelId)
-	ret0, _ := ret[0].([]*models.SlackMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetProcessableMessagesForAgentAndThread indicates an expected call of GetProcessableMessagesForAgentAndThread.
-func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) GetProcessableMessagesForAgentAndThread(agent, threadId, channelId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProcessableMessagesForAgentAndThread", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).GetProcessableMessagesForAgentAndThread), agent, threadId, channelId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBySlackIds", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).GetBySlackIds), slackChannelId, slackMessageTs)
 }
 
 // Save mocks base method.
@@ -98,19 +68,4 @@ func (m *MockSlackMessageRepositoryInterface) Save(entity *models.SlackMessage) 
 func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).Save), entity)
-}
-
-// SaveMany mocks base method.
-func (m *MockSlackMessageRepositoryInterface) SaveMany(entities []*models.SlackMessage) ([]*models.SlackMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveMany", entities)
-	ret0, _ := ret[0].([]*models.SlackMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SaveMany indicates an expected call of SaveMany.
-func (mr *MockSlackMessageRepositoryInterfaceMockRecorder) SaveMany(entities any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveMany", reflect.TypeOf((*MockSlackMessageRepositoryInterface)(nil).SaveMany), entities)
 }

@@ -3,9 +3,12 @@ package event_handlers_test
 import (
 	"testing"
 
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -14,76 +17,73 @@ import (
 type WhenHandlingChannelLeftTestingSuite struct {
 	sut *event_handlers.ChannelLeftHandler
 
-	mockSlackThreadRepository *repositories_mocks.MockSlackThreadRepositoryInterface
+	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
+	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenHandlingChannelLeftBeforeEach(t *testing.T) *WhenHandlingChannelLeftTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockSlackThreadRepository := repositories_mocks.NewMockSlackThreadRepositoryInterface(mockController)
+	mockSlackConversationRepository := repositories_mocks.NewMockSlackConversationRepositoryInterface(mockController)
+	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
-	sut := event_handlers.NewChannelLeftHandler(
-		zap.NewNop(),
-		mockSlackThreadRepository,
-	)
+	sut := event_handlers.NewChannelLeftHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
 
 	return &WhenHandlingChannelLeftTestingSuite{
-		sut:                       sut,
-		mockSlackThreadRepository: mockSlackThreadRepository,
+		sut:                                 sut,
+		mockSlackConversationRepository: mockSlackConversationRepository,
+		mockBrokerRequester:                    mockBrokerRequester,
 	}
 }
 
 func TestWhenHandlingChannelLeft(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given an error occurs while concluding threads by channel id", func(t *testing.T) {
+	t.Run("Given the channel has a single linked broker conversation", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite) {
-			suite.mockSlackThreadRepository.
-				EXPECT().
-				ConcludeThreadsByChannelId(gomock.Any()).
-				Return(assert.AnError)
+		convId := uuid.New()
+
+		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite, channelId string) {
+			suite.mockSlackConversationRepository.EXPECT().
+				ListByChannelId(channelId).
+				Return([]*models.SlackConversation{
+					{SlackChannelId: channelId, SlackThreadTs: "1.0", BrokerConversationID: convId},
+				}, nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId).Return(nil)
 		}
 
-		t.Run("Should return the error", func(t *testing.T) {
+		t.Run("Should force-conclude the broker conversation", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingChannelLeftBeforeEach(t)
-			initSuite(suite)
+			req := &requests.ChannelLeftRequest{}
+			req.Event.Channel = "C123"
 
-			err := suite.sut.Handle(&requests.ChannelLeftRequest{
-				Event: requests.ChannelLeftEvent{
-					Channel: "channel_id",
-				},
-			})
+			initSuite(suite, req.Event.Channel)
 
-			assert.Error(t, err)
+			err := suite.sut.Handle(req)
+			assert.NoError(t, err)
 		})
 	})
 
-	t.Run("Given no errors occur", func(t *testing.T) {
+	t.Run("Given the channel has no linked broker conversations", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite) {
-			suite.mockSlackThreadRepository.
-				EXPECT().
-				ConcludeThreadsByChannelId(gomock.Any()).
-				Return(nil)
+		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite, channelId string) {
+			suite.mockSlackConversationRepository.EXPECT().ListByChannelId(channelId).Return(nil, nil)
 		}
 
-		t.Run("Should not return an error", func(t *testing.T) {
+		t.Run("Should not call the broker", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingChannelLeftBeforeEach(t)
-			initSuite(suite)
+			req := &requests.ChannelLeftRequest{}
+			req.Event.Channel = "C123"
 
-			err := suite.sut.Handle(&requests.ChannelLeftRequest{
-				Event: requests.ChannelLeftEvent{
-					Channel: "channel_id",
-				},
-			})
+			initSuite(suite, req.Event.Channel)
 
+			err := suite.sut.Handle(req)
 			assert.NoError(t, err)
 		})
 	})

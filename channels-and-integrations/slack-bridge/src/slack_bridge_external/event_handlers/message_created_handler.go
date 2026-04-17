@@ -3,7 +3,6 @@ package event_handlers
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
@@ -36,9 +35,8 @@ type MessageCreatedHandler struct {
 	slackSettings                  *settings.SlackSettings
 	slackThreadRequester           interfaces.SlackThreadRequesterInterface
 	slackAgentRepository           repositories.SlackAgentRepositoryInterface
-	slackThreadRepository          repositories.SlackThreadRepositoryInterface
 	addAgentToChannel              command_handlers.AddAgentToChannelInterface
-	slackThreadMessagesAdder       external_interfaces.SlackThreadMessagesAdderInterface
+	brokerMessageForwarder         external_interfaces.BrokerMessageForwarderInterface
 	slackUserSynchronizerCached    external_interfaces.SlackUserSynchronizerCachedInterface
 	slackChannelSynchronizerCached external_interfaces.SlackChannelSynchronizerCachedInterface
 }
@@ -49,8 +47,7 @@ func NewMessageCreatedHandler(
 	addAgentToChannel command_handlers.AddAgentToChannelInterface,
 	slackThreadRequester interfaces.SlackThreadRequesterInterface,
 	slackAgentRepository repositories.SlackAgentRepositoryInterface,
-	slackThreadRepository repositories.SlackThreadRepositoryInterface,
-	slackThreadMessagesAdder external_interfaces.SlackThreadMessagesAdderInterface,
+	brokerMessageForwarder external_interfaces.BrokerMessageForwarderInterface,
 	slackUserSynchronizerCached external_interfaces.SlackUserSynchronizerCachedInterface,
 	slackChannelSynchronizerCached external_interfaces.SlackChannelSynchronizerCachedInterface,
 ) *MessageCreatedHandler {
@@ -60,8 +57,7 @@ func NewMessageCreatedHandler(
 		addAgentToChannel:              addAgentToChannel,
 		slackThreadRequester:           slackThreadRequester,
 		slackAgentRepository:           slackAgentRepository,
-		slackThreadRepository:          slackThreadRepository,
-		slackThreadMessagesAdder:       slackThreadMessagesAdder,
+		brokerMessageForwarder:         brokerMessageForwarder,
 		slackUserSynchronizerCached:    slackUserSynchronizerCached,
 		slackChannelSynchronizerCached: slackChannelSynchronizerCached,
 	}
@@ -135,22 +131,16 @@ func (p *MessageCreatedHandler) handleAsSlackUser(request *requests.MessageCreat
 
 	parentMessageTs := p.getParentMessageTs(request)
 
-	err = p.slackThreadMessagesAdder.Add(
-		slackChannel.Id,
+	err = p.brokerMessageForwarder.Forward(
+		slackChannel,
 		parentMessageTs,
 		request.Event.Ts,
 		request.Event.Text,
-		request.Event.User,
-		nil,
+		slackUser,
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to add message to thread: %w", err)
-	}
-
-	err = p.unconcludeThreadIfNeeded(parentMessageTs, slackChannel.Id)
-	if err != nil {
-		return fmt.Errorf("failed to unconclude thread: %w", err)
+		return fmt.Errorf("failed to forward slack user message to broker: %w", err)
 	}
 
 	return nil
@@ -183,17 +173,16 @@ func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRe
 
 	parentMessageTs := p.getParentMessageTs(request)
 
-	err = p.slackThreadMessagesAdder.Add(
-		slackChannel.Id,
+	err = p.brokerMessageForwarder.Forward(
+		slackChannel,
 		parentMessageTs,
 		request.Event.Ts,
 		request.Event.Text,
 		nil,
-		&agent.CollectionAddress,
-		&agent.CollectionTokenId,
+		agent,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to add message to thread: %w", err)
+		return fmt.Errorf("failed to forward agent message to broker: %w", err)
 	}
 
 	return nil
@@ -211,33 +200,39 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(request *requests.Message
 		return fmt.Errorf("paired human agent not found in persistence with collection address and token ID: %s %d", *slackUser.PairedHumanAgentCollectionAddress, *slackUser.PairedHumanAgentCollectionTokenId)
 	}
 
-	parentMessageTs := p.getParentMessageTs(request)
-
-	err = p.slackThreadMessagesAdder.Add(
-		slackChannel.Id,
-		parentMessageTs,
-		request.Event.Ts,
-		request.Event.Text,
-		request.Event.User,
-		&pairedHumanAgent.CollectionAddress,
-		&pairedHumanAgent.CollectionTokenId,
+	err = p.addAgentToChannel.Add(
+		&command_handlers_requests.AddAgentToChannelRequest{
+			CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
+			CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,
+			ChannelID:         slackChannel.Id,
+		},
 	)
-	if err != nil {
-		return fmt.Errorf("failed to add message to thread: %w", err)
-	}
-
-	err = p.addAgentToChannel.Add(&command_handlers_requests.AddAgentToChannelRequest{
-		CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
-		CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,
-		ChannelID:         slackChannel.Id,
-	})
 	if err != nil {
 		return fmt.Errorf("failed to add paired human agent to channel: %w", err)
 	}
 
-	err = p.unconcludeThreadIfNeeded(parentMessageTs, slackChannel.Id)
+	// Re-sync channel to pick up the freshly attached paired human agent so the
+	// broker registration includes them in the conversation participant set.
+	freshChannel, err := p.slackChannelSynchronizerCached.Sync(slackChannel.Id)
 	if err != nil {
-		return fmt.Errorf("failed to unconclude thread: %w", err)
+		return fmt.Errorf("failed to refresh slack channel after attaching paired human agent: %w", err)
+	}
+	if freshChannel != nil {
+		slackChannel = freshChannel
+	}
+
+	parentMessageTs := p.getParentMessageTs(request)
+
+	err = p.brokerMessageForwarder.Forward(
+		slackChannel,
+		parentMessageTs,
+		request.Event.Ts,
+		request.Event.Text,
+		nil,
+		pairedHumanAgent,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to forward paired-human-agent message to broker: %w", err)
 	}
 
 	return nil
@@ -249,29 +244,4 @@ func (p *MessageCreatedHandler) getParentMessageTs(request *requests.MessageCrea
 	}
 
 	return request.Event.Ts
-}
-
-func (p *MessageCreatedHandler) unconcludeThreadIfNeeded(slackThreadId, slackChannelId string) error {
-	slackThread, err := p.slackThreadRepository.GetByIdAndChannelId(slackThreadId, slackChannelId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("failed to get slack thread by id and channel id: %w", err)
-	}
-	if slackThread == nil {
-		return fmt.Errorf("slack thread not found after adding message to thread: %s in channel %s", slackThreadId, slackChannelId)
-	}
-
-	if slackThread.IsConcluded {
-		p.logger.Info("Reopening concluded thread due to new message from slack user", zap.String("threadId", slackThread.Id), zap.String("channelId", slackChannelId))
-
-		now := time.Now()
-		slackThread.IsConcluded = false
-		slackThread.UnconcludedAt = &now
-
-		_, err = p.slackThreadRepository.Save(slackThread)
-		if err != nil {
-			return fmt.Errorf("failed to reopen concluded slack thread: %w", err)
-		}
-	}
-
-	return nil
 }

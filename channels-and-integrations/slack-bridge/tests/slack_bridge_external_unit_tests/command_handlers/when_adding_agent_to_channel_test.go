@@ -8,8 +8,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -17,9 +19,11 @@ import (
 type WhenAddingAgentToChannelTestingSuite struct {
 	sut *command_handlers.AddAgentToChannel
 
-	mockSlackAgentSynchronizer   *interfaces_mocks.MockSlackAgentSynchronizerInterface
-	mockSlackChannelSynchronizer *interfaces_mocks.MockSlackChannelSynchronizerInterface
-	mockSlackChannelRepository   *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackAgentSynchronizer          *interfaces_mocks.MockSlackAgentSynchronizerInterface
+	mockSlackChannelSynchronizer        *interfaces_mocks.MockSlackChannelSynchronizerInterface
+	mockSlackChannelRepository          *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
+	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelTestingSuite {
@@ -28,19 +32,25 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 	mockSlackAgentSynchronizer := interfaces_mocks.NewMockSlackAgentSynchronizerInterface(mockController)
 	mockSlackChannelSynchronizer := interfaces_mocks.NewMockSlackChannelSynchronizerInterface(mockController)
 	mockSlackChannelRepository := repositories_mocks.NewMockSlackChannelRepositoryInterface(mockController)
+	mockSlackConversationRepository := repositories_mocks.NewMockSlackConversationRepositoryInterface(mockController)
+	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
 	sut := command_handlers.NewAddAgentToChannel(
 		mockSlackAgentSynchronizer,
 		mockSlackChannelRepository,
 		mockSlackChannelSynchronizer,
+		mockSlackConversationRepository,
+		mockBrokerRequester,
 	)
 
 	return &WhenAddingAgentToChannelTestingSuite{
 		sut: sut,
 
-		mockSlackAgentSynchronizer:   mockSlackAgentSynchronizer,
-		mockSlackChannelRepository:   mockSlackChannelRepository,
-		mockSlackChannelSynchronizer: mockSlackChannelSynchronizer,
+		mockSlackAgentSynchronizer:          mockSlackAgentSynchronizer,
+		mockSlackChannelRepository:          mockSlackChannelRepository,
+		mockSlackChannelSynchronizer:        mockSlackChannelSynchronizer,
+		mockSlackConversationRepository: mockSlackConversationRepository,
+		mockBrokerRequester:                    mockBrokerRequester,
 	}
 }
 
@@ -206,7 +216,9 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Sync(request.ChannelID).
 				Return(slackChannel, nil)
 
+			brokerParticipantId := uuid.New()
 			slackAgent := model_builders.NewSlackAgentBuilder().Build()
+			slackAgent.BrokerParticipantId = &brokerParticipantId
 			suite.mockSlackAgentSynchronizer.
 				EXPECT().
 				Sync(request.CollectionAddress, request.CollectionTokenId).
@@ -237,35 +249,41 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		})
 	})
 
-	t.Run("Given all steps succeed", func(t *testing.T) {
+	t.Run("Given all steps succeed and the channel has existing broker conversations", func(t *testing.T) {
 		t.Parallel()
 
+		brokerAgentId := uuid.New()
+		convId1 := uuid.New()
+		convId2 := uuid.New()
+
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
-			slackChannel := model_builders.NewSlackChannelBuilder().
+			slackChannel := model_builders.NewSlackChannelBuilder().Build()
+			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+
+			slackAgent := model_builders.NewSlackAgentBuilder().
+				WithCollectionAddress(request.CollectionAddress).
+				WithCollectionTokenId(request.CollectionTokenId).
 				Build()
-			suite.mockSlackChannelRepository.
-				EXPECT().
-				GetById(request.ChannelID).
-				Return(slackChannel, nil)
-
-			suite.mockSlackChannelSynchronizer.
-				EXPECT().
-				Sync(request.ChannelID).
-				Return(slackChannel, nil)
-
-			slackAgent := model_builders.NewSlackAgentBuilder().Build()
-			suite.mockSlackAgentSynchronizer.
-				EXPECT().
+			slackAgent.BrokerParticipantId = &brokerAgentId
+			suite.mockSlackAgentSynchronizer.EXPECT().
 				Sync(request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
 
-			suite.mockSlackChannelRepository.
-				EXPECT().
-				AddAgent(slackChannel, slackAgent).
-				Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().AddAgent(slackChannel, slackAgent).Return(slackChannel, nil)
+
+			suite.mockSlackConversationRepository.EXPECT().
+				ListByChannelId(request.ChannelID).
+				Return([]*models.SlackConversation{
+					{SlackChannelId: request.ChannelID, SlackThreadTs: "1.0", BrokerConversationID: convId1},
+					{SlackChannelId: request.ChannelID, SlackThreadTs: "2.0", BrokerConversationID: convId2},
+				}, nil)
+
+			suite.mockBrokerRequester.EXPECT().AttachParticipant(convId1, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().AttachParticipant(convId2, brokerAgentId).Return(nil)
 		}
 
-		t.Run("Should not return an error", func(t *testing.T) {
+		t.Run("Should attach the agent to every existing broker conversation in the channel", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenAddingAgentToChannelBeforeEach(t)

@@ -7,6 +7,7 @@ import (
 	slack_bridge_external_host_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_host/settings"
 	slack_bridge_http_agent_identity_registry_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_http_agent_identity_registry/configurations"
 	slack_bridge_external_mvc_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/configurations"
+	slack_bridge_http_conversation_broker_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_conversation_broker/configurations"
 	slack_bridge_http_slack_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/configurations"
 	slack_bridge_redis_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
 
@@ -28,6 +29,7 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	slack_bridge_external_configurations.AddSlackBridgeExternalConfiguration(container)
 	slack_bridge_http_slack_configurations.AddSlackBridgeHttpSlackConfiguration(container)
 	slack_bridge_external_mvc_configurations.AddSlackBridgeExternalMvcConfiguration(container)
+	slack_bridge_http_conversation_broker_configurations.AddSlackBridgeHttpConversationBrokerConfiguration(container)
 	slack_bridge_http_agent_identity_registry_configurations.AddSlackBridgeExternalHttpAgentIdentityRegistryConfiguration(container)
 
 	return container

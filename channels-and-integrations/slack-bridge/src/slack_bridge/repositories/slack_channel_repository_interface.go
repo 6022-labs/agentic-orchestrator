@@ -7,5 +7,6 @@ type SlackChannelRepositoryInterface interface {
 	GetById(id string) (*models.SlackChannel, error)
 	AddAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error)
 	RemoveAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error)
+	AddUser(channelId string, userId string) error
 	UpdateId(oldId string, newId string) error
 }

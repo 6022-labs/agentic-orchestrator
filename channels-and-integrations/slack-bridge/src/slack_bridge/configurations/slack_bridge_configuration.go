@@ -24,14 +24,6 @@ func AddSlackBridgeConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewSlackThreadConclude,
-		dig.As(new(interfaces.SlackThreadConcludeInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewWalletOwnershipChallenge,
 		dig.As(new(interfaces.WalletOwnershipChallengeInterface)),
 	)

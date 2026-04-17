@@ -70,6 +70,21 @@ func (mr *MockSlackUserRepositoryInterfaceMockRecorder) GetByPairedHumanAgent(co
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPairedHumanAgent", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).GetByPairedHumanAgent), collectionAddress, collectionTokenId)
 }
 
+// ListByIds mocks base method.
+func (m *MockSlackUserRepositoryInterface) ListByIds(ids []string) ([]*models.SlackUser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByIds", ids)
+	ret0, _ := ret[0].([]*models.SlackUser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByIds indicates an expected call of ListByIds.
+func (mr *MockSlackUserRepositoryInterfaceMockRecorder) ListByIds(ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByIds", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).ListByIds), ids)
+}
+
 // Save mocks base method.
 func (m *MockSlackUserRepositoryInterface) Save(entity *models.SlackUser) (*models.SlackUser, error) {
 	m.ctrl.T.Helper()

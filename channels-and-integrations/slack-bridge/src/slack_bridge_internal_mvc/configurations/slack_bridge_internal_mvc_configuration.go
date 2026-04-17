@@ -15,4 +15,13 @@ func AddSlackBridgeInternalMvcConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(
+		slack_bridge_internal_mvc.NewBrokerCallbackController,
+		dig.Group("controllers"),
+		dig.As(new(slack_bridge_internal_mvc.ControllerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }

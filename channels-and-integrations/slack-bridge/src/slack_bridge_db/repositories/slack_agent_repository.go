@@ -32,39 +32,6 @@ func (r *SlackAgentRepository) GetByCollectionAddressAndCollectionTokenId(collec
 	return &entity, nil
 }
 
-func (r *SlackAgentRepository) GetByEnsDomain(ensDomain string) (*models.SlackAgent, error) {
-	var entity models.SlackAgent
-	err := r.client.
-		Where("ens_domain = ?", ensDomain).
-		First(&entity).
-		Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
-}
-
-func (r *SlackAgentRepository) GetNextAgentToProcess(processingInterval uint64) (*models.SlackAgent, error) {
-	var entity models.SlackAgent
-	err := r.client.
-		Where("is_processing = ?", false).
-		Where(
-			fmt.Sprintf(
-				"last_processed_at IS NULL OR last_processed_at < NOW() - INTERVAL '%d seconds'",
-				processingInterval,
-			),
-		).
-		Order("last_processed_at ASC NULLS FIRST").
-		First(&entity).
-		Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
-}
-
 func (r *SlackAgentRepository) UpdateOwnerWallet(collectionAddress string, collectionTokenId uint64, ownerWallet string) error {
 	result := r.client.Model(&models.SlackAgent{}).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
@@ -88,3 +55,4 @@ func (r *SlackAgentRepository) UpdateIconImageCid(collectionAddress string, coll
 
 	return result.Error
 }
+

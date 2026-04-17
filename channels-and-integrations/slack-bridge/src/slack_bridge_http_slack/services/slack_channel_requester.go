@@ -3,7 +3,6 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/clients"
@@ -41,26 +40,9 @@ func (s *SlackChannelRequester) GetChannelInformation(channelId string) (*interf
 		return nil, fmt.Errorf("failed to get channel members: %s", string(jsonResp))
 	}
 
-	members := make([]string, 0)
-	for _, member := range channelMembers.Members {
-		userInfo, err := s.client.GetUsersInfo(&http_slack_models.ExternalGetUsersInfoRequest{
-			User: member,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to get user info: %w", err)
-		}
-		if !userInfo.Ok {
-			return nil, fmt.Errorf("failed to get user info: %v", userInfo)
-		}
-
-		if len(strings.TrimSpace(userInfo.User.Profile.DisplayName)) != 0 {
-			members = append(members, userInfo.User.Profile.DisplayName)
-		}
-	}
-
 	return &interfaces.ChannelInformation{
 		Id:          channelId,
-		Members:     members,
+		UserIds:     channelMembers.Members,
 		Name:        channelInfoResponse.Channel.Name,
 		Description: channelInfoResponse.Channel.Purpose.Value,
 

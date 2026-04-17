@@ -31,8 +31,8 @@ func AddSlackBridgeExternalConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewSlackThreadMessagesAdder,
-		dig.As(new(interfaces.SlackThreadMessagesAdderInterface)),
+		services.NewBrokerMessageForwarder,
+		dig.As(new(interfaces.BrokerMessageForwarderInterface)),
 	)
 	if err != nil {
 		panic(err)

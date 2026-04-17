@@ -6,6 +6,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
+	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/samber/lo"
@@ -17,20 +18,26 @@ type AddAgentToChannelInterface interface {
 }
 
 type AddAgentToChannel struct {
-	slackAgentSynchronizer   interfaces.SlackAgentSynchronizerInterface
-	slackChannelSynchronizer interfaces.SlackChannelSynchronizerInterface
-	slackChannelRepository   repositories.SlackChannelRepositoryInterface
+	slackAgentSynchronizer      interfaces.SlackAgentSynchronizerInterface
+	slackChannelSynchronizer    interfaces.SlackChannelSynchronizerInterface
+	slackChannelRepository      repositories.SlackChannelRepositoryInterface
+	slackConversationRepository repositories.SlackConversationRepositoryInterface
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewAddAgentToChannel(
 	slackAgentSynchronizer interfaces.SlackAgentSynchronizerInterface,
 	slackChannelRepository repositories.SlackChannelRepositoryInterface,
 	slackChannelSynchronizer interfaces.SlackChannelSynchronizerInterface,
+	slackConversationRepository repositories.SlackConversationRepositoryInterface,
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *AddAgentToChannel {
 	return &AddAgentToChannel{
-		slackAgentSynchronizer:   slackAgentSynchronizer,
-		slackChannelRepository:   slackChannelRepository,
-		slackChannelSynchronizer: slackChannelSynchronizer,
+		slackAgentSynchronizer:      slackAgentSynchronizer,
+		slackChannelRepository:      slackChannelRepository,
+		slackChannelSynchronizer:    slackChannelSynchronizer,
+		slackConversationRepository: slackConversationRepository,
+		conversationBrokerRequester: conversationBrokerRequester,
 	}
 }
 
@@ -62,10 +69,23 @@ func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) erro
 			err,
 		)
 	}
+	if slackAgent.BrokerParticipantId == nil {
+		return fmt.Errorf("slack agent %s/%d has no broker participant id; SlackAgentSynchronizer must populate it",
+			slackAgent.CollectionAddress, slackAgent.CollectionTokenId)
+	}
 
-	_, err = h.slackChannelRepository.AddAgent(slackChannel, slackAgent)
-	if err != nil {
+	if _, err := h.slackChannelRepository.AddAgent(slackChannel, slackAgent); err != nil {
 		return fmt.Errorf("failed to add agent to channel: %w", err)
+	}
+
+	conversations, err := h.slackConversationRepository.ListByChannelId(request.ChannelID)
+	if err != nil {
+		return fmt.Errorf("failed to list slack conversations for channel %s: %w", request.ChannelID, err)
+	}
+	for _, conversation := range conversations {
+		if err := h.conversationBrokerRequester.AttachParticipant(conversation.BrokerConversationID, *slackAgent.BrokerParticipantId); err != nil {
+			return fmt.Errorf("failed to attach agent to broker conversation %s: %w", conversation.BrokerConversationID, err)
+		}
 	}
 
 	return nil

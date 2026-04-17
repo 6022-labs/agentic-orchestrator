@@ -3,112 +3,108 @@ package event_handlers_test
 import (
 	"testing"
 
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
-	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type WhenHandlingMessageChangedTestingSuite struct {
 	sut *event_handlers.MessageChangedHandler
 
-	mockSlackThreadConclude *interfaces_mocks.MockSlackThreadConcludeInterface
+	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
+	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenHandlingMessageChangedBeforeEach(t *testing.T) *WhenHandlingMessageChangedTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockSlackThreadConclude := interfaces_mocks.NewMockSlackThreadConcludeInterface(mockController)
+	mockSlackConversationRepository := repositories_mocks.NewMockSlackConversationRepositoryInterface(mockController)
+	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
-	sut := event_handlers.NewMessageChangedHandler(
-		zap.NewNop(),
-		mockSlackThreadConclude,
-	)
+	sut := event_handlers.NewMessageChangedHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
 
 	return &WhenHandlingMessageChangedTestingSuite{
-		sut:                     sut,
-		mockSlackThreadConclude: mockSlackThreadConclude,
+		sut:                                 sut,
+		mockSlackConversationRepository: mockSlackConversationRepository,
+		mockBrokerRequester:                    mockBrokerRequester,
 	}
+}
+
+func newMessageChangedRequest(channel, prevTs string, hidden bool) *requests.MessageChangedRequest {
+	req := &requests.MessageChangedRequest{}
+	req.Event.Channel = channel
+	req.Event.PreviousMessage.TS = prevTs
+	req.Event.Message.Hidden = hidden
+	return req
 }
 
 func TestWhenHandlingMessageChanged(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given message is hidden", func(t *testing.T) {
+	t.Run("Given the changed message is not hidden", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error from ConcludeIfExists", func(t *testing.T) {
+		t.Run("Should be a no-op", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingMessageChangedBeforeEach(t)
-			suite.mockSlackThreadConclude.
-				EXPECT().
-				ConcludeIfExists("1234567890.123456", "C1234567890").
-				Return(assert.AnError)
+			req := newMessageChangedRequest("C123", "1.0", false)
 
-			err := suite.sut.Handle(&requests.MessageChangedRequest{
-				Event: requests.MessageChangedEvent{
-					PreviousMessage: requests.MessageChangedEventPreviousMessage{
-						TS: "1234567890.123456",
-					},
-					Message: requests.MessageChangedEventMessage{
-						Hidden: true,
-					},
-					Channel: "C1234567890",
-				},
-			})
-
-			assert.Error(t, err)
-		})
-
-		t.Run("Should not return error if ConcludeIfExists succeeds", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenHandlingMessageChangedBeforeEach(t)
-			suite.mockSlackThreadConclude.
-				EXPECT().
-				ConcludeIfExists("1234567890.123456", "C1234567890").
-				Return(nil)
-
-			err := suite.sut.Handle(&requests.MessageChangedRequest{
-				Event: requests.MessageChangedEvent{
-					PreviousMessage: requests.MessageChangedEventPreviousMessage{
-						TS: "1234567890.123456",
-					},
-					Message: requests.MessageChangedEventMessage{
-						Hidden: true,
-					},
-					Channel: "C1234567890",
-				},
-			})
-
+			err := suite.sut.Handle(req)
 			assert.NoError(t, err)
 		})
 	})
 
-	t.Run("Given message is not hidden", func(t *testing.T) {
+	t.Run("Given the hidden message has a linked broker conversation", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should not call ConcludeIfExists and return nil", func(t *testing.T) {
+		convId := uuid.New()
+
+		initSuite := func(suite *WhenHandlingMessageChangedTestingSuite, channel, ts string) {
+			suite.mockSlackConversationRepository.EXPECT().
+				GetBySlackIds(channel, ts).
+				Return(&models.SlackConversation{BrokerConversationID: convId}, nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId).Return(nil)
+		}
+
+		t.Run("Should force-conclude the broker conversation", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingMessageChangedBeforeEach(t)
-			// No EXPECT() call, ConcludeIfExists should not be called
+			req := newMessageChangedRequest("C123", "1.0", true)
 
-			err := suite.sut.Handle(&requests.MessageChangedRequest{
-				Event: requests.MessageChangedEvent{
-					PreviousMessage: requests.MessageChangedEventPreviousMessage{
-						TS: "1234567890.123456",
-					},
-					Message: requests.MessageChangedEventMessage{
-						Hidden: false,
-					},
-					Channel: "C1234567890",
-				},
-			})
+			initSuite(suite, req.Event.Channel, req.Event.PreviousMessage.TS)
 
+			err := suite.sut.Handle(req)
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given the hidden message has no linked broker conversation", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMessageChangedTestingSuite, channel, ts string) {
+			suite.mockSlackConversationRepository.EXPECT().
+				GetBySlackIds(channel, ts).
+				Return(nil, gorm.ErrRecordNotFound)
+		}
+
+		t.Run("Should be a no-op", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMessageChangedBeforeEach(t)
+			req := newMessageChangedRequest("C123", "1.0", true)
+
+			initSuite(suite, req.Event.Channel, req.Event.PreviousMessage.TS)
+
+			err := suite.sut.Handle(req)
 			assert.NoError(t, err)
 		})
 	})
