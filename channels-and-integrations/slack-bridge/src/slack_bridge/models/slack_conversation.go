@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // SlackConversation maps a Slack (channel, thread) pair to the broker
@@ -15,4 +16,11 @@ type SlackConversation struct {
 	SlackThreadTs        string    `gorm:"primaryKey;type:text;not null" json:"slackThreadTs"`
 	BrokerConversationID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_slack_conversation_broker" json:"brokerConversationId"`
 	CreatedAt            time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
+}
+
+func (entity *SlackConversation) BeforeCreate(tx *gorm.DB) (err error) {
+	if entity.CreatedAt.IsZero() {
+		entity.CreatedAt = time.Now()
+	}
+	return
 }
