@@ -65,7 +65,7 @@ func NewConversationBrokerClient(params NewConversationBrokerClientParams) *Conv
 
 func (c *ConversationBrokerClient) RegisterBridge(body *models.ExternalRegisterBridgeRequest) (*models.ExternalBridgeResponse, error) {
 	var out models.ExternalBridgeResponse
-	if err := c.doJSON(http.MethodPost, REGISTER_BRIDGE_ENDPOINT, body, &out, http.StatusCreated); err != nil {
+	if err := c.doJSON(http.MethodPost, REGISTER_BRIDGE_ENDPOINT, body, &out, http.StatusOK, http.StatusCreated); err != nil {
 		return nil, err
 	}
 	return &out, nil
