@@ -143,14 +143,12 @@ func TestWhenRegisteringBridge(t *testing.T) {
 		})
 	})
 
-	t.Run("Given request is valid and id is provided for an already-known bridge", func(t *testing.T) {
+	t.Run("Given request is valid and id is provided for an already-known bridge with matching fields", func(t *testing.T) {
 		t.Parallel()
 
-		existing := model_builders.NewBridgeBuilder().Build()
-
-		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
+		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge) {
 			suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
-			// No Save expectation — idempotent.
+			// No Save expectation — idempotent when nothing changed.
 		}
 
 		t.Run("Should return the existing bridge and signal it already existed", func(t *testing.T) {
@@ -158,15 +156,57 @@ func TestWhenRegisteringBridge(t *testing.T) {
 
 			suite := WhenRegisteringBridgeBeforeEach(t)
 			request := generateValidRegisterBridgeRequest()
+			existing := model_builders.NewBridgeBuilder().
+				WithKind(request.Kind).
+				WithCallbackUrl(request.CallbackUrl).
+				Build()
 			id := existing.ID
 			request.ID = &id
-			initSuite(suite)
+			initSuite(suite, existing)
 
 			bridge, existed, err := suite.sut.Register(request)
 
 			assert.NoError(t, err)
 			assert.True(t, existed)
 			assert.Equal(t, existing.ID, bridge.ID)
+		})
+	})
+
+	t.Run("Given request is valid and id is provided for an already-known bridge with a different callback url", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge, newCallbackUrl string) {
+			suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
+			suite.mockBridgeRepository.EXPECT().
+				Save(gomock.Any()).
+				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
+					assert.Equal(t, existing.ID, b.ID)
+					assert.Equal(t, newCallbackUrl, b.CallbackUrl)
+					return b, nil
+				}).
+				Times(1)
+		}
+
+		t.Run("Should update the callback url and signal it already existed", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRegisteringBridgeBeforeEach(t)
+			existing := model_builders.NewBridgeBuilder().
+				WithKind(enums.BridgeKindSlack).
+				WithCallbackUrl("http://old.local/cb").
+				Build()
+			request := generateValidRegisterBridgeRequest()
+			request.CallbackUrl = "http://new.local/cb"
+			id := existing.ID
+			request.ID = &id
+			initSuite(suite, existing, request.CallbackUrl)
+
+			bridge, existed, err := suite.sut.Register(request)
+
+			assert.NoError(t, err)
+			assert.True(t, existed)
+			assert.Equal(t, existing.ID, bridge.ID)
+			assert.Equal(t, "http://new.local/cb", bridge.CallbackUrl)
 		})
 	})
 

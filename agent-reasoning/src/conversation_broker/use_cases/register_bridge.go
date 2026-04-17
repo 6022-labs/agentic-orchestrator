@@ -35,7 +35,16 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 			return nil, false, fmt.Errorf("failed to load existing bridge: %w", err)
 		}
 		if existing != nil {
-			return existing, true, nil
+			if existing.CallbackUrl == request.CallbackUrl && existing.Kind == request.Kind {
+				return existing, true, nil
+			}
+			existing.CallbackUrl = request.CallbackUrl
+			existing.Kind = request.Kind
+			saved, err := uc.bridgeRepository.Save(existing)
+			if err != nil {
+				return nil, false, fmt.Errorf("failed to update existing bridge: %w", err)
+			}
+			return saved, true, nil
 		}
 	}
 
