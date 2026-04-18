@@ -3,29 +3,34 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
+	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type SlackUserSynchronizer struct {
-	logger              *zap.Logger
-	slackUserRequester  interfaces.SlackUserRequesterInterface
-	slackUserRepository repositories.SlackUserRepositoryInterface
+	logger                      *zap.Logger
+	slackUserRequester          interfaces.SlackUserRequesterInterface
+	slackUserRepository         repositories.SlackUserRepositoryInterface
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewSlackUserSynchronizer(
 	logger *zap.Logger,
 	slackUserRequester interfaces.SlackUserRequesterInterface,
 	slackUserRepository repositories.SlackUserRepositoryInterface,
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *SlackUserSynchronizer {
 	return &SlackUserSynchronizer{
-		logger:              logger,
-		slackUserRequester:  slackUserRequester,
-		slackUserRepository: slackUserRepository,
+		logger:                      logger,
+		slackUserRequester:          slackUserRequester,
+		slackUserRepository:         slackUserRepository,
+		conversationBrokerRequester: conversationBrokerRequester,
 	}
 }
 
@@ -36,11 +41,6 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-	if existingUserInDatabase == nil {
-		existingUserInDatabase = &models.SlackUser{
-			Id: id,
-		}
-	}
 
 	existingUserInSlack, err := s.slackUserRequester.GetUserInformation(id)
 	if err != nil {
@@ -50,13 +50,37 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 		return nil, fmt.Errorf("user with ID %s not found in Slack", id)
 	}
 
+	if existingUserInDatabase == nil {
+		existingUserInDatabase = &models.SlackUser{
+			Id: id,
+		}
+	}
+
 	existingUserInDatabase.Name = existingUserInSlack.Name
 	existingUserInDatabase.RealName = existingUserInSlack.RealName
 
-	existingUserInDatabase, err = s.slackUserRepository.Save(existingUserInDatabase)
+	if existingUserInDatabase.BrokerParticipantId == nil {
+		brokerParticipantId, err := s.conversationBrokerRequester.RegisterUser(s.pickDisplayName(existingUserInDatabase))
+		if err != nil {
+			return nil, fmt.Errorf("failed to register user participant with broker: %w", err)
+		}
+		existingUserInDatabase.BrokerParticipantId = &brokerParticipantId
+	}
+
+	saved, err := s.slackUserRepository.Save(existingUserInDatabase)
 	if err != nil {
 		return nil, err
 	}
 
-	return existingUserInDatabase, nil
+	return saved, nil
+}
+
+func (s *SlackUserSynchronizer) pickDisplayName(slackUser *models.SlackUser) string {
+	if name := strings.TrimSpace(slackUser.RealName); name != "" {
+		return name
+	}
+	if name := strings.TrimSpace(slackUser.Name); name != "" {
+		return name
+	}
+	return slackUser.Id
 }

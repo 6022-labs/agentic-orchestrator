@@ -6,7 +6,7 @@ import (
 	slack_bridge_http_slack_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/configurations"
 	slack_bridge_internal_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/configurations"
 	slack_bridge_internal_host_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
-	slack_bridge_internal_http_agent_reasoning_agent_compute_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_http_agent_reasoning_agent_compute/configurations"
+	slack_bridge_http_conversation_broker_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_conversation_broker/configurations"
 	slack_bridge_internal_mvc_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc/configurations"
 	slack_bridge_redis_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_redis/configurations"
 
@@ -28,7 +28,7 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	slack_bridge_internal_configurations.AddSlackBridgeInternalConfiguration(container)
 	slack_bridge_http_slack_configurations.AddSlackBridgeHttpSlackConfiguration(container)
 	slack_bridge_internal_mvc_configurations.AddSlackBridgeInternalMvcConfiguration(container)
-	slack_bridge_internal_http_agent_reasoning_agent_compute_configurations.AddSlackBridgeInternalHttpAgentReasoningAgentComputeConfiguration(container)
+	slack_bridge_http_conversation_broker_configurations.AddSlackBridgeHttpConversationBrokerConfiguration(container)
 
 	return container
 }

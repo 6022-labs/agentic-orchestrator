@@ -9,8 +9,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -20,9 +22,11 @@ import (
 type WhenRemovingAgentFromChannelTestingSuite struct {
 	sut *command_handlers.RemoveAgentFromChannel
 
-	mockSlackAgentRepository     *repositories_mocks.MockSlackAgentRepositoryInterface
-	mockSlackChannelSynchronizer *interfaces_mocks.MockSlackChannelSynchronizerInterface
-	mockSlackChannelRepository   *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackAgentRepository            *repositories_mocks.MockSlackAgentRepositoryInterface
+	mockSlackChannelSynchronizer        *interfaces_mocks.MockSlackChannelSynchronizerInterface
+	mockSlackChannelRepository          *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
+	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFromChannelTestingSuite {
@@ -31,19 +35,25 @@ func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFrom
 	mockSlackAgentRepository := repositories_mocks.NewMockSlackAgentRepositoryInterface(mockController)
 	mockSlackChannelSynchronizer := interfaces_mocks.NewMockSlackChannelSynchronizerInterface(mockController)
 	mockSlackChannelRepository := repositories_mocks.NewMockSlackChannelRepositoryInterface(mockController)
+	mockSlackConversationRepository := repositories_mocks.NewMockSlackConversationRepositoryInterface(mockController)
+	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
 	sut := command_handlers.NewRemoveAgentFromChannel(
 		zap.NewNop(),
 		mockSlackAgentRepository,
 		mockSlackChannelRepository,
 		mockSlackChannelSynchronizer,
+		mockSlackConversationRepository,
+		mockBrokerRequester,
 	)
 
 	return &WhenRemovingAgentFromChannelTestingSuite{
-		sut:                          sut,
-		mockSlackAgentRepository:     mockSlackAgentRepository,
-		mockSlackChannelSynchronizer: mockSlackChannelSynchronizer,
-		mockSlackChannelRepository:   mockSlackChannelRepository,
+		sut:                                 sut,
+		mockSlackAgentRepository:            mockSlackAgentRepository,
+		mockSlackChannelSynchronizer:        mockSlackChannelSynchronizer,
+		mockSlackChannelRepository:          mockSlackChannelRepository,
+		mockSlackConversationRepository: mockSlackConversationRepository,
+		mockBrokerRequester:                    mockBrokerRequester,
 	}
 }
 
@@ -302,41 +312,41 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		})
 	})
 
-	t.Run("Given all steps succeed", func(t *testing.T) {
+	t.Run("Given all steps succeed and the channel has existing broker conversations", func(t *testing.T) {
 		t.Parallel()
+
+		brokerAgentId := uuid.New()
+		convId1 := uuid.New()
+		convId2 := uuid.New()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
 				Build()
+			slackAgent.BrokerParticipantId = &brokerAgentId
 			slackChannel := model_builders.NewSlackChannelBuilder().
-				WithAgents([]models.SlackAgent{
-					*slackAgent,
-				}).
+				WithAgents([]models.SlackAgent{*slackAgent}).
 				Build()
-			suite.mockSlackChannelRepository.
-				EXPECT().
-				GetById(request.ChannelID).
-				Return(slackChannel, nil)
-
-			suite.mockSlackChannelSynchronizer.
-				EXPECT().
-				Sync(request.ChannelID).
-				Return(slackChannel, nil)
-
-			suite.mockSlackAgentRepository.
-				EXPECT().
+			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackAgentRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
+			suite.mockSlackChannelRepository.EXPECT().RemoveAgent(slackChannel, slackAgent).Return(slackChannel, nil)
 
-			suite.mockSlackChannelRepository.
-				EXPECT().
-				RemoveAgent(slackChannel, slackAgent).
-				Return(slackChannel, nil)
+			suite.mockSlackConversationRepository.EXPECT().
+				ListByChannelId(request.ChannelID).
+				Return([]*models.SlackConversation{
+					{SlackChannelId: request.ChannelID, SlackThreadTs: "1.0", BrokerConversationID: convId1},
+					{SlackChannelId: request.ChannelID, SlackThreadTs: "2.0", BrokerConversationID: convId2},
+				}, nil)
+
+			suite.mockBrokerRequester.EXPECT().DetachParticipant(convId1, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().DetachParticipant(convId2, brokerAgentId).Return(nil)
 		}
 
-		t.Run("Should not return error", func(t *testing.T) {
+		t.Run("Should detach the agent from every existing broker conversation in the channel", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
@@ -350,7 +360,6 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			initSuite(suite, request)
 
 			err := suite.sut.Remove(request)
-
 			assert.NoError(t, err)
 		})
 	})

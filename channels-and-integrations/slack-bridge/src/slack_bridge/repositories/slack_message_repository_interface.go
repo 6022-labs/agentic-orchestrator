@@ -4,8 +4,5 @@ import "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slac
 
 type SlackMessageRepositoryInterface interface {
 	Save(entity *models.SlackMessage) (*models.SlackMessage, error)
-	SaveMany(entities []*models.SlackMessage) ([]*models.SlackMessage, error)
-	GetConversationByMessageId(id string) ([]*models.SlackMessage, error)
-	GetByThreadIdAndChannelId(threadId, channelId string) ([]*models.SlackMessage, error)
-	GetProcessableMessagesForAgentAndThread(agent *models.SlackAgent, threadId, channelId string) ([]*models.SlackMessage, error)
+	GetBySlackIds(slackChannelId, slackMessageTs string) (*models.SlackMessage, error)
 }

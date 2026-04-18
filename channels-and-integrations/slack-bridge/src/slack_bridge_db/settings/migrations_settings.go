@@ -27,7 +27,7 @@ func NewMigrationsSettings(
 
 	if len(strings.TrimSpace(settings.MigrationsFolderPath)) == 0 {
 		defaultPath := "./migrations"
-		logger.Warn("database.migrations_folder_path is not set, using default path", zap.String("path", defaultPath))
+		logger.Warn("migrations.folder_path is not set, using default path", zap.String("path", defaultPath))
 		settings.MigrationsFolderPath = defaultPath
 	}
 

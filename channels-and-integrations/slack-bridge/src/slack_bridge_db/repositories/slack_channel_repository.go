@@ -50,6 +50,17 @@ func (r *SlackChannelRepository) RemoveAgent(entity *models.SlackChannel, agent 
 	return entity, nil
 }
 
+// AddUser upserts the (channel, user) membership row in the slack_channel_users
+// join table. Safe to call concurrently from goroutines — ON CONFLICT DO NOTHING
+// makes it idempotent.
+func (r *SlackChannelRepository) AddUser(channelId string, userId string) error {
+	return r.client.GetDB().
+		Exec(
+			`INSERT INTO slack_channel_users (slack_channel_id, slack_user_id) VALUES (?, ?) ON CONFLICT DO NOTHING`,
+			channelId, userId,
+		).Error
+}
+
 func (r *SlackChannelRepository) UpdateId(oldId string, newId string) error {
 	return r.client.GetDB().
 		Model(&models.SlackChannel{}).

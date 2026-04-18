@@ -55,6 +55,20 @@ func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddAgent(entity, agen
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgent", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddAgent), entity, agent)
 }
 
+// AddUser mocks base method.
+func (m *MockSlackChannelRepositoryInterface) AddUser(channelId, userId string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUser", channelId, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser.
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddUser(channelId, userId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddUser), channelId, userId)
+}
+
 // GetById mocks base method.
 func (m *MockSlackChannelRepositoryInterface) GetById(id string) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()

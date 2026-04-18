@@ -1,9 +1,14 @@
 package event_handlers
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
+	"errors"
+	"fmt"
+
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
+	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type MessageDeletedHandlerInterface interface {
@@ -11,27 +16,39 @@ type MessageDeletedHandlerInterface interface {
 }
 
 type MessageDeletedHandler struct {
-	logger              *zap.Logger
-	slackThreadConclude interfaces.SlackThreadConcludeInterface
+	logger                      *zap.Logger
+	slackConversationRepository repositories.SlackConversationRepositoryInterface
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewMessageDeletedHandler(
 	logger *zap.Logger,
-	slackThreadConclude interfaces.SlackThreadConcludeInterface,
+	slackConversationRepository repositories.SlackConversationRepositoryInterface,
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *MessageDeletedHandler {
 	return &MessageDeletedHandler{
-		logger:              logger,
-		slackThreadConclude: slackThreadConclude,
+		logger:                      logger,
+		slackConversationRepository: slackConversationRepository,
+		conversationBrokerRequester: conversationBrokerRequester,
 	}
 }
 
 func (h *MessageDeletedHandler) Handle(request *requests.MessageDeletedRequest) error {
 	messageTs := request.Event.PreviousMessage.TS
 
-	h.logger.Debug(
-		"Handling message deleted event",
-		zap.String("message_ts", messageTs),
-	)
+	h.logger.Debug("Handling message deleted event", zap.String("message_ts", messageTs))
 
-	return h.slackThreadConclude.ConcludeIfExists(messageTs, request.Event.Channel)
+	conversation, err := h.slackConversationRepository.GetBySlackIds(request.Event.Channel, messageTs)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to lookup slack conversation: %w", err)
+	}
+
+	if err := h.conversationBrokerRequester.ForceConcludeConversation(conversation.BrokerConversationID); err != nil {
+		return fmt.Errorf("failed to force-conclude broker conversation %s: %w", conversation.BrokerConversationID, err)
+	}
+
+	return nil
 }

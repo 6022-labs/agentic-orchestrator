@@ -1,0 +1,954 @@
+{
+    "components": {
+        "schemas": {
+            "enums.BridgeKind": {
+                "enum": [
+                    "slack"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "BridgeKindSlack"
+                ]
+            },
+            "enums.ConversationStatus": {
+                "enum": [
+                    "active",
+                    "concluded"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "ConversationStatusActive",
+                    "ConversationStatusConcluded"
+                ]
+            },
+            "enums.ParticipantRole": {
+                "enum": [
+                    "clone",
+                    "human",
+                    "expert",
+                    "facilitator"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "ParticipantRoleClone",
+                    "ParticipantRoleHuman",
+                    "ParticipantRoleExpert",
+                    "ParticipantRoleFacilitator"
+                ]
+            },
+            "errors.NotFoundError": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "resource": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.ValidationError": {
+                "properties": {
+                    "field": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "models.Bridge": {
+                "properties": {
+                    "callbackUrl": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/enums.BridgeKind"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "models.Conversation": {
+                "properties": {
+                    "bridgeId": {
+                        "type": "string"
+                    },
+                    "concludedAt": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/enums.ConversationStatus"
+                    },
+                    "unconcludedAt": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "models.ConversationMessage": {
+                "properties": {
+                    "content": {
+                        "type": "string"
+                    },
+                    "conversationId": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "participantId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "models.Participant": {
+                "properties": {
+                    "collectionAddress": {
+                        "type": "string"
+                    },
+                    "collectionTokenId": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "displayName": {
+                        "type": "string"
+                    },
+                    "ensDomain": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "isProcessing": {
+                        "type": "boolean"
+                    },
+                    "lastProcessedAt": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/enums.ParticipantRole"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.ConversationParticipantRequest": {
+                "properties": {
+                    "participantId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.IngestMessageRequest": {
+                "properties": {
+                    "content": {
+                        "type": "string"
+                    },
+                    "participantId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.RegisterBridgeRequest": {
+                "properties": {
+                    "callbackUrl": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/enums.BridgeKind"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.RegisterConversationRequest": {
+                "properties": {
+                    "bridgeId": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "participantIds": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "requests.RegisterMintedParticipantRequest": {
+                "properties": {
+                    "collectionAddress": {
+                        "type": "string"
+                    },
+                    "collectionTokenId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.RegisterNonMintedParticipantRequest": {
+                "properties": {
+                    "displayName": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "requests.UpdateConversationDescriptionRequest": {
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "description": "Bridge-agnostic conversation broker for the agent reasoning domain.",
+        "title": "Orchestrator Conversation Broker Host API",
+        "version": "1.0"
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "paths": {
+        "/bridges": {
+            "post": {
+                "description": "Registers a new bridge instance (slack, teams, ...). Multiple bridges of the same kind are allowed.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.RegisterBridgeRequest",
+                                        "summary": "request",
+                                        "description": "Register Bridge Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Register Bridge Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.Bridge"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Register Bridge",
+                "tags": [
+                    "Bridges"
+                ]
+            }
+        },
+        "/conversations": {
+            "post": {
+                "description": "Creates a conversation attached to a bridge. Optionally attaches participants in the same call.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.RegisterConversationRequest",
+                                        "summary": "request",
+                                        "description": "Register Conversation Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Register Conversation Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.Conversation"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Register Conversation",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}": {
+            "get": {
+                "description": "Returns a conversation by id.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.Conversation"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Get Conversation",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}/description": {
+            "patch": {
+                "description": "Overwrites the description of an existing conversation. Use null to clear it.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.UpdateConversationDescriptionRequest",
+                                        "summary": "request",
+                                        "description": "Update Conversation Description Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Update Conversation Description Request",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Update Conversation Description",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}/force-conclude": {
+            "post": {
+                "description": "Marks the conversation as concluded immediately, bypassing the swarm timers.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Force Conclude Conversation",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}/messages": {
+            "post": {
+                "description": "Persists a message authored by a participant in the conversation. Broker assigns the timestamp.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.IngestMessageRequest",
+                                        "summary": "request",
+                                        "description": "Ingest Message Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Ingest Message Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.ConversationMessage"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Ingest Message",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}/participants": {
+            "post": {
+                "description": "Adds a participant (minted or non-minted) to the conversation.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.ConversationParticipantRequest",
+                                        "summary": "request",
+                                        "description": "Attach Participant Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Attach Participant Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Attach Participant to Conversation",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/conversations/{id}/participants/{participantId}": {
+            "delete": {
+                "description": "Removes a participant from the conversation.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Participant ID",
+                        "in": "path",
+                        "name": "participantId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Detach Participant from Conversation",
+                "tags": [
+                    "Conversations"
+                ]
+            }
+        },
+        "/participants/minted": {
+            "post": {
+                "description": "Registers a minted participant by NFT identity. Broker fetches role + ENS from the agent-identity registry.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.RegisterMintedParticipantRequest",
+                                        "summary": "request",
+                                        "description": "Register Minted Participant Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Register Minted Participant Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.Participant"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Register Minted Participant",
+                "tags": [
+                    "Participants"
+                ]
+            }
+        },
+        "/participants/non-minted": {
+            "post": {
+                "description": "Registers a human participant identified only by display name (not minted on-chain).",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.RegisterNonMintedParticipantRequest",
+                                        "summary": "request",
+                                        "description": "Register Non-Minted Participant Request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Register Non-Minted Participant Request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/models.Participant"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Register Non-Minted Participant",
+                "tags": [
+                    "Participants"
+                ]
+            }
+        }
+    },
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "/"
+        }
+    ]
+}

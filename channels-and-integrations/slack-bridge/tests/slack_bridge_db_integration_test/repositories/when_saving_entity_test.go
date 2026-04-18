@@ -126,7 +126,6 @@ func TestWhenSavingEntity(t *testing.T) {
 			assert.Equal(t, entityToCreate.Id, entityToUpdate.Id)
 			assert.Equal(t, entityToCreate.Name, entityToUpdate.Name)
 			assert.Equal(t, entityToCreate.Agents, entityToUpdate.Agents)
-			assert.Equal(t, entityToCreate.Members, entityToUpdate.Members)
 			assert.Equal(t, entityToCreate.Description, entityToUpdate.Description)
 		})
 	})

@@ -122,3 +122,6 @@ appsettings*
 worktrees/
 .claude/worktrees/
 .claude/.worktrees/
+
+### Local refactor scratch ###
+PLAN.md

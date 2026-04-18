@@ -1,0 +1,506 @@
+basePath: /
+definitions:
+  enums.BridgeKind:
+    enum:
+    - slack
+    type: string
+    x-enum-varnames:
+    - BridgeKindSlack
+  enums.ConversationStatus:
+    enum:
+    - active
+    - concluded
+    type: string
+    x-enum-varnames:
+    - ConversationStatusActive
+    - ConversationStatusConcluded
+  enums.ParticipantRole:
+    enum:
+    - clone
+    - human
+    - expert
+    - facilitator
+    type: string
+    x-enum-varnames:
+    - ParticipantRoleClone
+    - ParticipantRoleHuman
+    - ParticipantRoleExpert
+    - ParticipantRoleFacilitator
+  errors.NotFoundError:
+    properties:
+      id:
+        type: string
+      resource:
+        type: string
+    type: object
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  models.Bridge:
+    properties:
+      callbackUrl:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      kind:
+        $ref: '#/definitions/enums.BridgeKind'
+      updatedAt:
+        type: string
+    type: object
+  models.Conversation:
+    properties:
+      bridgeId:
+        type: string
+      concludedAt:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/enums.ConversationStatus'
+      unconcludedAt:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.ConversationMessage:
+    properties:
+      content:
+        type: string
+      conversationId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      participantId:
+        type: string
+    type: object
+  models.Participant:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: string
+      createdAt:
+        type: string
+      displayName:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      isProcessing:
+        type: boolean
+      lastProcessedAt:
+        type: string
+      role:
+        $ref: '#/definitions/enums.ParticipantRole'
+      updatedAt:
+        type: string
+    type: object
+  requests.ConversationParticipantRequest:
+    properties:
+      participantId:
+        type: string
+    type: object
+  requests.IngestMessageRequest:
+    properties:
+      content:
+        type: string
+      participantId:
+        type: string
+    type: object
+  requests.RegisterBridgeRequest:
+    properties:
+      callbackUrl:
+        type: string
+      kind:
+        $ref: '#/definitions/enums.BridgeKind'
+    type: object
+  requests.RegisterConversationRequest:
+    properties:
+      bridgeId:
+        type: string
+      description:
+        type: string
+      participantIds:
+        items:
+          type: string
+        type: array
+    type: object
+  requests.RegisterMintedParticipantRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: string
+    type: object
+  requests.RegisterNonMintedParticipantRequest:
+    properties:
+      displayName:
+        type: string
+    type: object
+  requests.UpdateConversationDescriptionRequest:
+    properties:
+      description:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Bridge-agnostic conversation broker for the agent reasoning domain.
+  title: Orchestrator Conversation Broker Host API
+  version: "1.0"
+paths:
+  /bridges:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new bridge instance (slack, teams, ...). Multiple bridges
+        of the same kind are allowed.
+      parameters:
+      - description: Register Bridge Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterBridgeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Bridge'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Bridge
+      tags:
+      - Bridges
+  /conversations:
+    post:
+      consumes:
+      - application/json
+      description: Creates a conversation attached to a bridge. Optionally attaches
+        participants in the same call.
+      parameters:
+      - description: Register Conversation Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Conversation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Conversation
+      tags:
+      - Conversations
+  /conversations/{id}:
+    get:
+      description: Returns a conversation by id.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Conversation'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/description:
+    patch:
+      consumes:
+      - application/json
+      description: Overwrites the description of an existing conversation. Use null
+        to clear it.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Conversation Description Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateConversationDescriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update Conversation Description
+      tags:
+      - Conversations
+  /conversations/{id}/force-conclude:
+    post:
+      description: Marks the conversation as concluded immediately, bypassing the
+        swarm timers.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Force Conclude Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/messages:
+    post:
+      consumes:
+      - application/json
+      description: Persists a message authored by a participant in the conversation.
+        Broker assigns the timestamp.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ingest Message Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.IngestMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ConversationMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Ingest Message
+      tags:
+      - Conversations
+  /conversations/{id}/participants:
+    post:
+      consumes:
+      - application/json
+      description: Adds a participant (minted or non-minted) to the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Attach Participant Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ConversationParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Attach Participant to Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/participants/{participantId}:
+    delete:
+      description: Removes a participant from the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Participant ID
+        in: path
+        name: participantId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Detach Participant from Conversation
+      tags:
+      - Conversations
+  /participants/minted:
+    post:
+      consumes:
+      - application/json
+      description: Registers a minted participant by NFT identity. Broker fetches
+        role + ENS from the agent-identity registry.
+      parameters:
+      - description: Register Minted Participant Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterMintedParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Participant'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Minted Participant
+      tags:
+      - Participants
+  /participants/non-minted:
+    post:
+      consumes:
+      - application/json
+      description: Registers a human participant identified only by display name (not
+        minted on-chain).
+      parameters:
+      - description: Register Non-Minted Participant Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterNonMintedParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Participant'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Non-Minted Participant
+      tags:
+      - Participants
+swagger: "2.0"

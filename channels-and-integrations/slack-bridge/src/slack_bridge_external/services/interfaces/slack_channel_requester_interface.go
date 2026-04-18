@@ -3,7 +3,7 @@ package interfaces
 type ChannelInformation struct {
 	Id          string
 	Name        string
-	Members     []string
+	UserIds     []string
 	Description string
 	IsMember    bool
 }

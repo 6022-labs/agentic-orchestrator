@@ -16,8 +16,8 @@ func main() {
 	})).Load(
 		&models.SlackUser{},
 		&models.SlackAgent{},
-		&models.SlackThread{},
 		&models.SlackChannel{},
+		&models.SlackConversation{},
 		&models.SlackMessage{},
 	)
 	if err != nil {

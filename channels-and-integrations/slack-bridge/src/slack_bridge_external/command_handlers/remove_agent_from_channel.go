@@ -6,6 +6,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
+	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/samber/lo"
@@ -18,10 +19,12 @@ type RemoveAgentFromChannelInterface interface {
 }
 
 type RemoveAgentFromChannel struct {
-	logger                   *zap.Logger
-	slackAgentRepository     repositories.SlackAgentRepositoryInterface
-	slackChannelSynchronizer interfaces.SlackChannelSynchronizerInterface
-	slackChannelRepository   repositories.SlackChannelRepositoryInterface
+	logger                      *zap.Logger
+	slackAgentRepository        repositories.SlackAgentRepositoryInterface
+	slackChannelSynchronizer    interfaces.SlackChannelSynchronizerInterface
+	slackChannelRepository      repositories.SlackChannelRepositoryInterface
+	slackConversationRepository repositories.SlackConversationRepositoryInterface
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewRemoveAgentFromChannel(
@@ -29,12 +32,16 @@ func NewRemoveAgentFromChannel(
 	slackAgentRepository repositories.SlackAgentRepositoryInterface,
 	slackChannelRepository repositories.SlackChannelRepositoryInterface,
 	slackChannelSynchronizer interfaces.SlackChannelSynchronizerInterface,
+	slackConversationRepository repositories.SlackConversationRepositoryInterface,
+	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *RemoveAgentFromChannel {
 	return &RemoveAgentFromChannel{
-		logger:                   logger,
-		slackAgentRepository:     slackAgentRepository,
-		slackChannelRepository:   slackChannelRepository,
-		slackChannelSynchronizer: slackChannelSynchronizer,
+		logger:                      logger,
+		slackAgentRepository:        slackAgentRepository,
+		slackChannelRepository:      slackChannelRepository,
+		slackChannelSynchronizer:    slackChannelSynchronizer,
+		slackConversationRepository: slackConversationRepository,
+		conversationBrokerRequester: conversationBrokerRequester,
 	}
 }
 
@@ -78,9 +85,23 @@ func (h *RemoveAgentFromChannel) Remove(request *requests.RemoveAgentFromChannel
 		zap.String("channel_id", request.ChannelID),
 	)
 
-	_, err = h.slackChannelRepository.RemoveAgent(slackChannel, slackAgent)
-	if err != nil {
+	if _, err = h.slackChannelRepository.RemoveAgent(slackChannel, slackAgent); err != nil {
 		return fmt.Errorf("failed to remove agent from channel: %w", err)
+	}
+
+	if slackAgent.BrokerParticipantId == nil {
+		return fmt.Errorf("slack agent %s/%d has no broker participant id; SlackAgentSynchronizer must populate it",
+			slackAgent.CollectionAddress, slackAgent.CollectionTokenId)
+	}
+
+	conversations, err := h.slackConversationRepository.ListByChannelId(request.ChannelID)
+	if err != nil {
+		return fmt.Errorf("failed to list slack conversations for channel %s: %w", request.ChannelID, err)
+	}
+	for _, conversation := range conversations {
+		if err := h.conversationBrokerRequester.DetachParticipant(conversation.BrokerConversationID, *slackAgent.BrokerParticipantId); err != nil {
+			return fmt.Errorf("failed to detach agent from broker conversation %s: %w", conversation.BrokerConversationID, err)
+		}
 	}
 
 	return nil

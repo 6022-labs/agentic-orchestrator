@@ -10,23 +10,17 @@ type SlackChannelBuilder struct {
 	id          string
 	name        string
 	description string
-	members     []string
 	agents      []models.SlackAgent
+	users       []models.SlackUser
 }
 
 func NewSlackChannelBuilder() *SlackChannelBuilder {
-	id := uuid.New().String()
-	name := faker.Name()
-	description := faker.Sentence()
-	members := []string{faker.Name(), faker.Name()}
-	agents := []models.SlackAgent{}
-
 	return &SlackChannelBuilder{
-		id:          id,
-		name:        name,
-		description: description,
-		members:     members,
-		agents:      agents,
+		id:          uuid.New().String(),
+		name:        faker.Name(),
+		description: faker.Sentence(),
+		agents:      []models.SlackAgent{},
+		users:       []models.SlackUser{},
 	}
 }
 
@@ -45,13 +39,13 @@ func (b *SlackChannelBuilder) WithDescription(description string) *SlackChannelB
 	return b
 }
 
-func (b *SlackChannelBuilder) WithMembers(members []string) *SlackChannelBuilder {
-	b.members = members
+func (b *SlackChannelBuilder) WithAgents(agents []models.SlackAgent) *SlackChannelBuilder {
+	b.agents = agents
 	return b
 }
 
-func (b *SlackChannelBuilder) WithAgents(agents []models.SlackAgent) *SlackChannelBuilder {
-	b.agents = agents
+func (b *SlackChannelBuilder) WithUsers(users []models.SlackUser) *SlackChannelBuilder {
+	b.users = users
 	return b
 }
 
@@ -60,7 +54,7 @@ func (b *SlackChannelBuilder) Build() *models.SlackChannel {
 		Id:          b.id,
 		Name:        b.name,
 		Description: b.description,
-		Members:     b.members,
 		Agents:      b.agents,
+		Users:       b.users,
 	}
 }

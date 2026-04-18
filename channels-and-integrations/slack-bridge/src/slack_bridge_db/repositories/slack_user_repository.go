@@ -30,6 +30,21 @@ func (r *SlackUserRepository) GetById(id string) (*models.SlackUser, error) {
 	return &entity, nil
 }
 
+func (r *SlackUserRepository) ListByIds(ids []string) ([]*models.SlackUser, error) {
+	if len(ids) == 0 {
+		return []*models.SlackUser{}, nil
+	}
+	var entities []*models.SlackUser
+	err := r.client.
+		Where("id IN ?", ids).
+		Find(&entities).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
 func (r *SlackUserRepository) GetByPairedHumanAgent(collectionAddress string, collectionTokenId uint64) (*models.SlackUser, error) {
 	var entity models.SlackUser
 	err := r.client.

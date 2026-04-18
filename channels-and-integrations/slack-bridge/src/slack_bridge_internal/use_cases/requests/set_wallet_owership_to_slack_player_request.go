@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
@@ -14,11 +14,11 @@ type SetWalletOwnershipToSlackUserRequest struct {
 
 func (r *SetWalletOwnershipToSlackUserRequest) Validate() error {
 	if r.Challenge == uuid.Nil {
-		return errors.New("challenge is required")
+		return fmt.Errorf("%w: challenge is required", ErrValidation)
 	}
 
 	if !common.IsHexAddress(r.WalletAddress) {
-		return errors.New("walletAddress must be a valid hex address")
+		return fmt.Errorf("%w: walletAddress must be a valid hex address", ErrValidation)
 	}
 
 	return nil
