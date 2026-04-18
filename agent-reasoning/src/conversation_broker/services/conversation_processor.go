@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -24,6 +26,10 @@ type ConversationProcessor struct {
 	conversationRepository        repositories.ConversationRepositoryInterface
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface
 	participantRepository         repositories.ParticipantRepositoryInterface
+
+	// One lock per conversation. In-process only — swap for a Postgres
+	// advisory lock if the broker ever runs as multiple replicas.
+	conversationLocks sync.Map
 }
 
 func NewConversationProcessor(
@@ -113,15 +119,8 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return fmt.Errorf("no completions returned for conversation %s", conversation.ID)
 	}
 
-	if err := p.sendCompletionsToBridge(bridge, conversation, participant, completions); err != nil {
+	if err := p.sendCompletionsToBridge(bridge, conversation, participant, completions, isFinal); err != nil {
 		return fmt.Errorf("failed to send completions to bridge: %w", err)
-	}
-
-	if isFinal {
-		p.logger.Info("Conversation is concluded by compute", logFields...)
-		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
-			return fmt.Errorf("failed to conclude conversation: %w", err)
-		}
 	}
 
 	return nil
@@ -132,8 +131,13 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 	conversation *models.Conversation,
 	participant *models.Participant,
 	completions []*string,
+	isFinal bool,
 ) error {
-	// Reload to ensure not concluded by another tick in the meantime.
+	mu := p.lockForConversation(conversation.ID)
+	mu.Lock()
+	defer mu.Unlock()
+
+	// Reload under lock to catch a concurrent conclude.
 	reloaded, err := p.conversationRepository.GetById(conversation.ID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("conversation %s vanished before sending completions", conversation.ID)
@@ -153,7 +157,22 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 			return fmt.Errorf("failed to post completion to bridge: %w", err)
 		}
 	}
+
+	if isFinal {
+		p.logger.Info("Conversation is concluded by compute",
+			p.processingLogFields(participant, conversation)...,
+		)
+		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
+			return fmt.Errorf("failed to conclude conversation: %w", err)
+		}
+	}
+
 	return nil
+}
+
+func (p *ConversationProcessor) lockForConversation(id uuid.UUID) *sync.Mutex {
+	raw, _ := p.conversationLocks.LoadOrStore(id, &sync.Mutex{})
+	return raw.(*sync.Mutex)
 }
 
 func (p *ConversationProcessor) shouldForceConcludeByFacilitator(conversation *models.Conversation) bool {
