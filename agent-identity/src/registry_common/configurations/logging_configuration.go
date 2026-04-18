@@ -17,11 +17,9 @@ func ConfigureLogging(
 	switch logLevel {
 	case "debug":
 		zapConfig.Level.SetLevel(zap.DebugLevel)
-	case "info":
-	case "information":
+	case "info", "information":
 		zapConfig.Level.SetLevel(zap.InfoLevel)
-	case "warn":
-	case "warning":
+	case "warn", "warning":
 		zapConfig.Level.SetLevel(zap.WarnLevel)
 	case "error":
 		zapConfig.Level.SetLevel(zap.ErrorLevel)
