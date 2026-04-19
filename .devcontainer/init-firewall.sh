@@ -137,12 +137,21 @@ iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
 iptables -A OUTPUT -d "$HOST_NETWORK" -j ACCEPT
 
 # Allow Docker Desktop host gateway (host.docker.internal) so testcontainers
-# can reach the Ryuk reaper published on the host on a random port.
-DOCKER_HOST_GW=$(getent hosts host.docker.internal | awk '{print $1}' || true)
-if [ -n "$DOCKER_HOST_GW" ]; then
-    echo "Allowing Docker host gateway: $DOCKER_HOST_GW"
-    iptables -A OUTPUT -d "$DOCKER_HOST_GW" -j ACCEPT
-    iptables -A INPUT -s "$DOCKER_HOST_GW" -j ACCEPT
+# can reach the Ryuk reaper published on the host on a random port. Resolve
+# IPv4 and IPv6 separately because iptables/ip6tables cannot cross address
+# families; `getent hosts` may return whichever family comes first.
+DOCKER_HOST_GW_V4=$(getent ahostsv4 host.docker.internal | awk 'NR==1{print $1}' || true)
+if [ -n "$DOCKER_HOST_GW_V4" ]; then
+    echo "Allowing Docker host gateway (IPv4): $DOCKER_HOST_GW_V4"
+    iptables -A OUTPUT -d "$DOCKER_HOST_GW_V4" -j ACCEPT
+    iptables -A INPUT -s "$DOCKER_HOST_GW_V4" -j ACCEPT
+fi
+
+DOCKER_HOST_GW_V6=$(getent ahostsv6 host.docker.internal | awk 'NR==1{print $1}' || true)
+if [ -n "$DOCKER_HOST_GW_V6" ] && command -v ip6tables >/dev/null 2>&1; then
+    echo "Allowing Docker host gateway (IPv6): $DOCKER_HOST_GW_V6"
+    ip6tables -A OUTPUT -d "$DOCKER_HOST_GW_V6" -j ACCEPT || true
+    ip6tables -A INPUT -s "$DOCKER_HOST_GW_V6" -j ACCEPT || true
 fi
 
 # Set default policies to DROP first
