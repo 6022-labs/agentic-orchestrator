@@ -13,27 +13,30 @@ func FindConversationBrokerMigrationFolderPath() (*string, error) {
 	return findMigrationFolderFor("conversation_broker_db")
 }
 
-func findMigrationFolderFor(module string) (*string, error) {
+func findModuleRoot() (string, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
 	for {
-		gitPath := filepath.Join(currentDir, ".git")
-		_, err := os.Stat(gitPath)
-		if err == nil {
-			migrationFolderPath := filepath.Join(currentDir, "agent-reasoning", "src", module, "migrations")
-			return &migrationFolderPath, nil
+		if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
+			return currentDir, nil
 		} else if !os.IsNotExist(err) {
-			return nil, err
+			return "", err
 		}
-
 		parentDir := filepath.Dir(currentDir)
 		if parentDir == currentDir {
-			// Reached filesystem root
-			return nil, os.ErrNotExist
+			return "", os.ErrNotExist
 		}
 		currentDir = parentDir
 	}
+}
+
+func findMigrationFolderFor(module string) (*string, error) {
+	root, err := findModuleRoot()
+	if err != nil {
+		return nil, err
+	}
+	migrationFolderPath := filepath.Join(root, "src", module, "migrations")
+	return &migrationFolderPath, nil
 }

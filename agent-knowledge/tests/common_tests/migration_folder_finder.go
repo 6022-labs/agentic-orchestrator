@@ -5,22 +5,19 @@ import (
 	"path/filepath"
 )
 
-func findGitRoot() (string, error) {
+func findModuleRoot() (string, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 	for {
-		gitPath := filepath.Join(currentDir, ".git")
-		info, err := os.Stat(gitPath)
-		if err == nil && info.IsDir() {
+		if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
 			return currentDir, nil
-		} else if err != nil && !os.IsNotExist(err) {
+		} else if !os.IsNotExist(err) {
 			return "", err
 		}
 		parentDir := filepath.Dir(currentDir)
 		if parentDir == currentDir {
-			// Reached filesystem root
 			return "", os.ErrNotExist
 		}
 		currentDir = parentDir
@@ -28,19 +25,18 @@ func findGitRoot() (string, error) {
 }
 
 func findMigrationFolderPath(subPath string) (*string, error) {
-	gitRoot, err := findGitRoot()
+	root, err := findModuleRoot()
 	if err != nil {
 		return nil, err
 	}
-	migrationFolderPath := filepath.Join(gitRoot, subPath)
+	migrationFolderPath := filepath.Join(root, subPath)
 	return &migrationFolderPath, nil
 }
 
 func FindAgentMigrationFolderPath() (*string, error) {
-	return findMigrationFolderPath("agent-knowledge/src/database_connector_db_agent/migrations")
-
+	return findMigrationFolderPath("src/database_connector_db_agent/migrations")
 }
 
 func FindOrchestratorMigrationFolderPath() (*string, error) {
-	return findMigrationFolderPath("agent-knowledge/src/database_connector_db_orchestrator/migrations")
+	return findMigrationFolderPath("src/database_connector_db_orchestrator/migrations")
 }

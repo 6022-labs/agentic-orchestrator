@@ -6,25 +6,28 @@ import (
 )
 
 func FindMigrationFolderPath() (*string, error) {
-	currentDir, err := os.Getwd()
+	root, err := findModuleRoot()
 	if err != nil {
 		return nil, err
 	}
+	migrationFolderPath := filepath.Join(root, "src", "registry_common_db", "migrations")
+	return &migrationFolderPath, nil
+}
 
+func findModuleRoot() (string, error) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
 	for {
-		gitPath := filepath.Join(currentDir, ".git")
-		info, err := os.Stat(gitPath)
-		if err == nil && info.IsDir() {
-			migrationFolderPath := filepath.Join(currentDir, "agent-identity", "src", "registry_common_db", "migrations")
-			return &migrationFolderPath, nil
-		} else if err != nil && !os.IsNotExist(err) {
-			return nil, err
+		if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
+			return currentDir, nil
+		} else if !os.IsNotExist(err) {
+			return "", err
 		}
-
 		parentDir := filepath.Dir(currentDir)
 		if parentDir == currentDir {
-			// Reached filesystem root
-			return nil, os.ErrNotExist
+			return "", os.ErrNotExist
 		}
 		currentDir = parentDir
 	}
