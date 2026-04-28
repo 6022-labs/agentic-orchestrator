@@ -39,7 +39,12 @@ func (handler *MintProposalRemovedEventHandler) Handle(event *abi.AgentCollectio
 		return err
 	}
 	if agent == nil {
-		return fmt.Errorf("no agent found for collection address %s and proposal id %d", event.Raw.Address.Hex(), event.ProposalId.Uint64())
+		handler.logger.Warn(
+			"MintProposalRemoved event has no matching agent record; skipping",
+			zap.String("collectionAddress", event.Raw.Address.Hex()),
+			zap.Uint64("proposalId", event.ProposalId.Uint64()),
+		)
+		return nil
 	}
 
 	err = handler.agentRepository.Remove(agent)

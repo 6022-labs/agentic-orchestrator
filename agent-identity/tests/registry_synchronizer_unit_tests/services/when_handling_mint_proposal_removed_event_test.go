@@ -96,7 +96,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			return event
 		}
 
-		t.Run("Should return not found message", func(t *testing.T) {
+		t.Run("Should treat the event as a no-op and not error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingMintProposalRemovedEventBeforeEach(t)
@@ -104,8 +104,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 
 			err := suite.sut.Handle(event)
 
-			assert.Error(t, err)
-			assert.ErrorContains(t, err, "no agent found")
+			assert.NoError(t, err)
 		})
 	})
 
