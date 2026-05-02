@@ -88,7 +88,6 @@ for domain in \
     "platform.claude.com" \
     "openaipublic.blob.core.windows.net" \
     "sentry.io" \
-    "statsig.anthropic.com" \
     "statsig.com" \
     "marketplace.visualstudio.com" \
     "vscode.blob.core.windows.net" \
