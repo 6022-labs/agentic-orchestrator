@@ -8,8 +8,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/compute"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/agent_compute_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -419,6 +421,94 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 			assert.NotNil(t, result)
 			assert.Len(t, result, 1)
 			assert.Equal(t, contextNotFoundCompletion, result[0])
+		})
+	})
+
+	t.Run("Given the assistant message echoed back as input matches a stored row", func(t *testing.T) {
+		t.Parallel()
+
+		isFound := true
+		agentContext := &models.AgentContext{Id: agentContextId, Key: contextKey}
+		systemPrompt := "You are an expert"
+		contextFoundPrompt := "Context found prompt"
+		previousAssistantContent := "status :fire: shipping"
+		newCompletion := "Next turn"
+
+		t.Run("Should not re-save the echo when content+platform already in stored history", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+
+			storedSystem := &models.AgentContextMessage{
+				Content:        systemPrompt,
+				Author:         "",
+				Role:           enums.AgentContextMessageRoleSystem,
+				Platform:       enums.AgentContextMessagePlatformNone,
+				ConversationId: &conversationId,
+				CreatedAt:      time.Now().Add(-2 * time.Hour),
+			}
+			storedAssistant := &models.AgentContextMessage{
+				Content:        previousAssistantContent,
+				Author:         agent.EnsDomain,
+				Role:           enums.AgentContextMessageRoleAssistant,
+				Platform:       enums.AgentContextMessagePlatformSlack,
+				ConversationId: &conversationId,
+				CreatedAt:      time.Now().Add(-time.Hour),
+			}
+
+			suite.mockAgentContextConversationMappingRequester.EXPECT().
+				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
+				Return(agentContext, &isFound, nil)
+
+			suite.mockAgentContextMessageRequester.EXPECT().
+				GetAgentContextMessages(agentId, contextKey).
+				Return([]*models.AgentContextMessage{storedSystem, storedAssistant}, nil)
+
+			suite.setupPromptParametersBuilder()
+
+			suite.mockPromptFromPromptTemplateParser.EXPECT().
+				ParseExpertContextFound(agentId, gomock.Any()).
+				Return(&contextFoundPrompt, nil)
+
+			suite.mockLLMConnectionChatCompletionRequester.EXPECT().
+				ChatCompletion(agentId, gomock.Any()).
+				Return(&newCompletion, nil)
+
+			var capturedRequest *interfaces.AddMessageToAgentContextRequest
+			suite.mockAgentContextMessageRequester.EXPECT().
+				AddMessagesToAgentContext(gomock.Any()).
+				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
+					capturedRequest = request
+					return nil
+				})
+
+			inputs := []*models.AgentContextMessage{
+				{
+					Content:        previousAssistantContent,
+					Author:         agent.EnsDomain,
+					Role:           enums.AgentContextMessageRoleAssistant,
+					Platform:       enums.AgentContextMessagePlatformSlack,
+					ConversationId: &conversationId,
+					CreatedAt:      time.Now().Add(-30 * time.Minute),
+				},
+				{
+					Content:        "follow-up question",
+					Author:         "user.protocol6022.eth",
+					Role:           enums.AgentContextMessageRoleUser,
+					Platform:       enums.AgentContextMessagePlatformSlack,
+					ConversationId: &conversationId,
+					CreatedAt:      time.Now(),
+				},
+			}
+
+			_, err := suite.sut.Compute(agent, inputs, computeContext)
+			assert.NoError(t, err)
+
+			assert.NotNil(t, capturedRequest)
+			savedEchoes := lo.Filter(capturedRequest.Messages, func(m *interfaces.AddMessageToAgentContextRequestMessage, _ int) bool {
+				return m.Role == enums.AgentContextMessageRoleAssistant && m.Content == previousAssistantContent
+			})
+			assert.Len(t, savedEchoes, 0, "echo of an already-stored assistant message must not be re-saved")
 		})
 	})
 }

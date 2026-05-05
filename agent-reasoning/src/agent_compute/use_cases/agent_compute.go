@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/utils"
 	"go.uber.org/zap"
 )
 
@@ -112,7 +113,7 @@ func (a *AgentCompute) requestToAgentContextMessages(
 		agentContextMessages[index] = &models.AgentContextMessage{
 			Role:           role,
 			Author:         input.Author,
-			Content:        input.Content,
+			Content:        utils.DemojizeContent(input.Content),
 			CreatedAt:      input.Timestamp,
 			Platform:       request.Platform,
 			ConversationId: &request.ConversationContext.Id,

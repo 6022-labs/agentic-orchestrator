@@ -4,9 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/compute"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/utils"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/agent_compute_mocks/services_mocks/compute_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/agent_compute_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
@@ -283,6 +286,49 @@ func TestWhenComputingAgent(t *testing.T) {
 			assert.NotNil(t, result)
 			assert.False(t, result.IsFinal)
 			assert.Equal(t, []string{"clone response"}, result.Responses)
+		})
+	})
+
+	t.Run("Given an input contains unicode emoji from a broker", func(t *testing.T) {
+		t.Parallel()
+
+		agentResponse := model_builders.NewAgentResponseBuilder().
+			WithRole(enums.AgentRoleExpert).
+			WithEnsDomain("expert.protocol6022.eth").
+			Build()
+
+		t.Run("Should demojize content before handing it to the strategy", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingAgentBeforeEach(t)
+
+			rawContent := "status 🔥 shipping"
+			request := generateValidAgentComputeRequest()
+			request.Inputs = []*requests.AgentComputeInputRequest{
+				{
+					Author:    "alice.protocol6022.eth",
+					Content:   rawContent,
+					Timestamp: time.Now(),
+				},
+			}
+
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
+				Return(agentResponse, nil)
+
+			var capturedInputs []*models.AgentContextMessage
+			suite.mockExpertComputeStrategy.EXPECT().
+				Compute(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ any, inputs []*models.AgentContextMessage, _ *compute.ComputeContext) ([]string, error) {
+					capturedInputs = inputs
+					return []string{"ok"}, nil
+				})
+
+			_, err := suite.sut.Compute(request)
+			assert.NoError(t, err)
+
+			assert.Len(t, capturedInputs, 1)
+			assert.Equal(t, utils.DemojizeContent(rawContent), capturedInputs[0].Content)
 		})
 	})
 
