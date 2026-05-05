@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/utils"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -282,16 +283,18 @@ func (cs *ExpertComputeStrategy) processContextFoundPrompt(
 		return nil, nil, fmt.Errorf("failed to get completion for prompt template key %v: %w", enums.AgentPromptTemplateKeyExpertContextFound, err)
 	}
 
+	decodedCompletion := utils.DemojizeContent(*contextFoundCompletion)
+
 	messages = append(messages, &models.AgentContextMessage{
 		CreatedAt:      time.Now(),
 		Author:         agent.EnsDomain,
-		Content:        *contextFoundCompletion,
+		Content:        decodedCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
 		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
-	return contextFoundCompletion, messages, nil
+	return &decodedCompletion, messages, nil
 }
 
 func (cs *ExpertComputeStrategy) tryFindConversationContext(
@@ -358,17 +361,19 @@ func (cs *ExpertComputeStrategy) tryFindConversationContext(
 		zap.String("contextNotFoundCompletion", *contextNotFoundCompletion),
 	)
 
+	decodedCompletion := utils.DemojizeContent(*contextNotFoundCompletion)
+
 	messages = append(messages, &models.AgentContextMessage{
 		CreatedAt:      time.Now(),
 		Author:         agent.EnsDomain,
-		Content:        *contextNotFoundCompletion,
+		Content:        decodedCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
 		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
 	foundedAgentContext, _ := lo.Find(agentContexts, func(agentContext *models.AgentContext) bool {
-		return strings.Contains(*contextNotFoundCompletion, agentContext.Key)
+		return strings.Contains(decodedCompletion, agentContext.Key)
 	})
 
 	nonStoredMessages := cs.diffMessagesByHash(contextDiscovery.Id, messages, storedMessages)
@@ -377,5 +382,5 @@ func (cs *ExpertComputeStrategy) tryFindConversationContext(
 		return nil, nil, fmt.Errorf("failed to save non-stored messages: %w", err)
 	}
 
-	return contextNotFoundCompletion, foundedAgentContext, nil
+	return &decodedCompletion, foundedAgentContext, nil
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute/utils"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -216,16 +217,18 @@ func (cs *FacilitatorComputeStrategy) processDefaultPrompt(
 		return nil, nil, fmt.Errorf("failed to get completion for prompt template key %v: %w", enums.AgentPromptTemplateKeyFacilitatorDefault, err)
 	}
 
+	decodedCompletion := utils.DemojizeContent(*defaultPromptCompletion)
+
 	messages = append(messages, &models.AgentContextMessage{
 		CreatedAt:      time.Now(),
 		Author:         agent.EnsDomain,
-		Content:        *defaultPromptCompletion,
+		Content:        decodedCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
 		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
-	return defaultPromptCompletion, messages, nil
+	return &decodedCompletion, messages, nil
 }
 
 func (cs *FacilitatorComputeStrategy) isAgentReadyToConclude(
@@ -296,16 +299,18 @@ func (cs *FacilitatorComputeStrategy) processConcludePrompt(
 		return nil, nil, fmt.Errorf("failed to get completion for prompt template key %v: %w", enums.AgentPromptTemplateKeyFacilitatorConclude, err)
 	}
 
+	decodedCompletion := utils.DemojizeContent(*concludePromptCompletion)
+
 	messages = append(messages, &models.AgentContextMessage{
 		CreatedAt:      time.Now(),
 		Author:         agent.EnsDomain,
-		Content:        *concludePromptCompletion,
+		Content:        decodedCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
 		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
-	return concludePromptCompletion, messages, nil
+	return &decodedCompletion, messages, nil
 }
 
 func (cs *FacilitatorComputeStrategy) getContextKey(

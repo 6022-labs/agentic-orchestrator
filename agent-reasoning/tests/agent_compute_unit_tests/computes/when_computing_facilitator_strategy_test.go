@@ -273,7 +273,77 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the assistant message echoed back as input matches a stored row", func(t *testing.T) {
+	t.Run("Given the LLM emits unicode emoji in its completion", func(t *testing.T) {
+		t.Parallel()
+
+		isFound := true
+		agentContext := &models.AgentContext{Id: agentContextId, Key: contextKey}
+		systemPrompt := "You are a facilitator"
+		defaultPrompt := "Facilitate the conversation"
+		unicodeCompletion := "🔄 status update"
+		expectedDecoded := ":arrows_counterclockwise: status update"
+
+		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+
+			suite.mockAgentContextRequester.EXPECT().
+				GetAgentContextByKey(agentId, gomock.Any()).
+				Return(agentContext, &isFound, nil)
+
+			suite.mockAgentContextMessageRequester.EXPECT().
+				GetAgentContextMessages(agentId, contextKey).
+				Return([]*models.AgentContextMessage{}, nil)
+
+			suite.setupPromptParametersBuilder()
+
+			suite.mockPromptFromPromptTemplateParser.EXPECT().
+				ParseFacilitatorSystem(agentId, gomock.Any()).
+				Return(&systemPrompt, nil)
+
+			suite.mockPromptFromPromptTemplateParser.EXPECT().
+				ParseFacilitatorDefault(agentId, gomock.Any()).
+				Return(&defaultPrompt, nil)
+
+			suite.mockLLMConnectionChatCompletionRequester.EXPECT().
+				ChatCompletion(agentId, gomock.Any()).
+				Return(&unicodeCompletion, nil)
+
+			var capturedRequest *interfaces.AddMessageToAgentContextRequest
+			suite.mockAgentContextMessageRequester.EXPECT().
+				AddMessagesToAgentContext(gomock.Any()).
+				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
+					capturedRequest = request
+					return nil
+				})
+
+			inputs := []*models.AgentContextMessage{
+				{
+					Content:        "Please facilitate this",
+					Author:         "user.protocol6022.eth",
+					Role:           enums.AgentContextMessageRoleUser,
+					Platform:       enums.AgentContextMessagePlatformSlack,
+					ConversationId: &conversationId,
+					CreatedAt:      time.Now(),
+				},
+			}
+
+			result, _, err := suite.sut.Compute(agent, inputs, computeContext)
+
+			assert.NoError(t, err)
+			assert.Equal(t, []string{expectedDecoded}, result)
+
+			assert.NotNil(t, capturedRequest)
+			assistantMessages := lo.Filter(capturedRequest.Messages, func(m *interfaces.AddMessageToAgentContextRequestMessage, _ int) bool {
+				return m.Role == enums.AgentContextMessageRoleAssistant
+			})
+			assert.Len(t, assistantMessages, 1)
+			assert.Equal(t, expectedDecoded, assistantMessages[0].Content)
+		})
+	})
+
+	t.Run("Given the assistant message replayed as input by the conversation broker matches a stored row", func(t *testing.T) {
 		t.Parallel()
 
 		isFound := true
@@ -283,7 +353,7 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 		previousAssistantContent := "status :fire: shipping"
 		newDefaultCompletion := "Next turn"
 
-		t.Run("Should not re-save the echo when content+platform already in stored history", func(t *testing.T) {
+		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
@@ -354,10 +424,10 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.NotNil(t, capturedRequest)
-			savedEchoes := lo.Filter(capturedRequest.Messages, func(m *interfaces.AddMessageToAgentContextRequestMessage, _ int) bool {
+			savedReplays := lo.Filter(capturedRequest.Messages, func(m *interfaces.AddMessageToAgentContextRequestMessage, _ int) bool {
 				return m.Role == enums.AgentContextMessageRoleAssistant && m.Content == previousAssistantContent
 			})
-			assert.Len(t, savedEchoes, 0, "echo of an already-stored assistant message must not be re-saved")
+			assert.Len(t, savedReplays, 0, "an assistant message already in stored history must not be re-saved when replayed as input")
 		})
 	})
 
