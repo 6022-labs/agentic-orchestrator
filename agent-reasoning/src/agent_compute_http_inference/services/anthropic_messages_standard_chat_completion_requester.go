@@ -161,17 +161,18 @@ func (r *AnthropicMessagesStandardChatCompletionRequester) ChatCompletion(
 	})
 
 	if len(textContents) == 0 {
+		contentTypes := lo.Map(response.Content, func(content orchestrator_agent_compute_http_inference_models.ExternalAnthropicMessagesStandardMessageContent, _ int) string {
+			return content.Type
+		})
 		r.logger.Warn(
 			"No content with type 'text' found in response",
 			zap.String("agentId", llmConnection.AgentID.String()),
 			zap.Stringp("stopReason", response.StopReason),
 			zap.Int("contentItems", len(response.Content)),
-			zap.Strings("contentTypes", lo.Map(response.Content, func(content orchestrator_agent_compute_http_inference_models.ExternalAnthropicMessagesStandardMessageContent, _ int) string {
-				return content.Type
-			})),
+			zap.Strings("contentTypes", contentTypes),
 		)
 
-		return nil, nil
+		return nil, fmt.Errorf("anthropic returned no text content: stopReason=%q contentTypes=%v", lo.FromPtr(response.StopReason), contentTypes)
 	}
 
 	return textContents[len(textContents)-1].Text, nil

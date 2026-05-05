@@ -142,6 +142,40 @@ func TestWhenRequestingAmazonBedrockConverseStandardChatCompletion(t *testing.T)
 		})
 	})
 
+	t.Run("Given the response has no text content", func(t *testing.T) {
+		t.Parallel()
+
+		stopReason := "max_tokens"
+
+		initSuite := func(suite *WhenRequestingAmazonBedrockConverseStandardChatCompletionTestingSuite) {
+			suite.mockAmazonBedrockConverseClient.
+				EXPECT().
+				Messages(baseUrl, apiKey, gomock.Any()).
+				Return(&external_models.ExternalAmazonBedrockConverseStandardResponse{
+					Output: external_models.ExternalAmazonBedrockConverseStandardResponseOutput{
+						Message: external_models.ExternalAmazonBedrockConverseStandardMessage{
+							Role:    "assistant",
+							Content: []external_models.ExternalAmazonBedrockConverseStandardMessageContent{},
+						},
+					},
+					StopReason: &stopReason,
+				}, nil)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingAmazonBedrockConverseStandardChatCompletionBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, llmConnection, messages, nil, nil)
+			assert.Nil(t, result)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "bedrock returned no text content")
+			assert.ErrorContains(t, err, stopReason)
+		})
+	})
+
 	t.Run("Given the LLM requests an MCP tool call", func(t *testing.T) {
 		t.Parallel()
 

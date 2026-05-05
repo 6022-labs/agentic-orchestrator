@@ -134,6 +134,38 @@ func TestWhenRequestingAnthropicMessagesStandardChatCompletion(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the response has no text content", func(t *testing.T) {
+		t.Parallel()
+
+		stopReason := "max_tokens"
+
+		initSuite := func(suite *WhenRequestingAnthropicMessagesStandardChatCompletionTestingSuite) {
+			suite.mockAnthropicMessagesClient.
+				EXPECT().
+				Messages(baseUrl, apiKey, gomock.Any()).
+				Return(&external_models.ExternalAnthropicMessagesStandardResponse{
+					ExternalAnthropicMessagesStandardMessage: external_models.ExternalAnthropicMessagesStandardMessage{
+						Role:       "assistant",
+						Content:    []external_models.ExternalAnthropicMessagesStandardMessageContent{},
+						StopReason: &stopReason,
+					},
+				}, nil)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingAnthropicMessagesStandardChatCompletionBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, messages, nil, nil)
+			assert.Nil(t, result)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "anthropic returned no text content")
+			assert.ErrorContains(t, err, stopReason)
+		})
+	})
+
 	t.Run("Given the LLM requests an MCP tool call", func(t *testing.T) {
 		t.Parallel()
 

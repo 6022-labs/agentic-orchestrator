@@ -151,7 +151,7 @@ func (r *OpenAICompletionsStandardChatCompletionRequester) ChatCompletion(
 			zap.String("model", response.Model),
 		)
 
-		return nil, nil
+		return nil, fmt.Errorf("openai completions returned no choices: id=%s model=%s", response.ID, response.Model)
 	}
 
 	return &response.Choices[0].Message.Content, nil

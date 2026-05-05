@@ -121,6 +121,38 @@ func TestWhenRequestingOllamaChatMessageStandardChatCompletion(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the response has empty content", func(t *testing.T) {
+		t.Parallel()
+
+		doneReason := "length"
+
+		initSuite := func(suite *WhenRequestingOllamaChatMessageStandardChatCompletionTestingSuite) {
+			suite.mockOllamaClient.EXPECT().
+				ChatMessage(baseUrl, gomock.Any()).
+				Return(&external_models.ExternalOllamaChatMessageStandardResponse{
+					Model: llmConnection.Model,
+					Message: external_models.ExternalOllamaChatMessageStandardMessage{
+						Role:    "assistant",
+						Content: "",
+					},
+					DoneReason: &doneReason,
+				}, nil)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingOllamaChatMessageStandardChatCompletionBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ChatCompletion(baseUrl, llmConnection, messages, nil)
+			assert.Nil(t, result)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "ollama returned empty content")
+			assert.ErrorContains(t, err, doneReason)
+		})
+	})
+
 	t.Run("Given the LLM requests an MCP tool call", func(t *testing.T) {
 		t.Parallel()
 

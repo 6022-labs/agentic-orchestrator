@@ -128,17 +128,18 @@ func (r *AmazonBedrockConverseStandardChatCompletionRequester) ChatCompletion(
 	})
 
 	if len(textContents) == 0 {
+		contentTypes := lo.Map(response.Output.Message.Content, func(content orchestrator_agent_compute_http_inference_models.ExternalAmazonBedrockConverseStandardMessageContent, _ int) string {
+			return content.ContentType()
+		})
 		r.logger.Warn(
 			"No content with type 'text' found in response",
 			zap.String("agentId", llmConnection.AgentID.String()),
 			zap.Stringp("stopReason", response.StopReason),
 			zap.Int("contentItems", len(response.Output.Message.Content)),
-			zap.Strings("contentTypes", lo.Map(response.Output.Message.Content, func(content orchestrator_agent_compute_http_inference_models.ExternalAmazonBedrockConverseStandardMessageContent, _ int) string {
-				return content.ContentType()
-			})),
+			zap.Strings("contentTypes", contentTypes),
 		)
 
-		return nil, nil
+		return nil, fmt.Errorf("bedrock returned no text content: stopReason=%q contentTypes=%v", lo.FromPtr(response.StopReason), contentTypes)
 	}
 
 	return textContents[len(textContents)-1].Text, nil

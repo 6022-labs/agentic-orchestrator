@@ -137,6 +137,33 @@ func TestWhenRequestingOpenAICompletionsStandardChatCompletion(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the response has no choices", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRequestingOpenAICompletionsStandardChatCompletionTestingSuite) {
+			suite.mockOpenAICompletionsClient.
+				EXPECT().
+				ChatCompletion(baseUrl, apiKey, gomock.Any()).
+				Return(&external_models.ExternalOpenAICompletionsStandardResponse{
+					ID:      "resp_1",
+					Model:   llmConnection.Model,
+					Choices: []external_models.ExternalOpenAICompletionsStandardResponseChoice{},
+				}, nil)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingOpenAICompletionsStandardChatCompletionBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, llmConnection, messages, nil)
+			assert.Nil(t, result)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "openai completions returned no choices")
+		})
+	})
+
 	t.Run("Given the LLM requests an MCP tool call", func(t *testing.T) {
 		t.Parallel()
 

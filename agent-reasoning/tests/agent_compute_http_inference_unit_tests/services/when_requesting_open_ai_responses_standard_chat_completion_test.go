@@ -134,6 +134,33 @@ func TestWhenRequestingOpenAIResponsesStandardChatCompletion(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the response has no message output", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRequestingOpenAIResponsesStandardChatCompletionTestingSuite) {
+			suite.mockOpenAIResponsesClient.
+				EXPECT().
+				Responses(baseUrl, apiKey, gomock.Any()).
+				Return(&external_models.ExternalOpenAIResponsesStandardResponse{
+					Status: "incomplete",
+					Output: []external_models.ExternalOpenAIResponsesStandardResponseOutput{},
+				}, nil)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingOpenAIResponsesStandardChatCompletionBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ChatCompletion(baseUrl, apiKey, false, llmConnection, inputs, nil, nil)
+			assert.Nil(t, result)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "openai responses returned no message output")
+			assert.ErrorContains(t, err, "incomplete")
+		})
+	})
+
 	t.Run("Given the LLM requests an MCP tool call", func(t *testing.T) {
 		t.Parallel()
 

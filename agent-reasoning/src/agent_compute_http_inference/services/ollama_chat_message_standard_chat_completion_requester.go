@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_inference/clients"
 	orchestrator_agent_compute_http_inference_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_inference/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_compute_http_inference/utils"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -127,7 +128,7 @@ func (r *OllamaChatMessageStandardChatCompletionRequester) ChatCompletion(
 			zap.Stringp("doneReason", response.DoneReason),
 		)
 
-		return nil, nil
+		return nil, fmt.Errorf("ollama returned empty content: doneReason=%q", lo.FromPtr(response.DoneReason))
 	}
 
 	return &response.Message.Content, nil
