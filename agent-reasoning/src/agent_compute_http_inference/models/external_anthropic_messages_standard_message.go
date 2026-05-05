@@ -4,8 +4,9 @@ import "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/agent_comp
 
 type ExternalAnthropicMessagesStandardMessage struct {
 	// Common fields
-	Role    string                                            `json:"role"`
-	Content []ExternalAnthropicMessagesStandardMessageContent `json:"content,omitempty"`
+	Role       string                                            `json:"role"`
+	Content    []ExternalAnthropicMessagesStandardMessageContent `json:"content,omitempty"`
+	StopReason *string                                           `json:"stop_reason,omitempty"`
 }
 
 type ExternalAnthropicMessagesStandardMessageContent struct {

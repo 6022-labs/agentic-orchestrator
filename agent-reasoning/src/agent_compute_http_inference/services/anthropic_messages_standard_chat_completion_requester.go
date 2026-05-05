@@ -164,6 +164,11 @@ func (r *AnthropicMessagesStandardChatCompletionRequester) ChatCompletion(
 		r.logger.Warn(
 			"No content with type 'text' found in response",
 			zap.String("agentId", llmConnection.AgentID.String()),
+			zap.Stringp("stopReason", response.StopReason),
+			zap.Int("contentItems", len(response.Content)),
+			zap.Strings("contentTypes", lo.Map(response.Content, func(content orchestrator_agent_compute_http_inference_models.ExternalAnthropicMessagesStandardMessageContent, _ int) string {
+				return content.Type
+			})),
 		)
 
 		return nil, nil

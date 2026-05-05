@@ -124,6 +124,7 @@ func (r *OllamaChatMessageStandardChatCompletionRequester) ChatCompletion(
 		r.logger.Warn(
 			"Empty content in response message",
 			zap.String("agentId", llmConnection.AgentID.String()),
+			zap.Stringp("doneReason", response.DoneReason),
 		)
 
 		return nil, nil

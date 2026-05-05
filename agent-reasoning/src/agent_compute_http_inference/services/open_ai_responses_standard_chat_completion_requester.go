@@ -147,6 +147,12 @@ func (r *OpenAIResponsesStandardChatCompletionRequester) ChatCompletion(
 		r.logger.Warn(
 			"No output with type 'message' found in response",
 			zap.String("agentId", llmConnection.AgentID.String()),
+			zap.String("status", response.Status),
+			zap.Any("incompleteDetails", response.IncompleteDetails),
+			zap.Int("outputItems", len(response.Output)),
+			zap.Strings("outputTypes", lo.Map(response.Output, func(output orchestrator_agent_compute_http_inference_models.ExternalOpenAIResponsesStandardResponseOutput, _ int) string {
+				return output.Type
+			})),
 		)
 		return nil, nil
 	}

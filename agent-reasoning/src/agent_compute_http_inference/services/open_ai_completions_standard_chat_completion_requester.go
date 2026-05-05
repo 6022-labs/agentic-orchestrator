@@ -147,6 +147,8 @@ func (r *OpenAICompletionsStandardChatCompletionRequester) ChatCompletion(
 		r.logger.Warn(
 			"No choices found in response",
 			zap.String("agentId", llmConnection.AgentID.String()),
+			zap.String("responseId", response.ID),
+			zap.String("model", response.Model),
 		)
 
 		return nil, nil

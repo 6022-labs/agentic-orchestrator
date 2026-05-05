@@ -17,6 +17,21 @@ type ExternalAmazonBedrockConverseStandardMessageContent struct {
 	ToolUse          *ExternalAmazonBedrockConverseStandardMessageContentToolUse          `json:"toolUse,omitempty"`
 }
 
+func (c *ExternalAmazonBedrockConverseStandardMessageContent) ContentType() string {
+	switch {
+	case c.Text != nil:
+		return "text"
+	case c.ReasoningContent != nil:
+		return "reasoningContent"
+	case c.ToolUse != nil:
+		return "toolUse"
+	case c.ToolResult != nil:
+		return "toolResult"
+	default:
+		return "unknown"
+	}
+}
+
 type ExternalAmazonBedrockConverseStandardMessageContentReasoningContent struct {
 	ReasoningText *ExternalAmazonBedrockConverseStandardMessageContentReasoningContentReasoningText `json:"reasoningText,omitempty"`
 }
