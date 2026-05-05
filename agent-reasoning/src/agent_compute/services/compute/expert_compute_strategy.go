@@ -287,7 +287,7 @@ func (cs *ExpertComputeStrategy) processContextFoundPrompt(
 		Author:         agent.EnsDomain,
 		Content:        *contextFoundCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
-		Platform:       enums.AgentContextMessagePlatformNone,
+		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
@@ -363,7 +363,7 @@ func (cs *ExpertComputeStrategy) tryFindConversationContext(
 		Author:         agent.EnsDomain,
 		Content:        *contextNotFoundCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
-		Platform:       enums.AgentContextMessagePlatformNone,
+		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 

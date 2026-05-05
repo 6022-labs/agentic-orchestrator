@@ -221,7 +221,7 @@ func (cs *FacilitatorComputeStrategy) processDefaultPrompt(
 		Author:         agent.EnsDomain,
 		Content:        *defaultPromptCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
-		Platform:       enums.AgentContextMessagePlatformNone,
+		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
@@ -301,7 +301,7 @@ func (cs *FacilitatorComputeStrategy) processConcludePrompt(
 		Author:         agent.EnsDomain,
 		Content:        *concludePromptCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
-		Platform:       enums.AgentContextMessagePlatformNone,
+		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 

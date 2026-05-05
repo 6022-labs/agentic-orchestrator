@@ -222,7 +222,7 @@ func (cs *CloneComputeStrategy) processDefaultPrompt(
 		Author:         agent.EnsDomain,
 		Content:        *defaultPromptCompletion,
 		ConversationId: &computeContext.ConversationContext.Id,
-		Platform:       enums.AgentContextMessagePlatformNone,
+		Platform:       computeContext.Platform,
 		Role:           enums.AgentContextMessageRoleAssistant,
 	})
 
