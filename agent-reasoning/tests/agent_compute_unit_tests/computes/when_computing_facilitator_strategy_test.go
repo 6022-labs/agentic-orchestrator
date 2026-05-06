@@ -185,39 +185,35 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 		concludePrompt := "Conclude the conversation"
 		concludeCompletion := "Here is the conclusion"
 
-		t.Run("Should process conclude prompt and return isFinal=true", func(t *testing.T) {
-			t.Parallel()
+		// Pre-existing messages that include :end: signal
+		// We need at least 2 messages with assistant/user role for isAgentReadyToConclude
+		// Include a system prompt so no new system prompt is parsed
+		storedSystemMessage := &models.AgentContextMessage{
+			Content:        systemPrompt,
+			Author:         "",
+			Role:           enums.AgentContextMessageRoleSystem,
+			Platform:       enums.AgentContextMessagePlatformNone,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-3 * time.Hour),
+		}
+		storedAssistantMessage := &models.AgentContextMessage{
+			Content:        "Previous assistant response",
+			Author:         "facilitator.protocol6022.eth",
+			Role:           enums.AgentContextMessageRoleAssistant,
+			Platform:       enums.AgentContextMessagePlatformNone,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-2 * time.Hour),
+		}
+		storedUserMessage := &models.AgentContextMessage{
+			Content:        "User says :end:",
+			Author:         "user.protocol6022.eth",
+			Role:           enums.AgentContextMessageRoleUser,
+			Platform:       enums.AgentContextMessagePlatformSlack,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-time.Hour),
+		}
 
-			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
-
-			// Pre-existing messages that include :end: signal
-			// We need at least 2 messages with assistant/user role for isAgentReadyToConclude
-			// Include a system prompt so no new system prompt is parsed
-			storedSystemMessage := &models.AgentContextMessage{
-				Content:        systemPrompt,
-				Author:         "",
-				Role:           enums.AgentContextMessageRoleSystem,
-				Platform:       enums.AgentContextMessagePlatformNone,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-3 * time.Hour),
-			}
-			storedAssistantMessage := &models.AgentContextMessage{
-				Content:        "Previous assistant response",
-				Author:         "facilitator.protocol6022.eth",
-				Role:           enums.AgentContextMessageRoleAssistant,
-				Platform:       enums.AgentContextMessagePlatformNone,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-2 * time.Hour),
-			}
-			storedUserMessage := &models.AgentContextMessage{
-				Content:        "User says :end:",
-				Author:         "user.protocol6022.eth",
-				Role:           enums.AgentContextMessageRoleUser,
-				Platform:       enums.AgentContextMessagePlatformSlack,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-time.Hour),
-			}
-
+		initSuite := func(suite *WhenComputingFacilitatorStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -249,6 +245,13 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should process conclude prompt and return isFinal=true", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -283,11 +286,9 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 		unicodeCompletion := "🔄 status update"
 		expectedDecoded := ":arrows_counterclockwise: status update"
 
-		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
-			t.Parallel()
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingFacilitatorStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -310,13 +311,19 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&unicodeCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -353,28 +360,26 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 		previousAssistantContent := "status :fire: shipping"
 		newDefaultCompletion := "Next turn"
 
-		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
-			t.Parallel()
+		storedSystem := &models.AgentContextMessage{
+			Content:        systemPrompt,
+			Author:         "",
+			Role:           enums.AgentContextMessageRoleSystem,
+			Platform:       enums.AgentContextMessagePlatformNone,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-2 * time.Hour),
+		}
+		storedAssistant := &models.AgentContextMessage{
+			Content:        previousAssistantContent,
+			Author:         agent.EnsDomain,
+			Role:           enums.AgentContextMessageRoleAssistant,
+			Platform:       enums.AgentContextMessagePlatformSlack,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-time.Hour),
+		}
 
-			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			storedSystem := &models.AgentContextMessage{
-				Content:        systemPrompt,
-				Author:         "",
-				Role:           enums.AgentContextMessageRoleSystem,
-				Platform:       enums.AgentContextMessagePlatformNone,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-2 * time.Hour),
-			}
-			storedAssistant := &models.AgentContextMessage{
-				Content:        previousAssistantContent,
-				Author:         agent.EnsDomain,
-				Role:           enums.AgentContextMessageRoleAssistant,
-				Platform:       enums.AgentContextMessagePlatformSlack,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-time.Hour),
-			}
-
+		initSuite := func(suite *WhenComputingFacilitatorStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -393,13 +398,19 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&newDefaultCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -454,11 +465,7 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 			},
 		}
 
-		t.Run("Should process conclude prompt regardless of end signal", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingFacilitatorStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -494,6 +501,13 @@ func TestWhenComputingFacilitatorStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should process conclude prompt regardless of end signal", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingFacilitatorStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{

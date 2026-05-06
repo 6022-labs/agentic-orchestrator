@@ -186,11 +186,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 		defaultPrompt := "Respond to the user"
 		defaultCompletion := "Hello, I am a clone"
 
-		t.Run("Should link the conversation to the agent context", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingCloneStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingCloneStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -224,6 +220,13 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should link the conversation to the agent context", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingCloneStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -253,11 +256,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 		defaultPrompt := "Default prompt for clone"
 		defaultCompletion := "Clone response to user"
 
-		t.Run("Should call prompt template parser for system prompt", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingCloneStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingCloneStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -287,6 +286,13 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should call prompt template parser for system prompt", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingCloneStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -316,11 +322,9 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 		unicodeCompletion := "🔄 status update"
 		expectedDecoded := ":arrows_counterclockwise: status update"
 
-		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
-			t.Parallel()
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			suite := WhenComputingCloneStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingCloneStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -347,13 +351,19 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&unicodeCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingCloneStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -390,20 +400,18 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 		previousAssistantContent := "status :fire: shipping"
 		newDefaultCompletion := "Next turn"
 
-		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
-			t.Parallel()
+		storedAssistant := &models.AgentContextMessage{
+			Content:        previousAssistantContent,
+			Author:         agent.EnsDomain,
+			Role:           enums.AgentContextMessageRoleAssistant,
+			Platform:       enums.AgentContextMessagePlatformSlack,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-time.Hour),
+		}
 
-			suite := WhenComputingCloneStrategyBeforeEach(t)
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			storedAssistant := &models.AgentContextMessage{
-				Content:        previousAssistantContent,
-				Author:         agent.EnsDomain,
-				Role:           enums.AgentContextMessageRoleAssistant,
-				Platform:       enums.AgentContextMessagePlatformSlack,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-time.Hour),
-			}
-
+		initSuite := func(suite *WhenComputingCloneStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -430,13 +438,19 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&newDefaultCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingCloneStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -477,11 +491,7 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 		defaultPrompt := "Default prompt"
 		defaultCompletion := "This is the LLM response"
 
-		t.Run("Should save messages and return the completion", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingCloneStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingCloneStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(agentContext, &isFound, nil)
@@ -511,6 +521,13 @@ func TestWhenComputingCloneStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should save messages and return the completion", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingCloneStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{

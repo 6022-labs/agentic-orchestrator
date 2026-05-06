@@ -55,15 +55,19 @@ func TestWhenGettingLLMConnectionSettings(t *testing.T) {
 	t.Run("Given error occurs while querying llm connection in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		request := &requests.AgentIdRequest{
+			AgentId: uuid.New(),
+		}
+
+		initSuite := func(suite *WhenGettingLLMConnectionSettingsTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().GetByAgentId(request.AgentId).Return(nil, assert.AnError)
+		}
+
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSettingsBeforeEach(t)
-			request := &requests.AgentIdRequest{
-				AgentId: uuid.New(),
-			}
-
-			suite.llmConnectionRepositoryMock.EXPECT().GetByAgentId(request.AgentId).Return(nil, assert.AnError)
+			initSuite(suite)
 
 			_, err := suite.sut.Get(request)
 
@@ -74,15 +78,19 @@ func TestWhenGettingLLMConnectionSettings(t *testing.T) {
 	t.Run("Given llm connection is not found in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		request := &requests.AgentIdRequest{
+			AgentId: uuid.New(),
+		}
+
+		initSuite := func(suite *WhenGettingLLMConnectionSettingsTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().GetByAgentId(request.AgentId).Return(nil, nil)
+		}
+
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSettingsBeforeEach(t)
-			request := &requests.AgentIdRequest{
-				AgentId: uuid.New(),
-			}
-
-			suite.llmConnectionRepositoryMock.EXPECT().GetByAgentId(request.AgentId).Return(nil, nil)
+			initSuite(suite)
 
 			_, err := suite.sut.Get(request)
 
@@ -93,20 +101,25 @@ func TestWhenGettingLLMConnectionSettings(t *testing.T) {
 	t.Run("Given llm connection is found in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		request := &requests.AgentIdRequest{
+			AgentId: uuid.New(),
+		}
+
+		existingConnection := model_builders.NewLLMConnectionBuilder().
+			WithBaseUrl("https://custom.host").
+			Build()
+
+		initSuite := func(suite *WhenGettingLLMConnectionSettingsTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().
+				GetByAgentId(request.AgentId).
+				Return(existingConnection, nil)
+		}
+
 		t.Run("Should return llm connection metadata", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSettingsBeforeEach(t)
-			request := &requests.AgentIdRequest{
-				AgentId: uuid.New(),
-			}
-
-			existingConnection := model_builders.NewLLMConnectionBuilder().
-				WithBaseUrl("https://custom.host").
-				Build()
-			suite.llmConnectionRepositoryMock.EXPECT().
-				GetByAgentId(request.AgentId).
-				Return(existingConnection, nil)
+			initSuite(suite)
 
 			response, err := suite.sut.Get(request)
 

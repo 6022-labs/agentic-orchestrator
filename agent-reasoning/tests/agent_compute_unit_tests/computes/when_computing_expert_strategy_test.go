@@ -192,11 +192,7 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 		contextFoundPrompt := "Context found prompt"
 		contextFoundCompletion := "Expert response after discovery"
 
-		t.Run("Should discover context via LLM, link conversation, and process context-found prompt", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingExpertStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingExpertStrategyTestingSuite) {
 			// Step 1: conversation is not linked
 			suite.mockAgentContextConversationMappingRequester.EXPECT().
 				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
@@ -260,6 +256,13 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should discover context via LLM, link conversation, and process context-found prompt", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -292,11 +295,7 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 		// The LLM response does NOT contain any existing context key
 		contextNotFoundCompletion := "I could not find a matching context for this conversation"
 
-		t.Run("Should return only the discovery response", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingExpertStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingExpertStrategyTestingSuite) {
 			// Step 1: conversation is not linked
 			suite.mockAgentContextConversationMappingRequester.EXPECT().
 				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
@@ -329,6 +328,13 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should return only the discovery response", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -360,11 +366,7 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 		contextNotFoundPrompt := "Context not found prompt"
 		contextNotFoundCompletion := "No matching context found"
 
-		t.Run("Should create discovery context then proceed with discovery", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingExpertStrategyBeforeEach(t)
-
+		initSuite := func(suite *WhenComputingExpertStrategyTestingSuite) {
 			suite.mockAgentContextConversationMappingRequester.EXPECT().
 				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
 				Return(nil, &isNotFound, nil)
@@ -403,6 +405,13 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should create discovery context then proceed with discovery", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -434,20 +443,18 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 		unicodeCompletion := "🔄 status update"
 		expectedDecoded := ":arrows_counterclockwise: status update"
 
-		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
-			t.Parallel()
+		storedSystem := &models.AgentContextMessage{
+			Content:        systemPrompt,
+			Author:         "",
+			Role:           enums.AgentContextMessageRoleSystem,
+			Platform:       enums.AgentContextMessagePlatformNone,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-2 * time.Hour),
+		}
 
-			suite := WhenComputingExpertStrategyBeforeEach(t)
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			storedSystem := &models.AgentContextMessage{
-				Content:        systemPrompt,
-				Author:         "",
-				Role:           enums.AgentContextMessageRoleSystem,
-				Platform:       enums.AgentContextMessagePlatformNone,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-2 * time.Hour),
-			}
-
+		initSuite := func(suite *WhenComputingExpertStrategyTestingSuite) {
 			suite.mockAgentContextConversationMappingRequester.EXPECT().
 				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
 				Return(agentContext, &isFound, nil)
@@ -466,13 +473,19 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&unicodeCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should save the assistant content in shortcode form so it matches the conversation broker round-trip", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{
@@ -509,28 +522,26 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 		previousAssistantContent := "status :fire: shipping"
 		newCompletion := "Next turn"
 
-		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
-			t.Parallel()
+		storedSystem := &models.AgentContextMessage{
+			Content:        systemPrompt,
+			Author:         "",
+			Role:           enums.AgentContextMessageRoleSystem,
+			Platform:       enums.AgentContextMessagePlatformNone,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-2 * time.Hour),
+		}
+		storedAssistant := &models.AgentContextMessage{
+			Content:        previousAssistantContent,
+			Author:         agent.EnsDomain,
+			Role:           enums.AgentContextMessageRoleAssistant,
+			Platform:       enums.AgentContextMessagePlatformSlack,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-time.Hour),
+		}
 
-			suite := WhenComputingExpertStrategyBeforeEach(t)
+		var capturedRequest *interfaces.AddMessageToAgentContextRequest
 
-			storedSystem := &models.AgentContextMessage{
-				Content:        systemPrompt,
-				Author:         "",
-				Role:           enums.AgentContextMessageRoleSystem,
-				Platform:       enums.AgentContextMessagePlatformNone,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-2 * time.Hour),
-			}
-			storedAssistant := &models.AgentContextMessage{
-				Content:        previousAssistantContent,
-				Author:         agent.EnsDomain,
-				Role:           enums.AgentContextMessageRoleAssistant,
-				Platform:       enums.AgentContextMessagePlatformSlack,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-time.Hour),
-			}
-
+		initSuite := func(suite *WhenComputingExpertStrategyTestingSuite) {
 			suite.mockAgentContextConversationMappingRequester.EXPECT().
 				GetLinkedAgentContextKeyOfConversation(agentId, conversationId).
 				Return(agentContext, &isFound, nil)
@@ -549,13 +560,19 @@ func TestWhenComputingExpertStrategy(t *testing.T) {
 				ChatCompletion(agentId, gomock.Any()).
 				Return(&newCompletion, nil)
 
-			var capturedRequest *interfaces.AddMessageToAgentContextRequest
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				DoAndReturn(func(request *interfaces.AddMessageToAgentContextRequest) error {
 					capturedRequest = request
 					return nil
 				})
+		}
+
+		t.Run("Should not re-save the replay when content+platform already in stored history", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingExpertStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{

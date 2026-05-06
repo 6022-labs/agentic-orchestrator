@@ -49,12 +49,17 @@ func TestWhenGettingLLMConnectionSetupStatus(t *testing.T) {
 	t.Run("Given error occurs while querying setup status in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		req := &requests.AgentIdRequest{AgentId: uuid.New()}
+
+		initSuite := func(suite *WhenGettingLLMConnectionSetupStatusTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(nil, assert.AnError)
+		}
+
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSetupStatusBeforeEach(t)
-			req := &requests.AgentIdRequest{AgentId: uuid.New()}
-			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(nil, assert.AnError)
+			initSuite(suite)
 
 			_, err := suite.sut.Get(req)
 			assert.Error(t, err)
@@ -64,12 +69,17 @@ func TestWhenGettingLLMConnectionSetupStatus(t *testing.T) {
 	t.Run("Given setup status is not found in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		req := &requests.AgentIdRequest{AgentId: uuid.New()}
+
+		initSuite := func(suite *WhenGettingLLMConnectionSetupStatusTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(nil, nil)
+		}
+
 		t.Run("Should return nil setup status", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSetupStatusBeforeEach(t)
-			req := &requests.AgentIdRequest{AgentId: uuid.New()}
-			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(nil, nil)
+			initSuite(suite)
 
 			resp, err := suite.sut.Get(req)
 
@@ -83,13 +93,18 @@ func TestWhenGettingLLMConnectionSetupStatus(t *testing.T) {
 	t.Run("Given setup status is found in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		req := &requests.AgentIdRequest{AgentId: uuid.New()}
+		status := enums.LLMConnectionSetupStatusEstablished
+
+		initSuite := func(suite *WhenGettingLLMConnectionSetupStatusTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(&status, nil)
+		}
+
 		t.Run("Should return setup status", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingLLMConnectionSetupStatusBeforeEach(t)
-			req := &requests.AgentIdRequest{AgentId: uuid.New()}
-			status := enums.LLMConnectionSetupStatusEstablished
-			suite.llmConnectionRepositoryMock.EXPECT().GetSetupStatusByAgentId(req.AgentId).Return(&status, nil)
+			initSuite(suite)
 
 			resp, err := suite.sut.Get(req)
 

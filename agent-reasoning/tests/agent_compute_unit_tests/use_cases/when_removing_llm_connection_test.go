@@ -54,16 +54,19 @@ func TestWhenRemovingLLMConnection(t *testing.T) {
 	t.Run("Given error occurs while removing llm connection in persistence", func(t *testing.T) {
 		t.Parallel()
 
+		request := &requests.AgentIdRequest{
+			AgentId: uuid.New(),
+		}
+
+		initSuite := func(suite *WhenRemovingLLMConnectionTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().DeleteByAgentId(request.AgentId).Return(assert.AnError)
+		}
+
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRemovingLLMConnectionBeforeEach(t)
-
-			request := &requests.AgentIdRequest{
-				AgentId: uuid.New(),
-			}
-
-			suite.llmConnectionRepositoryMock.EXPECT().DeleteByAgentId(request.AgentId).Return(assert.AnError)
+			initSuite(suite)
 
 			err := suite.sut.Remove(request)
 
@@ -74,16 +77,19 @@ func TestWhenRemovingLLMConnection(t *testing.T) {
 	t.Run("Given llm connection is removed successfully", func(t *testing.T) {
 		t.Parallel()
 
+		request := &requests.AgentIdRequest{
+			AgentId: uuid.New(),
+		}
+
+		initSuite := func(suite *WhenRemovingLLMConnectionTestingSuite) {
+			suite.llmConnectionRepositoryMock.EXPECT().DeleteByAgentId(request.AgentId).Return(nil)
+		}
+
 		t.Run("Should return nil", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRemovingLLMConnectionBeforeEach(t)
-
-			request := &requests.AgentIdRequest{
-				AgentId: uuid.New(),
-			}
-
-			suite.llmConnectionRepositoryMock.EXPECT().DeleteByAgentId(request.AgentId).Return(nil)
+			initSuite(suite)
 
 			err := suite.sut.Remove(request)
 

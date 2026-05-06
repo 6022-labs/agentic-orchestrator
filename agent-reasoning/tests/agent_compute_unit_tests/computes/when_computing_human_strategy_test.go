@@ -109,49 +109,6 @@ func TestWhenComputingHumanStrategy(t *testing.T) {
 			assert.Nil(t, result)
 		})
 
-		t.Run("Should store all messages (union of input + stored) to context", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenComputingHumanStrategyBeforeEach(t)
-
-			storedMessage := &models.AgentContextMessage{
-				Content:        "Previously stored message",
-				Author:         "other.protocol6022.eth",
-				Role:           enums.AgentContextMessageRoleUser,
-				Platform:       enums.AgentContextMessagePlatformSlack,
-				ConversationId: &conversationId,
-				CreatedAt:      time.Now().Add(-time.Hour),
-			}
-
-			suite.mockAgentContextRequester.EXPECT().
-				GetAgentContextByKey(agentId, gomock.Any()).
-				Return(agentContext, &isFound, nil)
-
-			suite.mockAgentContextMessageRequester.EXPECT().
-				GetAgentContextMessages(agentId, contextKey).
-				Return([]*models.AgentContextMessage{storedMessage}, nil)
-
-			suite.mockAgentContextMessageRequester.EXPECT().
-				AddMessagesToAgentContext(gomock.Any()).
-				Return(nil)
-
-			inputs := []*models.AgentContextMessage{
-				{
-					Content:        "New message from human",
-					Author:         "user.protocol6022.eth",
-					Role:           enums.AgentContextMessageRoleUser,
-					Platform:       enums.AgentContextMessagePlatformSlack,
-					ConversationId: &conversationId,
-					CreatedAt:      time.Now(),
-				},
-			}
-
-			result, err := suite.sut.Compute(agent, inputs, computeContext)
-
-			assert.NoError(t, err)
-			assert.Nil(t, result)
-		})
-
 		t.Run("Should return nil completions because human agents do not produce completions", func(t *testing.T) {
 			t.Parallel()
 
@@ -176,18 +133,67 @@ func TestWhenComputingHumanStrategy(t *testing.T) {
 		})
 	})
 
-	t.Run("Given agent context does not exist yet", func(t *testing.T) {
+	t.Run("Given agent context exists with previously stored messages", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should create agent context and proceed", func(t *testing.T) {
+		isFound := true
+		agentContext := &models.AgentContext{Id: agentContextId, Key: contextKey}
+
+		storedMessage := &models.AgentContextMessage{
+			Content:        "Previously stored message",
+			Author:         "other.protocol6022.eth",
+			Role:           enums.AgentContextMessageRoleUser,
+			Platform:       enums.AgentContextMessagePlatformSlack,
+			ConversationId: &conversationId,
+			CreatedAt:      time.Now().Add(-time.Hour),
+		}
+
+		initSuite := func(suite *WhenComputingHumanStrategyTestingSuite) {
+			suite.mockAgentContextRequester.EXPECT().
+				GetAgentContextByKey(agentId, gomock.Any()).
+				Return(agentContext, &isFound, nil)
+
+			suite.mockAgentContextMessageRequester.EXPECT().
+				GetAgentContextMessages(agentId, contextKey).
+				Return([]*models.AgentContextMessage{storedMessage}, nil)
+
+			suite.mockAgentContextMessageRequester.EXPECT().
+				AddMessagesToAgentContext(gomock.Any()).
+				Return(nil)
+		}
+
+		t.Run("Should store all messages (union of input + stored) to context", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenComputingHumanStrategyBeforeEach(t)
+			initSuite(suite)
 
-			isNotFound := false
-			isFound := true
-			agentContext := &models.AgentContext{Id: agentContextId, Key: contextKey}
+			inputs := []*models.AgentContextMessage{
+				{
+					Content:        "New message from human",
+					Author:         "user.protocol6022.eth",
+					Role:           enums.AgentContextMessageRoleUser,
+					Platform:       enums.AgentContextMessagePlatformSlack,
+					ConversationId: &conversationId,
+					CreatedAt:      time.Now(),
+				},
+			}
 
+			result, err := suite.sut.Compute(agent, inputs, computeContext)
+
+			assert.NoError(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given agent context does not exist yet", func(t *testing.T) {
+		t.Parallel()
+
+		isNotFound := false
+		isFound := true
+		agentContext := &models.AgentContext{Id: agentContextId, Key: contextKey}
+
+		initSuite := func(suite *WhenComputingHumanStrategyTestingSuite) {
 			suite.mockAgentContextRequester.EXPECT().
 				GetAgentContextByKey(agentId, gomock.Any()).
 				Return(nil, &isNotFound, nil)
@@ -207,6 +213,13 @@ func TestWhenComputingHumanStrategy(t *testing.T) {
 			suite.mockAgentContextMessageRequester.EXPECT().
 				AddMessagesToAgentContext(gomock.Any()).
 				Return(nil)
+		}
+
+		t.Run("Should create agent context and proceed", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenComputingHumanStrategyBeforeEach(t)
+			initSuite(suite)
 
 			inputs := []*models.AgentContextMessage{
 				{

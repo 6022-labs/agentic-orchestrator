@@ -101,18 +101,22 @@ func TestWhenListingMCPConnection(t *testing.T) {
 	t.Run("Given error occurs while searching MCP connections in repository", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
+		agentId := uuid.New()
+		request := generateValidListMCPConnectionsRequest()
+		request.AgentId = &agentId
 
-			suite := WhenListingMCPConnectionBeforeEach(t)
-			agentId := uuid.New()
-			request := generateValidListMCPConnectionsRequest()
-			request.AgentId = &agentId
-
+		initSuite := func(suite *WhenListingMCPConnectionTestingSuite) {
 			suite.mcpConnectionRepositoryMock.
 				EXPECT().
 				Search(gomock.Any()).
 				Return(nil, assert.AnError)
+		}
+
+		t.Run("Should return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenListingMCPConnectionBeforeEach(t)
+			initSuite(suite)
 
 			result, err := suite.sut.List(request)
 
@@ -124,18 +128,22 @@ func TestWhenListingMCPConnection(t *testing.T) {
 	t.Run("Given no MCP connections found in repository", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return empty result", func(t *testing.T) {
-			t.Parallel()
+		agentId := uuid.New()
+		request := generateValidListMCPConnectionsRequest()
+		request.AgentId = &agentId
 
-			suite := WhenListingMCPConnectionBeforeEach(t)
-			agentId := uuid.New()
-			request := generateValidListMCPConnectionsRequest()
-			request.AgentId = &agentId
-
+		initSuite := func(suite *WhenListingMCPConnectionTestingSuite) {
 			suite.mcpConnectionRepositoryMock.
 				EXPECT().
 				Search(gomock.Any()).
 				Return([]*models.MCPConnection{}, nil)
+		}
+
+		t.Run("Should return empty result", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenListingMCPConnectionBeforeEach(t)
+			initSuite(suite)
 
 			response, err := suite.sut.List(request)
 
@@ -147,19 +155,24 @@ func TestWhenListingMCPConnection(t *testing.T) {
 	t.Run("Given MCP connections found in repository", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return mapped results", func(t *testing.T) {
-			t.Parallel()
+		agentId := uuid.New()
+		request := generateValidListMCPConnectionsRequest()
+		request.AgentId = &agentId
 
-			suite := WhenListingMCPConnectionBeforeEach(t)
-			agentId := uuid.New()
-			request := generateValidListMCPConnectionsRequest()
-			request.AgentId = &agentId
+		conn := model_builders.NewMCPConnectionBuilder().Build()
 
-			conn := model_builders.NewMCPConnectionBuilder().Build()
+		initSuite := func(suite *WhenListingMCPConnectionTestingSuite) {
 			suite.mcpConnectionRepositoryMock.
 				EXPECT().
 				Search(gomock.Any()).
 				Return([]*models.MCPConnection{conn}, nil)
+		}
+
+		t.Run("Should return mapped results", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenListingMCPConnectionBeforeEach(t)
+			initSuite(suite)
 
 			response, err := suite.sut.List(request)
 
