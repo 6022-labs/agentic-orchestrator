@@ -15,7 +15,6 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
 			"host.api_port":         9201,
-			"host.app_name":         "broker",
 			"host.body_limit_bytes": 1024,
 		}, "."), nil)
 
@@ -23,7 +22,6 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, 9201, settings.ApiPort)
-		assert.Equal(t, "broker", settings.AppName)
 		assert.Equal(t, 1024, settings.BodyLimitBytes)
 	})
 }

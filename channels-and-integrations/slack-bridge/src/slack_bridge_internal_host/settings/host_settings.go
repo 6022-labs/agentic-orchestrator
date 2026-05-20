@@ -1,8 +1,6 @@
 package settings
 
 import (
-	"strings"
-
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
@@ -10,9 +8,8 @@ import (
 const HostSettingsKey = "host"
 
 type HostSettings struct {
-	ApiPort        int    `koanf:"api_port"`
-	AppName        string `koanf:"app_name"`
-	BodyLimitBytes int    `koanf:"body_limit_bytes"`
+	ApiPort        int `koanf:"api_port"`
+	BodyLimitBytes int `koanf:"body_limit_bytes"`
 }
 
 func NewHostSettings(logger *zap.Logger, k *koanf.Koanf) *HostSettings {
@@ -24,15 +21,9 @@ func NewHostSettings(logger *zap.Logger, k *koanf.Koanf) *HostSettings {
 		logger.Fatal("failed to unmarshal host settings", zap.Error(err))
 	}
 
-	settings.AppName = strings.TrimSpace(settings.AppName)
-
 	if settings.ApiPort <= 0 {
 		logger.Warn("invalid host.api_port value, defaulting to 3000")
 		settings.ApiPort = 3000
-	}
-
-	if len(strings.TrimSpace(settings.AppName)) == 0 {
-		logger.Fatal("please set your host.app_name value in your configuration")
 	}
 
 	if settings.BodyLimitBytes <= 0 {

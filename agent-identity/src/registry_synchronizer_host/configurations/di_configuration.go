@@ -6,7 +6,6 @@ import (
 	registry_common_vault_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_vault/configurations"
 	registry_synchronizer_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/configurations"
 	registry_synchronizer_blockchain_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/configurations"
-	registry_synchronizer_host_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_host/settings"
 	registry_synchronizer_listeners_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/configurations"
 
 	"github.com/knadh/koanf/v2"
@@ -16,7 +15,6 @@ import (
 func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	container := dig.New()
 
-	container.Provide(registry_synchronizer_host_settings.NewHostSettings)
 	container.Provide(func() *koanf.Koanf {
 		return config
 	})

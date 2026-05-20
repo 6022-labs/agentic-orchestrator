@@ -8,7 +8,6 @@ services:
       - "5000:5000"
     environment:
       - API_PORT=5000
-      - APP_NAME=AgenticAI-Orchestrator-API-Core
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
@@ -67,7 +66,6 @@ services:
       - USE_API=true
       - USE_LISTENERS=true
       - API_PORT=3000
-      - APP_NAME=AgenticAI-Orchestrator-SC-Sync-Watcher
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - CHAIN_ID=80002
       - AGENT_COLLECTION_SIGNING_DOMAIN=AgentCollection
@@ -99,7 +97,6 @@ services:
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=5000
-      - APP_NAME=AgenticAI-Orchestrator-Agent-Reasoning-Compute-API
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
       - VAULT_KV_V1_MOUNT_PATH=secret
@@ -127,7 +124,6 @@ services:
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=5000
-      - APP_NAME=AgenticAI-Orchestrator-Agent-Database-Connector-API
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
       - VAULT_KV_V1_MOUNT_PATH=secret
@@ -149,7 +145,6 @@ services:
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=5000
-      - APP_NAME=AgenticAI-Orchestrator-Agent-Identity-Registry-API
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
       - VAULT_KV_V1_MOUNT_PATH=secret
@@ -178,7 +173,6 @@ services:
       - "5004:5000"
     environment:
       - API_PORT=5000
-      - APP_NAME=Orchestrator-Images-Generator
       - IMAGE_GENERATION_IMAGE_MARK_PATH=/images/nft_mark.png
     networks:
       orchestrator-network:
@@ -193,7 +187,6 @@ services:
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=3000
-      - APP_NAME=AgenticAI-Orchestrator-API-Core
       - REDIS_HOST=redis:6379
       - REDIS_DB=0
       - REDIS_PASSWORD=
@@ -230,7 +223,6 @@ services:
     environment:
       - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - API_PORT=3000
-      - APP_NAME=AgenticAI-Orchestrator-API-Core
       - REDIS_HOST=redis:6379
       - REDIS_DB=0
       - REDIS_PASSWORD=

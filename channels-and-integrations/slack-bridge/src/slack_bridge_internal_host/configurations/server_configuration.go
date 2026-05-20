@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const appName = "SlackBridge-Internal"
+
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
 
@@ -23,7 +25,7 @@ func ConfigureServer(container *dig.Container) {
 
 func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   hostSettings.AppName,
+		AppName:   appName,
 		Network:   "tcp",
 		BodyLimit: hostSettings.BodyLimitBytes,
 	})

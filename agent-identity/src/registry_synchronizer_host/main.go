@@ -3,10 +3,11 @@ package main
 import (
 	common_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_host/configurations"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_host/settings"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
+
+const appName = "AgentIdentity-RegistrySynchronizer"
 
 // @title Agent Identity Registry API
 // @version 1.0
@@ -30,10 +31,9 @@ func main() {
 
 	err = container.Invoke(func(
 		logger *zap.Logger,
-		hostSettings *settings.HostSettings,
 		synchronizer *configurations.Synchronizer,
 	) error {
-		logger.Info("Starting synchronizer application", zap.String("name", hostSettings.AppName))
+		logger.Info("Starting synchronizer application", zap.String("name", appName))
 
 		return synchronizer.Start()
 	})

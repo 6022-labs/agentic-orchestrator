@@ -15,7 +15,6 @@ func TestWhenLoadingImagesGeneratorHostSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
 			"host.api_port":         8001,
-			"host.app_name":         "images-generator",
 			"host.body_limit_bytes": 2048,
 		}, "."), nil)
 
@@ -23,7 +22,6 @@ func TestWhenLoadingImagesGeneratorHostSettings(t *testing.T) {
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, 8001, settings.ApiPort)
-		assert.Equal(t, "images-generator", settings.AppName)
 		assert.Equal(t, 2048, settings.BodyLimitBytes)
 	})
 }

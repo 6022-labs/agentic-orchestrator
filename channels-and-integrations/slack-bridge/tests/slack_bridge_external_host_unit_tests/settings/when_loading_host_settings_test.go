@@ -15,7 +15,6 @@ func TestWhenLoadingSlackBridgeExternalHostSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
 			"host.api_port":         7001,
-			"host.app_name":         "slack-bridge-external",
 			"host.body_limit_bytes": 1024,
 		}, "."), nil)
 
@@ -23,7 +22,6 @@ func TestWhenLoadingSlackBridgeExternalHostSettings(t *testing.T) {
 
 		assert.NotNil(t, settings)
 		assert.Equal(t, 7001, settings.ApiPort)
-		assert.Equal(t, "slack-bridge-external", settings.AppName)
 		assert.Equal(t, 1024, settings.BodyLimitBytes)
 	})
 }
