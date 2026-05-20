@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
 import { extractValidationError } from "@/lib/api-errors";
 import { createAgentFirstStep } from "@/queries/api/agent.queries";
 import { useAgentDashboard } from "../contexts/agent-dashboard-context";
@@ -31,7 +30,6 @@ export default function CreateAgentFirstStepDialog() {
     setAccessibleRoles,
   } = useCreateAgentFirstStepDialog();
 
-  const { jwt } = useAuth();
   const { fetchInternalAgents } = useAgentDashboard();
 
   const onFormComplete = async (
@@ -40,7 +38,7 @@ export default function CreateAgentFirstStepDialog() {
     FormCompletionResult<keyof CreateAgentFirstStepFormSchemaType>
   > => {
     try {
-      const response = await createAgentFirstStep(jwt!, values);
+      const response = await createAgentFirstStep(values);
       if (response.status !== 200) {
         throw new Error("Received non-200 response");
       }

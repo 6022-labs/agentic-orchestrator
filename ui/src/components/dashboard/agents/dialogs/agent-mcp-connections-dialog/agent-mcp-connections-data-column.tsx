@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { AuthContext } from "@/contexts/auth-context";
 import { MCPConnection } from "@/models/mcp-connection";
 import { removeAgentMCPConnection } from "@/queries/api/agent.queries";
 import { AgentMCPConnectionsDialogContext } from "../../contexts/agent-mcp-connections-dialog-context";
@@ -83,44 +82,33 @@ export const agentMCPConnectionsColumns: ColumnDef<MCPConnection>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <AuthContext.Consumer>
-                {({ jwt }) => {
-                  return (
-                    <>
-                      <DropdownMenuSeparator />
-                      <AgentMCPConnectionsDialogContext.Consumer>
-                        {({ agent, fetchMCPConnections }) => (
-                          <DropdownMenuItem
-                            onClick={async () => {
-                              try {
-                                await removeAgentMCPConnection(
-                                  jwt!,
-                                  agent!.collectionAddress,
-                                  agent!.collectionTokenId!,
-                                  row.original.id
-                                );
+              <DropdownMenuSeparator />
+              <AgentMCPConnectionsDialogContext.Consumer>
+                {({ agent, fetchMCPConnections }) => (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        await removeAgentMCPConnection(
+                          agent!.collectionAddress,
+                          agent!.collectionTokenId!,
+                          row.original.id
+                        );
 
-                                toast.success(
-                                  "MCP connection removed successfully."
-                                );
-                                await fetchMCPConnections();
-                              } catch (error) {
-                                toast.error("Error removing MCP connection.");
-                                console.error(
-                                  "Error removing MCP connection:",
-                                  error
-                                );
-                              }
-                            }}
-                          >
-                            Remove
-                          </DropdownMenuItem>
-                        )}
-                      </AgentMCPConnectionsDialogContext.Consumer>
-                    </>
-                  );
-                }}
-              </AuthContext.Consumer>
+                        toast.success("MCP connection removed successfully.");
+                        await fetchMCPConnections();
+                      } catch (error) {
+                        toast.error("Error removing MCP connection.");
+                        console.error(
+                          "Error removing MCP connection:",
+                          error
+                        );
+                      }
+                    }}
+                  >
+                    Remove
+                  </DropdownMenuItem>
+                )}
+              </AgentMCPConnectionsDialogContext.Consumer>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

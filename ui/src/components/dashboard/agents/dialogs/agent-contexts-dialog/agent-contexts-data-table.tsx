@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
 import { useAgentContextsDialogContext } from "../../contexts/agent-contexts-dialog-context";
 import {
   ColumnDef,
@@ -36,7 +35,6 @@ export function AgentContextsDataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const { contextKeys, contextKeysPagination, fetchContextKeys } =
     useAgentContextsDialogContext();
-  const { jwt } = useAuth();
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
@@ -61,7 +59,7 @@ export function AgentContextsDataTable<TData, TValue>({
       sortBy ? sortDirection : undefined
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jwt, sorting, searchQuery]);
+  }, [sorting, searchQuery]);
 
   const onNextPage = () => {
     const maxPage = Math.ceil(

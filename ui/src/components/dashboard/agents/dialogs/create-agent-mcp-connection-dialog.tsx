@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import { createAgentMCPConnection } from "@/queries/api/agent.queries";
 import AddAgentMCPConnectionForm from "../forms/create-agent-mcp-connection-form";
 import { useAgentMCPConnectionsDialogContext } from "../contexts/agent-mcp-connections-dialog-context";
@@ -16,7 +15,6 @@ import { extractValidationError } from "@/lib/api-errors";
 import type { FormCompletionResult } from "@/models/api/validation-error";
 
 export default function CreateAgentMCPConnectionDialog() {
-  const { jwt } = useAuth();
   const {
     agent,
     fetchMCPConnections,
@@ -31,7 +29,6 @@ export default function CreateAgentMCPConnectionDialog() {
   > => {
     try {
       const response = await createAgentMCPConnection(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         values

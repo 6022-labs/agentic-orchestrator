@@ -25,7 +25,7 @@ export const AgentCollectionsProvider: React.FC<{
   const loadCollections = async () => {
     if (!jwt) return;
     try {
-      const response = await getAgentCollections(jwt);
+      const response = await getAgentCollections();
       setCollections(response.data);
     } catch (error) {
       console.error("Failed to load agent collections:", error);

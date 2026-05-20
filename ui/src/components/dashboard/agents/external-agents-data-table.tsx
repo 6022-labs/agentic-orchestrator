@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
 import { useAgentDashboard } from "./contexts/agent-dashboard-context";
 import {
   ColumnDef,
@@ -34,7 +33,6 @@ export function ExternalAgentsDataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const { externalAgents, externalPagination, fetchExternalAgents } =
     useAgentDashboard();
-  const { jwt } = useAuth();
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
@@ -57,7 +55,7 @@ export function ExternalAgentsDataTable<TData, TValue>({
       sortBy ? sortDirection : undefined
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jwt, sorting]);
+  }, [sorting]);
 
   const onNextPage = () => {
     const maxPage = Math.ceil(

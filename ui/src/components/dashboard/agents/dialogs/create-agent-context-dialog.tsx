@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import { createAgentContext } from "@/queries/api/agent.queries";
 import CreateAgentContextForm from "../forms/create-agent-context-form";
 import { useCreateAgentContextDialogContext } from "../contexts/create-agent-context-dialog-context";
@@ -16,7 +15,6 @@ import { extractValidationError } from "@/lib/api-errors";
 import type { FormCompletionResult } from "@/models/api/validation-error";
 
 export default function CreateAgentContextDialog() {
-  const { jwt } = useAuth();
   const { isOpen, setIsOpen } = useCreateAgentContextDialogContext();
   const { agent, setIsOpen: setAgentContextsDialogOpen } =
     useAgentContextsDialogContext();
@@ -26,7 +24,6 @@ export default function CreateAgentContextDialog() {
   ): Promise<FormCompletionResult<keyof CreateAgentContextFormSchemaType>> => {
     try {
       const response = await createAgentContext(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         values.key

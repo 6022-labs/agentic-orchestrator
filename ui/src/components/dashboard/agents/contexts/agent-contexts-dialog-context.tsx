@@ -2,7 +2,6 @@
 import React from "react";
 import { toast } from "sonner";
 import { Agent } from "@/models/agent";
-import { useAuth } from "@/contexts/auth-context";
 import { Pagination } from "@/models/pagination";
 import {
   listAgentContextKeys,
@@ -21,7 +20,7 @@ type AgentContextsDialogContextType = {
     search?: string,
     elementsPerPage?: number,
     sortBy?: string,
-    sortDirection?: "asc" | "desc"
+    sortDirection?: "asc" | "desc",
   ) => Promise<void>;
   contextKeysPagination: Pagination;
 };
@@ -41,8 +40,6 @@ export const AgentContextsDialogContext =
 export const AgentContextsDialogContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { jwt } = useAuth();
-
   const [isOpen, setIsOpen] = React.useState(false);
   const [agent, setAgent] = React.useState<Agent | undefined>(undefined);
   const [contextKeys, setContextKeys] = React.useState<string[]>([]);
@@ -59,16 +56,15 @@ export const AgentContextsDialogContextProvider: React.FC<{
     search?: string,
     elementsPerPage?: number,
     sortBy?: string,
-    sortDirection?: "asc" | "desc"
+    sortDirection?: "asc" | "desc",
   ) => {
-    if (!jwt || !agent) return;
+    if (!agent) return;
 
     setIsLoading(true);
 
     try {
       // Fetch the latest context keys for the agent
       const response = await listAgentContextKeys(
-        jwt!,
         agent.collectionAddress,
         agent.collectionTokenId!,
         {
@@ -77,12 +73,12 @@ export const AgentContextsDialogContextProvider: React.FC<{
           elementsPerPage,
           sortBy,
           sortDirection,
-        }
+        },
       );
 
       if (response.status > 299) {
         throw new Error(
-          `Failed to fetch context keys for agent ${agent.id} with status ${response.status}`
+          `Failed to fetch context keys for agent ${agent.id} with status ${response.status}`,
         );
       }
 
@@ -113,11 +109,11 @@ export const AgentContextsDialogContextProvider: React.FC<{
   };
 
   React.useEffect(() => {
-    if (isOpen && agent && jwt) {
+    if (isOpen && agent) {
       fetchContextKeys();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, agent, jwt]);
+  }, [isOpen, agent]);
 
   return (
     <AgentContextsDialogContext.Provider
@@ -142,7 +138,7 @@ export const useAgentContextsDialogContext = () => {
 
   if (!context) {
     throw new Error(
-      "useAgentContextsDialogContext must be used within an AgentContextsDialogContextProvider"
+      "useAgentContextsDialogContext must be used within an AgentContextsDialogContextProvider",
     );
   }
 

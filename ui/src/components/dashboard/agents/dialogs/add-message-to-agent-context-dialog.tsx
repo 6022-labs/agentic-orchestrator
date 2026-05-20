@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import { addMessageToContext } from "@/queries/api/agent.queries";
 import AddMessageToAgentContextForm from "../forms/add-message-to-agent-context-form";
 import { useAgentContextsDialogContext } from "../contexts/agent-contexts-dialog-context";
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 
 export default function AddMessageToAgentContextDialog() {
-  const { jwt } = useAuth();
   const { isOpen, setIsOpen, context } =
     useAddMessageToAgentContextDialogContext();
   const { agent, setIsOpen: setAgentContextsDialogOpen } =
@@ -29,7 +27,6 @@ export default function AddMessageToAgentContextDialog() {
   > => {
     try {
       const response = await addMessageToContext(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         context,

@@ -15,7 +15,6 @@ type MintAgentResult = {
 
 export async function mintAgent(
   agent: Agent,
-  jwt: string,
   eip1193Provider: Eip1193Provider
 ): Promise<MintAgentResult> {
   const count = await moderatorCount(agent.collectionAddress, eip1193Provider);
@@ -25,7 +24,7 @@ export async function mintAgent(
     eip1193Provider
   );
 
-  const response = await createAgentSecondStep(jwt!, agent!.id);
+  const response = await createAgentSecondStep(agent!.id);
 
   if (response.status !== 200) {
     throw new Error(

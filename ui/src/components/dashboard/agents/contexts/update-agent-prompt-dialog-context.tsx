@@ -2,7 +2,6 @@
 import React from "react";
 import { toast } from "sonner";
 import { Agent } from "@/models/agent";
-import { useAuth } from "@/contexts/auth-context";
 import { getAgentPromptTemplate } from "@/queries/api/agent.queries";
 import {
   AgentPromptTemplateKey,
@@ -35,7 +34,6 @@ export const UpdateAgentPromptDialogContext =
 export const UpdateAgentPromptDialogContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { jwt } = useAuth();
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [agent, setAgent] = React.useState<Agent | undefined>(undefined);
@@ -97,7 +95,6 @@ export const UpdateAgentPromptDialogContextProvider: React.FC<{
     if (!agent) return;
     try {
       const response = await getAgentPromptTemplate(
-        jwt!,
         agent.collectionAddress,
         agent.collectionTokenId!,
         key

@@ -241,7 +241,7 @@ export const internalAgentsColumns: ColumnDef<Agent>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <AuthContext.Consumer>
-                {({ user, jwt }) => {
+                {({ user }) => {
                   return (
                     <>
                       {row.original.collectionTokenId ? (
@@ -383,7 +383,6 @@ export const internalAgentsColumns: ColumnDef<Agent>[] = [
                                       onClick={async () => {
                                         try {
                                           await setupAgentDatabaseSettingsSecondStep(
-                                            jwt!,
                                             row.original.collectionAddress,
                                             row.original.collectionTokenId!
                                           );
@@ -459,7 +458,6 @@ export const internalAgentsColumns: ColumnDef<Agent>[] = [
                                             try {
                                               const result = await mintAgent(
                                                 row.original,
-                                                jwt!,
                                                 wallet!
                                               );
 

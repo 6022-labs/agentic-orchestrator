@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import { extractAmazonPlatformRegionFromUrl } from "@/lib/utils";
 import { setupAgentLLMSettings } from "@/queries/api/agent.queries";
 import { useAgentDashboard } from "../contexts/agent-dashboard-context";
@@ -22,7 +21,6 @@ import { extractValidationError } from "@/lib/api-errors";
 import type { FormCompletionResult } from "@/models/api/validation-error";
 
 export default function SetupAgentLLMSettingsDialog() {
-  const { jwt } = useAuth();
   const {
     agent,
     isOpen,
@@ -41,7 +39,6 @@ export default function SetupAgentLLMSettingsDialog() {
   > => {
     try {
       const response = await setupAgentLLMSettings(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         values

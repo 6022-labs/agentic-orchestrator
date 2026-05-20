@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import { useAgentDashboard } from "../contexts/agent-dashboard-context";
 import { setupAgentDatabaseSettingsFirstStep } from "@/queries/api/agent.queries";
 import SetupAgentDatabaseSettingsForm from "../forms/setup-agent-database-settings-first-step-form";
@@ -17,7 +16,6 @@ import { extractValidationError } from "@/lib/api-errors";
 import type { FormCompletionResult } from "@/models/api/validation-error";
 
 export default function SetupAgentDatabaseSettingsFirstStepDialog() {
-  const { jwt } = useAuth();
   const { fetchInternalAgents } = useAgentDashboard();
   const {
     agent,
@@ -38,7 +36,6 @@ export default function SetupAgentDatabaseSettingsFirstStepDialog() {
   > => {
     try {
       const response = await setupAgentDatabaseSettingsFirstStep(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         values

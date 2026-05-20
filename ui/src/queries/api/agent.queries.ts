@@ -16,27 +16,17 @@ export type ListAgentsResponse = {
   agents: Agent[];
 };
 
-export const listAgents = async (
-  jwt: string,
-  params: {
-    page?: number;
-    elementsPerPage?: number;
-    isInternal?: boolean;
-    sortBy?: string;
-    sortDirection?: "asc" | "desc";
-  }
-): Promise<AxiosResponse<ListAgentsResponse, any>> => {
-  return await axios.get(`/agents`, {
-    params,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+export const listAgents = async (params: {
+  page?: number;
+  elementsPerPage?: number;
+  isInternal?: boolean;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+}): Promise<AxiosResponse<ListAgentsResponse, any>> => {
+  return await axios.get(`/agents`, { params });
 };
 
 export const createAgentFirstStep = async (
-  jwt: string,
   body: CreateAgentFirstStepFormSchemaType
 ) => {
   const formData = new FormData();
@@ -47,43 +37,25 @@ export const createAgentFirstStep = async (
   return await axios.post(`/agent/create/first-step`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${jwt}`,
     },
   });
 };
 
-export const createAgentSecondStep = async (jwt: string, agentId: string) => {
-  return await axios.post(
-    `/agent/create/second-step`,
-    { agentId },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
+export const createAgentSecondStep = async (agentId: string) => {
+  return await axios.post(`/agent/create/second-step`, { agentId });
 };
 
 export const getAgentPromptTemplate = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   key: string
 ) => {
   return await axios.get(
-    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/prompt-template/${key}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/prompt-template/${key}`
   );
 };
 
 export const saveAgentPromptTemplate = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   key: AgentPromptTemplateKey,
@@ -91,13 +63,7 @@ export const saveAgentPromptTemplate = async (
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/prompt-template/${key}`,
-    { content },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    { content }
   );
 };
 
@@ -109,7 +75,6 @@ export type ListAgentContextKeysResponse = {
 };
 
 export const listAgentContextKeys = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   params: {
@@ -122,36 +87,22 @@ export const listAgentContextKeys = async (
 ): Promise<AxiosResponse<ListAgentContextKeysResponse, any>> => {
   return await axios.get(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/contexts/keys`,
-    {
-      params,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    { params }
   );
 };
 
 export const createAgentContext = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   key: string
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/context`,
-    { key },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    { key }
   );
 };
 
 export const addMessageToContext = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   contextKey: string,
@@ -160,87 +111,52 @@ export const addMessageToContext = async (
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/context/${contextKey}/message`,
-    { message, role },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    { message, role }
   );
 };
 
 export const setupAgentLLMSettings = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   body: SetupAgentLLMSettingsFormSchemaType
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/llm/settings`,
-    body,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    body
   );
 };
 
 export const setupAgentDatabaseSettingsFirstStep = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   body: SetupAgentDatabaseSettingsFirstStepFormSchemaType
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/database/settings/first-step`,
-    body,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    body
   );
 };
 
 export const setupAgentDatabaseSettingsSecondStep = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number
 ) => {
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/database/settings/second-step`,
-    null,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    null
   );
 };
 
 export const getAgentLLMSettings = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number
 ) => {
   return await axios.get(
-    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/llm/settings`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/llm/settings`
   );
 };
 
 export const createAgentMCPConnection = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   params: CreateAgentMCPConnectionFormSchemaType
@@ -261,30 +177,17 @@ export const createAgentMCPConnection = async (
 
   return await axios.post(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/mcp/connection`,
-    body,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    body
   );
 };
 
 export const removeAgentMCPConnection = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   mcpConnectionId: string
 ) => {
   return await axios.delete(
-    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/mcp/connection/${mcpConnectionId}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/mcp/connection/${mcpConnectionId}`
   );
 };
 
@@ -296,7 +199,6 @@ export type ListAgentMCPConnectionsResponse = {
 };
 
 export const listAgentMCPConnections = async (
-  jwt: string,
   agentCollectionAddress: string,
   agentCollectionTokenId: number,
   params: {
@@ -309,12 +211,6 @@ export const listAgentMCPConnections = async (
 ): Promise<AxiosResponse<ListAgentMCPConnectionsResponse, any>> => {
   return await axios.get(
     `/agent/${agentCollectionAddress}/${agentCollectionTokenId}/mcp/connections`,
-    {
-      params,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
+    { params }
   );
 };

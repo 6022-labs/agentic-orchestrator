@@ -2,7 +2,6 @@
 import React from "react";
 import { Agent } from "@/models/agent";
 import { Pagination } from "@/models/pagination";
-import { useAuth } from "@/contexts/auth-context";
 import { listAgents, ListAgentsResponse } from "@/queries/api/agent.queries";
 
 type AgentDashboardContextType = {
@@ -37,7 +36,6 @@ export const AgentDashboardContext =
 export const AgentDashboardContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { jwt } = useAuth();
   const [internalAgents, setInternalAgents] = React.useState<Agent[]>([]);
   const [externalAgents, setExternalAgents] = React.useState<Agent[]>([]);
 
@@ -61,9 +59,7 @@ export const AgentDashboardContextProvider: React.FC<{
     sortBy?: string,
     sortDirection?: "asc" | "desc"
   ) => {
-    if (!jwt) return;
-
-    const response = await listAgents(jwt, {
+    const response = await listAgents({
       page,
       elementsPerPage,
       isInternal: true,
@@ -92,9 +88,7 @@ export const AgentDashboardContextProvider: React.FC<{
     sortBy?: string,
     sortDirection?: "asc" | "desc"
   ) => {
-    if (!jwt) return;
-
-    const response = await listAgents(jwt, {
+    const response = await listAgents({
       page,
       elementsPerPage,
       isInternal: false,
@@ -122,7 +116,7 @@ export const AgentDashboardContextProvider: React.FC<{
     setExternalAgents([]);
     setInternalPagination({ page: 1, elementsPerPage: 10, totalElements: 0 });
     setExternalPagination({ page: 1, elementsPerPage: 10, totalElements: 0 });
-  }, [jwt]);
+  }, []);
 
   return (
     <AgentDashboardContext.Provider

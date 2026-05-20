@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/auth-context";
 import UpdateAgentPromptForm from "../forms/update-agent-prompt-form";
 import { saveAgentPromptTemplate } from "@/queries/api/agent.queries";
 import { UpdateAgentPromptFormSchemaType } from "../forms/update-agent-prompt-form/update-agent-prompt-form-schema";
@@ -15,7 +14,6 @@ import { extractValidationError } from "@/lib/api-errors";
 import type { FormCompletionResult } from "@/models/api/validation-error";
 
 export default function UpdateAgentPromptDialog() {
-  const { jwt } = useAuth();
   const {
     agent,
     isOpen,
@@ -32,7 +30,6 @@ export default function UpdateAgentPromptDialog() {
   ): Promise<FormCompletionResult<keyof UpdateAgentPromptFormSchemaType>> => {
     try {
       const response = await saveAgentPromptTemplate(
-        jwt!,
         agent!.collectionAddress,
         agent!.collectionTokenId!,
         values.key,

@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import { Agent } from "@/models/agent";
-import { useAuth } from "@/contexts/auth-context";
 import { getAgentLLMSettings } from "@/queries/api/agent.queries";
 import { AgentBaseLLMSettings } from "@/models/agent-base-llm-settings";
 
@@ -27,7 +26,6 @@ export const SetupAgentLLMSettingsDialogContext =
 export const SetupAgentLLMSettingsDialogContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { jwt } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
   const [agent, setAgent] = React.useState<Agent | undefined>(undefined);
 
@@ -50,7 +48,6 @@ export const SetupAgentLLMSettingsDialogContextProvider: React.FC<{
 
     try {
       const response = await getAgentLLMSettings(
-        jwt!,
         agent.collectionAddress,
         agent.collectionTokenId!
       );

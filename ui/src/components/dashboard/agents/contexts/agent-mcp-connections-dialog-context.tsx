@@ -3,7 +3,6 @@ import React from "react";
 import { toast } from "sonner";
 import { Agent } from "@/models/agent";
 import { Pagination } from "@/models/pagination";
-import { useAuth } from "@/contexts/auth-context";
 import { MCPConnection } from "@/models/mcp-connection";
 import {
   listAgentMCPConnections,
@@ -46,8 +45,6 @@ export const AgentMCPConnectionsDialogContext =
 export const AgentMCPConnectionsDialogContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { jwt } = useAuth();
-
   const [isOpen, setIsOpen] = React.useState(false);
   const [agent, setAgent] = React.useState<Agent | undefined>(undefined);
   const [mcpConnections, setMCPConnections] = React.useState<MCPConnection[]>(
@@ -68,14 +65,13 @@ export const AgentMCPConnectionsDialogContextProvider: React.FC<{
     sortBy?: string,
     sortDirection?: "asc" | "desc"
   ) => {
-    if (!jwt || !agent) return;
+    if (!agent) return;
 
     setIsLoading(true);
 
     try {
       // Fetch the latest MCP connections for the agent
       const response = await listAgentMCPConnections(
-        jwt!,
         agent.collectionAddress,
         agent.collectionTokenId!,
         {

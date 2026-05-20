@@ -1,7 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrowserProvider, Eip1193Provider } from "ethers";
 import { useWallet } from "@/contexts/wallet-provider-context";
@@ -15,8 +14,6 @@ import {
 } from "@/components/ui/card";
 
 export default function VerifyWallet() {
-  const { jwt } = useAuth();
-
   const [searchParams] = useSearchParams();
   const platform = searchParams.get("platform");
   const challenge = searchParams.get("challenge");
@@ -53,8 +50,7 @@ export default function VerifyWallet() {
       const response = await verifyWalletForBridge(
         platform,
         challenge,
-        signature,
-        jwt!
+        signature
       );
 
       if (response.status !== 200) {
@@ -71,7 +67,7 @@ export default function VerifyWallet() {
     } finally {
       setIsProcessing(false);
     }
-  }, [challenge, platform, wallet, jwt]);
+  }, [challenge, platform, wallet]);
 
   return (
     <div className="min-h-svh bg-background flex items-center justify-center p-4">
