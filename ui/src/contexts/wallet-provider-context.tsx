@@ -1,7 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from "react";
+import { toast } from "sonner";
+import { useAuth } from "./auth-context";
 import { Eip1193Provider } from "ethers";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 
 type WalletProviderContextType = {
   wallet: Eip1193Provider | null;
@@ -9,7 +11,7 @@ type WalletProviderContextType = {
 
 export const WalletProviderContext =
   React.createContext<WalletProviderContextType>(
-    {} as WalletProviderContextType
+    {} as WalletProviderContextType,
   );
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -17,6 +19,19 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { walletProvider } = useAppKitProvider("eip155");
   const eip1193Provider = walletProvider as Eip1193Provider;
+  const { address } = useAppKitAccount();
+  const { user, signOut } = useAuth();
+
+  React.useEffect(() => {
+    if (
+      user &&
+      address &&
+      address.toLowerCase() !== user.address.toLowerCase()
+    ) {
+      signOut();
+      toast.info("Wallet account changed. Please sign in again.");
+    }
+  }, [address, user, signOut]);
 
   return (
     <WalletProviderContext.Provider value={{ wallet: eip1193Provider }}>
