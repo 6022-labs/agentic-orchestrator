@@ -1,8 +1,0 @@
-{
-  "label": "Memory",
-  "position": 4,
-  "link": {
-    "type": "generated-index",
-    "description": "Manage memory, context, and knowledge hydration for your 6022 agents."
-  }
-}

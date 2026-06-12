@@ -1,8 +1,0 @@
-{
-  "label": "Orchestrator",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "Configure and manage your 6022 agents through the Web3 orchestrator interface."
-  }
-}

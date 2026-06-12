@@ -1,8 +1,0 @@
-{
-  "label": "Prompting",
-  "position": 3,
-  "link": {
-    "type": "generated-index",
-    "description": "Configure and write effective prompts for your 6022 agents."
-  }
-}
