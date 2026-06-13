@@ -9,8 +9,11 @@ import (
 
 const IPFSSettingsKey = "ipfs"
 
+// IPFSSettings targets a Kubo node's HTTP API. BearerToken (optional) is sent as
+// `Authorization: Bearer <token>` for Kubo's API.Authorizations scheme.
 type IPFSSettings struct {
-	IpfsNodeHttpUrl string `koanf:"node_http_url"`
+	NodeHttpUrl string `koanf:"node_http_url"`
+	BearerToken string `koanf:"bearer_token"`
 }
 
 func NewIPFSSettings(logger *zap.Logger, k *koanf.Koanf) *IPFSSettings {
@@ -19,10 +22,12 @@ func NewIPFSSettings(logger *zap.Logger, k *koanf.Koanf) *IPFSSettings {
 		logger.Fatal("failed to unmarshal ipfs settings", zap.Error(err))
 	}
 
-	settings.IpfsNodeHttpUrl = strings.TrimSpace(settings.IpfsNodeHttpUrl)
-	if len(settings.IpfsNodeHttpUrl) == 0 {
+	settings.NodeHttpUrl = strings.TrimSpace(settings.NodeHttpUrl)
+	if len(settings.NodeHttpUrl) == 0 {
 		logger.Fatal("please set your ipfs.node_http_url value in your configuration")
 	}
+
+	settings.BearerToken = strings.TrimSpace(settings.BearerToken)
 
 	return &settings
 }

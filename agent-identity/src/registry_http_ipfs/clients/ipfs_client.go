@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_http_ipfs/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_http_ipfs/settings"
@@ -30,7 +31,7 @@ type IPFSClient struct {
 	ipfsSettings *settings.IPFSSettings
 }
 
-type newIPFSClientParams struct {
+type NewIPFSClientParams struct {
 	dig.In
 
 	Logger       *zap.Logger
@@ -38,11 +39,18 @@ type newIPFSClientParams struct {
 	HTTPClient   *http.Client `name:"ipfs-http-client"`
 }
 
-func NewIPFSClient(params newIPFSClientParams) *IPFSClient {
+func NewIPFSClient(params NewIPFSClientParams) *IPFSClient {
 	return &IPFSClient{
 		logger:       params.Logger,
 		httpClient:   params.HTTPClient,
 		ipfsSettings: params.IPFSSettings,
+	}
+}
+
+// applyAuth attaches the bearer token when configured (Kubo API.Authorizations).
+func (client *IPFSClient) applyAuth(req *http.Request) {
+	if len(strings.TrimSpace(client.ipfsSettings.BearerToken)) != 0 {
+		req.Header.Set("Authorization", "Bearer "+client.ipfsSettings.BearerToken)
 	}
 }
 
@@ -69,13 +77,14 @@ func (client *IPFSClient) Add(fileBytes []byte, fileName string, params *models.
 			return nil, fmt.Errorf("failed to build query params: %w", err)
 		}
 	}
-	url := fmt.Sprintf("%s%s?%s", client.ipfsSettings.IpfsNodeHttpUrl, IpfsAddPath, queryString)
+	url := fmt.Sprintf("%s%s?%s", client.ipfsSettings.NodeHttpUrl, IpfsAddPath, queryString)
 
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	client.applyAuth(req)
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
@@ -105,12 +114,13 @@ func (client *IPFSClient) RoutingProvideWithoutResponse(params *models.ExternalR
 			return fmt.Errorf("failed to build query params: %w", err)
 		}
 	}
-	url := fmt.Sprintf("%s%s?%s", client.ipfsSettings.IpfsNodeHttpUrl, IpfsRoutingProvidePath, queryString)
+	url := fmt.Sprintf("%s%s?%s", client.ipfsSettings.NodeHttpUrl, IpfsRoutingProvidePath, queryString)
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
+	client.applyAuth(req)
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

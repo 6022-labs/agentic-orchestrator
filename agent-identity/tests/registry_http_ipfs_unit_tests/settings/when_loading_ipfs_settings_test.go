@@ -11,15 +11,59 @@ import (
 )
 
 func TestWhenLoadingIPFSSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured node http url", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"ipfs.node_http_url": "https://ipfs.example.com",
 		}, "."), nil)
 
-		settings := ipfs_settings.NewIPFSSettings(zap.NewNop(), k)
+		t.Run("Should load the url and leave the bearer token empty", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "https://ipfs.example.com", settings.IpfsNodeHttpUrl)
+			result := ipfs_settings.NewIPFSSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, result)
+			assert.Equal(t, "https://ipfs.example.com", result.NodeHttpUrl)
+			assert.Empty(t, result.BearerToken)
+		})
+	})
+
+	t.Run("Given a configured bearer token", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs.node_http_url": "https://ipfs.example.com",
+			"ipfs.bearer_token":  "  secret-token123  ",
+		}, "."), nil)
+
+		t.Run("Should load and trim the bearer token", func(t *testing.T) {
+			t.Parallel()
+
+			result := ipfs_settings.NewIPFSSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "secret-token123", result.BearerToken)
+		})
+	})
+
+	t.Run("Given a url padded with whitespace", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"ipfs.node_http_url": "  http://127.0.0.1:5001  ",
+		}, "."), nil)
+
+		t.Run("Should trim it", func(t *testing.T) {
+			t.Parallel()
+
+			result := ipfs_settings.NewIPFSSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "http://127.0.0.1:5001", result.NodeHttpUrl)
+		})
 	})
 }
