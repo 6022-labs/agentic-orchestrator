@@ -1,0 +1,35 @@
+{
+  "_comment": "Well-known $6022 ERC-20 token addresses per EVM chain id, resolved at startup from blockchain.chain_id. Add the deployed token address per chain and rebuild.",
+  "tokens": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "address": "0xCDB1DDf9EeA7614961568F2db19e69645Dd708f5"
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "address": "0x26adaf578361953e8F1aC86D3e4Ca153493af5cB"
+    },
+    {
+      "chainId": 11155111,
+      "name": "ethereum-sepolia",
+      "address": "0x349f760fe5C407829e931B3d53D1e2a5f4C69848"
+    },
+    {
+      "chainId": 84532,
+      "name": "base-sepolia",
+      "address": "0xc8183a40deDD4537aC106cc5dd87A2356b03c6c2"
+    },
+    {
+      "chainId": 5115,
+      "name": "citrea-testnet",
+      "address": "0xf8100FecD5A9F5fAd8F39863B33Be281cD4a13B1"
+    },
+    {
+      "chainId": 99999,
+      "name": "adi-testnet",
+      "address": "0x349f760fe5C407829e931B3d53D1e2a5f4C69848"
+    }
+  ]
+}

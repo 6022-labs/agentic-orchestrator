@@ -1,0 +1,15 @@
+{
+  "_comment": "Well-known AgentCollectionsManager contract addresses per EVM chain id, resolved at startup from blockchain.chain_id. Add the deployed address per chain and rebuild.",
+  "managers": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "address": "0xA39dC43bCAf07C142FF230cC73A8229347287958"
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "address": "0x2e0A2C00601F7DCa8B4b7ae05A5fd27bb46080d3"
+    }
+  ]
+}
