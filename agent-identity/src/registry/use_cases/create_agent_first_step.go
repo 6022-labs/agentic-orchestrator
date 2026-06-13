@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"time"
 
 	registry_errors "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/services/interfaces"
@@ -29,7 +30,7 @@ type CreateAgentFirstStep struct {
 	agentRepository                repositories.AgentRepositoryInterface
 	token6022Requester             interfaces.Token6022RequesterInterface
 	agentPrivateKeyStorage         interfaces.AgentPrivateKeyStorageInterface
-	imagesGeneratorRequester       interfaces.ImagesGeneratorRequesterInterface
+	generateAgentImages            interfaces.GenerateAgentImagesInterface
 	agentCollectionRepository      repositories.AgentCollectionRepositoryInterface
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface
 }
@@ -40,7 +41,7 @@ func NewCreateAgentFirstStep(
 	agentRepository repositories.AgentRepositoryInterface,
 	token6022Requester interfaces.Token6022RequesterInterface,
 	agentPrivateKeyStorage interfaces.AgentPrivateKeyStorageInterface,
-	imagesGeneratorRequester interfaces.ImagesGeneratorRequesterInterface,
+	generateAgentImages interfaces.GenerateAgentImagesInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *CreateAgentFirstStep {
@@ -50,7 +51,7 @@ func NewCreateAgentFirstStep(
 		ipfsFileStorage:                ipfsFileStorage,
 		token6022Requester:             token6022Requester,
 		agentPrivateKeyStorage:         agentPrivateKeyStorage,
-		imagesGeneratorRequester:       imagesGeneratorRequester,
+		generateAgentImages:            generateAgentImages,
 		agentCollectionRepository:      agentCollectionRepository,
 		decentralizedDomainNameBuilder: decentralizedDomainNameBuilder,
 	}
@@ -151,7 +152,7 @@ func (c *CreateAgentFirstStep) generateImage(agent *models.Agent, creator common
 		return nil, fmt.Errorf("failed to compute number of stars: %w", err)
 	}
 
-	imageBytes, err := c.imagesGeneratorRequester.GenerateImages(&interfaces.GenerateImagesRequests{
+	imageBytes, err := c.generateAgentImages.Generate(interfaces.GenerateImageParams{
 		Wallets:           []string{agent.WalletAddress},
 		Name:              agent.Name,
 		EnsDomain:         agent.EnsDomain,
@@ -160,6 +161,7 @@ func (c *CreateAgentFirstStep) generateImage(agent *models.Agent, creator common
 		BaseImageMimeType: image.Header.Get("Content-Type"),
 		Stars:             *stars,
 		Creator:           creator.Hex(),
+		CreatedAt:         time.Now(),
 		OriginEnsDomain:   nil,
 		OriginGeneration:  nil,
 	})

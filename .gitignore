@@ -125,3 +125,6 @@ worktrees/
 
 ### Local refactor scratch ###
 PLAN.md
+
+### Generated agent image previews (go generate on the image tests) ###
+tmp/

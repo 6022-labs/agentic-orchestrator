@@ -7,7 +7,6 @@ import (
 	registry_common_db_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/configurations"
 	registry_common_vault_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_vault/configurations"
 	registry_host_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_host/settings"
-	registry_http_image_generator_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_http_image_generator/configurations"
 	registry_http_ipfs_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_http_ipfs/configurations"
 	registry_mvc_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_mvc/configurations"
 
@@ -29,7 +28,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	registry_common_db_configurations.AddRegistryCommonDbConfiguration(container)
 	registry_blockchain_configurations.AddRegistryBlockchainConfiguration(container)
 	registry_common_vault_configurations.AddRegistryCommonVaultConfiguration(container)
-	registry_http_image_generator_configurations.AddRegistryHttpImageGeneratorConfiguration(container)
 	registry_http_ipfs_configurations.AddRegistryHttpIPFSConfiguration(container)
 
 	return container

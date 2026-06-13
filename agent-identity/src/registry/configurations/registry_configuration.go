@@ -2,16 +2,47 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/services"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/services/images"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"go.uber.org/dig"
 )
 
 func AddRegistryConfiguration(container *dig.Container) {
+	// Settings
+	if err := container.Provide(settings.NewImageGenerationSettings); err != nil {
+		panic(err)
+	}
+
 	// Services
 	err := container.Provide(
 		services.NewWalletCreator,
 		dig.As(new(interfaces.WalletCreatorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		images.NewDefaultImageGenerator,
+		dig.As(new(interfaces.DefaultImageGeneratorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		images.NewIconImageGenerator,
+		dig.As(new(interfaces.IconImageGeneratorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		images.NewGenerateAgentImages,
+		dig.As(new(interfaces.GenerateAgentImagesInterface)),
 	)
 	if err != nil {
 		panic(err)

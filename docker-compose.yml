@@ -28,7 +28,6 @@ services:
       - AGENT_COMPUTE_BASE_URL=http://agent-compute-host:5000
       - AGENT_DATABASE_CONNECTOR_BASE_URL=http://agent-database-connector-host:5000
       - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
-      - IMAGE_GENERATOR_BASE_URL=http://images-generator-host:5000
       - IPFS_NODE_HTTP_URL=http://kubo:5001
       - SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
     networks:
@@ -47,8 +46,6 @@ services:
       agent-compute-host:
         condition: service_started
       agent-database-connector-host:
-        condition: service_started
-      images-generator-host:
         condition: service_started
       slack-bridge-internal-host:
         condition: service_started
@@ -153,7 +150,6 @@ services:
       - RPC_NODE_HTTP_URL=http://evm-node:8545
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
       - IPFS_NODE_HTTP_URL=http://kubo:5001
-      - IMAGE_GENERATOR_BASE_URL=http://images-generator-host:5000
     networks:
       orchestrator-network:
     depends_on:
@@ -163,19 +159,6 @@ services:
         condition: service_started
       evm-node:
         condition: service_started
-
-  images-generator-host:
-    build:
-      context: ./agent-identity
-      dockerfile: ./src/images_generator_host/Dockerfile
-    container_name: images-generator-host
-    ports:
-      - "5004:5000"
-    environment:
-      - API_PORT=5000
-      - IMAGE_GENERATION_IMAGE_MARK_PATH=/images/nft_mark.png
-    networks:
-      orchestrator-network:
 
   slack-bridge-internal-host:
     build:

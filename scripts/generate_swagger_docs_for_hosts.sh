@@ -9,7 +9,7 @@ Usage:
 Examples:
   generate_swagger_docs_for_hosts.sh
   generate_swagger_docs_for_hosts.sh --host gateway_host
-  generate_swagger_docs_for_hosts.sh --repo-root /path/to/repo --host images_generator_host
+  generate_swagger_docs_for_hosts.sh --repo-root /path/to/repo --host registry_host
 USAGE
 }
 

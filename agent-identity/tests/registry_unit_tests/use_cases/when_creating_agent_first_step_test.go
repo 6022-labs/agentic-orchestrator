@@ -30,7 +30,7 @@ type WhenCreatingAgentFirstStepTestingSuite struct {
 	mockAgentRepository                *repositories_mocks.MockAgentRepositoryInterface
 	mockToken6022Requester             *interfaces_mocks.MockToken6022RequesterInterface
 	mockAgentPrivateKeyStorage         *interfaces_mocks.MockAgentPrivateKeyStorageInterface
-	mockImagesGeneratorRequester       *interfaces_mocks.MockImagesGeneratorRequesterInterface
+	mockGenerateAgentImages       *interfaces_mocks.MockGenerateAgentImagesInterface
 	mockAgentCollectionRepository      *repositories_mocks.MockAgentCollectionRepositoryInterface
 	mockDecentralizedDomainNameBuilder *registry_common_interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
 }
@@ -44,7 +44,7 @@ func WhenCreatingAgentFirstStepBeforeEach(t *testing.T) *WhenCreatingAgentFirstS
 	mockToken6022Requester := interfaces_mocks.NewMockToken6022RequesterInterface(mockController)
 	mockIPFSFileStorage := interfaces_mocks.NewMockIPFSFileStorageInterface(mockController)
 	mockAgentPrivateKeyStorage := interfaces_mocks.NewMockAgentPrivateKeyStorageInterface(mockController)
-	mockImagesGeneratorRequester := interfaces_mocks.NewMockImagesGeneratorRequesterInterface(mockController)
+	mockGenerateAgentImages := interfaces_mocks.NewMockGenerateAgentImagesInterface(mockController)
 	mockDecentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
 
 	sut := use_cases.NewCreateAgentFirstStep(
@@ -53,7 +53,7 @@ func WhenCreatingAgentFirstStepBeforeEach(t *testing.T) *WhenCreatingAgentFirstS
 		mockAgentRepository,
 		mockToken6022Requester,
 		mockAgentPrivateKeyStorage,
-		mockImagesGeneratorRequester,
+		mockGenerateAgentImages,
 		mockAgentCollectionRepository,
 		mockDecentralizedDomainNameBuilder,
 	)
@@ -66,7 +66,7 @@ func WhenCreatingAgentFirstStepBeforeEach(t *testing.T) *WhenCreatingAgentFirstS
 		mockToken6022Requester:             mockToken6022Requester,
 		mockIPFSFileStorage:                mockIPFSFileStorage,
 		mockAgentPrivateKeyStorage:         mockAgentPrivateKeyStorage,
-		mockImagesGeneratorRequester:       mockImagesGeneratorRequester,
+		mockGenerateAgentImages:       mockGenerateAgentImages,
 		mockDecentralizedDomainNameBuilder: mockDecentralizedDomainNameBuilder,
 	}
 }
@@ -136,8 +136,8 @@ func setupHappyPathMocks(suite *WhenCreatingAgentFirstStepTestingSuite) {
 		Decimals().
 		Return(&decimals, nil).
 		AnyTimes()
-	suite.mockImagesGeneratorRequester.EXPECT().
-		GenerateImages(gomock.Any()).
+	suite.mockGenerateAgentImages.EXPECT().
+		Generate(gomock.Any()).
 		Return(map[string][]byte{"default": []byte("generated-image")}, nil).
 		AnyTimes()
 	suite.mockIPFSFileStorage.EXPECT().
@@ -361,8 +361,8 @@ func TestWhenCreatingAgentFirstStep(t *testing.T) {
 				Decimals().
 				Return(&decimals, nil).
 				Times(1)
-			basics.mockImagesGeneratorRequester.EXPECT().
-				GenerateImages(gomock.Any()).
+			basics.mockGenerateAgentImages.EXPECT().
+				Generate(gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 
@@ -414,8 +414,8 @@ func TestWhenCreatingAgentFirstStep(t *testing.T) {
 				Decimals().
 				Return(&decimals, nil).
 				Times(1)
-			basics.mockImagesGeneratorRequester.EXPECT().
-				GenerateImages(gomock.Any()).
+			basics.mockGenerateAgentImages.EXPECT().
+				Generate(gomock.Any()).
 				Return(map[string][]byte{"default": []byte("generated-image")}, nil).
 				Times(1)
 			basics.mockIPFSFileStorage.EXPECT().
@@ -472,8 +472,8 @@ func TestWhenCreatingAgentFirstStep(t *testing.T) {
 				Decimals().
 				Return(&decimals, nil).
 				Times(1)
-			basics.mockImagesGeneratorRequester.EXPECT().
-				GenerateImages(gomock.Any()).
+			basics.mockGenerateAgentImages.EXPECT().
+				Generate(gomock.Any()).
 				Return(map[string][]byte{"default": []byte("generated-image")}, nil).
 				Times(1)
 			basics.mockIPFSFileStorage.EXPECT().
