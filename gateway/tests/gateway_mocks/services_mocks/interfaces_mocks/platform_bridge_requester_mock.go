@@ -41,7 +41,7 @@ func (m *MockPlatformBridgeRequesterInterface) EXPECT() *MockPlatformBridgeReque
 }
 
 // SetWalletOwnershipToUser mocks base method.
-func (m *MockPlatformBridgeRequesterInterface) SetWalletOwnershipToUser(platform enums.AgentContextMessagePlatform, challenge, walletAddress string) error {
+func (m *MockPlatformBridgeRequesterInterface) SetWalletOwnershipToUser(platform enums.BridgePlatform, challenge, walletAddress string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetWalletOwnershipToUser", platform, challenge, walletAddress)
 	ret0, _ := ret[0].(error)

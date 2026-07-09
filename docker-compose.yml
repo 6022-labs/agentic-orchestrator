@@ -25,10 +25,7 @@ services:
       - RPC_NODE_WS_URL=ws://evm-node:8545
       - RPC_NODE_HTTP_URL=http://evm-node:8545
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - AGENT_COMPUTE_BASE_URL=http://agent-compute-host:5000
-      - AGENT_DATABASE_CONNECTOR_BASE_URL=http://agent-database-connector-host:5000
       - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
-      - IPFS_NODE_HTTP_URL=http://kubo:5001
       - SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
     networks:
       orchestrator-network:
@@ -40,12 +37,6 @@ services:
       redis:
         condition: service_started
       evm-node:
-        condition: service_started
-      kubo:
-        condition: service_started
-      agent-compute-host:
-        condition: service_started
-      agent-database-connector-host:
         condition: service_started
       slack-bridge-internal-host:
         condition: service_started
@@ -84,54 +75,6 @@ services:
       vault:
         condition: service_started
 
-  agent-compute-host:
-    build:
-      context: ./agent-reasoning
-      dockerfile: ./src/agent_compute_host/Dockerfile
-    container_name: agent-compute-host
-    ports:
-      - "5002:5000"
-    environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=5000
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - AGENT_KNOWLEDGE_BASE_URL=http://agent-database-connector-host:5000
-      - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
-    networks:
-      orchestrator-network:
-    depends_on:
-      db:
-        condition: service_healthy
-      vault:
-        condition: service_started
-      agent-database-connector-host:
-        condition: service_started
-      registry-host:
-        condition: service_started
-
-  agent-database-connector-host:
-    build:
-      context: ./agent-knowledge
-      dockerfile: ./src/database_connector_host/Dockerfile
-    container_name: agent-database-connector-host
-    ports:
-      - "5003:5000"
-    environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=5000
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-    networks:
-      orchestrator-network:
-    depends_on:
-      db:
-        condition: service_healthy
-      vault:
-        condition: service_started
-
   registry-host:
     build:
       context: ./agent-identity
@@ -149,7 +92,6 @@ services:
       - RPC_NODE_WS_URL=ws://evm-node:8545
       - RPC_NODE_HTTP_URL=http://evm-node:8545
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - IPFS_NODE_HTTP_URL=http://kubo:5001
     networks:
       orchestrator-network:
     depends_on:
@@ -183,7 +125,6 @@ services:
       - SLACK_BOT_TOKEN=xoxb-change-me
       - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
       - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
-      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
     networks:
       orchestrator-network:
     depends_on:
@@ -192,8 +133,6 @@ services:
       redis:
         condition: service_started
       vault:
-        condition: service_started
-      agent-compute-host:
         condition: service_started
 
   slack-bridge-external-host:
@@ -219,7 +158,6 @@ services:
       - SLACK_BOT_TOKEN=xoxb-change-me
       - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
       - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
-      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
       - ORCHESTRATOR_FRONT_BASE_URL=http://web-ui:3000
     networks:
       orchestrator-network:
@@ -242,7 +180,7 @@ services:
         VITE_SCANNER_BASE_URL: https://polygonscan.com
         VITE_OPENSEA_VIEW_URL_TEMPLATE: https://opensea.io/item/matic/{collection}/{tokenId}
         VITE_RARIBLE_VIEW_URL_TEMPLATE: https://rarible.com/token/polygon/{collection}:{tokenId}
-        VITE_IPFS_GATEWAY: http://kubo:8080/ipfs/
+        VITE_IPFS_GATEWAY: https://ipfs.io/ipfs/
         VITE_AGENT_COLLECTION_CREATOR_ADDRESS: 0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
         VITE_AGENT_COLLECTIONS_MANAGER_ADDRESS: 0x39DD75a025145770a8b8278Cc8BA705116443Ea7
         VITE_CHAIN_ID: "80002"
@@ -330,17 +268,6 @@ services:
       - evm-node-data:/data
     user: "root"
     entrypoint: sh -c "anvil --state-interval 5 --dump-state /data/state.json $( [ -f /data/state.json ] && echo '--load-state /data/state.json' )"
-    networks:
-      orchestrator-network:
-
-  kubo:
-    image: ipfs/kubo:v0.40.1
-    container_name: kubo
-    ports:
-      - "4001:4001"
-      - "5001:5001"
-      - "8080:8080"
-      - "9090:9090"
     networks:
       orchestrator-network:
 

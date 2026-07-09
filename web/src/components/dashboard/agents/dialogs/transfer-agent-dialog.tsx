@@ -17,7 +17,7 @@ import type { FormCompletionResult } from "@/models/api/validation-error";
 export default function TransferAgentDialog() {
   const { agent, isOpen, setAgent, setIsOpen } =
     useTransferAgentDialogContext();
-  const { fetchInternalAgents, fetchExternalAgents } = useAgentDashboard();
+  const { fetchExternalAgents } = useAgentDashboard();
 
   const { wallet } = useWallet();
 
@@ -33,7 +33,6 @@ export default function TransferAgentDialog() {
       );
 
       toast.success("Agent transferred successfully");
-      fetchInternalAgents();
       fetchExternalAgents();
       return {};
     } catch (error) {

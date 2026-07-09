@@ -40,7 +40,6 @@ type AddOrUpdateAgentImageProposal struct {
 type AgentInformation struct {
 	Name       string
 	Role       string
-	Signer     common.Address
 	Creator    common.Address
 	Wallets    []common.Address
 	Images     []KeyValue
@@ -60,7 +59,6 @@ type MintProposal struct {
 	Name       string
 	Role       string
 	Owner      common.Address
-	Signer     common.Address
 	Creator    common.Address
 	Wallets    []common.Address
 	Images     []KeyValue
@@ -76,7 +74,7 @@ type NullableUint256 struct {
 
 // AgentCollectionV1MetaData contains all meta data concerning the AgentCollectionV1 contract.
 var AgentCollectionV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"ERC721IncorrectOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ERC721InsufficientApproval\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"approver\",\"type\":\"address\"}],\"name\":\"ERC721InvalidApprover\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"ERC721InvalidOperator\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"ERC721InvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"}],\"name\":\"ERC721InvalidReceiver\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"ERC721InvalidSender\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ERC721NonexistentToken\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"cloneOf\",\"type\":\"uint256\"}],\"name\":\"InvalidCloneOf\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"InvalidName\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"expectedSigner\",\"type\":\"address\"}],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidWallet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingDefaultImage\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoModerators\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"NotModerator\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"NotSigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerUnchanged\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"UsedName\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"}],\"name\":\"UsedNonce\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"UsedWallet\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldValue\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newValue\",\"type\":\"string\"}],\"name\":\"AgentAttributeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"AgentImageProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"AgentImageProposalRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldValue\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newValue\",\"type\":\"string\"}],\"name\":\"AgentImageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldSigner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newSigner\",\"type\":\"address\"}],\"name\":\"AgentSignerUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldCollectionsDescriptor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"CollectionsDescriptorUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldDescription\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newDescription\",\"type\":\"string\"}],\"name\":\"DescriptionUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"EIP712DomainChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"MintProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"MintProposalRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MODERATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"addOrUpdateAgentAttribute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"name\":\"addOrUpdateAgentImage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"addOrUpdateAgentImageFromProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalIndex\",\"type\":\"uint256\"}],\"name\":\"addOrUpdateAgentImageProposal\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"internalType\":\"structAddOrUpdateAgentImageProposal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"addOrUpdateAgentImageProposalsLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"attributeOfByIndex\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"attributesCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"collectionsDescriptor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"collectionsManager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"name\":\"createAddOrUpdateAgentImageProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"createMintProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"creatorOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"description\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"eip712Domain\",\"outputs\":[{\"internalType\":\"bytes1\",\"name\":\"fields\",\"type\":\"bytes1\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"verifyingContract\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"salt\",\"type\":\"bytes32\"},{\"internalType\":\"uint256[]\",\"name\":\"extensions\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"imageOfByIndex\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"imagesCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"informationOf\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"internalType\":\"structAgentInformation\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"initialDescription\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"moderator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"initialCollectionsManager\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"initialCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isModerator\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"}],\"name\":\"isNonceUsed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"mintFromProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalIndex\",\"type\":\"uint256\"}],\"name\":\"mintProposal\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"internalType\":\"structMintProposal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mintProposalsLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"moderatorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"nameOf\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"nameToTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"refuseAddOrUpdateAgentImageProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"refuseMintProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"removeAgentImage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"roleOf\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"signerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newSigner\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"nonce\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateAgentSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"updateCollectionsDescriptor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newDescription\",\"type\":\"string\"}],\"name\":\"updateDescription\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"walletOfByIndex\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"walletToTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"walletsCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"ERC721IncorrectOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ERC721InsufficientApproval\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"approver\",\"type\":\"address\"}],\"name\":\"ERC721InvalidApprover\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"ERC721InvalidOperator\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"ERC721InvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"}],\"name\":\"ERC721InvalidReceiver\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"ERC721InvalidSender\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ERC721NonexistentToken\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"cloneOf\",\"type\":\"uint256\"}],\"name\":\"InvalidCloneOf\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"InvalidCollectionName\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"InvalidName\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"MissingDefaultImage\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NoModerators\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"NotModerator\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"UsedName\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"UsedWallet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"WalletNotFound\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"parameter\",\"type\":\"string\"}],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldValue\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newValue\",\"type\":\"string\"}],\"name\":\"AgentAttributeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"AgentImageProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"AgentImageProposalRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldValue\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newValue\",\"type\":\"string\"}],\"name\":\"AgentImageUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"AgentWalletAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"AgentWalletRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldCollectionsDescriptor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"CollectionsDescriptorUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"oldDescription\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newDescription\",\"type\":\"string\"}],\"name\":\"DescriptionUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"MintProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"MintProposalRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Minted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MODERATOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"addAgentWallet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"addOrUpdateAgentAttribute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"name\":\"addOrUpdateAgentImage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"addOrUpdateAgentImageFromProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalIndex\",\"type\":\"uint256\"}],\"name\":\"addOrUpdateAgentImageProposal\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"internalType\":\"structAddOrUpdateAgentImageProposal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"addOrUpdateAgentImageProposalsLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"attributeOfByIndex\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"attributesCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"collectionsDescriptor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"image\",\"type\":\"tuple\"}],\"name\":\"createAddOrUpdateAgentImageProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"name\":\"createMintProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"creatorOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"description\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"imageOfByIndex\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"imagesCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"informationOf\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"internalType\":\"structAgentInformation\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"initialDescription\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"moderator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"initialCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isModerator\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"mintFromProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalIndex\",\"type\":\"uint256\"}],\"name\":\"mintProposal\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"role\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"wallets\",\"type\":\"address[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"images\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"attributes\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bool\",\"name\":\"isSet\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"internalType\":\"structNullableUint256\",\"name\":\"cloneOf\",\"type\":\"tuple\"}],\"internalType\":\"structMintProposal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mintProposalsLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"moderatorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"nameOf\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"nameToTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"refuseAddOrUpdateAgentImageProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"name\":\"refuseMintProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"removeAgentImage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"removeAgentWallet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"roleOf\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newCollectionsDescriptor\",\"type\":\"address\"}],\"name\":\"updateCollectionsDescriptor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"newDescription\",\"type\":\"string\"}],\"name\":\"updateDescription\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"walletOfByIndex\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet\",\"type\":\"address\"}],\"name\":\"walletToTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"walletsCountOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // AgentCollectionV1ABI is the input ABI used to generate the binding from.
@@ -473,37 +471,6 @@ func (_AgentCollectionV1 *AgentCollectionV1CallerSession) CollectionsDescriptor(
 	return _AgentCollectionV1.Contract.CollectionsDescriptor(&_AgentCollectionV1.CallOpts)
 }
 
-// CollectionsManager is a free data retrieval call binding the contract method 0x37c11b2a.
-//
-// Solidity: function collectionsManager() view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1Caller) CollectionsManager(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _AgentCollectionV1.contract.Call(opts, &out, "collectionsManager")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// CollectionsManager is a free data retrieval call binding the contract method 0x37c11b2a.
-//
-// Solidity: function collectionsManager() view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1Session) CollectionsManager() (common.Address, error) {
-	return _AgentCollectionV1.Contract.CollectionsManager(&_AgentCollectionV1.CallOpts)
-}
-
-// CollectionsManager is a free data retrieval call binding the contract method 0x37c11b2a.
-//
-// Solidity: function collectionsManager() view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1CallerSession) CollectionsManager() (common.Address, error) {
-	return _AgentCollectionV1.Contract.CollectionsManager(&_AgentCollectionV1.CallOpts)
-}
-
 // CreatorOf is a free data retrieval call binding the contract method 0x589a1743.
 //
 // Solidity: function creatorOf(uint256 tokenId) view returns(address)
@@ -564,76 +531,6 @@ func (_AgentCollectionV1 *AgentCollectionV1Session) Description() (string, error
 // Solidity: function description() view returns(string)
 func (_AgentCollectionV1 *AgentCollectionV1CallerSession) Description() (string, error) {
 	return _AgentCollectionV1.Contract.Description(&_AgentCollectionV1.CallOpts)
-}
-
-// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
-//
-// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
-func (_AgentCollectionV1 *AgentCollectionV1Caller) Eip712Domain(opts *bind.CallOpts) (struct {
-	Fields            [1]byte
-	Name              string
-	Version           string
-	ChainId           *big.Int
-	VerifyingContract common.Address
-	Salt              [32]byte
-	Extensions        []*big.Int
-}, error) {
-	var out []interface{}
-	err := _AgentCollectionV1.contract.Call(opts, &out, "eip712Domain")
-
-	outstruct := new(struct {
-		Fields            [1]byte
-		Name              string
-		Version           string
-		ChainId           *big.Int
-		VerifyingContract common.Address
-		Salt              [32]byte
-		Extensions        []*big.Int
-	})
-	if err != nil {
-		return *outstruct, err
-	}
-
-	outstruct.Fields = *abi.ConvertType(out[0], new([1]byte)).(*[1]byte)
-	outstruct.Name = *abi.ConvertType(out[1], new(string)).(*string)
-	outstruct.Version = *abi.ConvertType(out[2], new(string)).(*string)
-	outstruct.ChainId = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
-	outstruct.VerifyingContract = *abi.ConvertType(out[4], new(common.Address)).(*common.Address)
-	outstruct.Salt = *abi.ConvertType(out[5], new([32]byte)).(*[32]byte)
-	outstruct.Extensions = *abi.ConvertType(out[6], new([]*big.Int)).(*[]*big.Int)
-
-	return *outstruct, err
-
-}
-
-// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
-//
-// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
-func (_AgentCollectionV1 *AgentCollectionV1Session) Eip712Domain() (struct {
-	Fields            [1]byte
-	Name              string
-	Version           string
-	ChainId           *big.Int
-	VerifyingContract common.Address
-	Salt              [32]byte
-	Extensions        []*big.Int
-}, error) {
-	return _AgentCollectionV1.Contract.Eip712Domain(&_AgentCollectionV1.CallOpts)
-}
-
-// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
-//
-// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
-func (_AgentCollectionV1 *AgentCollectionV1CallerSession) Eip712Domain() (struct {
-	Fields            [1]byte
-	Name              string
-	Version           string
-	ChainId           *big.Int
-	VerifyingContract common.Address
-	Salt              [32]byte
-	Extensions        []*big.Int
-}, error) {
-	return _AgentCollectionV1.Contract.Eip712Domain(&_AgentCollectionV1.CallOpts)
 }
 
 // GetApproved is a free data retrieval call binding the contract method 0x081812fc.
@@ -793,7 +690,7 @@ func (_AgentCollectionV1 *AgentCollectionV1CallerSession) ImagesCountOf(tokenId 
 
 // InformationOf is a free data retrieval call binding the contract method 0x50cffb68.
 //
-// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1Caller) InformationOf(opts *bind.CallOpts, tokenId *big.Int) (AgentInformation, error) {
 	var out []interface{}
 	err := _AgentCollectionV1.contract.Call(opts, &out, "informationOf", tokenId)
@@ -810,14 +707,14 @@ func (_AgentCollectionV1 *AgentCollectionV1Caller) InformationOf(opts *bind.Call
 
 // InformationOf is a free data retrieval call binding the contract method 0x50cffb68.
 //
-// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1Session) InformationOf(tokenId *big.Int) (AgentInformation, error) {
 	return _AgentCollectionV1.Contract.InformationOf(&_AgentCollectionV1.CallOpts, tokenId)
 }
 
 // InformationOf is a free data retrieval call binding the contract method 0x50cffb68.
 //
-// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function informationOf(uint256 tokenId) view returns((string,string,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1CallerSession) InformationOf(tokenId *big.Int) (AgentInformation, error) {
 	return _AgentCollectionV1.Contract.InformationOf(&_AgentCollectionV1.CallOpts, tokenId)
 }
@@ -884,40 +781,9 @@ func (_AgentCollectionV1 *AgentCollectionV1CallerSession) IsModerator(account co
 	return _AgentCollectionV1.Contract.IsModerator(&_AgentCollectionV1.CallOpts, account)
 }
 
-// IsNonceUsed is a free data retrieval call binding the contract method 0xb90665e5.
-//
-// Solidity: function isNonceUsed(bytes32 nonce) view returns(bool)
-func (_AgentCollectionV1 *AgentCollectionV1Caller) IsNonceUsed(opts *bind.CallOpts, nonce [32]byte) (bool, error) {
-	var out []interface{}
-	err := _AgentCollectionV1.contract.Call(opts, &out, "isNonceUsed", nonce)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// IsNonceUsed is a free data retrieval call binding the contract method 0xb90665e5.
-//
-// Solidity: function isNonceUsed(bytes32 nonce) view returns(bool)
-func (_AgentCollectionV1 *AgentCollectionV1Session) IsNonceUsed(nonce [32]byte) (bool, error) {
-	return _AgentCollectionV1.Contract.IsNonceUsed(&_AgentCollectionV1.CallOpts, nonce)
-}
-
-// IsNonceUsed is a free data retrieval call binding the contract method 0xb90665e5.
-//
-// Solidity: function isNonceUsed(bytes32 nonce) view returns(bool)
-func (_AgentCollectionV1 *AgentCollectionV1CallerSession) IsNonceUsed(nonce [32]byte) (bool, error) {
-	return _AgentCollectionV1.Contract.IsNonceUsed(&_AgentCollectionV1.CallOpts, nonce)
-}
-
 // MintProposal is a free data retrieval call binding the contract method 0xc088c9a7.
 //
-// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1Caller) MintProposal(opts *bind.CallOpts, proposalIndex *big.Int) (MintProposal, error) {
 	var out []interface{}
 	err := _AgentCollectionV1.contract.Call(opts, &out, "mintProposal", proposalIndex)
@@ -934,14 +800,14 @@ func (_AgentCollectionV1 *AgentCollectionV1Caller) MintProposal(opts *bind.CallO
 
 // MintProposal is a free data retrieval call binding the contract method 0xc088c9a7.
 //
-// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1Session) MintProposal(proposalIndex *big.Int) (MintProposal, error) {
 	return _AgentCollectionV1.Contract.MintProposal(&_AgentCollectionV1.CallOpts, proposalIndex)
 }
 
 // MintProposal is a free data retrieval call binding the contract method 0xc088c9a7.
 //
-// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
+// Solidity: function mintProposal(uint256 proposalIndex) view returns((uint256,string,string,address,address,address[],(string,string)[],(string,string)[],(bool,uint256)))
 func (_AgentCollectionV1 *AgentCollectionV1CallerSession) MintProposal(proposalIndex *big.Int) (MintProposal, error) {
 	return _AgentCollectionV1.Contract.MintProposal(&_AgentCollectionV1.CallOpts, proposalIndex)
 }
@@ -1194,37 +1060,6 @@ func (_AgentCollectionV1 *AgentCollectionV1CallerSession) RoleOf(tokenId *big.In
 	return _AgentCollectionV1.Contract.RoleOf(&_AgentCollectionV1.CallOpts, tokenId)
 }
 
-// SignerOf is a free data retrieval call binding the contract method 0x5161fdf5.
-//
-// Solidity: function signerOf(uint256 tokenId) view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1Caller) SignerOf(opts *bind.CallOpts, tokenId *big.Int) (common.Address, error) {
-	var out []interface{}
-	err := _AgentCollectionV1.contract.Call(opts, &out, "signerOf", tokenId)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// SignerOf is a free data retrieval call binding the contract method 0x5161fdf5.
-//
-// Solidity: function signerOf(uint256 tokenId) view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1Session) SignerOf(tokenId *big.Int) (common.Address, error) {
-	return _AgentCollectionV1.Contract.SignerOf(&_AgentCollectionV1.CallOpts, tokenId)
-}
-
-// SignerOf is a free data retrieval call binding the contract method 0x5161fdf5.
-//
-// Solidity: function signerOf(uint256 tokenId) view returns(address)
-func (_AgentCollectionV1 *AgentCollectionV1CallerSession) SignerOf(tokenId *big.Int) (common.Address, error) {
-	return _AgentCollectionV1.Contract.SignerOf(&_AgentCollectionV1.CallOpts, tokenId)
-}
-
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
 // Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
@@ -1411,6 +1246,27 @@ func (_AgentCollectionV1 *AgentCollectionV1CallerSession) WalletsCountOf(tokenId
 	return _AgentCollectionV1.Contract.WalletsCountOf(&_AgentCollectionV1.CallOpts, tokenId)
 }
 
+// AddAgentWallet is a paid mutator transaction binding the contract method 0x20a08689.
+//
+// Solidity: function addAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Transactor) AddAgentWallet(opts *bind.TransactOpts, tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.contract.Transact(opts, "addAgentWallet", tokenId, wallet)
+}
+
+// AddAgentWallet is a paid mutator transaction binding the contract method 0x20a08689.
+//
+// Solidity: function addAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Session) AddAgentWallet(tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.AddAgentWallet(&_AgentCollectionV1.TransactOpts, tokenId, wallet)
+}
+
+// AddAgentWallet is a paid mutator transaction binding the contract method 0x20a08689.
+//
+// Solidity: function addAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) AddAgentWallet(tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.AddAgentWallet(&_AgentCollectionV1.TransactOpts, tokenId, wallet)
+}
+
 // AddOrUpdateAgentAttribute is a paid mutator transaction binding the contract method 0xd769ad0f.
 //
 // Solidity: function addOrUpdateAgentAttribute(uint256 tokenId, string key, string value) returns()
@@ -1516,25 +1372,25 @@ func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) CreateAddOrUpdateA
 	return _AgentCollectionV1.Contract.CreateAddOrUpdateAgentImageProposal(&_AgentCollectionV1.TransactOpts, tokenId, image)
 }
 
-// CreateMintProposal is a paid mutator transaction binding the contract method 0x00b1915c.
+// CreateMintProposal is a paid mutator transaction binding the contract method 0xc1e12b78.
 //
-// Solidity: function createMintProposal(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Transactor) CreateMintProposal(opts *bind.TransactOpts, to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.contract.Transact(opts, "createMintProposal", to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function createMintProposal(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Transactor) CreateMintProposal(opts *bind.TransactOpts, to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.contract.Transact(opts, "createMintProposal", to, role, name, wallets, images, attributes, cloneOf)
 }
 
-// CreateMintProposal is a paid mutator transaction binding the contract method 0x00b1915c.
+// CreateMintProposal is a paid mutator transaction binding the contract method 0xc1e12b78.
 //
-// Solidity: function createMintProposal(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Session) CreateMintProposal(to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.CreateMintProposal(&_AgentCollectionV1.TransactOpts, to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function createMintProposal(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Session) CreateMintProposal(to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.CreateMintProposal(&_AgentCollectionV1.TransactOpts, to, role, name, wallets, images, attributes, cloneOf)
 }
 
-// CreateMintProposal is a paid mutator transaction binding the contract method 0x00b1915c.
+// CreateMintProposal is a paid mutator transaction binding the contract method 0xc1e12b78.
 //
-// Solidity: function createMintProposal(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) CreateMintProposal(to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.CreateMintProposal(&_AgentCollectionV1.TransactOpts, to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function createMintProposal(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) CreateMintProposal(to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.CreateMintProposal(&_AgentCollectionV1.TransactOpts, to, role, name, wallets, images, attributes, cloneOf)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
@@ -1558,46 +1414,46 @@ func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) GrantRole(role [32
 	return _AgentCollectionV1.Contract.GrantRole(&_AgentCollectionV1.TransactOpts, role, account)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xd10321bd.
+// Initialize is a paid mutator transaction binding the contract method 0x9630c8ac.
 //
-// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsManager, address initialCollectionsDescriptor) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Transactor) Initialize(opts *bind.TransactOpts, name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsManager common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
-	return _AgentCollectionV1.contract.Transact(opts, "initialize", name, symbol, initialDescription, admin, moderator, initialCollectionsManager, initialCollectionsDescriptor)
+// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsDescriptor) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Transactor) Initialize(opts *bind.TransactOpts, name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.contract.Transact(opts, "initialize", name, symbol, initialDescription, admin, moderator, initialCollectionsDescriptor)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xd10321bd.
+// Initialize is a paid mutator transaction binding the contract method 0x9630c8ac.
 //
-// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsManager, address initialCollectionsDescriptor) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Session) Initialize(name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsManager common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.Initialize(&_AgentCollectionV1.TransactOpts, name, symbol, initialDescription, admin, moderator, initialCollectionsManager, initialCollectionsDescriptor)
+// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsDescriptor) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Session) Initialize(name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.Initialize(&_AgentCollectionV1.TransactOpts, name, symbol, initialDescription, admin, moderator, initialCollectionsDescriptor)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0xd10321bd.
+// Initialize is a paid mutator transaction binding the contract method 0x9630c8ac.
 //
-// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsManager, address initialCollectionsDescriptor) returns()
-func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) Initialize(name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsManager common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.Initialize(&_AgentCollectionV1.TransactOpts, name, symbol, initialDescription, admin, moderator, initialCollectionsManager, initialCollectionsDescriptor)
+// Solidity: function initialize(string name, string symbol, string initialDescription, address admin, address moderator, address initialCollectionsDescriptor) returns()
+func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) Initialize(name string, symbol string, initialDescription string, admin common.Address, moderator common.Address, initialCollectionsDescriptor common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.Initialize(&_AgentCollectionV1.TransactOpts, name, symbol, initialDescription, admin, moderator, initialCollectionsDescriptor)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xa3a20a52.
+// Mint is a paid mutator transaction binding the contract method 0x90bbf2fe.
 //
-// Solidity: function mint(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Transactor) Mint(opts *bind.TransactOpts, to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.contract.Transact(opts, "mint", to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function mint(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Transactor) Mint(opts *bind.TransactOpts, to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.contract.Transact(opts, "mint", to, role, name, wallets, images, attributes, cloneOf)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xa3a20a52.
+// Mint is a paid mutator transaction binding the contract method 0x90bbf2fe.
 //
-// Solidity: function mint(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Session) Mint(to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.Mint(&_AgentCollectionV1.TransactOpts, to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function mint(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Session) Mint(to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.Mint(&_AgentCollectionV1.TransactOpts, to, role, name, wallets, images, attributes, cloneOf)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xa3a20a52.
+// Mint is a paid mutator transaction binding the contract method 0x90bbf2fe.
 //
-// Solidity: function mint(address to, address signer, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) Mint(to common.Address, signer common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.Mint(&_AgentCollectionV1.TransactOpts, to, signer, role, name, wallets, images, attributes, cloneOf, nonce, signature)
+// Solidity: function mint(address to, string role, string name, address[] wallets, (string,string)[] images, (string,string)[] attributes, (bool,uint256) cloneOf) returns()
+func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) Mint(to common.Address, role string, name string, wallets []common.Address, images []KeyValue, attributes []KeyValue, cloneOf NullableUint256) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.Mint(&_AgentCollectionV1.TransactOpts, to, role, name, wallets, images, attributes, cloneOf)
 }
 
 // MintFromProposal is a paid mutator transaction binding the contract method 0xe6f1d66a.
@@ -1682,6 +1538,27 @@ func (_AgentCollectionV1 *AgentCollectionV1Session) RemoveAgentImage(tokenId *bi
 // Solidity: function removeAgentImage(uint256 tokenId, string key) returns()
 func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) RemoveAgentImage(tokenId *big.Int, key string) (*types.Transaction, error) {
 	return _AgentCollectionV1.Contract.RemoveAgentImage(&_AgentCollectionV1.TransactOpts, tokenId, key)
+}
+
+// RemoveAgentWallet is a paid mutator transaction binding the contract method 0x848577c7.
+//
+// Solidity: function removeAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Transactor) RemoveAgentWallet(opts *bind.TransactOpts, tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.contract.Transact(opts, "removeAgentWallet", tokenId, wallet)
+}
+
+// RemoveAgentWallet is a paid mutator transaction binding the contract method 0x848577c7.
+//
+// Solidity: function removeAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1Session) RemoveAgentWallet(tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.RemoveAgentWallet(&_AgentCollectionV1.TransactOpts, tokenId, wallet)
+}
+
+// RemoveAgentWallet is a paid mutator transaction binding the contract method 0x848577c7.
+//
+// Solidity: function removeAgentWallet(uint256 tokenId, address wallet) returns()
+func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) RemoveAgentWallet(tokenId *big.Int, wallet common.Address) (*types.Transaction, error) {
+	return _AgentCollectionV1.Contract.RemoveAgentWallet(&_AgentCollectionV1.TransactOpts, tokenId, wallet)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -1808,27 +1685,6 @@ func (_AgentCollectionV1 *AgentCollectionV1Session) TransferFrom(from common.Add
 // Solidity: function transferFrom(address from, address to, uint256 tokenId) returns()
 func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) TransferFrom(from common.Address, to common.Address, tokenId *big.Int) (*types.Transaction, error) {
 	return _AgentCollectionV1.Contract.TransferFrom(&_AgentCollectionV1.TransactOpts, from, to, tokenId)
-}
-
-// UpdateAgentSigner is a paid mutator transaction binding the contract method 0x6d21b484.
-//
-// Solidity: function updateAgentSigner(uint256 tokenId, address newSigner, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Transactor) UpdateAgentSigner(opts *bind.TransactOpts, tokenId *big.Int, newSigner common.Address, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.contract.Transact(opts, "updateAgentSigner", tokenId, newSigner, nonce, signature)
-}
-
-// UpdateAgentSigner is a paid mutator transaction binding the contract method 0x6d21b484.
-//
-// Solidity: function updateAgentSigner(uint256 tokenId, address newSigner, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1Session) UpdateAgentSigner(tokenId *big.Int, newSigner common.Address, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.UpdateAgentSigner(&_AgentCollectionV1.TransactOpts, tokenId, newSigner, nonce, signature)
-}
-
-// UpdateAgentSigner is a paid mutator transaction binding the contract method 0x6d21b484.
-//
-// Solidity: function updateAgentSigner(uint256 tokenId, address newSigner, bytes32 nonce, bytes signature) returns()
-func (_AgentCollectionV1 *AgentCollectionV1TransactorSession) UpdateAgentSigner(tokenId *big.Int, newSigner common.Address, nonce [32]byte, signature []byte) (*types.Transaction, error) {
-	return _AgentCollectionV1.Contract.UpdateAgentSigner(&_AgentCollectionV1.TransactOpts, tokenId, newSigner, nonce, signature)
 }
 
 // UpdateCollectionsDescriptor is a paid mutator transaction binding the contract method 0x798931a3.
@@ -2491,9 +2347,9 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseAgentImageUpdated(log 
 	return event, nil
 }
 
-// AgentCollectionV1AgentSignerUpdatedIterator is returned from FilterAgentSignerUpdated and is used to iterate over the raw logs and unpacked data for AgentSignerUpdated events raised by the AgentCollectionV1 contract.
-type AgentCollectionV1AgentSignerUpdatedIterator struct {
-	Event *AgentCollectionV1AgentSignerUpdated // Event containing the contract specifics and raw log
+// AgentCollectionV1AgentWalletAddedIterator is returned from FilterAgentWalletAdded and is used to iterate over the raw logs and unpacked data for AgentWalletAdded events raised by the AgentCollectionV1 contract.
+type AgentCollectionV1AgentWalletAddedIterator struct {
+	Event *AgentCollectionV1AgentWalletAdded // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -2507,7 +2363,7 @@ type AgentCollectionV1AgentSignerUpdatedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AgentCollectionV1AgentSignerUpdatedIterator) Next() bool {
+func (it *AgentCollectionV1AgentWalletAddedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -2516,7 +2372,7 @@ func (it *AgentCollectionV1AgentSignerUpdatedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AgentCollectionV1AgentSignerUpdated)
+			it.Event = new(AgentCollectionV1AgentWalletAdded)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -2531,7 +2387,7 @@ func (it *AgentCollectionV1AgentSignerUpdatedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AgentCollectionV1AgentSignerUpdated)
+		it.Event = new(AgentCollectionV1AgentWalletAdded)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -2547,53 +2403,52 @@ func (it *AgentCollectionV1AgentSignerUpdatedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AgentCollectionV1AgentSignerUpdatedIterator) Error() error {
+func (it *AgentCollectionV1AgentWalletAddedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AgentCollectionV1AgentSignerUpdatedIterator) Close() error {
+func (it *AgentCollectionV1AgentWalletAddedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AgentCollectionV1AgentSignerUpdated represents a AgentSignerUpdated event raised by the AgentCollectionV1 contract.
-type AgentCollectionV1AgentSignerUpdated struct {
-	TokenId   *big.Int
-	OldSigner common.Address
-	NewSigner common.Address
-	Raw       types.Log // Blockchain specific contextual infos
+// AgentCollectionV1AgentWalletAdded represents a AgentWalletAdded event raised by the AgentCollectionV1 contract.
+type AgentCollectionV1AgentWalletAdded struct {
+	TokenId *big.Int
+	Wallet  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAgentSignerUpdated is a free log retrieval operation binding the contract event 0xc0e455cb361d77f8df0f9d49668a41d5a79c14f930e2a8ede12b9735f02b37c6.
+// FilterAgentWalletAdded is a free log retrieval operation binding the contract event 0x81b08593fc8d1a2f0e47c0b38e53abb2813b8d7abf50f2bf99cda1fa9fa844d9.
 //
-// Solidity: event AgentSignerUpdated(uint256 indexed tokenId, address oldSigner, address newSigner)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterAgentSignerUpdated(opts *bind.FilterOpts, tokenId []*big.Int) (*AgentCollectionV1AgentSignerUpdatedIterator, error) {
+// Solidity: event AgentWalletAdded(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterAgentWalletAdded(opts *bind.FilterOpts, tokenId []*big.Int) (*AgentCollectionV1AgentWalletAddedIterator, error) {
 
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "AgentSignerUpdated", tokenIdRule)
+	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "AgentWalletAdded", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AgentCollectionV1AgentSignerUpdatedIterator{contract: _AgentCollectionV1.contract, event: "AgentSignerUpdated", logs: logs, sub: sub}, nil
+	return &AgentCollectionV1AgentWalletAddedIterator{contract: _AgentCollectionV1.contract, event: "AgentWalletAdded", logs: logs, sub: sub}, nil
 }
 
-// WatchAgentSignerUpdated is a free log subscription operation binding the contract event 0xc0e455cb361d77f8df0f9d49668a41d5a79c14f930e2a8ede12b9735f02b37c6.
+// WatchAgentWalletAdded is a free log subscription operation binding the contract event 0x81b08593fc8d1a2f0e47c0b38e53abb2813b8d7abf50f2bf99cda1fa9fa844d9.
 //
-// Solidity: event AgentSignerUpdated(uint256 indexed tokenId, address oldSigner, address newSigner)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchAgentSignerUpdated(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1AgentSignerUpdated, tokenId []*big.Int) (event.Subscription, error) {
+// Solidity: event AgentWalletAdded(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchAgentWalletAdded(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1AgentWalletAdded, tokenId []*big.Int) (event.Subscription, error) {
 
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "AgentSignerUpdated", tokenIdRule)
+	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "AgentWalletAdded", tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2603,8 +2458,8 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchAgentSignerUpdated(opt
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AgentCollectionV1AgentSignerUpdated)
-				if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentSignerUpdated", log); err != nil {
+				event := new(AgentCollectionV1AgentWalletAdded)
+				if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentWalletAdded", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2625,12 +2480,157 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchAgentSignerUpdated(opt
 	}), nil
 }
 
-// ParseAgentSignerUpdated is a log parse operation binding the contract event 0xc0e455cb361d77f8df0f9d49668a41d5a79c14f930e2a8ede12b9735f02b37c6.
+// ParseAgentWalletAdded is a log parse operation binding the contract event 0x81b08593fc8d1a2f0e47c0b38e53abb2813b8d7abf50f2bf99cda1fa9fa844d9.
 //
-// Solidity: event AgentSignerUpdated(uint256 indexed tokenId, address oldSigner, address newSigner)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseAgentSignerUpdated(log types.Log) (*AgentCollectionV1AgentSignerUpdated, error) {
-	event := new(AgentCollectionV1AgentSignerUpdated)
-	if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentSignerUpdated", log); err != nil {
+// Solidity: event AgentWalletAdded(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseAgentWalletAdded(log types.Log) (*AgentCollectionV1AgentWalletAdded, error) {
+	event := new(AgentCollectionV1AgentWalletAdded)
+	if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentWalletAdded", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AgentCollectionV1AgentWalletRemovedIterator is returned from FilterAgentWalletRemoved and is used to iterate over the raw logs and unpacked data for AgentWalletRemoved events raised by the AgentCollectionV1 contract.
+type AgentCollectionV1AgentWalletRemovedIterator struct {
+	Event *AgentCollectionV1AgentWalletRemoved // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AgentCollectionV1AgentWalletRemovedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AgentCollectionV1AgentWalletRemoved)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AgentCollectionV1AgentWalletRemoved)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AgentCollectionV1AgentWalletRemovedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AgentCollectionV1AgentWalletRemovedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AgentCollectionV1AgentWalletRemoved represents a AgentWalletRemoved event raised by the AgentCollectionV1 contract.
+type AgentCollectionV1AgentWalletRemoved struct {
+	TokenId *big.Int
+	Wallet  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterAgentWalletRemoved is a free log retrieval operation binding the contract event 0x50420c277910d2a11d74c2e9b9b4178bffc4942b2bc6f044f60d4d7f12d28bea.
+//
+// Solidity: event AgentWalletRemoved(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterAgentWalletRemoved(opts *bind.FilterOpts, tokenId []*big.Int) (*AgentCollectionV1AgentWalletRemovedIterator, error) {
+
+	var tokenIdRule []interface{}
+	for _, tokenIdItem := range tokenId {
+		tokenIdRule = append(tokenIdRule, tokenIdItem)
+	}
+
+	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "AgentWalletRemoved", tokenIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AgentCollectionV1AgentWalletRemovedIterator{contract: _AgentCollectionV1.contract, event: "AgentWalletRemoved", logs: logs, sub: sub}, nil
+}
+
+// WatchAgentWalletRemoved is a free log subscription operation binding the contract event 0x50420c277910d2a11d74c2e9b9b4178bffc4942b2bc6f044f60d4d7f12d28bea.
+//
+// Solidity: event AgentWalletRemoved(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchAgentWalletRemoved(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1AgentWalletRemoved, tokenId []*big.Int) (event.Subscription, error) {
+
+	var tokenIdRule []interface{}
+	for _, tokenIdItem := range tokenId {
+		tokenIdRule = append(tokenIdRule, tokenIdItem)
+	}
+
+	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "AgentWalletRemoved", tokenIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AgentCollectionV1AgentWalletRemoved)
+				if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentWalletRemoved", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseAgentWalletRemoved is a log parse operation binding the contract event 0x50420c277910d2a11d74c2e9b9b4178bffc4942b2bc6f044f60d4d7f12d28bea.
+//
+// Solidity: event AgentWalletRemoved(uint256 indexed tokenId, address wallet)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseAgentWalletRemoved(log types.Log) (*AgentCollectionV1AgentWalletRemoved, error) {
+	event := new(AgentCollectionV1AgentWalletRemoved)
+	if err := _AgentCollectionV1.contract.UnpackLog(event, "AgentWalletRemoved", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -3223,139 +3223,6 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseDescriptionUpdated(log
 	return event, nil
 }
 
-// AgentCollectionV1EIP712DomainChangedIterator is returned from FilterEIP712DomainChanged and is used to iterate over the raw logs and unpacked data for EIP712DomainChanged events raised by the AgentCollectionV1 contract.
-type AgentCollectionV1EIP712DomainChangedIterator struct {
-	Event *AgentCollectionV1EIP712DomainChanged // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AgentCollectionV1EIP712DomainChangedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AgentCollectionV1EIP712DomainChanged)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AgentCollectionV1EIP712DomainChanged)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AgentCollectionV1EIP712DomainChangedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AgentCollectionV1EIP712DomainChangedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AgentCollectionV1EIP712DomainChanged represents a EIP712DomainChanged event raised by the AgentCollectionV1 contract.
-type AgentCollectionV1EIP712DomainChanged struct {
-	Raw types.Log // Blockchain specific contextual infos
-}
-
-// FilterEIP712DomainChanged is a free log retrieval operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
-//
-// Solidity: event EIP712DomainChanged()
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterEIP712DomainChanged(opts *bind.FilterOpts) (*AgentCollectionV1EIP712DomainChangedIterator, error) {
-
-	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "EIP712DomainChanged")
-	if err != nil {
-		return nil, err
-	}
-	return &AgentCollectionV1EIP712DomainChangedIterator{contract: _AgentCollectionV1.contract, event: "EIP712DomainChanged", logs: logs, sub: sub}, nil
-}
-
-// WatchEIP712DomainChanged is a free log subscription operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
-//
-// Solidity: event EIP712DomainChanged()
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchEIP712DomainChanged(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1EIP712DomainChanged) (event.Subscription, error) {
-
-	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "EIP712DomainChanged")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AgentCollectionV1EIP712DomainChanged)
-				if err := _AgentCollectionV1.contract.UnpackLog(event, "EIP712DomainChanged", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseEIP712DomainChanged is a log parse operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
-//
-// Solidity: event EIP712DomainChanged()
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseEIP712DomainChanged(log types.Log) (*AgentCollectionV1EIP712DomainChanged, error) {
-	event := new(AgentCollectionV1EIP712DomainChanged)
-	if err := _AgentCollectionV1.contract.UnpackLog(event, "EIP712DomainChanged", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
 // AgentCollectionV1InitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the AgentCollectionV1 contract.
 type AgentCollectionV1InitializedIterator struct {
 	Event *AgentCollectionV1Initialized // Event containing the contract specifics and raw log
@@ -3560,47 +3427,38 @@ func (it *AgentCollectionV1MintProposalCreatedIterator) Close() error {
 // AgentCollectionV1MintProposalCreated represents a MintProposalCreated event raised by the AgentCollectionV1 contract.
 type AgentCollectionV1MintProposalCreated struct {
 	From       common.Address
-	Signer     common.Address
 	ProposalId *big.Int
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterMintProposalCreated is a free log retrieval operation binding the contract event 0xf11434e9253f4ff089cbc840cb7a5db1fd5881d5fe71d35d6e611d2a12aa4948.
+// FilterMintProposalCreated is a free log retrieval operation binding the contract event 0x0116c43c83acf6cd8597ce110e50b139e8c85a1544440913be14f9043a244361.
 //
-// Solidity: event MintProposalCreated(address indexed from, address indexed signer, uint256 proposalId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMintProposalCreated(opts *bind.FilterOpts, from []common.Address, signer []common.Address) (*AgentCollectionV1MintProposalCreatedIterator, error) {
+// Solidity: event MintProposalCreated(address indexed from, uint256 proposalId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMintProposalCreated(opts *bind.FilterOpts, from []common.Address) (*AgentCollectionV1MintProposalCreatedIterator, error) {
 
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "MintProposalCreated", fromRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "MintProposalCreated", fromRule)
 	if err != nil {
 		return nil, err
 	}
 	return &AgentCollectionV1MintProposalCreatedIterator{contract: _AgentCollectionV1.contract, event: "MintProposalCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchMintProposalCreated is a free log subscription operation binding the contract event 0xf11434e9253f4ff089cbc840cb7a5db1fd5881d5fe71d35d6e611d2a12aa4948.
+// WatchMintProposalCreated is a free log subscription operation binding the contract event 0x0116c43c83acf6cd8597ce110e50b139e8c85a1544440913be14f9043a244361.
 //
-// Solidity: event MintProposalCreated(address indexed from, address indexed signer, uint256 proposalId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalCreated(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1MintProposalCreated, from []common.Address, signer []common.Address) (event.Subscription, error) {
+// Solidity: event MintProposalCreated(address indexed from, uint256 proposalId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalCreated(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1MintProposalCreated, from []common.Address) (event.Subscription, error) {
 
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "MintProposalCreated", fromRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "MintProposalCreated", fromRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3632,9 +3490,9 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalCreated(op
 	}), nil
 }
 
-// ParseMintProposalCreated is a log parse operation binding the contract event 0xf11434e9253f4ff089cbc840cb7a5db1fd5881d5fe71d35d6e611d2a12aa4948.
+// ParseMintProposalCreated is a log parse operation binding the contract event 0x0116c43c83acf6cd8597ce110e50b139e8c85a1544440913be14f9043a244361.
 //
-// Solidity: event MintProposalCreated(address indexed from, address indexed signer, uint256 proposalId)
+// Solidity: event MintProposalCreated(address indexed from, uint256 proposalId)
 func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseMintProposalCreated(log types.Log) (*AgentCollectionV1MintProposalCreated, error) {
 	event := new(AgentCollectionV1MintProposalCreated)
 	if err := _AgentCollectionV1.contract.UnpackLog(event, "MintProposalCreated", log); err != nil {
@@ -3714,47 +3572,38 @@ func (it *AgentCollectionV1MintProposalRemovedIterator) Close() error {
 // AgentCollectionV1MintProposalRemoved represents a MintProposalRemoved event raised by the AgentCollectionV1 contract.
 type AgentCollectionV1MintProposalRemoved struct {
 	Owner      common.Address
-	Signer     common.Address
 	ProposalId *big.Int
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterMintProposalRemoved is a free log retrieval operation binding the contract event 0xc3cee524930441f1267d79dc72f161b7625e84f8052db5f175e091c0e86bda3c.
+// FilterMintProposalRemoved is a free log retrieval operation binding the contract event 0x632209d0b827b0b37a988c9af91bfd7e849809b379e1efa66dc47082953b8700.
 //
-// Solidity: event MintProposalRemoved(address indexed owner, address indexed signer, uint256 proposalId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMintProposalRemoved(opts *bind.FilterOpts, owner []common.Address, signer []common.Address) (*AgentCollectionV1MintProposalRemovedIterator, error) {
+// Solidity: event MintProposalRemoved(address indexed owner, uint256 proposalId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMintProposalRemoved(opts *bind.FilterOpts, owner []common.Address) (*AgentCollectionV1MintProposalRemovedIterator, error) {
 
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "MintProposalRemoved", ownerRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "MintProposalRemoved", ownerRule)
 	if err != nil {
 		return nil, err
 	}
 	return &AgentCollectionV1MintProposalRemovedIterator{contract: _AgentCollectionV1.contract, event: "MintProposalRemoved", logs: logs, sub: sub}, nil
 }
 
-// WatchMintProposalRemoved is a free log subscription operation binding the contract event 0xc3cee524930441f1267d79dc72f161b7625e84f8052db5f175e091c0e86bda3c.
+// WatchMintProposalRemoved is a free log subscription operation binding the contract event 0x632209d0b827b0b37a988c9af91bfd7e849809b379e1efa66dc47082953b8700.
 //
-// Solidity: event MintProposalRemoved(address indexed owner, address indexed signer, uint256 proposalId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalRemoved(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1MintProposalRemoved, owner []common.Address, signer []common.Address) (event.Subscription, error) {
+// Solidity: event MintProposalRemoved(address indexed owner, uint256 proposalId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalRemoved(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1MintProposalRemoved, owner []common.Address) (event.Subscription, error) {
 
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "MintProposalRemoved", ownerRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "MintProposalRemoved", ownerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3786,9 +3635,9 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMintProposalRemoved(op
 	}), nil
 }
 
-// ParseMintProposalRemoved is a log parse operation binding the contract event 0xc3cee524930441f1267d79dc72f161b7625e84f8052db5f175e091c0e86bda3c.
+// ParseMintProposalRemoved is a log parse operation binding the contract event 0x632209d0b827b0b37a988c9af91bfd7e849809b379e1efa66dc47082953b8700.
 //
-// Solidity: event MintProposalRemoved(address indexed owner, address indexed signer, uint256 proposalId)
+// Solidity: event MintProposalRemoved(address indexed owner, uint256 proposalId)
 func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseMintProposalRemoved(log types.Log) (*AgentCollectionV1MintProposalRemoved, error) {
 	event := new(AgentCollectionV1MintProposalRemoved)
 	if err := _AgentCollectionV1.contract.UnpackLog(event, "MintProposalRemoved", log); err != nil {
@@ -3868,47 +3717,38 @@ func (it *AgentCollectionV1MintedIterator) Close() error {
 // AgentCollectionV1Minted represents a Minted event raised by the AgentCollectionV1 contract.
 type AgentCollectionV1Minted struct {
 	To      common.Address
-	Signer  common.Address
 	TokenId *big.Int
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterMinted is a free log retrieval operation binding the contract event 0x9d228d69b5fdb8d273a2336f8fb8612d039631024ea9bf09c424a9503aa078f0.
+// FilterMinted is a free log retrieval operation binding the contract event 0x30385c845b448a36257a6a1716e6ad2e1bc2cbe333cde1e69fe849ad6511adfe.
 //
-// Solidity: event Minted(address indexed to, address indexed signer, uint256 tokenId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMinted(opts *bind.FilterOpts, to []common.Address, signer []common.Address) (*AgentCollectionV1MintedIterator, error) {
+// Solidity: event Minted(address indexed to, uint256 tokenId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) FilterMinted(opts *bind.FilterOpts, to []common.Address) (*AgentCollectionV1MintedIterator, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
 		toRule = append(toRule, toItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "Minted", toRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.FilterLogs(opts, "Minted", toRule)
 	if err != nil {
 		return nil, err
 	}
 	return &AgentCollectionV1MintedIterator{contract: _AgentCollectionV1.contract, event: "Minted", logs: logs, sub: sub}, nil
 }
 
-// WatchMinted is a free log subscription operation binding the contract event 0x9d228d69b5fdb8d273a2336f8fb8612d039631024ea9bf09c424a9503aa078f0.
+// WatchMinted is a free log subscription operation binding the contract event 0x30385c845b448a36257a6a1716e6ad2e1bc2cbe333cde1e69fe849ad6511adfe.
 //
-// Solidity: event Minted(address indexed to, address indexed signer, uint256 tokenId)
-func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMinted(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1Minted, to []common.Address, signer []common.Address) (event.Subscription, error) {
+// Solidity: event Minted(address indexed to, uint256 tokenId)
+func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMinted(opts *bind.WatchOpts, sink chan<- *AgentCollectionV1Minted, to []common.Address) (event.Subscription, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
 		toRule = append(toRule, toItem)
 	}
-	var signerRule []interface{}
-	for _, signerItem := range signer {
-		signerRule = append(signerRule, signerItem)
-	}
 
-	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "Minted", toRule, signerRule)
+	logs, sub, err := _AgentCollectionV1.contract.WatchLogs(opts, "Minted", toRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3940,9 +3780,9 @@ func (_AgentCollectionV1 *AgentCollectionV1Filterer) WatchMinted(opts *bind.Watc
 	}), nil
 }
 
-// ParseMinted is a log parse operation binding the contract event 0x9d228d69b5fdb8d273a2336f8fb8612d039631024ea9bf09c424a9503aa078f0.
+// ParseMinted is a log parse operation binding the contract event 0x30385c845b448a36257a6a1716e6ad2e1bc2cbe333cde1e69fe849ad6511adfe.
 //
-// Solidity: event Minted(address indexed to, address indexed signer, uint256 tokenId)
+// Solidity: event Minted(address indexed to, uint256 tokenId)
 func (_AgentCollectionV1 *AgentCollectionV1Filterer) ParseMinted(log types.Log) (*AgentCollectionV1Minted, error) {
 	event := new(AgentCollectionV1Minted)
 	if err := _AgentCollectionV1.contract.UnpackLog(event, "Minted", log); err != nil {
@@ -4605,12 +4445,12 @@ func (e AgentCollectionV1AgentAttributeUpdated) RawLog() types.Log { return e.Ra
 func (e AgentCollectionV1AgentImageProposalCreated) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1AgentImageProposalRemoved) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1AgentImageUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionV1AgentSignerUpdated) RawLog() types.Log { return e.Raw }
+func (e AgentCollectionV1AgentWalletAdded) RawLog() types.Log { return e.Raw }
+func (e AgentCollectionV1AgentWalletRemoved) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1Approval) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1ApprovalForAll) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1CollectionsDescriptorUpdated) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1DescriptionUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionV1EIP712DomainChanged) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1Initialized) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1MintProposalCreated) RawLog() types.Log { return e.Raw }
 func (e AgentCollectionV1MintProposalRemoved) RawLog() types.Log { return e.Raw }

@@ -49,31 +49,6 @@ func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Addres
 	return &owner, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentPreviousSigners(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	iter, err := agentCollection.FilterAgentSignerUpdated(&bind.FilterOpts{
-		Start:   1,
-		End:     nil,
-		Context: context.Background(),
-	}, []*big.Int{&collectionTokenId})
-	if err != nil {
-		return nil, err
-	}
-
-	var signers []common.Address
-
-	for iter.Next() {
-		event := iter.Event
-		signers = append(signers, event.NewSigner)
-	}
-
-	return signers, nil
-}
-
 func (a *AgentCollectionRequester) GetAgentInformation(collectionAddress common.Address, collectionTokenId big.Int) (*registry_abi.AgentInformation, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
@@ -179,7 +154,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(from, to uint
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -244,32 +219,6 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(fr
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentSignerUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentSignerUpdated, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentSignerUpdated
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentSignerUpdated(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: context.Background(),
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
-	}
-
-	return allEvents, nil
-}
-
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentAttributeUpdated
 
@@ -309,7 +258,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -335,7 +284,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
 		if err != nil {
 			return nil, err
 		}

@@ -57,7 +57,6 @@ func (l ListAgentSortByList) Contains(sortBy ListAgentSortBy) bool {
 type ListAgentsRequest struct {
 	PaginateRequest
 	SortBy     *ListAgentSortBy `query:"sortBy"`
-	IsInternal *bool            `query:"isInternal"`
 }
 
 func (r *ListAgentsRequest) Sanitize() {

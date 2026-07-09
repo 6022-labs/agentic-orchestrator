@@ -26,33 +26,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ECDSAInvalidSignature",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "length",
-        "type": "uint256"
-      }
-    ],
-    "name": "ECDSAInvalidSignatureLength",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "s",
-        "type": "bytes32"
-      }
-    ],
-    "name": "ECDSAInvalidSignatureS",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -167,6 +140,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "InvalidCollectionName",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "InvalidInitialization",
     "type": "error"
@@ -180,27 +164,6 @@
       }
     ],
     "name": "InvalidName",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "signer",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "expectedSigner",
-        "type": "address"
-      }
-    ],
-    "name": "InvalidSigner",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidWallet",
     "type": "error"
   },
   {
@@ -233,17 +196,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "signer",
-        "type": "address"
-      }
-    ],
-    "name": "NotSigner",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "sender",
         "type": "address"
       },
@@ -254,17 +206,6 @@
       }
     ],
     "name": "OwnableUnauthorizedAccount",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "signer",
-        "type": "address"
-      }
-    ],
-    "name": "SignerUnchanged",
     "type": "error"
   },
   {
@@ -286,17 +227,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "nonce",
-        "type": "bytes32"
-      }
-    ],
-    "name": "UsedNonce",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "wallet",
         "type": "address"
@@ -308,6 +238,28 @@
       }
     ],
     "name": "UsedWallet",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
+      }
+    ],
+    "name": "WalletNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "parameter",
+        "type": "string"
+      }
+    ],
+    "name": "ZeroAddress",
     "type": "error"
   },
   {
@@ -434,17 +386,30 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "oldSigner",
+        "name": "wallet",
         "type": "address"
+      }
+    ],
+    "name": "AgentWalletAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "newSigner",
+        "name": "wallet",
         "type": "address"
       }
     ],
-    "name": "AgentSignerUpdated",
+    "name": "AgentWalletRemoved",
     "type": "event"
   },
   {
@@ -537,12 +502,6 @@
   },
   {
     "anonymous": false,
-    "inputs": [],
-    "name": "EIP712DomainChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
     "inputs": [
       {
         "indexed": false,
@@ -561,12 +520,6 @@
         "indexed": true,
         "internalType": "address",
         "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "signer",
         "type": "address"
       },
       {
@@ -589,12 +542,6 @@
         "type": "address"
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "signer",
-        "type": "address"
-      },
-      {
         "indexed": false,
         "internalType": "uint256",
         "name": "proposalId",
@@ -611,12 +558,6 @@
         "indexed": true,
         "internalType": "address",
         "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "signer",
         "type": "address"
       },
       {
@@ -753,6 +694,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
+      }
+    ],
+    "name": "addAgentWallet",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -988,19 +947,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "collectionsManager",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1035,11 +981,6 @@
       {
         "internalType": "address",
         "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "signer",
         "type": "address"
       },
       {
@@ -1107,16 +1048,6 @@
         "internalType": "struct NullableUint256",
         "name": "cloneOf",
         "type": "tuple"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "nonce",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
       }
     ],
     "name": "createMintProposal",
@@ -1151,49 +1082,6 @@
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "eip712Domain",
-    "outputs": [
-      {
-        "internalType": "bytes1",
-        "name": "fields",
-        "type": "bytes1"
-      },
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "version",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "chainId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "verifyingContract",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "salt",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "extensions",
-        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -1358,11 +1246,6 @@
           },
           {
             "internalType": "address",
-            "name": "signer",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
             "name": "creator",
             "type": "address"
           },
@@ -1460,11 +1343,6 @@
       },
       {
         "internalType": "address",
-        "name": "initialCollectionsManager",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "initialCollectionsDescriptor",
         "type": "address"
       }
@@ -1520,32 +1398,8 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "nonce",
-        "type": "bytes32"
-      }
-    ],
-    "name": "isNonceUsed",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "signer",
         "type": "address"
       },
       {
@@ -1613,16 +1467,6 @@
         "internalType": "struct NullableUint256",
         "name": "cloneOf",
         "type": "tuple"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "nonce",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
       }
     ],
     "name": "mint",
@@ -1673,11 +1517,6 @@
           {
             "internalType": "address",
             "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "signer",
             "type": "address"
           },
           {
@@ -1906,6 +1745,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
+      }
+    ],
+    "name": "removeAgentWallet",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "role",
         "type": "bytes32"
@@ -2030,25 +1887,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "signerOf",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -2116,34 +1954,6 @@
       }
     ],
     "name": "transferFrom",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "newSigner",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "nonce",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
-    ],
-    "name": "updateAgentSigner",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

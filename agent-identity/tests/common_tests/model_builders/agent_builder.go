@@ -20,7 +20,6 @@ type AgentBuilder struct {
 	owner             *string
 	creator           string
 	walletAddress     string
-	isInternal        bool
 	images            map[string]string
 	attributes        map[string]string
 	ensDomain         string
@@ -59,7 +58,6 @@ func NewAgentBuilder() *AgentBuilder {
 		owner:             &owner,
 		creator:           creator,
 		ensDomain:         ensDomain,
-		isInternal:        false,
 		images: map[string]string{
 			"default": "QmTzQ1Z5b7g8d9f8e6c3b2a1c4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
 		},
@@ -101,11 +99,6 @@ func (b *AgentBuilder) WithOwner(owner string) *AgentBuilder {
 
 func (b *AgentBuilder) WithCreator(creator string) *AgentBuilder {
 	b.creator = creator
-	return b
-}
-
-func (b *AgentBuilder) WithIsInternal(isInternal bool) *AgentBuilder {
-	b.isInternal = isInternal
 	return b
 }
 
@@ -163,7 +156,6 @@ func (b *AgentBuilder) Build() *models.Agent {
 		Images:            b.images,
 		Creator:           b.creator,
 		EnsDomain:         b.ensDomain,
-		IsInternal:        b.isInternal,
 		ProposalId:        b.proposalId,
 		Attributes:        b.attributes,
 		WalletAddress:     b.walletAddress,

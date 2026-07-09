@@ -78,7 +78,6 @@ func TestWhenGettingAgentByWalletAddress(t *testing.T) {
 			assert.Equal(t, createdEntity.Images, fetchedEntity.Images)
 			assert.Equal(t, createdEntity.Creator, fetchedEntity.Creator)
 			assert.Equal(t, createdEntity.EnsDomain, fetchedEntity.EnsDomain)
-			assert.Equal(t, createdEntity.IsInternal, fetchedEntity.IsInternal)
 			assert.Equal(t, createdEntity.Attributes, fetchedEntity.Attributes)
 			assert.Equal(t, createdEntity.WalletAddress, fetchedEntity.WalletAddress)
 		})

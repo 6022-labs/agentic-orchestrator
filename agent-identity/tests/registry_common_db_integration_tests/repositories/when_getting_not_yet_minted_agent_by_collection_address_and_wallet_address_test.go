@@ -77,7 +77,6 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndWalletAddress(t *test
 			assert.Equal(t, createdAgent.Images, fetchedAgent.Images)
 			assert.Equal(t, createdAgent.Creator, fetchedAgent.Creator)
 			assert.Equal(t, createdAgent.EnsDomain, fetchedAgent.EnsDomain)
-			assert.Equal(t, createdAgent.IsInternal, fetchedAgent.IsInternal)
 			assert.Equal(t, createdAgent.Attributes, fetchedAgent.Attributes)
 			assert.Equal(t, createdAgent.WalletAddress, fetchedAgent.WalletAddress)
 		})

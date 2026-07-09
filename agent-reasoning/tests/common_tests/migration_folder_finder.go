@@ -5,10 +5,6 @@ import (
 	"path/filepath"
 )
 
-func FindMigrationFolderPath() (*string, error) {
-	return findMigrationFolderFor("agent_compute_db")
-}
-
 func FindConversationBrokerMigrationFolderPath() (*string, error) {
 	return findMigrationFolderFor("conversation_broker_db")
 }

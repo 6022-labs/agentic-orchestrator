@@ -79,17 +79,6 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumb
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentSignerUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentSignerUpdated) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentSignerUpdatedEvents = append(entry.data.AgentCollectionV1AgentSignerUpdatedEvents, events...)
-	s.trackPendingBlock(blockNumber, entry)
-
-	return nil
-}
-
 func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

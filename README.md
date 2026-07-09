@@ -1,6 +1,6 @@
 # AgenticAI Orchestrator
 
-This repository own the code for the AgenticAI Orchestrator. The main responsibility of the orchestrator is to respond to the requests that come from connectors (see SlackConnector, etc...) using AI agents that the orchestrator manages.
+This repository owns the code for the AgenticAI Orchestrator. The orchestrator mirrors on-chain agent identities (registry + chain synchronizer), brokers multi-agent conversations, and invokes each agent's own runtime (agentic-agent-node) discovered via ENS CCIP-Read and its `/.well-known/6022` card. Bridges (Slack, the web console) are thin translators that speak the broker's HTTP contract.
 
 ## How to run the orchestrator
 
@@ -14,24 +14,12 @@ docker-compose up
 
 This command will mount a database, a pgadmin (to visualize the database), a hashicorp vault, a local blockchain and the APIs.
 
-- You can access the core API at `http://localhost:5000/`
+- You can access the web console at `http://localhost:3000/`
+- You can access the gateway API at `http://localhost:5000/`
 - You can access the blockchain at `http://localhost:8545/`
 - You can access the vault at `http://localhost:8200/` (use `wBGKZCJjfIGqIKB3HMmvcQVt` as passwords)
 - You can access the pgadmin at `http://localhost:5050/` (use `root` as passwords)
 
-#### Command to create a agent postgresql database
+## One-off cleanup after the agent-node revamp
 
-```sql
--- Connect to the default database
--- Create the database
-CREATE DATABASE "<AGENT_ID>"; -- Run this command separately to avoid transaction error
-
--- Create the role with login privilege
-CREATE ROLE "<AGENT_ID>" WITH LOGIN PASSWORD '<ROLE_PASSWORD>';
-
--- Grant all privileges on the database to the role
-GRANT ALL PRIVILEGES ON DATABASE "<AGENT_ID>" TO "<AGENT_ID>";
-
--- Then connect to the created database and run the following command
-GRANT ALL PRIVILEGES ON SCHEMA public TO "<AGENT_ID>";
-```
+Agent knowledge and compute moved into each agent's own node; their orphaned tables can be dropped with `scripts/teardown_part1.sql`.

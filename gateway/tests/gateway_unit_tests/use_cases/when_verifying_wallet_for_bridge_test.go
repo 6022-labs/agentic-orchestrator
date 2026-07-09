@@ -45,7 +45,7 @@ func generateValidVerifyWalletForBridgeRequest() *requests.VerifyWalletForBridge
 
 	return &requests.VerifyWalletForBridgeRequest{
 		AuthenticatedWallet: authenticatedWallet,
-		Platform:            enums.AgentContextMessagePlatformSlack,
+		Platform:            enums.BridgePlatformSlack,
 		Challenge:           challenge,
 		Signature:           signature,
 	}
@@ -63,7 +63,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
 
 			request := generateValidVerifyWalletForBridgeRequest()
-			request.Platform = enums.AgentContextMessagePlatformNone
+			request.Platform = enums.BridgePlatform("none")
 
 			err := suite.sut.Verify(request)
 			assert.NotNil(t, err)

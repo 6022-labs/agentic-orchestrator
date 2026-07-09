@@ -17,7 +17,7 @@ import type { FormCompletionResult } from "@/models/api/validation-error";
 export default function UpsertAgentAttributeDialog() {
   const { agent, isOpen, setAgent, setIsOpen } =
     useUpsertAgentAttributeDialogContext();
-  const { fetchInternalAgents, fetchExternalAgents } = useAgentDashboard();
+  const { fetchExternalAgents } = useAgentDashboard();
 
   const { wallet } = useWallet();
 
@@ -34,7 +34,6 @@ export default function UpsertAgentAttributeDialog() {
       );
 
       toast.success("Agent attribute upserted successfully");
-      fetchInternalAgents();
       fetchExternalAgents();
       setIsOpen(false);
       return {};

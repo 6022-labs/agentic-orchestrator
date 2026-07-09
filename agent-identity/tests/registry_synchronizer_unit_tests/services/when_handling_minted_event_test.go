@@ -6,7 +6,6 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
@@ -22,7 +21,6 @@ import (
 )
 
 type WhenHandlingMintedEventTestingSuite struct {
-	orchestratorSettings               *settings.OrchestratorSettings
 	agentRepositoryMock                *repositories_mocks.MockAgentRepositoryInterface
 	agentCollectionRepositoryMock      *repositories_mocks.MockAgentCollectionRepositoryInterface
 	decentralizedDomainNameBuilder     *registry_common_interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
@@ -34,9 +32,6 @@ type WhenHandlingMintedEventTestingSuite struct {
 func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTestingSuite {
 	mockController := gomock.NewController(t)
 
-	orchestratorPublicKey := common_tests.RandomEthAddress()
-	orchestratorSettings := &settings.OrchestratorSettings{PublicKey: orchestratorPublicKey}
-
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
 	decentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
@@ -44,7 +39,6 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 
 	sut := services.NewMintedEventHandler(
 		zap.NewNop(),
-		orchestratorSettings,
 		agentRepositoryMock,
 		agentCollectionRepositoryMock,
 		agentCollectionBlockchainRequester,
@@ -52,7 +46,6 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 	)
 
 	return &WhenHandlingMintedEventTestingSuite{
-		orchestratorSettings:               orchestratorSettings,
 		agentRepositoryMock:                agentRepositoryMock,
 		agentCollectionRepositoryMock:      agentCollectionRepositoryMock,
 		decentralizedDomainNameBuilder:     decentralizedDomainNameBuilder,
@@ -68,7 +61,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 	newEvent := func(collectionAddress common.Address, tokenID uint64) *abi.AgentCollectionV1Minted {
 		return &abi.AgentCollectionV1Minted{
 			To:      common_tests.RandomEthAddress(),
-			Signer:  common_tests.RandomEthAddress(),
 			TokenId: new(big.Int).SetUint64(tokenID),
 			Raw: types.Log{
 				Address: collectionAddress,
@@ -115,7 +107,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				Return(&abi.AgentInformation{
 					Name:    "Agent",
 					Role:    "expert",
-					Signer:  common_tests.RandomEthAddress(),
 					Creator: common_tests.RandomEthAddress(),
 					Wallets: []common.Address{wallet},
 				}, nil)
@@ -139,43 +130,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given internal signer agent does not exists", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
-			collectionAddress := common_tests.RandomEthAddress()
-			wallet := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 3)
-			suite.agentCollectionBlockchainRequester.
-				EXPECT().
-				GetAgentInformation(collectionAddress, gomock.Any()).
-				Return(&abi.AgentInformation{
-					Name:    "Agent",
-					Role:    "expert",
-					Signer:  suite.orchestratorSettings.PublicKey,
-					Creator: common_tests.RandomEthAddress(),
-					Wallets: []common.Address{wallet},
-				}, nil)
-			suite.agentRepositoryMock.
-				EXPECT().
-				GetByWalletAddress(wallet.Hex()).
-				Return(nil, gorm.ErrRecordNotFound)
-			return event
-		}
-
-		t.Run("Should return explicit internal agent error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenHandlingMintedEventBeforeEach(t)
-			event := initSuite(suite)
-
-			err := suite.sut.Handle(event)
-
-			assert.Error(t, err)
-			assert.ErrorContains(t, err, "must be created by this orchestrator")
-		})
-	})
-
 	t.Run("Given agent collection does not exists", func(t *testing.T) {
 		t.Parallel()
 
@@ -189,7 +143,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				Return(&abi.AgentInformation{
 					Name:    "Agent",
 					Role:    "expert",
-					Signer:  common_tests.RandomEthAddress(),
 					Creator: common_tests.RandomEthAddress(),
 					Wallets: []common.Address{wallet},
 				}, nil)
@@ -244,7 +197,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				Return(&abi.AgentInformation{
 					Name:       "Alice",
 					Role:       "human",
-					Signer:     common_tests.RandomEthAddress(),
 					Creator:    common_tests.RandomEthAddress(),
 					Wallets:    []common.Address{wallet},
 					Images:     []abi.KeyValue{{Key: "avatar", Value: "ipfs://avatar"}},

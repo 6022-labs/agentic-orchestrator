@@ -24,7 +24,6 @@ type WhenProcessingBlockEventsTestingSuite struct {
 	mintedEventHandlerMock                *interfaces_mocks.MockMintedEventHandlerInterface
 	transferEventHandlerMock              *interfaces_mocks.MockTransferEventHandlerInterface
 	agentImageUpdatedEventHandlerMock     *interfaces_mocks.MockAgentImageUpdatedEventHandlerInterface
-	agentSignerUpdatedEventHandlerMock    *interfaces_mocks.MockAgentSignerUpdatedEventHandlerInterface
 	mintProposalCreatedEventHandlerMock   *interfaces_mocks.MockMintProposalCreatedEventHandlerInterface
 	mintProposalRemovedEventHandlerMock   *interfaces_mocks.MockMintProposalRemovedEventHandlerInterface
 	agentAttributeUpdatedEventHandlerMock *interfaces_mocks.MockAgentAttributeUpdatedEventHandlerInterface
@@ -40,7 +39,6 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	mintedEventHandlerMock := interfaces_mocks.NewMockMintedEventHandlerInterface(mockController)
 	transferEventHandlerMock := interfaces_mocks.NewMockTransferEventHandlerInterface(mockController)
 	agentImageUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentImageUpdatedEventHandlerInterface(mockController)
-	agentSignerUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentSignerUpdatedEventHandlerInterface(mockController)
 	mintProposalCreatedEventHandlerMock := interfaces_mocks.NewMockMintProposalCreatedEventHandlerInterface(mockController)
 	mintProposalRemovedEventHandlerMock := interfaces_mocks.NewMockMintProposalRemovedEventHandlerInterface(mockController)
 	agentAttributeUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentAttributeUpdatedEventHandlerInterface(mockController)
@@ -53,7 +51,6 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 			AgentCollectionV1MintedHandler:                mintedEventHandlerMock,
 			AgentCollectionV1TransferHandler:              transferEventHandlerMock,
 			AgentCollectionV1AgentImageUpdatedHandler:     agentImageUpdatedEventHandlerMock,
-			AgentCollectionV1AgentSignerUpdatedHandler:    agentSignerUpdatedEventHandlerMock,
 			AgentCollectionV1MintProposalCreatedHandler:   mintProposalCreatedEventHandlerMock,
 			AgentCollectionV1MintProposalRemovedHandler:   mintProposalRemovedEventHandlerMock,
 			AgentCollectionV1AgentAttributeUpdatedHandler: agentAttributeUpdatedEventHandlerMock,
@@ -66,7 +63,6 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 		mintedEventHandlerMock:                mintedEventHandlerMock,
 		transferEventHandlerMock:              transferEventHandlerMock,
 		agentImageUpdatedEventHandlerMock:     agentImageUpdatedEventHandlerMock,
-		agentSignerUpdatedEventHandlerMock:    agentSignerUpdatedEventHandlerMock,
 		mintProposalCreatedEventHandlerMock:   mintProposalCreatedEventHandlerMock,
 		mintProposalRemovedEventHandlerMock:   mintProposalRemovedEventHandlerMock,
 		agentAttributeUpdatedEventHandlerMock: agentAttributeUpdatedEventHandlerMock,

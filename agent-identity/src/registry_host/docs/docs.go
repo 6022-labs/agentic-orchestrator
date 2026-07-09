@@ -44,149 +44,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/agent/create/first-step": {
-            "post": {
-                "description": "Uploads agent image and creates agent metadata as the first step of agent creation",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Agent"
-                ],
-                "summary": "Start agent creation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Authenticated wallet address",
-                        "name": "authenticatedWallet",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Collection address",
-                        "name": "collectionAddress",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Agent name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Agent role",
-                        "name": "role",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Agent mission",
-                        "name": "mission",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Agent wallet address",
-                        "name": "walletAddress",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "ID of agent to clone",
-                        "name": "cloneOfAgentId",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "Agent image",
-                        "name": "image",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.AgentResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/create/second-step": {
-            "post": {
-                "description": "Completes agent creation by generating the mint signature",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Agent"
-                ],
-                "summary": "Complete agent creation",
-                "parameters": [
-                    {
-                        "description": "Agent ID and authenticated wallet",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AgentByIdRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.CreateAgentSecondStepResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errors.NotFoundError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agent/ens/{ensDomain}": {
             "get": {
                 "description": "Retrieves a minted agent by its ENS domain name",
@@ -270,48 +127,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal": {
-            "get": {
-                "description": "Checks whether a specific agent is an internal agent",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Agent"
-                ],
-                "summary": "Check if agent is internal",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Agent collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Agent collection token ID",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.IsInternalAgentResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agents": {
             "get": {
                 "description": "Retrieves a paginated list of agents with optional filtering",
@@ -345,12 +160,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Sort by field",
                         "name": "sortBy",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by internal status",
-                        "name": "isInternal",
                         "in": "query"
                     }
                 ],
@@ -387,36 +196,6 @@ const docTemplate = `{
                 "AgentRoleFacilitator"
             ]
         },
-        "errors.NotFoundError": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "errors.ValidationError": {
-            "type": "object",
-            "properties": {
-                "field": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.AgentByIdRequest": {
-            "type": "object",
-            "properties": {
-                "agentId": {
-                    "type": "string"
-                },
-                "authenticatedWallet": {
-                    "type": "string"
-                }
-            }
-        },
         "responses.AgentCollectionResponse": {
             "type": "object",
             "properties": {
@@ -452,9 +231,6 @@ const docTemplate = `{
                 "creator": {
                     "type": "string"
                 },
-                "databaseSetupStatus": {
-                    "type": "string"
-                },
                 "ensDomain": {
                     "type": "string"
                 },
@@ -466,15 +242,6 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "isInternal": {
-                    "type": "boolean"
-                },
-                "isSetupCompleted": {
-                    "type": "boolean"
-                },
-                "llmSetupStatus": {
-                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -490,28 +257,6 @@ const docTemplate = `{
                 },
                 "walletAddress": {
                     "type": "string"
-                }
-            }
-        },
-        "responses.CreateAgentSecondStepResponse": {
-            "type": "object",
-            "properties": {
-                "nonce": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                },
-                "signer": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.IsInternalAgentResponse": {
-            "type": "object",
-            "properties": {
-                "isInternalAgent": {
-                    "type": "boolean"
                 }
             }
         },

@@ -24,7 +24,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 	request.Sanitize()
 
 	agents, err := s.agentRepository.Search(repositories.AgentSearchParamsWithPagination{
-		AgentSearchParams: repositories.AgentSearchParams{IsInternal: request.IsInternal},
+		AgentSearchParams: repositories.AgentSearchParams{},
 		Page:              request.Page,
 		SortBy:            request.SortBy.ToDatabaseField(),
 		SortDirection:     request.SortDirection.ToDatabaseDirection(),
@@ -34,7 +34,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 		return nil, err
 	}
 
-	totalCount, err := s.agentRepository.SearchCount(repositories.AgentSearchParams{IsInternal: request.IsInternal})
+	totalCount, err := s.agentRepository.SearchCount(repositories.AgentSearchParams{})
 	if err != nil {
 		return nil, err
 	}

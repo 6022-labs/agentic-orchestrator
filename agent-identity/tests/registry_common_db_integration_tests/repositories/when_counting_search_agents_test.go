@@ -65,7 +65,7 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 			suite := WhenCountingSearchAgentsBeforeEach()
 			defer WhenCountingSearchAgentsAfterEach(suite)
 
-			params := repositories.AgentSearchParams{IsInternal: nil}
+			params := repositories.AgentSearchParams{}
 			count, err := suite.sut.SearchCount(params)
 
 			assert.Nil(t, err)
@@ -83,13 +83,11 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 3; i++ {
-				agent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
+				agent := model_builders.NewAgentBuilder().Build()
 				suite.sut.Save(agent)
 			}
-			agent := model_builders.NewAgentBuilder().WithIsInternal(false).Build()
-			suite.sut.Save(agent)
 
-			params := repositories.AgentSearchParams{IsInternal: ptrBool(true)}
+			params := repositories.AgentSearchParams{}
 			count, err := suite.sut.SearchCount(params)
 
 			assert.Nil(t, err)

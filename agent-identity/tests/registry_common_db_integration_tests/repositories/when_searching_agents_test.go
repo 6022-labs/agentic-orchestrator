@@ -57,76 +57,24 @@ func WhenSearchingAgentsAfterEach(suite *WhenSearchingAgentsTestingSuite) {
 func TestWhenSearchingAgents(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given IsInternal parameters", func(t *testing.T) {
+	t.Run("Given agents in the database", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("And searching with IsInternal true", func(t *testing.T) {
+		t.Run("Should return all agents", func(t *testing.T) {
 			t.Parallel()
+			suite := WhenSearchingAgentsBeforeEach()
+			defer WhenSearchingAgentsAfterEach(suite)
 
-			t.Run("Should return only internal agents", func(t *testing.T) {
-				t.Parallel()
-				suite := WhenSearchingAgentsBeforeEach()
-				defer WhenSearchingAgentsAfterEach(suite)
+			firstAgent := model_builders.NewAgentBuilder().Build()
+			secondAgent := model_builders.NewAgentBuilder().Build()
+			suite.sut.Save(firstAgent)
+			suite.sut.Save(secondAgent)
 
-				internalAgent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
-				nonInternalAgent := model_builders.NewAgentBuilder().WithIsInternal(false).Build()
-				suite.sut.Save(internalAgent)
-				suite.sut.Save(nonInternalAgent)
+			params := repositories.AgentSearchParamsWithPagination{}
+			agents, err := suite.sut.Search(params)
 
-				params := repositories.AgentSearchParamsWithPagination{
-					AgentSearchParams: repositories.AgentSearchParams{IsInternal: ptrBool(true)},
-				}
-				agents, err := suite.sut.Search(params)
-
-				assert.Nil(t, err)
-				assert.Len(t, agents, 1)
-				assert.True(t, agents[0].IsInternal)
-			})
-		})
-
-		t.Run("And searching with IsInternal false", func(t *testing.T) {
-			t.Parallel()
-
-			t.Run("Should return only external agents", func(t *testing.T) {
-				t.Parallel()
-				suite := WhenSearchingAgentsBeforeEach()
-				defer WhenSearchingAgentsAfterEach(suite)
-
-				internalAgent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
-				nonInternalAgent := model_builders.NewAgentBuilder().WithIsInternal(false).Build()
-				suite.sut.Save(internalAgent)
-				suite.sut.Save(nonInternalAgent)
-
-				params := repositories.AgentSearchParamsWithPagination{
-					AgentSearchParams: repositories.AgentSearchParams{IsInternal: ptrBool(false)},
-				}
-				agents, err := suite.sut.Search(params)
-
-				assert.Nil(t, err)
-				assert.Len(t, agents, 1)
-				assert.False(t, agents[0].IsInternal)
-			})
-		})
-
-		t.Run("And not searching with IsInternal", func(t *testing.T) {
-			t.Parallel()
-
-			t.Run("Should return all agents", func(t *testing.T) {
-				t.Parallel()
-				suite := WhenSearchingAgentsBeforeEach()
-				defer WhenSearchingAgentsAfterEach(suite)
-
-				internalAgent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
-				nonInternalAgent := model_builders.NewAgentBuilder().WithIsInternal(false).Build()
-				suite.sut.Save(internalAgent)
-				suite.sut.Save(nonInternalAgent)
-
-				params := repositories.AgentSearchParamsWithPagination{}
-				agents, err := suite.sut.Search(params)
-
-				assert.Nil(t, err)
-				assert.Len(t, agents, 2)
-			})
+			assert.Nil(t, err)
+			assert.Len(t, agents, 2)
 		})
 	})
 
@@ -139,12 +87,11 @@ func TestWhenSearchingAgents(t *testing.T) {
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 5; i++ {
-				agent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
+				agent := model_builders.NewAgentBuilder().Build()
 				suite.sut.Save(agent)
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				AgentSearchParams: repositories.AgentSearchParams{IsInternal: ptrBool(true)},
 				ElementsPerPage:   ptrUint(2),
 				Page:              ptrUint(1),
 			}
@@ -160,12 +107,11 @@ func TestWhenSearchingAgents(t *testing.T) {
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 5; i++ {
-				agent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
+				agent := model_builders.NewAgentBuilder().Build()
 				suite.sut.Save(agent)
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				AgentSearchParams: repositories.AgentSearchParams{IsInternal: ptrBool(true)},
 				ElementsPerPage:   ptrUint(2),
 				Page:              ptrUint(2),
 			}

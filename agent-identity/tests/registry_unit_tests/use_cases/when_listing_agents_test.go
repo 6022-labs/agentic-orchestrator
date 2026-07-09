@@ -143,44 +143,6 @@ func TestWhenListingAgents(t *testing.T) {
 		})
 	})
 
-	t.Run("Given isInternal filter is provided", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should pass isInternal to search params", func(t *testing.T) {
-			t.Parallel()
-			basics := WhenListingAgentsBeforeEach(t)
-
-			isInternal := true
-
-			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
-					assert.NotNil(t, params.IsInternal)
-					assert.True(t, *params.IsInternal)
-					return []*models.Agent{}, nil
-				}).
-				Times(1)
-			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParams) (uint, error) {
-					assert.NotNil(t, params.IsInternal)
-					assert.True(t, *params.IsInternal)
-					return uint(0), nil
-				}).
-				Times(1)
-
-			req := &requests.ListAgentsRequest{
-				IsInternal: &isInternal,
-			}
-
-			response, err := basics.sut.List(req)
-
-			assert.Nil(t, err)
-			assert.NotNil(t, response)
-			assert.Empty(t, response.Agents)
-		})
-	})
-
 	t.Run("Given no pagination parameters are provided", func(t *testing.T) {
 		t.Parallel()
 

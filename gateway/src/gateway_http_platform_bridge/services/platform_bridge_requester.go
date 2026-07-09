@@ -24,7 +24,7 @@ func NewPlatformBridgeRequester(
 	}
 }
 
-func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(platform enums.AgentContextMessagePlatform, challenge, walletAddress string) error {
+func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(platform enums.BridgePlatform, challenge, walletAddress string) error {
 	platformBaseUrl, err := r.getPlatformBaseUrl(platform)
 	if err != nil {
 		return err
@@ -36,9 +36,9 @@ func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(platform enums.AgentC
 	})
 }
 
-func (r *PlatformBridgeRequester) getPlatformBaseUrl(platform enums.AgentContextMessagePlatform) (string, error) {
+func (r *PlatformBridgeRequester) getPlatformBaseUrl(platform enums.BridgePlatform) (string, error) {
 	switch platform {
-	case enums.AgentContextMessagePlatformSlack:
+	case enums.BridgePlatformSlack:
 		return r.platformBridgeSettings.SlackBridgeUrl, nil
 	default:
 		return "", fmt.Errorf("unsupported platform: %s", platform)

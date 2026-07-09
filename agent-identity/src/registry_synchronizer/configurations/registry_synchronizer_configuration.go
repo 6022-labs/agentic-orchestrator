@@ -72,14 +72,6 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewAgentSignerUpdatedEventHandler,
-		dig.As(new(interfaces.AgentSignerUpdatedEventHandlerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewAgentAttributeUpdatedEventHandler,
 		dig.As(new(interfaces.AgentAttributeUpdatedEventHandlerInterface)),
 	)

@@ -10,7 +10,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/samber/lo"
@@ -20,7 +19,6 @@ import (
 
 type MintProposalCreatedEventHandler struct {
 	logger                         *zap.Logger
-	orchestratorSettings           *settings.OrchestratorSettings
 	agentRepository                repositories.AgentRepositoryInterface
 	agentCollectionRepository      repositories.AgentCollectionRepositoryInterface
 	agentCollectionRequester       interfaces.AgentCollectionBlockchainRequesterInterface
@@ -29,7 +27,6 @@ type MintProposalCreatedEventHandler struct {
 
 func NewMintProposalCreatedEventHandler(
 	logger *zap.Logger,
-	orchestratorSettings *settings.OrchestratorSettings,
 	agentRepository repositories.AgentRepositoryInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	agentCollectionRequester interfaces.AgentCollectionBlockchainRequesterInterface,
@@ -37,7 +34,6 @@ func NewMintProposalCreatedEventHandler(
 ) *MintProposalCreatedEventHandler {
 	return &MintProposalCreatedEventHandler{
 		logger:                         logger,
-		orchestratorSettings:           orchestratorSettings,
 		agentRepository:                agentRepository,
 		agentCollectionRepository:      agentCollectionRepository,
 		agentCollectionRequester:       agentCollectionRequester,
@@ -92,10 +88,6 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 			return nil
 		}
 
-		if handler.orchestratorSettings.PublicKey.Hex() == mintProposal.Signer.Hex() {
-			return fmt.Errorf("agent with address %s must be created by this orchestrator but it was not found", agentWallet.Hex())
-		}
-
 		var agentRole enums.AgentRole
 		if err := agentRole.Set(mintProposal.Role); err != nil {
 			return fmt.Errorf("failed to set agent role: %w", err)
@@ -109,7 +101,6 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		ownerHex := mintProposal.Owner.Hex()
 
 		agent = &models.Agent{
-			IsInternal:        false,
 			WalletAddress:     agentWallet.Hex(),
 			CollectionAddress: collectionAddress.Hex(),
 			Name:              mintProposal.Name,

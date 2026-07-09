@@ -31,7 +31,6 @@ type Agent struct {
 	Images     map[string]string `gorm:"type:jsonb;serializer:json" json:"images"`
 	Attributes map[string]string `gorm:"type:jsonb;serializer:json" json:"attributes"`
 
-	IsInternal bool `gorm:"type:boolean;not null" json:"isInternal"`
 
 	UpdatedAt time.Time  `gorm:"type:timestamp;not null" json:"updatedAt"`
 	CreatedAt time.Time  `gorm:"type:timestamp;not null" json:"createdAt"`

@@ -17,12 +17,7 @@ type AgentResponse struct {
 	CloneOf       *uint64           `json:"cloneOf"`
 	Attributes    map[string]string `json:"attributes"`
 	EnsDomain     string            `json:"ensDomain"`
-	IsInternal    bool              `json:"isInternal"`
 	WalletAddress string            `json:"walletAddress"`
-
-	LLMSetupStatus      *string `json:"llmSetupStatus"`
-	DatabaseSetupStatus *string `json:"databaseSetupStatus"`
-	IsSetupCompleted    *bool   `json:"isSetupCompleted"`
 
 	ProposalId        *uint64 `json:"proposalId"`
 	CollectionTokenId *uint64 `json:"collectionTokenId"`
@@ -43,7 +38,6 @@ func AgentResponseFromModel(agent *models.Agent) *AgentResponse {
 		Creator:           agent.Creator,
 		CloneOf:           agent.CloneOf,
 		EnsDomain:         agent.EnsDomain,
-		IsInternal:        agent.IsInternal,
 		Attributes:        agent.Attributes,
 		WalletAddress:     agent.WalletAddress,
 		ProposalId:        agent.ProposalId,

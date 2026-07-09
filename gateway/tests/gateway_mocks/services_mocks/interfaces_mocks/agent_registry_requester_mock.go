@@ -41,36 +41,6 @@ func (m *MockAgentRegistryRequesterInterface) EXPECT() *MockAgentRegistryRequest
 	return m.recorder
 }
 
-// CreateAgentFirstStep mocks base method.
-func (m *MockAgentRegistryRequesterInterface) CreateAgentFirstStep(request *interfaces.CreateRegistryAgentFirstStepRequest) (*responses.AgentResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAgentFirstStep", request)
-	ret0, _ := ret[0].(*responses.AgentResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateAgentFirstStep indicates an expected call of CreateAgentFirstStep.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) CreateAgentFirstStep(request any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAgentFirstStep", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).CreateAgentFirstStep), request)
-}
-
-// CreateAgentSecondStep mocks base method.
-func (m *MockAgentRegistryRequesterInterface) CreateAgentSecondStep(request *interfaces.CreateRegistryAgentSecondStepRequest) (*responses.CreateAgentSecondStepResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAgentSecondStep", request)
-	ret0, _ := ret[0].(*responses.CreateAgentSecondStepResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateAgentSecondStep indicates an expected call of CreateAgentSecondStep.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) CreateAgentSecondStep(request any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAgentSecondStep", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).CreateAgentSecondStep), request)
-}
-
 // GetAgent mocks base method.
 func (m *MockAgentRegistryRequesterInterface) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.AgentResponse, error) {
 	m.ctrl.T.Helper()
@@ -84,51 +54,6 @@ func (m *MockAgentRegistryRequesterInterface) GetAgent(agentCollectionAddress st
 func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), agentCollectionAddress, agentCollectionTokenId)
-}
-
-// GetAgentsByEnsDomains mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetAgentsByEnsDomains(ensDomains []string) ([]*responses.AgentResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentsByEnsDomains", ensDomains)
-	ret0, _ := ret[0].([]*responses.AgentResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAgentsByEnsDomains indicates an expected call of GetAgentsByEnsDomains.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgentsByEnsDomains(ensDomains any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsByEnsDomains", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgentsByEnsDomains), ensDomains)
-}
-
-// GetMintedAgentByEnsDomain mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetMintedAgentByEnsDomain(ensDomain string) (*responses.AgentResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMintedAgentByEnsDomain", ensDomain)
-	ret0, _ := ret[0].(*responses.AgentResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMintedAgentByEnsDomain indicates an expected call of GetMintedAgentByEnsDomain.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetMintedAgentByEnsDomain(ensDomain any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedAgentByEnsDomain", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetMintedAgentByEnsDomain), ensDomain)
-}
-
-// IsInternalAgent mocks base method.
-func (m *MockAgentRegistryRequesterInterface) IsInternalAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.IsInternalAgentResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsInternalAgent", agentCollectionAddress, agentCollectionTokenId)
-	ret0, _ := ret[0].(*responses.IsInternalAgentResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsInternalAgent indicates an expected call of IsInternalAgent.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) IsInternalAgent(agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsInternalAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).IsInternalAgent), agentCollectionAddress, agentCollectionTokenId)
 }
 
 // ListAgentCollections mocks base method.
@@ -160,4 +85,3 @@ func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) ListAgents(request an
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAgents", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).ListAgents), request)
 }
-

@@ -6,7 +6,6 @@ import (
 )
 
 type AgentSearchParams struct {
-	IsInternal *bool
 }
 
 type AgentSearchParamsWithPagination struct {

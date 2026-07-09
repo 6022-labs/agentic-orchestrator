@@ -5,5 +5,4 @@ type ExternalListAgentsRequest struct {
 	ElementsPerPage *uint
 	SortBy          *string
 	SortDirection   *string
-	IsInternal      *bool
 }

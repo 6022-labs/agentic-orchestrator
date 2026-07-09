@@ -9,7 +9,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -18,7 +17,6 @@ import (
 
 type MintedEventHandler struct {
 	logger                             *zap.Logger
-	orchestratorSettings               *settings.OrchestratorSettings
 	agentRepository                    repositories.AgentRepositoryInterface
 	agentCollectionRepository          repositories.AgentCollectionRepositoryInterface
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface
@@ -27,15 +25,13 @@ type MintedEventHandler struct {
 
 func NewMintedEventHandler(
 	logger *zap.Logger,
-	orchestratorSettings *settings.OrchestratorSettings,
 	agentRepository repositories.AgentRepositoryInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface,
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *MintedEventHandler {
 	return &MintedEventHandler{
-		logger:               logger,
-		orchestratorSettings: orchestratorSettings,
+		logger: logger,
 
 		agentRepository:                    agentRepository,
 		agentCollectionRepository:          agentCollectionRepository,
@@ -71,14 +67,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	}
 
 	if agent == nil {
-		if handler.orchestratorSettings.PublicKey.Hex() == agentInformation.Signer.Hex() {
-			return fmt.Errorf("agent with address %s must be created by this orchestrator but it was not found", agentInformation.Wallets[0].Hex())
-		}
-
-		// Create a new external agent
-		agent = &models.Agent{
-			IsInternal: false,
-		}
+		agent = &models.Agent{}
 	}
 
 	owner, err := handler.agentCollectionBlockchainRequester.GetAgentOwner(

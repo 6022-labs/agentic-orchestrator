@@ -12,25 +12,6 @@ definitions:
     - AgentRoleHuman
     - AgentRoleExpert
     - AgentRoleFacilitator
-  errors.NotFoundError:
-    properties:
-      message:
-        type: string
-    type: object
-  errors.ValidationError:
-    properties:
-      field:
-        type: string
-      message:
-        type: string
-    type: object
-  requests.AgentByIdRequest:
-    properties:
-      agentId:
-        type: string
-      authenticatedWallet:
-        type: string
-    type: object
   responses.AgentCollectionResponse:
     properties:
       address:
@@ -54,8 +35,6 @@ definitions:
         type: integer
       creator:
         type: string
-      databaseSetupStatus:
-        type: string
       ensDomain:
         type: string
       id:
@@ -64,12 +43,6 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      isInternal:
-        type: boolean
-      isSetupCompleted:
-        type: boolean
-      llmSetupStatus:
-        type: string
       name:
         type: string
       owner:
@@ -80,20 +53,6 @@ definitions:
         $ref: '#/definitions/enums.AgentRole'
       walletAddress:
         type: string
-    type: object
-  responses.CreateAgentSecondStepResponse:
-    properties:
-      nonce:
-        type: string
-      signature:
-        type: string
-      signer:
-        type: string
-    type: object
-  responses.IsInternalAgentResponse:
-    properties:
-      isInternalAgent:
-        type: boolean
     type: object
   responses.ListAgentsResponse:
     properties:
@@ -162,131 +121,6 @@ paths:
       summary: Get agent
       tags:
       - Agent
-  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal:
-    get:
-      description: Checks whether a specific agent is an internal agent
-      parameters:
-      - description: Agent collection address
-        in: path
-        name: agentCollectionAddress
-        required: true
-        type: string
-      - description: Agent collection token ID
-        in: path
-        name: agentCollectionTokenId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.IsInternalAgentResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Check if agent is internal
-      tags:
-      - Agent
-  /agent/create/first-step:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Uploads agent image and creates agent metadata as the first step
-        of agent creation
-      parameters:
-      - description: Authenticated wallet address
-        in: formData
-        name: authenticatedWallet
-        required: true
-        type: string
-      - description: Collection address
-        in: formData
-        name: collectionAddress
-        required: true
-        type: string
-      - description: Agent name
-        in: formData
-        name: name
-        required: true
-        type: string
-      - description: Agent role
-        in: formData
-        name: role
-        required: true
-        type: string
-      - description: Agent mission
-        in: formData
-        name: mission
-        required: true
-        type: string
-      - description: Agent wallet address
-        in: formData
-        name: walletAddress
-        type: string
-      - description: ID of agent to clone
-        in: formData
-        name: cloneOfAgentId
-        type: integer
-      - description: Agent image
-        in: formData
-        name: image
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.AgentResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.ValidationError'
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Start agent creation
-      tags:
-      - Agent
-  /agent/create/second-step:
-    post:
-      consumes:
-      - application/json
-      description: Completes agent creation by generating the mint signature
-      parameters:
-      - description: Agent ID and authenticated wallet
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.AgentByIdRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.CreateAgentSecondStepResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.ValidationError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/errors.NotFoundError'
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Complete agent creation
-      tags:
-      - Agent
   /agent/ens/{ensDomain}:
     get:
       description: Retrieves a minted agent by its ENS domain name
@@ -334,10 +168,6 @@ paths:
         in: query
         name: sortBy
         type: string
-      - description: Filter by internal status
-        in: query
-        name: isInternal
-        type: boolean
       produces:
       - application/json
       responses:

@@ -46,9 +46,6 @@ func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagina
 
 	db := r.client.GetDB().Model(&models.Agent{})
 
-	if params.IsInternal != nil {
-		db = db.Where("is_internal = ?", *params.IsInternal)
-	}
 
 	if params.ElementsPerPage != nil {
 		offset := 0
@@ -83,9 +80,6 @@ func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (ui
 
 	db := r.client.GetDB().Model(&models.Agent{})
 
-	if params.IsInternal != nil {
-		db = db.Where("is_internal = ?", *params.IsInternal)
-	}
 
 	tx := db.Count(&count)
 	if tx.Error != nil {

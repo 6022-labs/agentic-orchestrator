@@ -50,7 +50,6 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 	newEvent := func(collectionAddress common.Address, proposalID uint64) *abi.AgentCollectionV1MintProposalRemoved {
 		return &abi.AgentCollectionV1MintProposalRemoved{
 			Owner:      common_tests.RandomEthAddress(),
-			Signer:     common_tests.RandomEthAddress(),
 			ProposalId: new(big.Int).SetUint64(proposalID),
 			Raw: types.Log{
 				Address: collectionAddress,
