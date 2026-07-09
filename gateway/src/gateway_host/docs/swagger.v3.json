@@ -36,20 +36,15 @@
                 },
                 "type": "object"
             },
-            "requests.FinishJwtAuthenticationRequest": {
+            "requests.VerifyAuthRequest": {
                 "properties": {
-                    "message": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "nonce": {
                         "type": "string"
                     },
                     "signature": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "requests.InitializeJwtAuthenticationRequest": {
-                "properties": {
-                    "address": {
                         "type": "string"
                     }
                 },
@@ -133,16 +128,11 @@
                 },
                 "type": "object"
             },
-            "responses.FinishJwtAuthenticationResponse": {
+            "responses.GetAuthChallengeResponse": {
                 "properties": {
-                    "jwt": {
+                    "expiresAt": {
                         "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "responses.InitializeJwtAuthenticationResponse": {
-                "properties": {
+                    },
                     "nonce": {
                         "type": "string"
                     }
@@ -166,6 +156,17 @@
                     },
                     "totalElements": {
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "responses.VerifyAuthResponse": {
+                "properties": {
+                    "expiresAt": {
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -305,7 +306,38 @@
                 ]
             }
         },
-        "/auth/jwt/finish": {
+        "/auth/challenge": {
+            "get": {
+                "description": "Returns a single-use nonce the wallet must sign",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.GetAuthChallengeResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Get authentication challenge",
+                "tags": [
+                    "authentication"
+                ]
+            }
+        },
+        "/auth/verify": {
             "post": {
                 "description": "Verifies the signed nonce and returns a JWT token",
                 "requestBody": {
@@ -317,15 +349,15 @@
                                         "type": "object"
                                     },
                                     {
-                                        "$ref": "#/components/schemas/requests.FinishJwtAuthenticationRequest",
+                                        "$ref": "#/components/schemas/requests.VerifyAuthRequest",
                                         "summary": "request",
-                                        "description": "authentication request"
+                                        "description": "verify request"
                                     }
                                 ]
                             }
                         }
                     },
-                    "description": "authentication request",
+                    "description": "verify request",
                     "required": true
                 },
                 "responses": {
@@ -333,7 +365,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/responses.FinishJwtAuthenticationResponse"
+                                    "$ref": "#/components/schemas/responses.VerifyAuthResponse"
                                 }
                             }
                         },
@@ -360,68 +392,7 @@
                         "description": "Internal Server Error"
                     }
                 },
-                "summary": "Complete JWT authentication",
-                "tags": [
-                    "authentication"
-                ]
-            }
-        },
-        "/auth/jwt/init": {
-            "post": {
-                "description": "Initializes the JWT authentication flow by returning a nonce",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "oneOf": [
-                                    {
-                                        "type": "object"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/requests.InitializeJwtAuthenticationRequest",
-                                        "summary": "request",
-                                        "description": "authentication request"
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "description": "authentication request",
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/responses.InitializeJwtAuthenticationResponse"
-                                }
-                            }
-                        },
-                        "description": "OK"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
-                                }
-                            }
-                        },
-                        "description": "Bad Request"
-                    },
-                    "500": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "description": "Internal Server Error"
-                    }
-                },
-                "summary": "Start JWT authentication",
+                "summary": "Verify signed challenge",
                 "tags": [
                     "authentication"
                 ]

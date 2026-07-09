@@ -11,6 +11,7 @@ package interfaces_mocks
 
 import (
 	reflect "reflect"
+	time "time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 	gomock "go.uber.org/mock/gomock"
@@ -41,18 +42,19 @@ func (m *MockJwtManagerInterface) EXPECT() *MockJwtManagerInterfaceMockRecorder 
 }
 
 // CreateJwtToken mocks base method.
-func (m *MockJwtManagerInterface) CreateJwtToken(address string, chainId uint64) (string, error) {
+func (m *MockJwtManagerInterface) CreateJwtToken(address string) (string, time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateJwtToken", address, chainId)
+	ret := m.ctrl.Call(m, "CreateJwtToken", address)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(time.Time)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CreateJwtToken indicates an expected call of CreateJwtToken.
-func (mr *MockJwtManagerInterfaceMockRecorder) CreateJwtToken(address, chainId any) *gomock.Call {
+func (mr *MockJwtManagerInterfaceMockRecorder) CreateJwtToken(address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).CreateJwtToken), address, chainId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).CreateJwtToken), address)
 }
 
 // ExtractSubFromToken mocks base method.

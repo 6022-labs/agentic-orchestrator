@@ -2,6 +2,7 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/jwt"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/signature"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -49,16 +50,8 @@ func AddGatewayConfiguration(container *dig.Container) {
 
 	// Auth
 	err = container.Provide(
-		jwt.NewNonceGenerator,
-		dig.As(new(interfaces.NonceGeneratorInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		jwt.NewSIWEDetailsExtractor,
-		dig.As(new(interfaces.SIWEDetailsExtractorInterface)),
+		auth.NewNonceStore,
+		dig.As(new(interfaces.NonceStoreInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -90,16 +83,16 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewInitializeJwtAuthentication,
-		dig.As(new(use_cases.InitializeJwtAuthenticationInterface)),
+		use_cases.NewGetAuthChallenge,
+		dig.As(new(use_cases.GetAuthChallengeInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewFinishJwtAuthentication,
-		dig.As(new(use_cases.FinishJwtAuthenticationInterface)),
+		use_cases.NewVerifyAuth,
+		dig.As(new(use_cases.VerifyAuthInterface)),
 	)
 	if err != nil {
 		panic(err)

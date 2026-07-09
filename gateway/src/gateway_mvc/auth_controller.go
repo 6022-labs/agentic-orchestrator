@@ -10,25 +10,25 @@ import (
 )
 
 const (
-	INIT_JWT_AUTHENTICATION_ENDPOINT   = "/auth/jwt/init"
-	FINISH_JWT_AUTHENTICATION_ENDPOINT = "/auth/jwt/finish"
+	AUTH_CHALLENGE_ENDPOINT = "/auth/challenge"
+	AUTH_VERIFY_ENDPOINT    = "/auth/verify"
 )
 
 type AuthController struct {
-	logger                      *zap.Logger
-	finishJwtAuthentication     use_cases.FinishJwtAuthenticationInterface
-	initializeJwtAuthentication use_cases.InitializeJwtAuthenticationInterface
+	logger           *zap.Logger
+	getAuthChallenge use_cases.GetAuthChallengeInterface
+	verifyAuth       use_cases.VerifyAuthInterface
 }
 
 func NewAuthController(
 	logger *zap.Logger,
-	finishJwtAuthentication use_cases.FinishJwtAuthenticationInterface,
-	initializeJwtAuthentication use_cases.InitializeJwtAuthenticationInterface,
+	getAuthChallenge use_cases.GetAuthChallengeInterface,
+	verifyAuth use_cases.VerifyAuthInterface,
 ) *AuthController {
 	return &AuthController{
-		logger:                      logger,
-		finishJwtAuthentication:     finishJwtAuthentication,
-		initializeJwtAuthentication: initializeJwtAuthentication,
+		logger:           logger,
+		getAuthChallenge: getAuthChallenge,
+		verifyAuth:       verifyAuth,
 	}
 }
 
@@ -37,86 +37,52 @@ func (controller *AuthController) InitAuthenticatedRoutes(app fiber.Router) {
 }
 
 func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
-	app.Post(INIT_JWT_AUTHENTICATION_ENDPOINT, controller.InitializeJwtAuthentication)
-	app.Post(FINISH_JWT_AUTHENTICATION_ENDPOINT, controller.FinishJwtAuthentication)
+	app.Get(AUTH_CHALLENGE_ENDPOINT, controller.GetAuthChallenge)
+	app.Post(AUTH_VERIFY_ENDPOINT, controller.VerifyAuth)
 }
 
-// InitializeJwtAuthentication godoc
-// @Summary      Start JWT authentication
-// @Description  Initializes the JWT authentication flow by returning a nonce
+// GetAuthChallenge godoc
+// @Summary      Get authentication challenge
+// @Description  Returns a single-use nonce the wallet must sign
 // @Tags         authentication
-// @Accept       json
 // @Produce      json
-// @Param        request body requests.InitializeJwtAuthenticationRequest true "authentication request"
-// @Success      200 {object} responses.InitializeJwtAuthenticationResponse
-// @Failure      400 {object} errors.ValidationError
+// @Success      200 {object} responses.GetAuthChallengeResponse
 // @Failure      500 {string} string "Internal Server Error"
-// @Router       /auth/jwt/init [post]
-func (controller *AuthController) InitializeJwtAuthentication(c *fiber.Ctx) error {
-	controller.logger.Info("Initialize JWT authentication request received")
-	controller.logger.Debug("Request parameters", zap.Any("body", c.Body()))
-
-	request := new(requests.InitializeJwtAuthenticationRequest)
-	if err := c.BodyParser(request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
-		return err
-	}
-
-	controller.logger.Debug("Parsed request", zap.Any("request", request))
-
-	nonce, err := controller.initializeJwtAuthentication.Init(request)
+// @Router       /auth/challenge [get]
+func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
+	challenge, err := controller.getAuthChallenge.Get()
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-
-		controller.logger.Error("Failed to initialize JWT authentication", zap.Error(err))
-
+		controller.logger.Error("Failed to generate auth challenge", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
-
-	controller.logger.Info("Initialize JWT authentication request completed successfully")
-	controller.logger.Debug("Response", zap.Any("nonce", nonce))
-
-	return c.JSON(nonce)
+	return c.JSON(challenge)
 }
 
-// FinishJwtAuthentication godoc
-// @Summary      Complete JWT authentication
+// VerifyAuth godoc
+// @Summary      Verify signed challenge
 // @Description  Verifies the signed nonce and returns a JWT token
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
-// @Param        request body requests.FinishJwtAuthenticationRequest true "authentication request"
-// @Success      200 {object} responses.FinishJwtAuthenticationResponse
+// @Param        request body requests.VerifyAuthRequest true "verify request"
+// @Success      200 {object} responses.VerifyAuthResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      500 {string} string "Internal Server Error"
-// @Router       /auth/jwt/finish [post]
-func (controller *AuthController) FinishJwtAuthentication(c *fiber.Ctx) error {
-	controller.logger.Info("Finish JWT authentication request received")
-	controller.logger.Debug("Request parameters", zap.Any("body", c.Body()))
-
-	request := new(requests.FinishJwtAuthenticationRequest)
+// @Router       /auth/verify [post]
+func (controller *AuthController) VerifyAuth(c *fiber.Ctx) error {
+	request := new(requests.VerifyAuthRequest)
 	if err := c.BodyParser(request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
-		return err
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	controller.logger.Debug("Parsed request", zap.Any("request", request))
-
-	response, err := controller.finishJwtAuthentication.Finish(request)
+	response, err := controller.verifyAuth.Verify(request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
-
-		controller.logger.Error("Failed to finish JWT authentication", zap.Error(err))
-
+		controller.logger.Error("Failed to verify auth", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
-
-	controller.logger.Info("Finish JWT authentication request completed successfully")
-	controller.logger.Debug("Response", zap.Any("response", response))
 
 	return c.JSON(response)
 }

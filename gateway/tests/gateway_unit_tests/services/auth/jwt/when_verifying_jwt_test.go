@@ -40,9 +40,8 @@ func TestWhenVerifyingJwt(t *testing.T) {
 
 			suite := WhenVerifyingJwtBeforeEach()
 			address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-			chainId := uint64(1)
 
-			token, _ := suite.sut.CreateJwtToken(address, chainId)
+			token, _, _ := suite.sut.CreateJwtToken(address)
 
 			result, err := suite.sut.VerifyJwtToken(token)
 
@@ -59,9 +58,8 @@ func TestWhenVerifyingJwt(t *testing.T) {
 
 			suite := WhenVerifyingJwtBeforeEach()
 			address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-			chainId := uint64(1)
 
-			token, _ := suite.sut.CreateJwtToken(address, chainId)
+			token, _, _ := suite.sut.CreateJwtToken(address)
 
 			suite.jwtSettings.Hash = "wrong"
 
@@ -80,9 +78,8 @@ func TestWhenVerifyingJwt(t *testing.T) {
 
 			suite := WhenVerifyingJwtBeforeEach()
 			address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-			chainId := uint64(1)
 
-			token, _ := suite.sut.CreateJwtToken(address, chainId)
+			token, _, _ := suite.sut.CreateJwtToken(address)
 
 			result, err := suite.sut.VerifyJwtToken(token + "wrong")
 
@@ -99,9 +96,8 @@ func TestWhenVerifyingJwt(t *testing.T) {
 
 			suite := WhenVerifyingJwtBeforeEach()
 			address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-			chainId := uint64(1)
 
-			token, _ := suite.sut.CreateJwtToken(address, chainId)
+			token, _, _ := suite.sut.CreateJwtToken(address)
 
 			time.Sleep(time.Duration(suite.jwtSettings.LivingTime) * time.Second)
 

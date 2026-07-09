@@ -156,41 +156,21 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/jwt/finish": {
-            "post": {
-                "description": "Verifies the signed nonce and returns a JWT token",
-                "consumes": [
-                    "application/json"
-                ],
+        "/auth/challenge": {
+            "get": {
+                "description": "Returns a single-use nonce the wallet must sign",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "authentication"
                 ],
-                "summary": "Complete JWT authentication",
-                "parameters": [
-                    {
-                        "description": "authentication request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.FinishJwtAuthenticationRequest"
-                        }
-                    }
-                ],
+                "summary": "Get authentication challenge",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.FinishJwtAuthenticationResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/responses.GetAuthChallengeResponse"
                         }
                     },
                     "500": {
@@ -202,9 +182,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/jwt/init": {
+        "/auth/verify": {
             "post": {
-                "description": "Initializes the JWT authentication flow by returning a nonce",
+                "description": "Verifies the signed nonce and returns a JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -214,15 +194,15 @@ const docTemplate = `{
                 "tags": [
                     "authentication"
                 ],
-                "summary": "Start JWT authentication",
+                "summary": "Verify signed challenge",
                 "parameters": [
                     {
-                        "description": "authentication request",
+                        "description": "verify request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.InitializeJwtAuthenticationRequest"
+                            "$ref": "#/definitions/requests.VerifyAuthRequest"
                         }
                     }
                 ],
@@ -230,7 +210,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.InitializeJwtAuthenticationResponse"
+                            "$ref": "#/definitions/responses.VerifyAuthResponse"
                         }
                     },
                     "400": {
@@ -362,25 +342,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.FinishJwtAuthenticationRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.InitializeJwtAuthenticationRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                }
-            }
-        },
         "requests.ListAgentSortBy": {
             "type": "string",
             "enum": [
@@ -408,6 +369,20 @@ const docTemplate = `{
                 "SortDirectionAsc",
                 "SortDirectionDesc"
             ]
+        },
+        "requests.VerifyAuthRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
         },
         "requests.VerifyWalletForBridgeRequest": {
             "type": "object",
@@ -487,17 +462,12 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.FinishJwtAuthenticationResponse": {
+        "responses.GetAuthChallengeResponse": {
             "type": "object",
             "properties": {
-                "jwt": {
+                "expiresAt": {
                     "type": "string"
-                }
-            }
-        },
-        "responses.InitializeJwtAuthenticationResponse": {
-            "type": "object",
-            "properties": {
+                },
                 "nonce": {
                     "type": "string"
                 }
@@ -520,6 +490,17 @@ const docTemplate = `{
                 },
                 "totalElements": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.VerifyAuthResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         }

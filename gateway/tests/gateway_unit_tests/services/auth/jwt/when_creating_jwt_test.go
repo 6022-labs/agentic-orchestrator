@@ -33,11 +33,11 @@ func TestWhenCreatingJwt(t *testing.T) {
 
 		suite := WhenCreatingJwtBeforeEach()
 		address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-		chainId := uint64(1)
 
-		token, err := suite.sut.CreateJwtToken(address, chainId)
+		token, expiresAt, err := suite.sut.CreateJwtToken(address)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, token)
+		assert.False(t, expiresAt.IsZero())
 	})
 }

@@ -18,16 +18,17 @@ func NewJwtManager(jwtSettings *settings.JwtSettings) *JwtManager {
 	}
 }
 
-func (j *JwtManager) CreateJwtToken(address string, chainId uint64) (string, error) {
+func (j *JwtManager) CreateJwtToken(address string) (string, time.Time, error) {
+	expiresAt := time.Now().Add(time.Duration(j.jwtSettings.LivingTime) * time.Second)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": address,
-		"cId": chainId,
-		"iat": time.Now().Unix(),                                   // Generation time
-		"nbf": time.Now().Unix(),                                   // Cannot use before
-		"exp": time.Now().Unix() + int64(j.jwtSettings.LivingTime), // Expires at
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"exp": expiresAt.Unix(),
 	})
 
-	return token.SignedString([]byte(j.jwtSettings.Hash))
+	signed, err := token.SignedString([]byte(j.jwtSettings.Hash))
+	return signed, expiresAt, err
 }
 
 func (j *JwtManager) VerifyJwtToken(token string) (string, error) {
