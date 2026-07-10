@@ -3,6 +3,7 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/prompts"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases"
 	"go.uber.org/dig"
@@ -109,6 +110,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(use_cases.NewListConversationParticipants, dig.As(new(use_cases.ListConversationParticipantsInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		prompts.NewConversationPromptBuilder,
+		dig.As(new(service_interfaces.ConversationPromptBuilderInterface)),
+	)
 	if err != nil {
 		panic(err)
 	}

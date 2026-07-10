@@ -12,10 +12,14 @@ import (
 	"go.uber.org/zap"
 )
 
-const GET_AGENT_ENDPOINT = "/agent/%s/%d"
+const (
+	GET_AGENT_ENDPOINT               = "/agent/%s/%d"
+	GET_AGENT_BY_ENS_DOMAIN_ENDPOINT = "/agent/ens/%s"
+)
 
 type AgentIdentityRegistryClientInterface interface {
 	GetAgent(collectionAddress string, collectionTokenId uint64) (*models.ExternalAgentResponse, error)
+	GetMintedAgentByEnsDomain(ensDomain string) (*models.ExternalAgentResponse, error)
 }
 
 type AgentIdentityRegistryClient struct {
@@ -41,8 +45,14 @@ func NewAgentIdentityRegistryClient(params newAgentIdentityRegistryClientParams)
 }
 
 func (client *AgentIdentityRegistryClient) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.ExternalAgentResponse, error) {
-	url := fmt.Sprintf(client.agentIdentityRegistrySettings.BaseUrl+GET_AGENT_ENDPOINT, collectionAddress, collectionTokenId)
+	return client.getAgent(fmt.Sprintf(client.agentIdentityRegistrySettings.BaseUrl+GET_AGENT_ENDPOINT, collectionAddress, collectionTokenId))
+}
 
+func (client *AgentIdentityRegistryClient) GetMintedAgentByEnsDomain(ensDomain string) (*models.ExternalAgentResponse, error) {
+	return client.getAgent(fmt.Sprintf(client.agentIdentityRegistrySettings.BaseUrl+GET_AGENT_BY_ENS_DOMAIN_ENDPOINT, ensDomain))
+}
+
+func (client *AgentIdentityRegistryClient) getAgent(url string) (*models.ExternalAgentResponse, error) {
 	httpRequest, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)

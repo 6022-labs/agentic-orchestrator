@@ -49,12 +49,17 @@ func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*mode
 		return existing, true, nil
 	}
 
-	participant, err := uc.agentRegistryRequester.GetAgent(request.CollectionAddress, tokenId)
+	registryAgent, err := uc.agentRegistryRequester.GetAgent(request.CollectionAddress, tokenId)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to fetch agent from registry: %w", err)
 	}
-	if participant == nil {
+	if registryAgent == nil {
 		return nil, false, cb_errors.NewNotFoundError("agent", request.CollectionAddress+"/"+request.CollectionTokenId)
+	}
+
+	participant, err := registryAgent.ToParticipant()
+	if err != nil {
+		return nil, false, err
 	}
 
 	saved, err := uc.participantRepository.Save(participant)

@@ -41,10 +41,10 @@ func (m *MockAgentRegistryRequesterInterface) EXPECT() *MockAgentRegistryRequest
 }
 
 // GetAgent mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.Participant, error) {
+func (m *MockAgentRegistryRequesterInterface) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgent", collectionAddress, collectionTokenId)
-	ret0, _ := ret[0].(*models.Participant)
+	ret0, _ := ret[0].(*models.RegistryAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -53,4 +53,19 @@ func (m *MockAgentRegistryRequesterInterface) GetAgent(collectionAddress string,
 func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), collectionAddress, collectionTokenId)
+}
+
+// GetMintedAgentByEnsDomain mocks base method.
+func (m *MockAgentRegistryRequesterInterface) GetMintedAgentByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMintedAgentByEnsDomain", ensDomain)
+	ret0, _ := ret[0].(*models.RegistryAgent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMintedAgentByEnsDomain indicates an expected call of GetMintedAgentByEnsDomain.
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetMintedAgentByEnsDomain(ensDomain any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedAgentByEnsDomain", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetMintedAgentByEnsDomain), ensDomain)
 }
