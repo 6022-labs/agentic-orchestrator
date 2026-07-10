@@ -1,5 +1,23 @@
 components:
   schemas:
+    enums.AgentPromptTemplateKey:
+      enum:
+      - clone-system
+      - clone-default
+      - facilitator-system
+      - facilitator-default
+      - facilitator-conclude
+      - expert-system
+      - expert-default
+      type: string
+      x-enum-varnames:
+      - AgentPromptTemplateKeyCloneSystem
+      - AgentPromptTemplateKeyCloneDefault
+      - AgentPromptTemplateKeyFacilitatorSystem
+      - AgentPromptTemplateKeyFacilitatorDefault
+      - AgentPromptTemplateKeyFacilitatorConclude
+      - AgentPromptTemplateKeyExpertSystem
+      - AgentPromptTemplateKeyExpertDefault
     enums.BridgeKind:
       enum:
       - slack
@@ -42,7 +60,7 @@ components:
       type: object
     models.Bridge:
       properties:
-        callbackUrl:
+        baseUrl:
           type: string
         createdAt:
           type: string
@@ -90,7 +108,7 @@ components:
         collectionAddress:
           type: string
         collectionTokenId:
-          type: string
+          type: integer
         createdAt:
           type: string
         displayName:
@@ -120,9 +138,18 @@ components:
         participantId:
           type: string
       type: object
+    requests.RegisterAgentRequest:
+      properties:
+        collectionAddress:
+          type: string
+        collectionTokenId:
+          type: string
+      type: object
     requests.RegisterBridgeRequest:
       properties:
-        callbackUrl:
+        baseUrl:
+          type: string
+        id:
           type: string
         kind:
           $ref: '#/components/schemas/enums.BridgeKind'
@@ -139,21 +166,36 @@ components:
           type: array
           uniqueItems: false
       type: object
-    requests.RegisterMintedParticipantRequest:
-      properties:
-        collectionAddress:
-          type: string
-        collectionTokenId:
-          type: string
-      type: object
-    requests.RegisterNonMintedParticipantRequest:
+    requests.RegisterUserRequest:
       properties:
         displayName:
+          type: string
+      type: object
+    requests.SaveAgentPromptTemplateRequest:
+      properties:
+        content:
           type: string
       type: object
     requests.UpdateConversationDescriptionRequest:
       properties:
         description:
+          type: string
+      type: object
+    responses.AgentPromptTemplateResponse:
+      properties:
+        collectionAddress:
+          type: string
+        collectionTokenId:
+          type: integer
+        content:
+          type: string
+        createdAt:
+          type: string
+        id:
+          type: string
+        key:
+          $ref: '#/components/schemas/enums.AgentPromptTemplateKey'
+        updatedAt:
           type: string
       type: object
 externalDocs:
@@ -165,10 +207,117 @@ info:
   version: "1.0"
 openapi: 3.1.0
 paths:
+  /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key}:
+    get:
+      description: Returns the agent-scoped prompt template for the given key.
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: collectionAddress
+        required: true
+        schema:
+          type: string
+      - description: Agent collection token id
+        in: path
+        name: collectionTokenId
+        required: true
+        schema:
+          type: string
+      - description: Prompt template key
+        in: path
+        name: key
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.AgentPromptTemplateResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.ValidationError'
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.NotFoundError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Internal Server Error
+      summary: Get Agent Prompt Template
+      tags:
+      - Prompt Templates
+    post:
+      description: Creates or overwrites the agent-scoped prompt template for the
+        given key.
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: collectionAddress
+        required: true
+        schema:
+          type: string
+      - description: Agent collection token id
+        in: path
+        name: collectionTokenId
+        required: true
+        schema:
+          type: string
+      - description: Prompt template key
+        in: path
+        name: key
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/requests.SaveAgentPromptTemplateRequest'
+                description: Save Agent Prompt Template Request
+                summary: request
+        description: Save Agent Prompt Template Request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.AgentPromptTemplateResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.ValidationError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Internal Server Error
+      summary: Save Agent Prompt Template
+      tags:
+      - Prompt Templates
   /bridges:
     post:
-      description: Registers a new bridge instance (slack, teams, ...). Multiple bridges
-        of the same kind are allowed.
+      description: Upserts a bridge instance. When the caller supplies `id` and the
+        row already exists the broker returns 200 with the existing row; when the
+        row does not exist (whether or not an id was provided) the broker returns
+        201 with the new row.
       requestBody:
         content:
           application/json:
@@ -181,6 +330,12 @@ paths:
         description: Register Bridge Request
         required: true
       responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.Bridge'
+          description: OK
         "201":
           content:
             application/json:
@@ -424,7 +579,7 @@ paths:
       - Conversations
   /conversations/{id}/participants:
     post:
-      description: Adds a participant (minted or non-minted) to the conversation.
+      description: Adds a participant (agent or user) to the conversation.
       parameters:
       - description: Conversation ID
         in: path
@@ -509,22 +664,29 @@ paths:
       summary: Detach Participant from Conversation
       tags:
       - Conversations
-  /participants/minted:
+  /participants/agents:
     post:
-      description: Registers a minted participant by NFT identity. Broker fetches
-        role + ENS from the agent-identity registry.
+      description: Upserts an agent participant by NFT identity. Returns 200 if the
+        agent was already known, 201 if newly created. Broker fetches role + ENS from
+        the agent-identity registry on first registration.
       requestBody:
         content:
           application/json:
             schema:
               oneOf:
               - type: object
-              - $ref: '#/components/schemas/requests.RegisterMintedParticipantRequest'
-                description: Register Minted Participant Request
+              - $ref: '#/components/schemas/requests.RegisterAgentRequest'
+                description: Register Agent Request
                 summary: request
-        description: Register Minted Participant Request
+        description: Register Agent Request
         required: true
       responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.Participant'
+          description: OK
         "201":
           content:
             application/json:
@@ -549,23 +711,23 @@ paths:
               schema:
                 type: string
           description: Internal Server Error
-      summary: Register Minted Participant
+      summary: Register Agent Participant
       tags:
       - Participants
-  /participants/non-minted:
+  /participants/users:
     post:
-      description: Registers a human participant identified only by display name (not
-        minted on-chain).
+      description: Creates a user participant identified only by display name. No
+        dedup — bridges must cache the returned id locally to avoid duplicates.
       requestBody:
         content:
           application/json:
             schema:
               oneOf:
               - type: object
-              - $ref: '#/components/schemas/requests.RegisterNonMintedParticipantRequest'
-                description: Register Non-Minted Participant Request
+              - $ref: '#/components/schemas/requests.RegisterUserRequest'
+                description: Register User Request
                 summary: request
-        description: Register Non-Minted Participant Request
+        description: Register User Request
         required: true
       responses:
         "201":
@@ -586,7 +748,7 @@ paths:
               schema:
                 type: string
           description: Internal Server Error
-      summary: Register Non-Minted Participant
+      summary: Register User Participant
       tags:
       - Participants
 servers:

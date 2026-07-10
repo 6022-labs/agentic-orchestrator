@@ -1,4 +1,17 @@
 -- +goose Up
+-- create "agent_prompt_templates" table
+CREATE TABLE "public"."agent_prompt_templates" (
+  "id" uuid NOT NULL,
+  "collection_address" text NOT NULL,
+  "collection_token_id" numeric NOT NULL,
+  "key" text NOT NULL,
+  "content" text NOT NULL,
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
+  PRIMARY KEY ("id")
+);
+-- create index "idx_agent_prompt_templates_agent_key" to table: "agent_prompt_templates"
+CREATE UNIQUE INDEX "idx_agent_prompt_templates_agent_key" ON "public"."agent_prompt_templates" ("collection_address", "collection_token_id", "key");
 -- create "bridges" table
 CREATE TABLE "public"."bridges" (
   "id" uuid NOT NULL,
@@ -91,3 +104,7 @@ DROP TABLE "public"."conversations";
 DROP INDEX "public"."idx_bridges_kind";
 -- reverse: create "bridges" table
 DROP TABLE "public"."bridges";
+-- reverse: create index "idx_agent_prompt_templates_agent_key" to table: "agent_prompt_templates"
+DROP INDEX "public"."idx_agent_prompt_templates_agent_key";
+-- reverse: create "agent_prompt_templates" table
+DROP TABLE "public"."agent_prompt_templates";

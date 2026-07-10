@@ -15,9 +15,135 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key}": {
+            "get": {
+                "description": "Returns the agent-scoped prompt template for the given key.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prompt Templates"
+                ],
+                "summary": "Get Agent Prompt Template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent collection address",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Agent collection token id",
+                        "name": "collectionTokenId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Prompt template key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates or overwrites the agent-scoped prompt template for the given key.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prompt Templates"
+                ],
+                "summary": "Save Agent Prompt Template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent collection address",
+                        "name": "collectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Agent collection token id",
+                        "name": "collectionTokenId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Prompt template key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Save Agent Prompt Template Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SaveAgentPromptTemplateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/bridges": {
             "post": {
-                "description": "Registers a new bridge instance (slack, teams, ...). Multiple bridges of the same kind are allowed.",
+                "description": "Upserts a bridge instance. When the caller supplies ` + "`" + `id` + "`" + ` and the row already exists the broker returns 200 with the existing row; when the row does not exist (whether or not an id was provided) the broker returns 201 with the new row.",
                 "consumes": [
                     "application/json"
                 ],
@@ -40,6 +166,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Bridge"
+                        }
+                    },
                     "201": {
                         "description": "Created",
                         "schema": {
@@ -324,7 +456,7 @@ const docTemplate = `{
         },
         "/conversations/{id}/participants": {
             "post": {
-                "description": "Adds a participant (minted or non-minted) to the conversation.",
+                "description": "Adds a participant (agent or user) to the conversation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -426,9 +558,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/participants/minted": {
+        "/participants/agents": {
             "post": {
-                "description": "Registers a minted participant by NFT identity. Broker fetches role + ENS from the agent-identity registry.",
+                "description": "Upserts an agent participant by NFT identity. Returns 200 if the agent was already known, 201 if newly created. Broker fetches role + ENS from the agent-identity registry on first registration.",
                 "consumes": [
                     "application/json"
                 ],
@@ -438,19 +570,25 @@ const docTemplate = `{
                 "tags": [
                     "Participants"
                 ],
-                "summary": "Register Minted Participant",
+                "summary": "Register Agent Participant",
                 "parameters": [
                     {
-                        "description": "Register Minted Participant Request",
+                        "description": "Register Agent Request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RegisterMintedParticipantRequest"
+                            "$ref": "#/definitions/requests.RegisterAgentRequest"
                         }
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Participant"
+                        }
+                    },
                     "201": {
                         "description": "Created",
                         "schema": {
@@ -478,9 +616,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/participants/non-minted": {
+        "/participants/users": {
             "post": {
-                "description": "Registers a human participant identified only by display name (not minted on-chain).",
+                "description": "Creates a user participant identified only by display name. No dedup — bridges must cache the returned id locally to avoid duplicates.",
                 "consumes": [
                     "application/json"
                 ],
@@ -490,15 +628,15 @@ const docTemplate = `{
                 "tags": [
                     "Participants"
                 ],
-                "summary": "Register Non-Minted Participant",
+                "summary": "Register User Participant",
                 "parameters": [
                     {
-                        "description": "Register Non-Minted Participant Request",
+                        "description": "Register User Request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RegisterNonMintedParticipantRequest"
+                            "$ref": "#/definitions/requests.RegisterUserRequest"
                         }
                     }
                 ],
@@ -526,6 +664,27 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "enums.AgentPromptTemplateKey": {
+            "type": "string",
+            "enum": [
+                "clone-system",
+                "clone-default",
+                "facilitator-system",
+                "facilitator-default",
+                "facilitator-conclude",
+                "expert-system",
+                "expert-default"
+            ],
+            "x-enum-varnames": [
+                "AgentPromptTemplateKeyCloneSystem",
+                "AgentPromptTemplateKeyCloneDefault",
+                "AgentPromptTemplateKeyFacilitatorSystem",
+                "AgentPromptTemplateKeyFacilitatorDefault",
+                "AgentPromptTemplateKeyFacilitatorConclude",
+                "AgentPromptTemplateKeyExpertSystem",
+                "AgentPromptTemplateKeyExpertDefault"
+            ]
+        },
         "enums.BridgeKind": {
             "type": "string",
             "enum": [
@@ -586,7 +745,7 @@ const docTemplate = `{
         "models.Bridge": {
             "type": "object",
             "properties": {
-                "callbackUrl": {
+                "baseUrl": {
                     "type": "string"
                 },
                 "createdAt": {
@@ -659,7 +818,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "collectionTokenId": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
@@ -706,10 +865,24 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.RegisterAgentRequest": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.RegisterBridgeRequest": {
             "type": "object",
             "properties": {
-                "callbackUrl": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "kind": {
@@ -734,7 +907,15 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.RegisterMintedParticipantRequest": {
+        "requests.RegisterUserRequest": {
+            "type": "object",
+            "properties": {
+                "displayName": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SaveAgentPromptTemplateRequest": {
             "type": "object",
             "properties": {
                 "collectionAddress": {
@@ -742,13 +923,11 @@ const docTemplate = `{
                 },
                 "collectionTokenId": {
                     "type": "string"
-                }
-            }
-        },
-        "requests.RegisterNonMintedParticipantRequest": {
-            "type": "object",
-            "properties": {
-                "displayName": {
+                },
+                "content": {
+                    "type": "string"
+                },
+                "key": {
                     "type": "string"
                 }
             }
@@ -757,6 +936,32 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentPromptTemplateResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "$ref": "#/definitions/enums.AgentPromptTemplateKey"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }

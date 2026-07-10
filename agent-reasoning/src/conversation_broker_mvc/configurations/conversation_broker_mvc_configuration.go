@@ -32,4 +32,13 @@ func AddConversationBrokerMvcConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(
+		conversation_broker_mvc.NewPromptTemplatesController,
+		dig.Group("controllers"),
+		dig.As(new(conversation_broker_mvc.ControllerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }

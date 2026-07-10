@@ -17,6 +17,7 @@ func main() {
 		&models.Conversation{},
 		&models.ConversationParticipant{},
 		&models.ConversationMessage{},
+		&models.AgentPromptTemplate{},
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load gorm schema: %v\n", err)

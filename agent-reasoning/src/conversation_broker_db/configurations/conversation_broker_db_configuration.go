@@ -77,4 +77,12 @@ func AddConversationBrokerDbConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(
+		db_repositories.NewAgentPromptTemplateRepository,
+		dig.As(new(domain_repositories.AgentPromptTemplateRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }

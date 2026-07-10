@@ -87,4 +87,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(use_cases.NewGetAgentPromptTemplate, dig.As(new(use_cases.GetAgentPromptTemplateInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewSaveAgentPromptTemplate, dig.As(new(use_cases.SaveAgentPromptTemplateInterface)))
+	if err != nil {
+		panic(err)
+	}
 }
