@@ -39,7 +39,7 @@ func WhenRegisteringBridgeBeforeEach(t *testing.T) *WhenRegisteringBridgeTesting
 
 func generateValidRegisterBridgeRequest() *requests.RegisterBridgeRequest {
 	return &requests.RegisterBridgeRequest{
-		Kind:        enums.BridgeKindSlack,
+		Kind:    enums.BridgeKindSlack,
 		BaseUrl: "http://slack-bridge.local/internal/broker/callback",
 	}
 }

@@ -9,14 +9,14 @@ All messages — whether authored by a user or an agent — are persisted exclus
 **Agent completion flow:**
 
 ```
-Daemon → agent_compute → completion
+Daemon → resolve ENS (CCIP-Read) → /.well-known/6022 → agent node /responses → completion
   → callback POST to bridge
     → bridge delivers to platform (e.g. Slack chat.postMessage)
     → bridge calls IngestMessage(conversationId, participantId, content)
       → broker persists the message
 ```
 
-The processor is stateless regarding message persistence: it computes, callbacks, and optionally concludes. The bridge owns the write path.
+The processor is stateless regarding message persistence: it invokes the remote agent node, callbacks, and optionally concludes. The bridge owns the write path. Node discovery (ENS `url` text record → 6022 card → dialect endpoint) is cached per ENS domain (`remote_agent_resolution.cache_ttl_seconds`, default 300s). Nodes answering HTTP 402 (x402 payment required) are skipped for now — the orchestrator only talks to free agents.
 
 **Why this pattern:**
 

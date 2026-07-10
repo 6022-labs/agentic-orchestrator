@@ -8,13 +8,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
-	db_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/configurations"
 	configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/configurations"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
+	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	db_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_db/configurations"
 	registry_configuration "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/configurations"
 	registry_models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_http_agent_identity_registry/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker_mvc"
@@ -36,6 +38,28 @@ type httpSuite struct {
 	registryStub  *httptest.Server
 	registryAgent *registry_models.ExternalAgentResponse
 }
+
+// Stubs satisfy the broker's node-discovery and cache ports; the http flow
+// under test never reaches an agent node.
+type stubEnsUrlResolver struct{}
+
+func (s *stubEnsUrlResolver) ResolveUrl(ensDomain string) (string, error) {
+	return "", fmt.Errorf("no agent node in integration tests")
+}
+
+type stubRemoteAgentCardRequester struct{}
+
+func (s *stubRemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, error) {
+	return nil, fmt.Errorf("no agent node in integration tests")
+}
+
+type stubCacheStorage struct{}
+
+func (s *stubCacheStorage) Store(key, value string, expiration *time.Duration) error { return nil }
+func (s *stubCacheStorage) Read(key string) (string, error) {
+	return "", fmt.Errorf("cache miss")
+}
+func (s *stubCacheStorage) Delete(key string) error { return nil }
 
 func newHttpSuite() *httpSuite {
 	dbName, connStr := container_builders.CreatePostgreSQLDatabase()
@@ -69,6 +93,16 @@ func newHttpSuite() *httpSuite {
 		panic(err)
 	}
 	if err := container.Provide(func() *koanf.Koanf { return k }); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(func() service_interfaces.EnsUrlResolverInterface { return &stubEnsUrlResolver{} }); err != nil {
+		panic(err)
+	}
+	if err := container.Provide(func() service_interfaces.RemoteAgentCardRequesterInterface { return &stubRemoteAgentCardRequester{} }); err != nil {
+		panic(err)
+	}
+	if err := container.Provide(func() service_interfaces.CacheStorageInterface { return &stubCacheStorage{} }); err != nil {
 		panic(err)
 	}
 

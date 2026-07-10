@@ -3,29 +3,38 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
+// facilitatorConcludeMarker in a facilitator completion (or the message that
+// triggered it) signals the conversation is ready to conclude.
+const facilitatorConcludeMarker = ":end:"
+
 type ConversationProcessor struct {
-	logger                        *zap.Logger
-	processingSettings            *settings.ProcessingSettings
-	conversationConclude          interfaces.ConversationConcludeInterface
-	bridgeCallbackRequester       interfaces.BridgeCallbackRequesterInterface
-	agentCompletionsRequester     interfaces.AgentCompletionsRequesterInterface
-	bridgeRepository              repositories.BridgeRepositoryInterface
-	conversationRepository        repositories.ConversationRepositoryInterface
-	conversationMessageRepository repositories.ConversationMessageRepositoryInterface
-	participantRepository         repositories.ParticipantRepositoryInterface
+	logger                          *zap.Logger
+	processingSettings              *settings.ProcessingSettings
+	conversationConclude            interfaces.ConversationConcludeInterface
+	bridgeCallbackRequester         interfaces.BridgeCallbackRequesterInterface
+	remoteAgentCardResolver         interfaces.RemoteAgentCardResolverInterface
+	remoteAgentCompletionsRequester interfaces.RemoteAgentCompletionsRequesterInterface
+	conversationPromptBuilder       interfaces.ConversationPromptBuilderInterface
+	bridgeRepository                repositories.BridgeRepositoryInterface
+	conversationRepository          repositories.ConversationRepositoryInterface
+	conversationMessageRepository   repositories.ConversationMessageRepositoryInterface
+	participantRepository           repositories.ParticipantRepositoryInterface
 
 	// One lock per conversation. In-process only — swap for a Postgres
 	// advisory lock if the broker ever runs as multiple replicas.
@@ -37,22 +46,26 @@ func NewConversationProcessor(
 	processingSettings *settings.ProcessingSettings,
 	conversationConclude interfaces.ConversationConcludeInterface,
 	bridgeCallbackRequester interfaces.BridgeCallbackRequesterInterface,
-	agentCompletionsRequester interfaces.AgentCompletionsRequesterInterface,
+	remoteAgentCardResolver interfaces.RemoteAgentCardResolverInterface,
+	remoteAgentCompletionsRequester interfaces.RemoteAgentCompletionsRequesterInterface,
+	conversationPromptBuilder interfaces.ConversationPromptBuilderInterface,
 	bridgeRepository repositories.BridgeRepositoryInterface,
 	conversationRepository repositories.ConversationRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
 ) *ConversationProcessor {
 	return &ConversationProcessor{
-		logger:                        logger,
-		processingSettings:            processingSettings,
-		conversationConclude:          conversationConclude,
-		bridgeCallbackRequester:       bridgeCallbackRequester,
-		agentCompletionsRequester:     agentCompletionsRequester,
-		bridgeRepository:              bridgeRepository,
-		conversationRepository:        conversationRepository,
-		conversationMessageRepository: conversationMessageRepository,
-		participantRepository:         participantRepository,
+		logger:                          logger,
+		processingSettings:              processingSettings,
+		conversationConclude:            conversationConclude,
+		bridgeCallbackRequester:         bridgeCallbackRequester,
+		remoteAgentCardResolver:         remoteAgentCardResolver,
+		remoteAgentCompletionsRequester: remoteAgentCompletionsRequester,
+		conversationPromptBuilder:       conversationPromptBuilder,
+		bridgeRepository:                bridgeRepository,
+		conversationRepository:          conversationRepository,
+		conversationMessageRepository:   conversationMessageRepository,
+		participantRepository:           participantRepository,
 	}
 }
 
@@ -64,6 +77,11 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
 			return fmt.Errorf("failed to force conclude conversation: %w", err)
 		}
+		return nil
+	}
+
+	if participant.Role != nil && *participant.Role == enums.ParticipantRoleHuman {
+		// Humans have no runtime to invoke.
 		return nil
 	}
 
@@ -93,30 +111,43 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return fmt.Errorf("failed to fetch conversation participants: %w", err)
 	}
 
-	forceCompletion := false
-	if participant.Role != nil && *participant.Role == enums.ParticipantRoleFacilitator && p.shouldForceConcludeByFacilitator(conversation) {
-		forceCompletion = true
+	if participant.EnsDomain == nil {
+		return fmt.Errorf("agent participant %s has no ENS domain", participant.ID)
 	}
 
-	completions, isFinal, err := p.agentCompletionsRequester.Completions(
-		string(bridge.Kind),
-		participant,
-		conversation,
-		messages,
-		participants,
-		forceCompletion,
-	)
+	card, err := p.remoteAgentCardResolver.ResolveCard(*participant.EnsDomain)
 	if err != nil {
-		return fmt.Errorf("failed to get completions: %w", err)
+		return fmt.Errorf("failed to resolve remote agent card: %w", err)
 	}
 
-	if participant.Role != nil && *participant.Role == enums.ParticipantRoleHuman {
-		// Humans never produce completions.
+	turn, err := p.conversationPromptBuilder.BuildInput(string(bridge.Kind), participant, conversation, messages, participants)
+	if err != nil {
+		return fmt.Errorf("failed to build turn: %w", err)
+	}
+
+	completions, err := p.remoteAgentCompletionsRequester.RequestCompletions(card, turn)
+	var paymentRequired *cb_errors.PaymentRequiredError
+	if errors.As(err, &paymentRequired) {
+		p.logger.Info("Agent node requires payment, skipping turn", logFields...)
 		return nil
 	}
-
+	if err != nil {
+		return fmt.Errorf("failed to request turn: %w", err)
+	}
 	if len(completions) == 0 {
 		return fmt.Errorf("no completions returned for conversation %s", conversation.ID)
+	}
+
+	completions = p.demojizeAll(completions)
+
+	isFinal := false
+	if participant.Role != nil && *participant.Role == enums.ParticipantRoleFacilitator {
+		completions, isFinal, err = p.concludeByFacilitatorIfNeeded(
+			participant, conversation, card, turn, completions, messages, participants,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := p.sendCompletionsToBridge(bridge, conversation, participant, completions, isFinal); err != nil {
@@ -126,11 +157,49 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 	return nil
 }
 
+// concludeByFacilitatorIfNeeded reproduces the facilitator wrap-up: when the
+// broker timer elapsed or the conclude marker appears in a fresh completion or
+// the latest inbound message, the facilitator gets one extra conclude turn.
+func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
+	participant *models.Participant,
+	conversation *models.Conversation,
+	card *models.RemoteAgentCard,
+	turn *models.RemoteAgentInput,
+	completions []string,
+	messages []*models.ConversationMessage,
+	participants []*models.Participant,
+) ([]string, bool, error) {
+	readyToConclude := p.shouldForceConcludeByFacilitator(conversation) ||
+		p.carriesConcludeMarker(completions, messages)
+	if !readyToConclude {
+		return completions, false, nil
+	}
+
+	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(turn, completions, participant, conversation, messages, participants)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to build conclude turn: %w", err)
+	}
+
+	concludeCompletions, err := p.remoteAgentCompletionsRequester.RequestCompletions(card, concludeTurn)
+	var paymentRequired *cb_errors.PaymentRequiredError
+	if errors.As(err, &paymentRequired) {
+		p.logger.Info("Agent node requires payment for conclude turn, concluding without wrap-up",
+			p.processingLogFields(participant, conversation)...,
+		)
+		return completions, true, nil
+	}
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to request conclude turn: %w", err)
+	}
+
+	return append(completions, p.demojizeAll(concludeCompletions)...), true, nil
+}
+
 func (p *ConversationProcessor) sendCompletionsToBridge(
 	bridge *models.Bridge,
 	conversation *models.Conversation,
 	participant *models.Participant,
-	completions []*string,
+	completions []string,
 	isFinal bool,
 ) error {
 	mu := p.lockForConversation(conversation.ID)
@@ -153,13 +222,13 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 	}
 
 	for _, completion := range completions {
-		if err := p.bridgeCallbackRequester.PostCompletion(bridge, conversation, participant, *completion); err != nil {
+		if err := p.bridgeCallbackRequester.PostCompletion(bridge, conversation, participant, completion); err != nil {
 			return fmt.Errorf("failed to post completion to bridge: %w", err)
 		}
 	}
 
 	if isFinal {
-		p.logger.Info("Conversation is concluded by compute",
+		p.logger.Info("Conversation is concluded by facilitator",
 			p.processingLogFields(participant, conversation)...,
 		)
 		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
@@ -168,6 +237,29 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 	}
 
 	return nil
+}
+
+// carriesConcludeMarker mirrors the old facilitator strategy: the marker
+// counts whether it comes from the facilitator's fresh completions or the
+// latest inbound platform message (a user saying ":end:" ends the swarm).
+func (p *ConversationProcessor) carriesConcludeMarker(completions []string, messages []*models.ConversationMessage) bool {
+	for _, completion := range completions {
+		if strings.Contains(strings.ToLower(completion), facilitatorConcludeMarker) {
+			return true
+		}
+	}
+	if len(messages) > 0 {
+		return strings.Contains(strings.ToLower(messages[len(messages)-1].Content), facilitatorConcludeMarker)
+	}
+	return false
+}
+
+func (p *ConversationProcessor) demojizeAll(completions []string) []string {
+	out := make([]string, len(completions))
+	for i, completion := range completions {
+		out[i] = utils.DemojizeContent(completion)
+	}
+	return out
 }
 
 func (p *ConversationProcessor) lockForConversation(id uuid.UUID) *sync.Mutex {

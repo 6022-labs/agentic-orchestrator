@@ -1,0 +1,73 @@
+package services
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
+	"go.uber.org/zap"
+)
+
+const remoteAgentCardCachePathTemplate = "remote-agent-cards/%s"
+
+// RemoteAgentCardResolver composes ENS resolution + card fetch, caching the
+// card per ENS domain (TTL enforced by the store). Failures are never cached.
+type RemoteAgentCardResolver struct {
+	logger                        *zap.Logger
+	cacheStorage                  interfaces.CacheStorageInterface
+	ensUrlResolver                interfaces.EnsUrlResolverInterface
+	remoteAgentCardRequester      interfaces.RemoteAgentCardRequesterInterface
+	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings
+}
+
+func NewRemoteAgentCardResolver(
+	logger *zap.Logger,
+	cacheStorage interfaces.CacheStorageInterface,
+	ensUrlResolver interfaces.EnsUrlResolverInterface,
+	remoteAgentCardRequester interfaces.RemoteAgentCardRequesterInterface,
+	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings,
+) *RemoteAgentCardResolver {
+	return &RemoteAgentCardResolver{
+		logger:                        logger,
+		cacheStorage:                  cacheStorage,
+		ensUrlResolver:                ensUrlResolver,
+		remoteAgentCardRequester:      remoteAgentCardRequester,
+		remoteAgentResolutionSettings: remoteAgentResolutionSettings,
+	}
+}
+
+func (r *RemoteAgentCardResolver) ResolveCard(ensDomain string) (*models.RemoteAgentCard, error) {
+	cachePath := fmt.Sprintf(remoteAgentCardCachePathTemplate, ensDomain)
+
+	if cached, err := r.cacheStorage.Read(cachePath); err == nil {
+		var card models.RemoteAgentCard
+		if err := json.Unmarshal([]byte(cached), &card); err == nil && card.Protocol != "" {
+			return &card, nil
+		}
+	}
+
+	agentUrl, err := r.ensUrlResolver.ResolveUrl(ensDomain)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve url for %s: %w", ensDomain, err)
+	}
+	if agentUrl == "" {
+		return nil, fmt.Errorf("no url published for %s", ensDomain)
+	}
+
+	card, err := r.remoteAgentCardRequester.GetCard(agentUrl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch 6022 card for %s: %w", ensDomain, err)
+	}
+
+	if serialized, err := json.Marshal(card); err == nil {
+		ttl := time.Duration(r.remoteAgentResolutionSettings.CacheTtlSeconds) * time.Second
+		if err := r.cacheStorage.Store(cachePath, string(serialized), &ttl); err != nil {
+			r.logger.Warn("Failed to cache remote agent card", zap.String("ensDomain", ensDomain), zap.Error(err))
+		}
+	}
+
+	return card, nil
+}

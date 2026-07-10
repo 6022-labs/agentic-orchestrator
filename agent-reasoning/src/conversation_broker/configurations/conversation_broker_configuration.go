@@ -15,6 +15,27 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewRemoteAgentResolutionSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewRemoteAgentCardResolver,
+		dig.As(new(service_interfaces.RemoteAgentCardResolverInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		prompts.NewConversationPromptBuilder,
+		dig.As(new(service_interfaces.ConversationPromptBuilderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(
 		services.NewConversationConclude,
 		dig.As(new(service_interfaces.ConversationConcludeInterface)),
@@ -84,21 +105,6 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewUpdateConversationDescription, dig.As(new(use_cases.UpdateConversationDescriptionInterface)))
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(use_cases.NewGetAgentPromptTemplate, dig.As(new(use_cases.GetAgentPromptTemplateInterface)))
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(use_cases.NewSaveAgentPromptTemplate, dig.As(new(use_cases.SaveAgentPromptTemplateInterface)))
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(use_cases.NewListConversations, dig.As(new(use_cases.ListConversationsInterface)))
 	if err != nil {
 		panic(err)
@@ -114,10 +120,22 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(
-		prompts.NewConversationPromptBuilder,
-		dig.As(new(service_interfaces.ConversationPromptBuilderInterface)),
-	)
+	err = container.Provide(use_cases.NewGetAgentPromptTemplate, dig.As(new(use_cases.GetAgentPromptTemplateInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewSaveAgentPromptTemplate, dig.As(new(use_cases.SaveAgentPromptTemplateInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewGetRemoteAgentCard, dig.As(new(use_cases.GetRemoteAgentCardInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewUpdateConversationDescription, dig.As(new(use_cases.UpdateConversationDescriptionInterface)))
 	if err != nil {
 		panic(err)
 	}

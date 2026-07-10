@@ -102,6 +102,33 @@ services:
       evm-node:
         condition: service_started
 
+  conversation-broker-host:
+    build:
+      context: ./agent-reasoning
+      dockerfile: ./src/conversation_broker_host/Dockerfile
+    container_name: conversation-broker-host
+    ports:
+      - "5004:3000"
+    environment:
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
+      - ENS_RESOLVER__RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+      - REMOTE_AGENT__REQUEST_TIMEOUT_SECONDS=120
+      - REMOTE_AGENT_RESOLUTION__CACHE_TTL_SECONDS=300
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+    networks:
+      orchestrator-network:
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      registry-host:
+        condition: service_started
+
   slack-bridge-internal-host:
     build:
       context: ./channels-and-integrations/slack-bridge

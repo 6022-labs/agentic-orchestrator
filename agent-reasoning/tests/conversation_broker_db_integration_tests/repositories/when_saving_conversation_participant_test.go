@@ -11,12 +11,12 @@ import (
 )
 
 type WhenSavingConversationParticipantTestingSuite struct {
-	dbName       string
-	dbClient     db_clients.DatabaseClientInterface
-	sut          *repositories.ConversationParticipantRepository
-	bridges      *repositories.BridgeRepository
+	dbName        string
+	dbClient      db_clients.DatabaseClientInterface
+	sut           *repositories.ConversationParticipantRepository
+	bridges       *repositories.BridgeRepository
 	conversations *repositories.ConversationRepository
-	participants *repositories.ParticipantRepository
+	participants  *repositories.ParticipantRepository
 }
 
 func WhenSavingConversationParticipantBeforeEach() *WhenSavingConversationParticipantTestingSuite {

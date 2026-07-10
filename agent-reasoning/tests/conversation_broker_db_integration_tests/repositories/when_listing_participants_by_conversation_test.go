@@ -12,11 +12,11 @@ import (
 )
 
 type WhenListingParticipantsByConversationTestingSuite struct {
-	dbName                  string
-	dbClient                db_clients.DatabaseClientInterface
-	sut                     *repositories.ParticipantRepository
-	bridges                 *repositories.BridgeRepository
-	conversations           *repositories.ConversationRepository
+	dbName                   string
+	dbClient                 db_clients.DatabaseClientInterface
+	sut                      *repositories.ParticipantRepository
+	bridges                  *repositories.BridgeRepository
+	conversations            *repositories.ConversationRepository
 	conversationParticipants *repositories.ConversationParticipantRepository
 }
 

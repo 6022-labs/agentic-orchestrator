@@ -14,9 +14,9 @@ const (
 )
 
 type ParticipantsController struct {
-	logger          *zap.Logger
-	registerAgent   use_cases.RegisterAgentInterface
-	registerUser    use_cases.RegisterUserInterface
+	logger        *zap.Logger
+	registerAgent use_cases.RegisterAgentInterface
+	registerUser  use_cases.RegisterUserInterface
 }
 
 func NewParticipantsController(
