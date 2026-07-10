@@ -11,18 +11,24 @@ import (
 
 const (
 	REGISTER_CONVERSATION_ENDPOINT           = "/conversations"
+	LIST_CONVERSATIONS_ENDPOINT              = "/conversations"
 	GET_CONVERSATION_ENDPOINT                = "/conversations/:id"
 	UPDATE_CONVERSATION_DESCRIPTION_ENDPOINT = "/conversations/:id/description"
 	FORCE_CONCLUDE_ENDPOINT                  = "/conversations/:id/force-conclude"
 	ATTACH_PARTICIPANT_ENDPOINT              = "/conversations/:id/participants"
+	LIST_CONVERSATION_PARTICIPANTS_ENDPOINT  = "/conversations/:id/participants"
 	DETACH_PARTICIPANT_ENDPOINT              = "/conversations/:id/participants/:participantId"
 	INGEST_MESSAGE_ENDPOINT                  = "/conversations/:id/messages"
+	GET_CONVERSATION_MESSAGES_ENDPOINT       = "/conversations/:id/messages"
 )
 
 type ConversationsController struct {
 	logger                        *zap.Logger
 	registerConversation          use_cases.RegisterConversationInterface
 	getConversation               use_cases.GetConversationInterface
+	listConversations             use_cases.ListConversationsInterface
+	getConversationMessages       use_cases.GetConversationMessagesInterface
+	listConversationParticipants  use_cases.ListConversationParticipantsInterface
 	updateConversationDescription use_cases.UpdateConversationDescriptionInterface
 	forceConclude                 use_cases.ForceConcludeInterface
 	attachParticipant             use_cases.AttachParticipantInterface
@@ -34,6 +40,9 @@ func NewConversationsController(
 	logger *zap.Logger,
 	registerConversation use_cases.RegisterConversationInterface,
 	getConversation use_cases.GetConversationInterface,
+	listConversations use_cases.ListConversationsInterface,
+	getConversationMessages use_cases.GetConversationMessagesInterface,
+	listConversationParticipants use_cases.ListConversationParticipantsInterface,
 	updateConversationDescription use_cases.UpdateConversationDescriptionInterface,
 	forceConclude use_cases.ForceConcludeInterface,
 	attachParticipant use_cases.AttachParticipantInterface,
@@ -44,6 +53,9 @@ func NewConversationsController(
 		logger:                        logger,
 		registerConversation:          registerConversation,
 		getConversation:               getConversation,
+		listConversations:             listConversations,
+		getConversationMessages:       getConversationMessages,
+		listConversationParticipants:  listConversationParticipants,
 		updateConversationDescription: updateConversationDescription,
 		forceConclude:                 forceConclude,
 		attachParticipant:             attachParticipant,
@@ -54,12 +66,95 @@ func NewConversationsController(
 
 func (c *ConversationsController) InitRoutes(app fiber.Router) {
 	app.Post(REGISTER_CONVERSATION_ENDPOINT, c.Register)
+	app.Get(LIST_CONVERSATIONS_ENDPOINT, c.List)
 	app.Get(GET_CONVERSATION_ENDPOINT, c.Get)
 	app.Patch(UPDATE_CONVERSATION_DESCRIPTION_ENDPOINT, c.UpdateDescription)
 	app.Post(FORCE_CONCLUDE_ENDPOINT, c.ForceConclude)
 	app.Post(ATTACH_PARTICIPANT_ENDPOINT, c.Attach)
+	app.Get(LIST_CONVERSATION_PARTICIPANTS_ENDPOINT, c.ListParticipants)
 	app.Delete(DETACH_PARTICIPANT_ENDPOINT, c.Detach)
 	app.Post(INGEST_MESSAGE_ENDPOINT, c.Ingest)
+	app.Get(GET_CONVERSATION_MESSAGES_ENDPOINT, c.GetMessages)
+}
+
+// @Summary List Conversations
+// @Description Returns conversations sorted by most recently updated, paginated.
+// @Tags Conversations
+// @Produce json
+// @Param page query int false "Page (1-based)"
+// @Param elementsPerPage query int false "Elements per page (max 100)"
+// @Success 200 {object} responses.ListConversationsResponse
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /conversations [get]
+func (c *ConversationsController) List(ctx *fiber.Ctx) error {
+	req := new(requests.ListConversationsRequest)
+	if err := ctx.QueryParser(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	resp, err := c.listConversations.List(req)
+	if err != nil {
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return ctx.JSON(resp)
+}
+
+// @Summary Get Conversation Messages
+// @Description Returns every message of the conversation in chronological order.
+// @Tags Conversations
+// @Produce json
+// @Param id path string true "Conversation ID"
+// @Success 200 {array} responses.ConversationMessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {object} errors.NotFoundError
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /conversations/{id}/messages [get]
+func (c *ConversationsController) GetMessages(ctx *fiber.Ctx) error {
+	id, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+	}
+	messages, err := c.getConversationMessages.Get(&requests.ConversationIdRequest{ConversationID: id})
+	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return ctx.JSON(messages)
+}
+
+// @Summary List Conversation Participants
+// @Description Returns every participant attached to the conversation.
+// @Tags Conversations
+// @Produce json
+// @Param id path string true "Conversation ID"
+// @Success 200 {array} responses.ParticipantResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 404 {object} errors.NotFoundError
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /conversations/{id}/participants [get]
+func (c *ConversationsController) ListParticipants(ctx *fiber.Ctx) error {
+	id, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+	}
+	participants, err := c.listConversationParticipants.List(&requests.ConversationIdRequest{ConversationID: id})
+	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		c.logger.Error("internal error", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return ctx.JSON(participants)
 }
 
 // @Summary Update Conversation Description

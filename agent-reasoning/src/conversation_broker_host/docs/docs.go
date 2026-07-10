@@ -194,6 +194,44 @@ const docTemplate = `{
             }
         },
         "/conversations": {
+            "get": {
+                "description": "Returns conversations sorted by most recently updated, paginated.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "List Conversations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page (1-based)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elements per page (max 100)",
+                        "name": "elementsPerPage",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ListConversationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a conversation attached to a bridge. Optionally attaches participants in the same call.",
                 "consumes": [
@@ -396,6 +434,54 @@ const docTemplate = `{
             }
         },
         "/conversations/{id}/messages": {
+            "get": {
+                "description": "Returns every message of the conversation in chronological order.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "Get Conversation Messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.ConversationMessageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Persists a message authored by a participant in the conversation. Broker assigns the timestamp.",
                 "consumes": [
@@ -455,6 +541,54 @@ const docTemplate = `{
             }
         },
         "/conversations/{id}/participants": {
+            "get": {
+                "description": "Returns every participant attached to the conversation.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conversations"
+                ],
+                "summary": "List Conversation Participants",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.ParticipantResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Adds a participant (agent or user) to the conversation.",
                 "consumes": [
@@ -960,6 +1094,110 @@ const docTemplate = `{
                 },
                 "key": {
                     "$ref": "#/definitions/enums.AgentPromptTemplateKey"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ConversationMessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "conversationId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "participantId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ConversationResponse": {
+            "type": "object",
+            "properties": {
+                "bridgeId": {
+                    "type": "string"
+                },
+                "concludedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/enums.ConversationStatus"
+                },
+                "unconcludedAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ListConversationsResponse": {
+            "type": "object",
+            "properties": {
+                "conversations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ConversationResponse"
+                    }
+                },
+                "elementsPerPage": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "totalElements": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ParticipantResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isProcessing": {
+                    "type": "boolean"
+                },
+                "lastProcessedAt": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/enums.ParticipantRole"
                 },
                 "updatedAt": {
                     "type": "string"

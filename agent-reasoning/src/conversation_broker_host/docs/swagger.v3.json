@@ -294,6 +294,111 @@
                     }
                 },
                 "type": "object"
+            },
+            "responses.ConversationMessageResponse": {
+                "properties": {
+                    "content": {
+                        "type": "string"
+                    },
+                    "conversationId": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "participantId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "responses.ConversationResponse": {
+                "properties": {
+                    "bridgeId": {
+                        "type": "string"
+                    },
+                    "concludedAt": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/enums.ConversationStatus"
+                    },
+                    "unconcludedAt": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "responses.ListConversationsResponse": {
+                "properties": {
+                    "conversations": {
+                        "items": {
+                            "$ref": "#/components/schemas/responses.ConversationResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "elementsPerPage": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "totalElements": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "responses.ParticipantResponse": {
+                "properties": {
+                    "collectionAddress": {
+                        "type": "string"
+                    },
+                    "collectionTokenId": {
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "displayName": {
+                        "type": "string"
+                    },
+                    "ensDomain": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "isProcessing": {
+                        "type": "boolean"
+                    },
+                    "lastProcessedAt": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "$ref": "#/components/schemas/enums.ParticipantRole"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
             }
         }
     },
@@ -547,6 +652,53 @@
             }
         },
         "/conversations": {
+            "get": {
+                "description": "Returns conversations sorted by most recently updated, paginated.",
+                "parameters": [
+                    {
+                        "description": "Page (1-based)",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Elements per page (max 100)",
+                        "in": "query",
+                        "name": "elementsPerPage",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/responses.ListConversationsResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "List Conversations",
+                "tags": [
+                    "Conversations"
+                ]
+            },
             "post": {
                 "description": "Creates a conversation attached to a bridge. Optionally attaches participants in the same call.",
                 "requestBody": {
@@ -824,6 +976,69 @@
             }
         },
         "/conversations/{id}/messages": {
+            "get": {
+                "description": "Returns every message of the conversation in chronological order.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/responses.ConversationMessageResponse"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Get Conversation Messages",
+                "tags": [
+                    "Conversations"
+                ]
+            },
             "post": {
                 "description": "Persists a message authored by a participant in the conversation. Broker assigns the timestamp.",
                 "parameters": [
@@ -906,6 +1121,69 @@
             }
         },
         "/conversations/{id}/participants": {
+            "get": {
+                "description": "Returns every participant attached to the conversation.",
+                "parameters": [
+                    {
+                        "description": "Conversation ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/responses.ParticipantResponse"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "List Conversation Participants",
+                "tags": [
+                    "Conversations"
+                ]
+            },
             "post": {
                 "description": "Adds a participant (agent or user) to the conversation.",
                 "parameters": [

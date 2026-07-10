@@ -8,6 +8,8 @@ import (
 type ConversationRepositoryInterface interface {
 	Save(entity *models.Conversation) (*models.Conversation, error)
 	GetById(id uuid.UUID) (*models.Conversation, error)
+	List(page, elementsPerPage uint) ([]*models.Conversation, error)
+	Count() (uint, error)
 
 	// ListProcessableForParticipant returns active conversations the given
 	// participant should be considered for in the current swarm tick.

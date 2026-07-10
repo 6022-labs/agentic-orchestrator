@@ -41,6 +41,21 @@ func (m *MockConversationRepositoryInterface) EXPECT() *MockConversationReposito
 	return m.recorder
 }
 
+// Count mocks base method.
+func (m *MockConversationRepositoryInterface) Count() (uint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Count")
+	ret0, _ := ret[0].(uint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Count indicates an expected call of Count.
+func (mr *MockConversationRepositoryInterfaceMockRecorder) Count() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).Count))
+}
+
 // GetById mocks base method.
 func (m *MockConversationRepositoryInterface) GetById(id uuid.UUID) (*models.Conversation, error) {
 	m.ctrl.T.Helper()
@@ -54,6 +69,21 @@ func (m *MockConversationRepositoryInterface) GetById(id uuid.UUID) (*models.Con
 func (mr *MockConversationRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).GetById), id)
+}
+
+// List mocks base method.
+func (m *MockConversationRepositoryInterface) List(page, elementsPerPage uint) ([]*models.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", page, elementsPerPage)
+	ret0, _ := ret[0].([]*models.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockConversationRepositoryInterfaceMockRecorder) List(page, elementsPerPage any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).List), page, elementsPerPage)
 }
 
 // ListProcessableForParticipant mocks base method.

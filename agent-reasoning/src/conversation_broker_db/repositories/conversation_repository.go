@@ -31,6 +31,32 @@ func (r *ConversationRepository) GetById(id uuid.UUID) (*models.Conversation, er
 	return &entity, nil
 }
 
+func (r *ConversationRepository) List(page, elementsPerPage uint) ([]*models.Conversation, error) {
+	var entities []*models.Conversation
+	err := r.client.GetDB().
+		Order("updated_at DESC").
+		Offset(int((page - 1) * elementsPerPage)).
+		Limit(int(elementsPerPage)).
+		Find(&entities).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
+func (r *ConversationRepository) Count() (uint, error) {
+	var count int64
+	err := r.client.GetDB().
+		Model(&models.Conversation{}).
+		Count(&count).
+		Error
+	if err != nil {
+		return 0, err
+	}
+	return uint(count), nil
+}
+
 func (r *ConversationRepository) ListProcessableForParticipant(
 	participant *models.Participant,
 	facilitatorTickIntervalSeconds uint64,

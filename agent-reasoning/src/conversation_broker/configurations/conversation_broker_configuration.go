@@ -97,4 +97,19 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(use_cases.NewListConversations, dig.As(new(use_cases.ListConversationsInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewGetConversationMessages, dig.As(new(use_cases.GetConversationMessagesInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewListConversationParticipants, dig.As(new(use_cases.ListConversationParticipantsInterface)))
+	if err != nil {
+		panic(err)
+	}
 }

@@ -203,6 +203,74 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.ConversationMessageResponse:
+    properties:
+      content:
+        type: string
+      conversationId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      participantId:
+        type: string
+    type: object
+  responses.ConversationResponse:
+    properties:
+      bridgeId:
+        type: string
+      concludedAt:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/enums.ConversationStatus'
+      unconcludedAt:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.ListConversationsResponse:
+    properties:
+      conversations:
+        items:
+          $ref: '#/definitions/responses.ConversationResponse'
+        type: array
+      elementsPerPage:
+        type: integer
+      page:
+        type: integer
+      totalElements:
+        type: integer
+    type: object
+  responses.ParticipantResponse:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      createdAt:
+        type: string
+      displayName:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      isProcessing:
+        type: boolean
+      lastProcessedAt:
+        type: string
+      role:
+        $ref: '#/definitions/enums.ParticipantRole'
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
   description: Bridge-agnostic conversation broker for the agent reasoning domain.
@@ -333,6 +401,31 @@ paths:
       tags:
       - Bridges
   /conversations:
+    get:
+      description: Returns conversations sorted by most recently updated, paginated.
+      parameters:
+      - description: Page (1-based)
+        in: query
+        name: page
+        type: integer
+      - description: Elements per page (max 100)
+        in: query
+        name: elementsPerPage
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ListConversationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List Conversations
+      tags:
+      - Conversations
     post:
       consumes:
       - application/json
@@ -469,6 +562,38 @@ paths:
       tags:
       - Conversations
   /conversations/{id}/messages:
+    get:
+      description: Returns every message of the conversation in chronological order.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.ConversationMessageResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Conversation Messages
+      tags:
+      - Conversations
     post:
       consumes:
       - application/json
@@ -509,6 +634,38 @@ paths:
       tags:
       - Conversations
   /conversations/{id}/participants:
+    get:
+      description: Returns every participant attached to the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.ParticipantResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List Conversation Participants
+      tags:
+      - Conversations
     post:
       consumes:
       - application/json
