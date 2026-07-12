@@ -1,17 +1,23 @@
-import axios from "axios";
+import axios from "axios"
 
-export const initJwtAuth = async (address: string) => {
-  return await axios.post(
-    `/auth/jwt/init`,
-    { address },
-    { headers: { "Content-Type": "application/json" } }
-  );
-};
+// Agent-node gateway auth: GET /auth/challenge issues a single-use nonce; the
+// wallet personal_signs the raw nonce and POST /auth/verify exchanges
+// { address, signature, nonce } for a JWT.
 
-export const finishJwtAuth = async (message: string, signature: string) => {
-  return await axios.post(
-    `/auth/jwt/finish`,
-    { message, signature },
+export const getAuthChallenge = async () => {
+  return await axios.get<{ nonce: string; expiresAt: string }>(
+    `/auth/challenge`
+  )
+}
+
+export const verifyAuth = async (
+  address: string,
+  signature: string,
+  nonce: string
+) => {
+  return await axios.post<{ token: string; expiresAt: string }>(
+    `/auth/verify`,
+    { address, signature, nonce },
     { headers: { "Content-Type": "application/json" } }
-  );
-};
+  )
+}

@@ -1,8 +1,8 @@
-import { KeyValue } from "./key-value";
+import type { KeyValue } from "@/models/key-value"
 
 export type AddOrUpdateImageProposal = {
-  id: number;
-  collectionAddress: string;
-  tokenId: bigint;
-  image: KeyValue;
-};
+  id: number
+  collectionAddress: string
+  tokenId: bigint
+  image: KeyValue
+}

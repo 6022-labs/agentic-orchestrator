@@ -1,15 +1,15 @@
-import { LoginForm } from "@/components/login/login-form";
+import { LoginForm } from "@/components/login/login-form"
 
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="relative hidden bg-zinc-900 text-white lg:block">
-        <div className="flex flex-col justify-between h-full p-6 md:p-10">
+        <div className="flex h-full flex-col justify-between p-6 md:p-10">
           <div className="absolute inset-0 h-full w-full p-30">
             <img
               src="/logo-1024x1024.png"
               alt="Logo"
-              className="object-contain h-full w-full"
+              className="h-full w-full object-contain"
             />
           </div>
           <div className="flex text-lg font-normal">Agentic AI Platform</div>
@@ -34,5 +34,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

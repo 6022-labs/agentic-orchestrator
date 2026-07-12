@@ -1,16 +1,25 @@
-import { AgentRole } from "./enums/agent-role";
+import type { AgentRole } from "@/models/enums/agent-role"
 
 export type Agent = {
-  id: string;
-  role: AgentRole;
-  owner: string;
-  creator: string;
-  images: Record<string, string>;
-  attributes: Record<string, string>;
-  cloneOf: number | null;
-  walletAddress: string;
-  name: string | undefined;
-  collectionAddress: string;
-  proposalId: number | undefined;
-  collectionTokenId: number | undefined;
-};
+  id: string
+  name: string
+  role: AgentRole
+  owner?: string
+  creator: string
+  // Image key -> IPFS CID (e.g. "default").
+  images: Record<string, string>
+  cloneOf?: string
+  attributes: Record<string, string>
+  ensDomain: string
+  walletAddress: string
+  proposalId?: number
+  collectionTokenId?: number
+  collectionAddress: string
+}
+
+export type ListAgentsResponse = {
+  page: number
+  elementsPerPage: number
+  totalElements: number
+  agents: Agent[]
+}

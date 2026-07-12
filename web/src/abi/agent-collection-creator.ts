@@ -635,4 +635,4 @@ export const AgentCollectionCreatorABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-];
+]

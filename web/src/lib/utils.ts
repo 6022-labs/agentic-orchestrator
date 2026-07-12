@@ -1,8 +1,8 @@
-import { twMerge } from "tailwind-merge";
-import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export function truncateEthAddress(
@@ -11,38 +11,34 @@ export function truncateEthAddress(
   endLength: number = 4
 ): string {
   if (!address) {
-    return "";
+    return ""
   }
 
-  // Ensure the address is not shorter than the sum of the start and end lengths
   if (address.length <= startLength + endLength) {
-    return address; // Return the original address if it's too short to truncate
+    return address
   }
 
-  return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
+  return `${address.slice(0, startLength)}...${address.slice(-endLength)}`
 }
 
-export function strToBytes(hex: string): Uint8Array {
-  if (hex.length % 2 !== 0) {
-    throw new Error("Invalid hex string");
-  }
-  const bytes = new Uint8Array(hex.length);
-  for (let i = 0; i < hex.length; i += 1) {
-    bytes[i] = hex.substring(i, i + 1).charCodeAt(0);
-  }
-  return bytes;
+export function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2)
 }
 
-const amazonPlatformRegionPatternRegex = /[a-z]{2}(-[a-z]+)+-\d+/i;
+const amazonPlatformRegionPatternRegex = /[a-z]{2}(-[a-z]+)+-\d+/i
 
+// Pull the AWS region out of a Bedrock runtime endpoint URL, e.g.
+// https://bedrock-runtime.us-east-1.amazonaws.com -> us-east-1.
 export function extractAmazonPlatformRegionFromUrl(
   url: string
 ): string | undefined {
-  const values = amazonPlatformRegionPatternRegex.exec(url);
+  const values = amazonPlatformRegionPatternRegex.exec(url)
 
   if (values?.length) {
-    return values[0];
+    return values[0]
   }
 
-  return undefined;
+  return undefined
 }
