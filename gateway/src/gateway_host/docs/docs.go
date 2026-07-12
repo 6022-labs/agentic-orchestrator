@@ -415,6 +415,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/config": {
+            "get": {
+                "description": "The EVM chain config (keyed by chain id) the console boots from",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Public chain config",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BlockchainConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/conversations": {
             "get": {
                 "security": [
@@ -931,6 +957,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.BlockchainConfigResponse": {
+            "type": "object",
+            "properties": {
+                "evmChains": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.EvmChainConfig"
+                    }
+                }
+            }
+        },
         "responses.BrokerConversationResponse": {
             "type": "object",
             "properties": {
@@ -996,6 +1033,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EvmChainConfig": {
+            "type": "object",
+            "properties": {
+                "collectionCreatorAddress": {
+                    "type": "string"
+                },
+                "collectionsManagerAddress": {
                     "type": "string"
                 }
             }

@@ -158,6 +158,13 @@ definitions:
       walletAddress:
         type: string
     type: object
+  responses.BlockchainConfigResponse:
+    properties:
+      evmChains:
+        additionalProperties:
+          $ref: '#/definitions/responses.EvmChainConfig'
+        type: object
+    type: object
   responses.BrokerConversationResponse:
     properties:
       bridgeId:
@@ -201,6 +208,13 @@ definitions:
       id:
         type: string
       role:
+        type: string
+    type: object
+  responses.EvmChainConfig:
+    properties:
+      collectionCreatorAddress:
+        type: string
+      collectionsManagerAddress:
         type: string
     type: object
   responses.GetAuthChallengeResponse:
@@ -512,6 +526,23 @@ paths:
       summary: Verify signed challenge
       tags:
       - authentication
+  /config:
+    get:
+      description: The EVM chain config (keyed by chain id) the console boots from
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BlockchainConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Public chain config
+      tags:
+      - config
   /conversations:
     get:
       parameters:

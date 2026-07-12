@@ -22,4 +22,3 @@ type AgentResponse struct {
 	CollectionTokenId *uint64 `json:"collectionTokenId"`
 	CollectionAddress string  `json:"collectionAddress"`
 }
-

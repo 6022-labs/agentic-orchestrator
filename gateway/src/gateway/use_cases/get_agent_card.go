@@ -34,10 +34,10 @@ func (uc *GetAgentCard) Get(request *requests.AgentByCollectionTokenIdRequest) (
 		return nil, fmt.Errorf("failed to load agent: %w", err)
 	}
 	if agent == nil {
-		return nil, errors.NewNotFoundError("agent not found: "+request.AgentCollectionAddress)
+		return nil, errors.NewNotFoundError("agent not found: " + request.AgentCollectionAddress)
 	}
 	if agent.EnsDomain == "" {
-		return nil, errors.NewNotFoundError("agent has no ens domain: "+request.AgentCollectionAddress)
+		return nil, errors.NewNotFoundError("agent has no ens domain: " + request.AgentCollectionAddress)
 	}
 
 	return uc.conversationBrokerRequester.GetAgentCard(agent.EnsDomain)

@@ -9,10 +9,10 @@ import (
 )
 
 type VerifyWalletForBridgeRequest struct {
-	AuthenticatedWallet common.Address                    `swaggerignore:"true"`
+	AuthenticatedWallet common.Address       `swaggerignore:"true"`
 	Platform            enums.BridgePlatform `json:"platform"`
-	Challenge           string                            `json:"challenge"`
-	Signature           string                            `json:"signature"`
+	Challenge           string               `json:"challenge"`
+	Signature           string               `json:"signature"`
 }
 
 func (r *VerifyWalletForBridgeRequest) Validate() error {

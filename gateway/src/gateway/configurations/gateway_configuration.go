@@ -23,6 +23,11 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewBlockchainConfigSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	// Services
 	err = container.Provide(
 		signature.NewECDSASigner,
@@ -100,6 +105,14 @@ func AddGatewayConfiguration(container *dig.Container) {
 	err = container.Provide(
 		use_cases.NewVerifyWalletForBridge,
 		dig.As(new(use_cases.VerifyWalletForBridgeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewGetBlockchainConfig,
+		dig.As(new(use_cases.GetBlockchainConfigInterface)),
 	)
 	if err != nil {
 		panic(err)
