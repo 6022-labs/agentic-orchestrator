@@ -571,7 +571,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/models.Conversation'
+                $ref: '#/components/schemas/responses.ConversationResponse'
           description: OK
         "400":
           content:

@@ -227,7 +227,7 @@ func (c *ConversationsController) Register(ctx *fiber.Ctx) error {
 // @Tags Conversations
 // @Produce json
 // @Param id path string true "Conversation ID"
-// @Success 200 {object} models.Conversation
+// @Success 200 {object} responses.ConversationResponse
 // @Failure 400 {string} string "Bad Request"
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"

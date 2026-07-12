@@ -12,8 +12,8 @@ package use_cases_mocks
 import (
 	reflect "reflect"
 
-	models "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	requests "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	responses "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,10 +42,10 @@ func (m *MockGetConversationInterface) EXPECT() *MockGetConversationInterfaceMoc
 }
 
 // Get mocks base method.
-func (m *MockGetConversationInterface) Get(request *requests.ConversationIdRequest) (*models.Conversation, error) {
+func (m *MockGetConversationInterface) Get(request *requests.ConversationIdRequest) (*responses.ConversationResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", request)
-	ret0, _ := ret[0].(*models.Conversation)
+	ret0, _ := ret[0].(*responses.ConversationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

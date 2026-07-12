@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	"gorm.io/gorm"
 )
 
 type GetConversationInterface interface {
-	Get(request *requests.ConversationIdRequest) (*models.Conversation, error)
+	Get(request *requests.ConversationIdRequest) (*responses.ConversationResponse, error)
 }
 
 type GetConversation struct {
@@ -23,7 +23,7 @@ func NewGetConversation(conversationRepository repositories.ConversationReposito
 	return &GetConversation{conversationRepository: conversationRepository}
 }
 
-func (uc *GetConversation) Get(request *requests.ConversationIdRequest) (*models.Conversation, error) {
+func (uc *GetConversation) Get(request *requests.ConversationIdRequest) (*responses.ConversationResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -36,5 +36,5 @@ func (uc *GetConversation) Get(request *requests.ConversationIdRequest) (*models
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
 
-	return conv, nil
+	return responses.ConversationResponseFromModel(conv), nil
 }

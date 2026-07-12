@@ -347,7 +347,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Conversation"
+                            "$ref": "#/definitions/responses.ConversationResponse"
                         }
                     },
                     "400": {
