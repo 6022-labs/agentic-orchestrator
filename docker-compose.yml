@@ -26,6 +26,7 @@ services:
       - RPC_NODE_HTTP_URL=http://evm-node:8545
       - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
       - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
+      - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
       - SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
     networks:
       orchestrator-network:

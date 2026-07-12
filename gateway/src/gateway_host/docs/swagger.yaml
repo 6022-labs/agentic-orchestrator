@@ -18,6 +18,11 @@ definitions:
     type: string
     x-enum-varnames:
     - BridgePlatformSlack
+  errors.NotFoundError:
+    properties:
+      message:
+        type: string
+    type: object
   errors.ValidationError:
     properties:
       field:
@@ -39,6 +44,17 @@ definitions:
     - ListAgentSortByCreatedAt
     - ListAgentSortByWalletAddress
     - ListAgentSortByCollectionAddress
+  requests.SaveAgentPromptTemplateRequest:
+    properties:
+      agentCollectionAddress:
+        type: string
+      agentCollectionTokenId:
+        type: string
+      content:
+        type: string
+      key:
+        type: string
+    type: object
   requests.SortDirection:
     enum:
     - asc
@@ -65,6 +81,30 @@ definitions:
       signature:
         type: string
     type: object
+  responses.AgentCardEndpointsResponse:
+    properties:
+      chatCompletions:
+        type: string
+      responses:
+        type: string
+    type: object
+  responses.AgentCardResponse:
+    properties:
+      endpoints:
+        $ref: '#/definitions/responses.AgentCardEndpointsResponse'
+      ensDomain:
+        type: string
+      name:
+        type: string
+      paymentMethods:
+        items:
+          type: string
+        type: array
+      protocol:
+        type: string
+      protocolVersion:
+        type: string
+    type: object
   responses.AgentCollectionResponse:
     properties:
       address:
@@ -72,6 +112,17 @@ definitions:
       name:
         type: string
       symbol:
+        type: string
+    type: object
+  responses.AgentPromptTemplateResponse:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      content:
+        type: string
+      key:
         type: string
     type: object
   responses.AgentResponse:
@@ -107,6 +158,51 @@ definitions:
       walletAddress:
         type: string
     type: object
+  responses.BrokerConversationResponse:
+    properties:
+      bridgeId:
+        type: string
+      concludedAt:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.BrokerMessageResponse:
+    properties:
+      content:
+        type: string
+      conversationId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      participantId:
+        type: string
+    type: object
+  responses.BrokerParticipantResponse:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      displayName:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+    type: object
   responses.GetAuthChallengeResponse:
     properties:
       expiresAt:
@@ -119,6 +215,19 @@ definitions:
       agents:
         items:
           $ref: '#/definitions/responses.AgentResponse'
+        type: array
+      elementsPerPage:
+        type: integer
+      page:
+        type: integer
+      totalElements:
+        type: integer
+    type: object
+  responses.ListBrokerConversationsResponse:
+    properties:
+      conversations:
+        items:
+          $ref: '#/definitions/responses.BrokerConversationResponse'
         type: array
       elementsPerPage:
         type: integer
@@ -187,9 +296,130 @@ paths:
       summary: Get agent information
       tags:
       - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/card:
+    get:
+      description: Returns the live /.well-known/6022 card of the agent's node
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentCardResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get agent node card
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key}:
+    get:
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: template key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentPromptTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get agent prompt template
+      tags:
+      - agent
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      - description: template key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: template content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SaveAgentPromptTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentPromptTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Save agent prompt template
+      tags:
+      - agent
   /agents:
     get:
-      description: Returns all agents managed by the orchestrator
+      description: Returns all agents synced from the chain
       parameters:
       - in: query
         name: elementsPerPage
@@ -282,6 +512,131 @@ paths:
       summary: Verify signed challenge
       tags:
       - authentication
+  /conversations:
+    get:
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Elements per page
+        in: query
+        name: elementsPerPage
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ListBrokerConversationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List conversations
+      tags:
+      - conversation
+  /conversations/{id}:
+    get:
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BrokerConversationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get conversation
+      tags:
+      - conversation
+  /conversations/{id}/force-conclude:
+    post:
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Force conclude a conversation
+      tags:
+      - conversation
+  /conversations/{id}/messages:
+    get:
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.BrokerMessageResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get conversation messages
+      tags:
+      - conversation
+  /conversations/{id}/participants:
+    get:
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.BrokerParticipantResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List conversation participants
+      tags:
+      - conversation
   /ping:
     get:
       description: Returns "pong" if the service is running

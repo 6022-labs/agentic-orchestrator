@@ -48,7 +48,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	// Auth
 	err = container.Provide(
 		auth.NewNonceStore,
 		dig.As(new(interfaces.NonceStoreInterface)),
@@ -58,6 +57,22 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	// Use cases
+	err = container.Provide(
+		use_cases.NewGetAuthChallenge,
+		dig.As(new(use_cases.GetAuthChallengeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewVerifyAuth,
+		dig.As(new(use_cases.VerifyAuthInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(
 		use_cases.NewGetAgent,
 		dig.As(new(use_cases.GetAgentInterface)),
@@ -83,24 +98,72 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewGetAuthChallenge,
-		dig.As(new(use_cases.GetAuthChallengeInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewVerifyAuth,
-		dig.As(new(use_cases.VerifyAuthInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		use_cases.NewVerifyWalletForBridge,
 		dig.As(new(use_cases.VerifyWalletForBridgeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewGetAgentPromptTemplate,
+		dig.As(new(use_cases.GetAgentPromptTemplateInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewSaveAgentPromptTemplate,
+		dig.As(new(use_cases.SaveAgentPromptTemplateInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewGetAgentCard,
+		dig.As(new(use_cases.GetAgentCardInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewListConversations,
+		dig.As(new(use_cases.ListConversationsInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewGetConversation,
+		dig.As(new(use_cases.GetConversationInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewGetConversationMessages,
+		dig.As(new(use_cases.GetConversationMessagesInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewListConversationParticipants,
+		dig.As(new(use_cases.ListConversationParticipantsInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewForceConcludeConversation,
+		dig.As(new(use_cases.ForceConcludeConversationInterface)),
 	)
 	if err != nil {
 		panic(err)

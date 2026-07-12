@@ -86,9 +86,196 @@ const docTemplate = `{
                 }
             }
         },
+        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/card": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the live /.well-known/6022 card of the agent's node",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Get agent node card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collection address",
+                        "name": "agentCollectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "agentCollectionTokenId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentCardResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Get agent prompt template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collection address",
+                        "name": "agentCollectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "agentCollectionTokenId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "template key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Save agent prompt template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collection address",
+                        "name": "agentCollectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "agentCollectionTokenId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "template key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "template content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SaveAgentPromptTemplateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/agents": {
             "get": {
-                "description": "Returns all agents managed by the orchestrator",
+                "description": "Returns all agents synced from the chain",
                 "produces": [
                     "application/json"
                 ],
@@ -228,6 +415,209 @@ const docTemplate = `{
                 }
             }
         },
+        "/conversations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "List conversations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elements per page",
+                        "name": "elementsPerPage",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ListBrokerConversationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Get conversation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BrokerConversationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/force-conclude": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Force conclude a conversation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Get conversation messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.BrokerMessageResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/participants": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "List conversation participants",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.BrokerParticipantResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Returns \"pong\" if the service is running",
@@ -331,6 +721,14 @@ const docTemplate = `{
                 "BridgePlatformSlack"
             ]
         },
+        "errors.NotFoundError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.ValidationError": {
             "type": "object",
             "properties": {
@@ -358,6 +756,23 @@ const docTemplate = `{
                 "ListAgentSortByWalletAddress",
                 "ListAgentSortByCollectionAddress"
             ]
+        },
+        "requests.SaveAgentPromptTemplateRequest": {
+            "type": "object",
+            "properties": {
+                "agentCollectionAddress": {
+                    "type": "string"
+                },
+                "agentCollectionTokenId": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
         },
         "requests.SortDirection": {
             "type": "string",
@@ -398,6 +813,43 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.AgentCardEndpointsResponse": {
+            "type": "object",
+            "properties": {
+                "chatCompletions": {
+                    "type": "string"
+                },
+                "responses": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentCardResponse": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "$ref": "#/definitions/responses.AgentCardEndpointsResponse"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "protocolVersion": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.AgentCollectionResponse": {
             "type": "object",
             "properties": {
@@ -408,6 +860,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "symbol": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentPromptTemplateResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "key": {
                     "type": "string"
                 }
             }
@@ -462,6 +931,75 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.BrokerConversationResponse": {
+            "type": "object",
+            "properties": {
+                "bridgeId": {
+                    "type": "string"
+                },
+                "concludedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BrokerMessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "conversationId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "participantId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BrokerParticipantResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.GetAuthChallengeResponse": {
             "type": "object",
             "properties": {
@@ -480,6 +1018,26 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/responses.AgentResponse"
+                    }
+                },
+                "elementsPerPage": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "totalElements": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ListBrokerConversationsResponse": {
+            "type": "object",
+            "properties": {
+                "conversations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.BrokerConversationResponse"
                     }
                 },
                 "elementsPerPage": {
