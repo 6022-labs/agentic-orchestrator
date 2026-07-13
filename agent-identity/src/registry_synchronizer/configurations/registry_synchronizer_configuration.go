@@ -80,6 +80,22 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentWalletAddedEventHandler,
+		dig.As(new(interfaces.AgentWalletAddedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewAgentWalletRemovedEventHandler,
+		dig.As(new(interfaces.AgentWalletRemovedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewAgentImageUpdatedEventHandler,
 		dig.As(new(interfaces.AgentImageUpdatedEventHandlerInterface)),
 	)

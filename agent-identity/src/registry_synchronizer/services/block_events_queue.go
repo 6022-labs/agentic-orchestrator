@@ -112,6 +112,28 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(block
 	return nil
 }
 
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentWalletAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletAdded) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry := s.ensureEntry(blockNumber)
+	entry.data.AgentCollectionV1AgentWalletAddedEvents = append(entry.data.AgentCollectionV1AgentWalletAddedEvents, events...)
+	s.trackPendingBlock(blockNumber, entry)
+
+	return nil
+}
+
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentWalletRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletRemoved) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry := s.ensureEntry(blockNumber)
+	entry.data.AgentCollectionV1AgentWalletRemovedEvents = append(entry.data.AgentCollectionV1AgentWalletRemovedEvents, events...)
+	s.trackPendingBlock(blockNumber, entry)
+
+	return nil
+}
+
 func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

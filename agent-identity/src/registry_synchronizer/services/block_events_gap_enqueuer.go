@@ -113,6 +113,16 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		return fmt.Errorf("failed to get agent collection v1 agent attribute updated events: %w", err)
 	}
 
+	walletAddedEvents, err := b.getAgentCollectionV1AgentWalletAdded(minimumBlockToStartFrom, *toBlock, agentCollectionRelatedAddresses)
+	if err != nil {
+		return fmt.Errorf("failed to get agent collection v1 agent wallet added events: %w", err)
+	}
+
+	walletRemovedEvents, err := b.getAgentCollectionV1AgentWalletRemoved(minimumBlockToStartFrom, *toBlock, agentCollectionRelatedAddresses)
+	if err != nil {
+		return fmt.Errorf("failed to get agent collection v1 agent wallet removed events: %w", err)
+	}
+
 	mintProposalCreatedEvents, err := b.getAgentCollectionV1MintProposalCreated(minimumBlockToStartFrom, *toBlock, agentCollectionRelatedAddresses)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collection v1 mint proposal created events: %w", err)
@@ -144,6 +154,14 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		return item.Raw.BlockNumber
 	})
 
+	walletAddedEventsByBlock := lo.GroupBy(walletAddedEvents, func(item *abi.AgentCollectionV1AgentWalletAdded) uint64 {
+		return item.Raw.BlockNumber
+	})
+
+	walletRemovedEventsByBlock := lo.GroupBy(walletRemovedEvents, func(item *abi.AgentCollectionV1AgentWalletRemoved) uint64 {
+		return item.Raw.BlockNumber
+	})
+
 	mintProposalCreatedEventsByBlock := lo.GroupBy(mintProposalCreatedEvents, func(item *abi.AgentCollectionV1MintProposalCreated) uint64 {
 		return item.Raw.BlockNumber
 	})
@@ -159,6 +177,8 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		transferEventsForBlock := transferEventsByBlock[blockNumber]
 		imageUpdatedEventsForBlock := imageUpdatedEventsByBlock[blockNumber]
 		attributeUpdatedEventsForBlock := attributeUpdatedEventsByBlock[blockNumber]
+		walletAddedEventsForBlock := walletAddedEventsByBlock[blockNumber]
+		walletRemovedEventsForBlock := walletRemovedEventsByBlock[blockNumber]
 		mintProposalCreatedEventsForBlock := mintProposalCreatedEventsByBlock[blockNumber]
 		mintProposalRemovedEventsForBlock := mintProposalRemovedEventsByBlock[blockNumber]
 
@@ -167,6 +187,8 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 			len(transferEventsForBlock) == 0 &&
 			len(imageUpdatedEventsForBlock) == 0 &&
 			len(attributeUpdatedEventsForBlock) == 0 &&
+			len(walletAddedEventsForBlock) == 0 &&
+			len(walletRemovedEventsForBlock) == 0 &&
 			len(mintProposalCreatedEventsForBlock) == 0 &&
 			len(mintProposalRemovedEventsForBlock) == 0 {
 			continue
@@ -191,6 +213,14 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber, attributeUpdatedEventsForBlock); err != nil {
 			return fmt.Errorf("failed to enqueue agent collection v1 agent attribute updated events for block %d: %w", blockNumber, err)
+		}
+
+		if err = b.blockEventsQueue.AddAgentCollectionV1AgentWalletAddedEvents(blockNumber, walletAddedEventsForBlock); err != nil {
+			return fmt.Errorf("failed to enqueue agent collection v1 agent wallet added events for block %d: %w", blockNumber, err)
+		}
+
+		if err = b.blockEventsQueue.AddAgentCollectionV1AgentWalletRemovedEvents(blockNumber, walletRemovedEventsForBlock); err != nil {
+			return fmt.Errorf("failed to enqueue agent collection v1 agent wallet removed events for block %d: %w", blockNumber, err)
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1MintProposalCreatedEvents(blockNumber, mintProposalCreatedEventsForBlock); err != nil {
@@ -278,6 +308,36 @@ func (s *BlockEventsGapEnqueuer) getAgentCollectionV1AgentAttributeUpdated(from,
 	}
 
 	s.logger.Debug("Fetched agent collection v1 agent attribute updated events",
+		zap.Int("eventsCount", len(events)),
+	)
+
+	return events, nil
+}
+
+func (s *BlockEventsGapEnqueuer) getAgentCollectionV1AgentWalletAdded(from, to uint64, collectionAddresses []common.Address) ([]*abi.AgentCollectionV1AgentWalletAdded, error) {
+	s.logger.Debug("Starting to get agent collection v1 agent wallet added events")
+
+	events, err := s.agentCollectionBlockchainRequester.GetAgentCollectionV1AgentWalletAddedEvent(from, to, collectionAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent collection v1 agent wallet added events: %w", err)
+	}
+
+	s.logger.Debug("Fetched agent collection v1 agent wallet added events",
+		zap.Int("eventsCount", len(events)),
+	)
+
+	return events, nil
+}
+
+func (s *BlockEventsGapEnqueuer) getAgentCollectionV1AgentWalletRemoved(from, to uint64, collectionAddresses []common.Address) ([]*abi.AgentCollectionV1AgentWalletRemoved, error) {
+	s.logger.Debug("Starting to get agent collection v1 agent wallet removed events")
+
+	events, err := s.agentCollectionBlockchainRequester.GetAgentCollectionV1AgentWalletRemovedEvent(from, to, collectionAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent collection v1 agent wallet removed events: %w", err)
+	}
+
+	s.logger.Debug("Fetched agent collection v1 agent wallet removed events",
 		zap.Int("eventsCount", len(events)),
 	)
 

@@ -6,7 +6,9 @@ type QueueItem struct {
 	BlockNumber                                  uint64
 	AgentCollectionV1MintedEvents                []*abi.AgentCollectionV1Minted
 	AgentCollectionV1TransferEvents              []*abi.AgentCollectionV1Transfer
+	AgentCollectionV1AgentWalletAddedEvents      []*abi.AgentCollectionV1AgentWalletAdded
 	AgentCollectionV1AgentImageUpdatedEvents     []*abi.AgentCollectionV1AgentImageUpdated
+	AgentCollectionV1AgentWalletRemovedEvents    []*abi.AgentCollectionV1AgentWalletRemoved
 	AgentCollectionV1MintProposalCreatedEvents   []*abi.AgentCollectionV1MintProposalCreated
 	AgentCollectionV1MintProposalRemovedEvents   []*abi.AgentCollectionV1MintProposalRemoved
 	AgentCollectionV1AgentAttributeUpdatedEvents []*abi.AgentCollectionV1AgentAttributeUpdated
@@ -17,7 +19,9 @@ type QueueItem struct {
 type BlockEventsQueueInterface interface {
 	AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error
 	AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error
+	AddAgentCollectionV1AgentWalletAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletAdded) error
 	AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error
+	AddAgentCollectionV1AgentWalletRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletRemoved) error
 	AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error
 	AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error
 	AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error

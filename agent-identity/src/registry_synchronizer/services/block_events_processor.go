@@ -32,6 +32,8 @@ type BlockEventsProcessor struct {
 	agentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
 	agentCollectionV1TransferHandler              interfaces.TransferEventHandlerInterface
 	agentCollectionV1AgentImageUpdatedHandler     interfaces.AgentImageUpdatedEventHandlerInterface
+	agentCollectionV1AgentWalletAddedHandler      interfaces.AgentWalletAddedEventHandlerInterface
+	agentCollectionV1AgentWalletRemovedHandler    interfaces.AgentWalletRemovedEventHandlerInterface
 	agentCollectionV1MintProposalCreatedHandler   interfaces.MintProposalCreatedEventHandlerInterface
 	agentCollectionV1MintProposalRemovedHandler   interfaces.MintProposalRemovedEventHandlerInterface
 	agentCollectionV1AgentAttributeUpdatedHandler interfaces.AgentAttributeUpdatedEventHandlerInterface
@@ -51,6 +53,8 @@ type NewBlockEventsProcessorParams struct {
 	AgentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
 	AgentCollectionV1TransferHandler              interfaces.TransferEventHandlerInterface
 	AgentCollectionV1AgentImageUpdatedHandler     interfaces.AgentImageUpdatedEventHandlerInterface
+	AgentCollectionV1AgentWalletAddedHandler      interfaces.AgentWalletAddedEventHandlerInterface
+	AgentCollectionV1AgentWalletRemovedHandler    interfaces.AgentWalletRemovedEventHandlerInterface
 	AgentCollectionV1MintProposalCreatedHandler   interfaces.MintProposalCreatedEventHandlerInterface
 	AgentCollectionV1MintProposalRemovedHandler   interfaces.MintProposalRemovedEventHandlerInterface
 	AgentCollectionV1AgentAttributeUpdatedHandler interfaces.AgentAttributeUpdatedEventHandlerInterface
@@ -71,6 +75,8 @@ func NewBlockEventsProcessor(
 		agentCollectionV1MintedHandler:                params.AgentCollectionV1MintedHandler,
 		agentCollectionV1TransferHandler:              params.AgentCollectionV1TransferHandler,
 		agentCollectionV1AgentImageUpdatedHandler:     params.AgentCollectionV1AgentImageUpdatedHandler,
+		agentCollectionV1AgentWalletAddedHandler:      params.AgentCollectionV1AgentWalletAddedHandler,
+		agentCollectionV1AgentWalletRemovedHandler:    params.AgentCollectionV1AgentWalletRemovedHandler,
 		agentCollectionV1MintProposalCreatedHandler:   params.AgentCollectionV1MintProposalCreatedHandler,
 		agentCollectionV1MintProposalRemovedHandler:   params.AgentCollectionV1MintProposalRemovedHandler,
 		agentCollectionV1AgentAttributeUpdatedHandler: params.AgentCollectionV1AgentAttributeUpdatedHandler,
@@ -86,7 +92,9 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		zap.Uint64("blockNumber", blockNumber),
 		zap.Int("agentCollectionV1MintedEventsCount", len(item.AgentCollectionV1MintedEvents)),
 		zap.Int("agentCollectionV1TransferEventsCount", len(item.AgentCollectionV1TransferEvents)),
+		zap.Int("agentCollectionV1AgentWalletAddedEventsCount", len(item.AgentCollectionV1AgentWalletAddedEvents)),
 		zap.Int("agentCollectionV1AgentImageUpdatedEventsCount", len(item.AgentCollectionV1AgentImageUpdatedEvents)),
+		zap.Int("agentCollectionV1AgentWalletRemovedEventsCount", len(item.AgentCollectionV1AgentWalletRemovedEvents)),
 		zap.Int("agentCollectionV1MintProposalCreatedEventsCount", len(item.AgentCollectionV1MintProposalCreatedEvents)),
 		zap.Int("agentCollectionV1MintProposalRemovedEventsCount", len(item.AgentCollectionV1MintProposalRemovedEvents)),
 		zap.Int("agentCollectionV1AgentAttributeUpdatedEventsCount", len(item.AgentCollectionV1AgentAttributeUpdatedEvents)),
@@ -126,6 +134,14 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 
 		if err := p.syncAgentCollectionV1AgentAttributeUpdatedEvents(item.AgentCollectionV1AgentAttributeUpdatedEvents); err != nil {
 			return fmt.Errorf("failed to sync agent attribute updated events at block %d: %w", blockNumber, err)
+		}
+
+		if err := p.syncAgentCollectionV1AgentWalletAddedEvents(item.AgentCollectionV1AgentWalletAddedEvents); err != nil {
+			return fmt.Errorf("failed to sync agent wallet added events at block %d: %w", blockNumber, err)
+		}
+
+		if err := p.syncAgentCollectionV1AgentWalletRemovedEvents(item.AgentCollectionV1AgentWalletRemovedEvents); err != nil {
+			return fmt.Errorf("failed to sync agent wallet removed events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.saveOrUpdateSyncCheckpoint(blockNumber); err != nil {
@@ -237,6 +253,26 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalRemovedEvents(ev
 func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAttributeUpdatedEvents(events []*abi.AgentCollectionV1AgentAttributeUpdated) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAttributeUpdatedHandler.Handle(event); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentWalletAddedEvents(events []*abi.AgentCollectionV1AgentWalletAdded) error {
+	for _, event := range events {
+		if err := p.agentCollectionV1AgentWalletAddedHandler.Handle(event); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentWalletRemovedEvents(events []*abi.AgentCollectionV1AgentWalletRemoved) error {
+	for _, event := range events {
+		if err := p.agentCollectionV1AgentWalletRemovedHandler.Handle(event); err != nil {
 			return err
 		}
 	}

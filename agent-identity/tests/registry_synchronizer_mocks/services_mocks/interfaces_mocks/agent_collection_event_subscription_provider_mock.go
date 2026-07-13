@@ -74,6 +74,38 @@ func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) Sta
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentImageUpdatedSubscription), addresses)
 }
 
+// StartAgentWalletAddedSubscription mocks base method.
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentWalletAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletAdded, ethereum.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartAgentWalletAddedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentWalletAdded)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// StartAgentWalletAddedSubscription indicates an expected call of StartAgentWalletAddedSubscription.
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentWalletAddedSubscription(addresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentWalletAddedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentWalletAddedSubscription), addresses)
+}
+
+// StartAgentWalletRemovedSubscription mocks base method.
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentWalletRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletRemoved, ethereum.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartAgentWalletRemovedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentWalletRemoved)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// StartAgentWalletRemovedSubscription indicates an expected call of StartAgentWalletRemovedSubscription.
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentWalletRemovedSubscription(addresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentWalletRemovedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentWalletRemovedSubscription), addresses)
+}
+
 // StartMintProposalCreatedSubscription mocks base method.
 func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()

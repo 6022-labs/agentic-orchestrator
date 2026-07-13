@@ -296,3 +296,55 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 
 	return allEvents, nil
 }
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentWalletAdded, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentWalletAdded
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentWalletAdded(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
+	}
+
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentWalletRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentWalletRemoved
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentWalletRemoved(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
+	}
+
+	return allEvents, nil
+}

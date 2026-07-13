@@ -196,6 +196,16 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
+				GetAgentCollectionV1AgentWalletAddedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			suite.mockAgentCollectionBlockchainRequester.EXPECT().
+				GetAgentCollectionV1AgentWalletRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			suite.mockAgentCollectionBlockchainRequester.EXPECT().
 				GetAgentCollectionV1MintProposalCreatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)

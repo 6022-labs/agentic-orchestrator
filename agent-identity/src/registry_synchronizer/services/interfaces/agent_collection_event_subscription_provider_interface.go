@@ -8,6 +8,8 @@ import (
 
 type AgentCollectionEventSubscriptionProviderInterface interface {
 	StartAgentAttributeUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error)
+	StartAgentWalletAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletAdded, ethereum.Subscription, error)
+	StartAgentWalletRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletRemoved, ethereum.Subscription, error)
 	StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error)
 
 	StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)

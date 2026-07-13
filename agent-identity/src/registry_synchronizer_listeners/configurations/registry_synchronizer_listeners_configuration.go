@@ -22,6 +22,16 @@ func AddRegistrySynchronizerListenersConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = addAgentCollectionAgentWalletAddedListenerConfiguration(container)
+	if err != nil {
+		panic(err)
+	}
+
+	err = addAgentCollectionAgentWalletRemovedListenerConfiguration(container)
+	if err != nil {
+		panic(err)
+	}
+
 	err = addAgentCollectionAgentImageUpdatedListenerConfiguration(container)
 	if err != nil {
 		panic(err)
@@ -148,6 +158,84 @@ func addAgentCollectionAgentAttributeUpdatedListenerConfiguration(container *dig
 	}
 
 	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAttributeUpdatedListener) registry_synchronizer_listeners.EventListenerInterface {
+		return l
+	},
+		dig.Group("event_listeners"),
+		dig.As(new(registry_synchronizer_listeners.EventListenerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addAgentCollectionAgentWalletAddedListenerConfiguration(container *dig.Container) error {
+	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentWalletAddedListener)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) interfaces.CollectionEventSubscriberInterface {
+		return l
+	},
+		dig.Group("collection_event_subscribers"),
+		dig.As(new(interfaces.CollectionEventSubscriberInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) interfaces.OnBlockProcessedHandlerInterface {
+		return l
+	},
+		dig.Group("on_block_processed_handlers"),
+		dig.As(new(interfaces.OnBlockProcessedHandlerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) registry_synchronizer_listeners.EventListenerInterface {
+		return l
+	},
+		dig.Group("event_listeners"),
+		dig.As(new(registry_synchronizer_listeners.EventListenerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addAgentCollectionAgentWalletRemovedListenerConfiguration(container *dig.Container) error {
+	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentWalletRemovedListener)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) interfaces.CollectionEventSubscriberInterface {
+		return l
+	},
+		dig.Group("collection_event_subscribers"),
+		dig.As(new(interfaces.CollectionEventSubscriberInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) interfaces.OnBlockProcessedHandlerInterface {
+		return l
+	},
+		dig.Group("on_block_processed_handlers"),
+		dig.As(new(interfaces.OnBlockProcessedHandlerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) registry_synchronizer_listeners.EventListenerInterface {
 		return l
 	},
 		dig.Group("event_listeners"),

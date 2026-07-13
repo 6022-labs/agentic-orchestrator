@@ -69,6 +69,34 @@ func (mr *MockBlockEventsQueueInterfaceMockRecorder) AddAgentCollectionV1AgentIm
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCollectionV1AgentImageUpdatedEvents", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).AddAgentCollectionV1AgentImageUpdatedEvents), blockNumber, events)
 }
 
+// AddAgentCollectionV1AgentWalletAddedEvents mocks base method.
+func (m *MockBlockEventsQueueInterface) AddAgentCollectionV1AgentWalletAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletAdded) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAgentCollectionV1AgentWalletAddedEvents", blockNumber, events)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddAgentCollectionV1AgentWalletAddedEvents indicates an expected call of AddAgentCollectionV1AgentWalletAddedEvents.
+func (mr *MockBlockEventsQueueInterfaceMockRecorder) AddAgentCollectionV1AgentWalletAddedEvents(blockNumber, events any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCollectionV1AgentWalletAddedEvents", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).AddAgentCollectionV1AgentWalletAddedEvents), blockNumber, events)
+}
+
+// AddAgentCollectionV1AgentWalletRemovedEvents mocks base method.
+func (m *MockBlockEventsQueueInterface) AddAgentCollectionV1AgentWalletRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentWalletRemoved) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAgentCollectionV1AgentWalletRemovedEvents", blockNumber, events)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddAgentCollectionV1AgentWalletRemovedEvents indicates an expected call of AddAgentCollectionV1AgentWalletRemovedEvents.
+func (mr *MockBlockEventsQueueInterfaceMockRecorder) AddAgentCollectionV1AgentWalletRemovedEvents(blockNumber, events any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCollectionV1AgentWalletRemovedEvents", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).AddAgentCollectionV1AgentWalletRemovedEvents), blockNumber, events)
+}
+
 // AddAgentCollectionV1MintProposalCreatedEvents mocks base method.
 func (m *MockBlockEventsQueueInterface) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
 	m.ctrl.T.Helper()

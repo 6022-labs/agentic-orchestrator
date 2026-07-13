@@ -263,6 +263,120 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 	return logs, wrappedSub, nil
 }
 
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletAdded, ethereum.Subscription, error) {
+	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventDef, ok := abiSpec.Events["AgentWalletAdded"]
+	if !ok {
+		return nil, nil, fmt.Errorf("event AgentWalletAdded not found in AgentCollectionV1 ABI")
+	}
+
+	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
+	subscriptionLogs := make(chan types.Log)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentWalletAdded, 64)
+
+	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
+		defer close(logs)
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-subscriptionLogs:
+				parsedEvent, parseErr := filterer.ParseAgentWalletAdded(log)
+				if parseErr != nil {
+					return fmt.Errorf("failed to parse AgentWalletAdded log: %w", parseErr)
+				}
+				select {
+				case logs <- parsedEvent:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	})
+
+	s.logger.Debug(
+		"Subscribed to AgentCollection AgentWalletAdded events",
+	)
+
+	return logs, wrappedSub, nil
+}
+
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletRemoved, ethereum.Subscription, error) {
+	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventDef, ok := abiSpec.Events["AgentWalletRemoved"]
+	if !ok {
+		return nil, nil, fmt.Errorf("event AgentWalletRemoved not found in AgentCollectionV1 ABI")
+	}
+
+	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
+	subscriptionLogs := make(chan types.Log)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentWalletRemoved, 64)
+
+	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
+		defer close(logs)
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-subscriptionLogs:
+				parsedEvent, parseErr := filterer.ParseAgentWalletRemoved(log)
+				if parseErr != nil {
+					return fmt.Errorf("failed to parse AgentWalletRemoved log: %w", parseErr)
+				}
+				select {
+				case logs <- parsedEvent:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	})
+
+	s.logger.Debug(
+		"Subscribed to AgentCollection AgentWalletRemoved events",
+	)
+
+	return logs, wrappedSub, nil
+}
+
 func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
