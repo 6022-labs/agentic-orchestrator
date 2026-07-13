@@ -33,7 +33,7 @@ func (c *AgentCardsController) InitRoutes(app fiber.Router) {
 // @Tags Agent Cards
 // @Produce json
 // @Param ensDomain path string true "Agent ENS domain"
-// @Success 200 {object} models.RemoteAgentCard
+// @Success 200 {object} responses.RemoteAgentCardResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 502 {string} string "Bad Gateway"
 // @Router /agent-cards/{ensDomain} [get]

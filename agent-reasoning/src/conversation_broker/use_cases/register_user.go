@@ -6,10 +6,11 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 )
 
 type RegisterUserInterface interface {
-	Register(request *requests.RegisterUserRequest) (*models.Participant, error)
+	Register(request *requests.RegisterUserRequest) (*responses.ParticipantResponse, error)
 }
 
 // RegisterUser always creates a new participant. There is no natural key for
@@ -23,7 +24,7 @@ func NewRegisterUser(participantRepository repositories.ParticipantRepositoryInt
 	return &RegisterUser{participantRepository: participantRepository}
 }
 
-func (uc *RegisterUser) Register(request *requests.RegisterUserRequest) (*models.Participant, error) {
+func (uc *RegisterUser) Register(request *requests.RegisterUserRequest) (*responses.ParticipantResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -38,5 +39,5 @@ func (uc *RegisterUser) Register(request *requests.RegisterUserRequest) (*models
 		return nil, fmt.Errorf("failed to save user participant: %w", err)
 	}
 
-	return saved, nil
+	return responses.ParticipantResponseFromModel(saved), nil
 }

@@ -7,7 +7,7 @@ import (
 )
 
 // ExternalAgentCardResponse is the broker's generated 6022-card wire shape, named locally to carry mapping.
-type ExternalAgentCardResponse clients.ModelsRemoteAgentCard
+type ExternalAgentCardResponse clients.ResponsesRemoteAgentCardResponse
 
 func (card *ExternalAgentCardResponse) ToUseCaseResponse() *responses.AgentCardResponse {
 	if card == nil {

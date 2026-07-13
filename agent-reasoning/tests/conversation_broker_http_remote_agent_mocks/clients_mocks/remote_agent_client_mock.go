@@ -71,16 +71,16 @@ func (mr *MockRemoteAgentClientInterfaceMockRecorder) CreateResponse(endpointUrl
 }
 
 // GetWellKnownCard mocks base method.
-func (m *MockRemoteAgentClientInterface) GetWellKnownCard(runtimeUrl string) (*models.ExternalWellKnownAgent6022, error) {
+func (m *MockRemoteAgentClientInterface) GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWellKnownCard", runtimeUrl)
+	ret := m.ctrl.Call(m, "GetWellKnownCard", agentUrl)
 	ret0, _ := ret[0].(*models.ExternalWellKnownAgent6022)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetWellKnownCard indicates an expected call of GetWellKnownCard.
-func (mr *MockRemoteAgentClientInterfaceMockRecorder) GetWellKnownCard(runtimeUrl any) *gomock.Call {
+func (mr *MockRemoteAgentClientInterfaceMockRecorder) GetWellKnownCard(agentUrl any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWellKnownCard", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).GetWellKnownCard), runtimeUrl)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWellKnownCard", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).GetWellKnownCard), agentUrl)
 }

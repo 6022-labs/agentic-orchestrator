@@ -8,11 +8,12 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	"gorm.io/gorm"
 )
 
 type RegisterConversationInterface interface {
-	Register(request *requests.RegisterConversationRequest) (*models.Conversation, error)
+	Register(request *requests.RegisterConversationRequest) (*responses.ConversationResponse, error)
 }
 
 type RegisterConversation struct {
@@ -36,7 +37,7 @@ func NewRegisterConversation(
 	}
 }
 
-func (uc *RegisterConversation) Register(request *requests.RegisterConversationRequest) (*models.Conversation, error) {
+func (uc *RegisterConversation) Register(request *requests.RegisterConversationRequest) (*responses.ConversationResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -78,5 +79,5 @@ func (uc *RegisterConversation) Register(request *requests.RegisterConversationR
 		}
 	}
 
-	return saved, nil
+	return responses.ConversationResponseFromModel(saved), nil
 }

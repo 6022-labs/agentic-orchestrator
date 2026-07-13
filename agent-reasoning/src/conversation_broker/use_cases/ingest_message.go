@@ -10,11 +10,12 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	"gorm.io/gorm"
 )
 
 type IngestMessageInterface interface {
-	Ingest(request *requests.IngestMessageRequest) (*models.ConversationMessage, error)
+	Ingest(request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error)
 }
 
 type IngestMessage struct {
@@ -35,7 +36,7 @@ func NewIngestMessage(
 	}
 }
 
-func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*models.ConversationMessage, error) {
+func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*models
 	if err != nil {
 		return nil, fmt.Errorf("failed to save message: %w", err)
 	}
-	return saved, nil
+	return responses.ConversationMessageResponseFromModel(saved), nil
 }
 
 func (uc *IngestMessage) isHumanAuthored(participant *models.Participant) bool {

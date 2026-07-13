@@ -38,12 +38,12 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
 			suite.mockClient.EXPECT().GetAgentCardsEnsDomainWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetAgentCardsEnsDomainResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ModelsRemoteAgentCard{
+				JSON200: &clients.ResponsesRemoteAgentCardResponse{
 					Protocol:        lo.ToPtr("6022"),
 					ProtocolVersion: lo.ToPtr("1"),
 					Name:            lo.ToPtr("Ada"),
 					EnsDomain:       lo.ToPtr("ada.experts.80002.protocol6022.eth"),
-					Endpoints: &clients.ModelsRemoteAgentCardEndpoints{
+					Endpoints: &clients.ResponsesRemoteAgentCardEndpointsResponse{
 						Responses: lo.ToPtr("https://ada.example/responses"),
 					},
 					PaymentMethods: lo.ToPtr([]string{"x402"}),

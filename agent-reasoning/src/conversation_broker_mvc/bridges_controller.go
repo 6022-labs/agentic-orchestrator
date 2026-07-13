@@ -29,8 +29,8 @@ func (c *BridgesController) InitRoutes(app fiber.Router) {
 // @Accept json
 // @Produce json
 // @Param request body requests.RegisterBridgeRequest true "Register Bridge Request"
-// @Success 200 {object} models.Bridge
-// @Success 201 {object} models.Bridge
+// @Success 200 {object} responses.BridgeResponse
+// @Success 201 {object} responses.BridgeResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /bridges [post]

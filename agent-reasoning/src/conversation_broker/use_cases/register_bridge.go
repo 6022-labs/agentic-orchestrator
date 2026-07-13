@@ -7,13 +7,14 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	"gorm.io/gorm"
 )
 
 type RegisterBridgeInterface interface {
 	// Register upserts a bridge. The second return value is true when the
 	// caller-supplied id already existed (caller can surface 200 vs 201).
-	Register(request *requests.RegisterBridgeRequest) (*models.Bridge, bool, error)
+	Register(request *requests.RegisterBridgeRequest) (*responses.BridgeResponse, bool, error)
 }
 
 type RegisterBridge struct {
@@ -24,7 +25,7 @@ func NewRegisterBridge(bridgeRepository repositories.BridgeRepositoryInterface) 
 	return &RegisterBridge{bridgeRepository: bridgeRepository}
 }
 
-func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*models.Bridge, bool, error) {
+func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*responses.BridgeResponse, bool, error) {
 	if err := request.Validate(); err != nil {
 		return nil, false, err
 	}
@@ -36,7 +37,7 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 		}
 		if existing != nil {
 			if existing.BaseUrl == request.BaseUrl && existing.Kind == request.Kind {
-				return existing, true, nil
+				return responses.BridgeResponseFromModel(existing), true, nil
 			}
 			existing.BaseUrl = request.BaseUrl
 			existing.Kind = request.Kind
@@ -44,7 +45,7 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 			if err != nil {
 				return nil, false, fmt.Errorf("failed to update existing bridge: %w", err)
 			}
-			return saved, true, nil
+			return responses.BridgeResponseFromModel(saved), true, nil
 		}
 	}
 
@@ -61,5 +62,5 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*mo
 		return nil, false, fmt.Errorf("failed to save bridge: %w", err)
 	}
 
-	return saved, false, nil
+	return responses.BridgeResponseFromModel(saved), false, nil
 }

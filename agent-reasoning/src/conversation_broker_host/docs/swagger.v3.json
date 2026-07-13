@@ -79,148 +79,6 @@
                 },
                 "type": "object"
             },
-            "models.Bridge": {
-                "properties": {
-                    "baseUrl": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "kind": {
-                        "$ref": "#/components/schemas/enums.BridgeKind"
-                    },
-                    "updatedAt": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "models.Conversation": {
-                "properties": {
-                    "bridgeId": {
-                        "type": "string"
-                    },
-                    "concludedAt": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/enums.ConversationStatus"
-                    },
-                    "unconcludedAt": {
-                        "type": "string"
-                    },
-                    "updatedAt": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "models.ConversationMessage": {
-                "properties": {
-                    "content": {
-                        "type": "string"
-                    },
-                    "conversationId": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "participantId": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "models.Participant": {
-                "properties": {
-                    "collectionAddress": {
-                        "type": "string"
-                    },
-                    "collectionTokenId": {
-                        "type": "integer"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "displayName": {
-                        "type": "string"
-                    },
-                    "ensDomain": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "isProcessing": {
-                        "type": "boolean"
-                    },
-                    "lastProcessedAt": {
-                        "type": "string"
-                    },
-                    "role": {
-                        "$ref": "#/components/schemas/enums.ParticipantRole"
-                    },
-                    "updatedAt": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "models.RemoteAgentCard": {
-                "properties": {
-                    "endpoints": {
-                        "$ref": "#/components/schemas/models.RemoteAgentCardEndpoints"
-                    },
-                    "ensDomain": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "paymentMethods": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "uniqueItems": false
-                    },
-                    "protocol": {
-                        "type": "string"
-                    },
-                    "protocolVersion": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "models.RemoteAgentCardEndpoints": {
-                "properties": {
-                    "chatCompletions": {
-                        "type": "string"
-                    },
-                    "responses": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
             "requests.ConversationParticipantRequest": {
                 "properties": {
                     "participantId": {
@@ -333,6 +191,26 @@
                 },
                 "type": "object"
             },
+            "responses.BridgeResponse": {
+                "properties": {
+                    "baseUrl": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "$ref": "#/components/schemas/enums.BridgeKind"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "responses.ConversationMessageResponse": {
                 "properties": {
                     "content": {
@@ -437,6 +315,44 @@
                     }
                 },
                 "type": "object"
+            },
+            "responses.RemoteAgentCardEndpointsResponse": {
+                "properties": {
+                    "chatCompletions": {
+                        "type": "string"
+                    },
+                    "responses": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "responses.RemoteAgentCardResponse": {
+                "properties": {
+                    "endpoints": {
+                        "$ref": "#/components/schemas/responses.RemoteAgentCardEndpointsResponse"
+                    },
+                    "ensDomain": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "paymentMethods": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "protocol": {
+                        "type": "string"
+                    },
+                    "protocolVersion": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
             }
         }
     },
@@ -469,7 +385,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.RemoteAgentCard"
+                                    "$ref": "#/components/schemas/responses.RemoteAgentCardResponse"
                                 }
                             }
                         },
@@ -698,7 +614,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Bridge"
+                                    "$ref": "#/components/schemas/responses.BridgeResponse"
                                 }
                             }
                         },
@@ -708,7 +624,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Bridge"
+                                    "$ref": "#/components/schemas/responses.BridgeResponse"
                                 }
                             }
                         },
@@ -816,7 +732,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Conversation"
+                                    "$ref": "#/components/schemas/responses.ConversationResponse"
                                 }
                             }
                         },
@@ -1167,7 +1083,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.ConversationMessage"
+                                    "$ref": "#/components/schemas/responses.ConversationMessageResponse"
                                 }
                             }
                         },
@@ -1444,7 +1360,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Participant"
+                                    "$ref": "#/components/schemas/responses.ParticipantResponse"
                                 }
                             }
                         },
@@ -1454,7 +1370,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Participant"
+                                    "$ref": "#/components/schemas/responses.ParticipantResponse"
                                 }
                             }
                         },
@@ -1525,7 +1441,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/models.Participant"
+                                    "$ref": "#/components/schemas/responses.ParticipantResponse"
                                 }
                             }
                         },

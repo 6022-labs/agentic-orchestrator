@@ -70,66 +70,6 @@ type ErrorsValidationError struct {
 	Message *string `json:"message,omitempty"`
 }
 
-// ModelsBridge defines model for models.Bridge.
-type ModelsBridge struct {
-	BaseUrl   *string          `json:"baseUrl,omitempty"`
-	CreatedAt *string          `json:"createdAt,omitempty"`
-	Id        *string          `json:"id,omitempty"`
-	Kind      *EnumsBridgeKind `json:"kind,omitempty"`
-	UpdatedAt *string          `json:"updatedAt,omitempty"`
-}
-
-// ModelsConversation defines model for models.Conversation.
-type ModelsConversation struct {
-	BridgeId      *string                  `json:"bridgeId,omitempty"`
-	ConcludedAt   *string                  `json:"concludedAt,omitempty"`
-	CreatedAt     *string                  `json:"createdAt,omitempty"`
-	Description   *string                  `json:"description,omitempty"`
-	Id            *string                  `json:"id,omitempty"`
-	Status        *EnumsConversationStatus `json:"status,omitempty"`
-	UnconcludedAt *string                  `json:"unconcludedAt,omitempty"`
-	UpdatedAt     *string                  `json:"updatedAt,omitempty"`
-}
-
-// ModelsConversationMessage defines model for models.ConversationMessage.
-type ModelsConversationMessage struct {
-	Content        *string `json:"content,omitempty"`
-	ConversationId *string `json:"conversationId,omitempty"`
-	CreatedAt      *string `json:"createdAt,omitempty"`
-	Id             *string `json:"id,omitempty"`
-	ParticipantId  *string `json:"participantId,omitempty"`
-}
-
-// ModelsParticipant defines model for models.Participant.
-type ModelsParticipant struct {
-	CollectionAddress *string               `json:"collectionAddress,omitempty"`
-	CollectionTokenId *int                  `json:"collectionTokenId,omitempty"`
-	CreatedAt         *string               `json:"createdAt,omitempty"`
-	DisplayName       *string               `json:"displayName,omitempty"`
-	EnsDomain         *string               `json:"ensDomain,omitempty"`
-	Id                *string               `json:"id,omitempty"`
-	IsProcessing      *bool                 `json:"isProcessing,omitempty"`
-	LastProcessedAt   *string               `json:"lastProcessedAt,omitempty"`
-	Role              *EnumsParticipantRole `json:"role,omitempty"`
-	UpdatedAt         *string               `json:"updatedAt,omitempty"`
-}
-
-// ModelsRemoteAgentCard defines model for models.RemoteAgentCard.
-type ModelsRemoteAgentCard struct {
-	Endpoints       *ModelsRemoteAgentCardEndpoints `json:"endpoints,omitempty"`
-	EnsDomain       *string                         `json:"ensDomain,omitempty"`
-	Name            *string                         `json:"name,omitempty"`
-	PaymentMethods  *[]string                       `json:"paymentMethods,omitempty"`
-	Protocol        *string                         `json:"protocol,omitempty"`
-	ProtocolVersion *string                         `json:"protocolVersion,omitempty"`
-}
-
-// ModelsRemoteAgentCardEndpoints defines model for models.RemoteAgentCardEndpoints.
-type ModelsRemoteAgentCardEndpoints struct {
-	ChatCompletions *string `json:"chatCompletions,omitempty"`
-	Responses       *string `json:"responses,omitempty"`
-}
-
 // RequestsConversationParticipantRequest defines model for requests.ConversationParticipantRequest.
 type RequestsConversationParticipantRequest struct {
 	ParticipantId *string `json:"participantId,omitempty"`
@@ -187,6 +127,15 @@ type ResponsesAgentPromptTemplateResponse struct {
 	UpdatedAt         *string                      `json:"updatedAt,omitempty"`
 }
 
+// ResponsesBridgeResponse defines model for responses.BridgeResponse.
+type ResponsesBridgeResponse struct {
+	BaseUrl   *string          `json:"baseUrl,omitempty"`
+	CreatedAt *string          `json:"createdAt,omitempty"`
+	Id        *string          `json:"id,omitempty"`
+	Kind      *EnumsBridgeKind `json:"kind,omitempty"`
+	UpdatedAt *string          `json:"updatedAt,omitempty"`
+}
+
 // ResponsesConversationMessageResponse defines model for responses.ConversationMessageResponse.
 type ResponsesConversationMessageResponse struct {
 	Content        *string `json:"content,omitempty"`
@@ -228,6 +177,22 @@ type ResponsesParticipantResponse struct {
 	LastProcessedAt   *string               `json:"lastProcessedAt,omitempty"`
 	Role              *EnumsParticipantRole `json:"role,omitempty"`
 	UpdatedAt         *string               `json:"updatedAt,omitempty"`
+}
+
+// ResponsesRemoteAgentCardEndpointsResponse defines model for responses.RemoteAgentCardEndpointsResponse.
+type ResponsesRemoteAgentCardEndpointsResponse struct {
+	ChatCompletions *string `json:"chatCompletions,omitempty"`
+	Responses       *string `json:"responses,omitempty"`
+}
+
+// ResponsesRemoteAgentCardResponse defines model for responses.RemoteAgentCardResponse.
+type ResponsesRemoteAgentCardResponse struct {
+	Endpoints       *ResponsesRemoteAgentCardEndpointsResponse `json:"endpoints,omitempty"`
+	EnsDomain       *string                                    `json:"ensDomain,omitempty"`
+	Name            *string                                    `json:"name,omitempty"`
+	PaymentMethods  *[]string                                  `json:"paymentMethods,omitempty"`
+	Protocol        *string                                    `json:"protocol,omitempty"`
+	ProtocolVersion *string                                    `json:"protocolVersion,omitempty"`
 }
 
 // PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyJSONBody defines parameters for PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey.
@@ -1550,7 +1515,7 @@ type ClientWithResponsesInterface interface {
 type GetAgentCardsEnsDomainResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ModelsRemoteAgentCard
+	JSON200      *ResponsesRemoteAgentCardResponse
 	JSON400      *ErrorsValidationError
 	JSON502      *string
 }
@@ -1623,8 +1588,8 @@ func (r PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse) 
 type PostBridgesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ModelsBridge
-	JSON201      *ModelsBridge
+	JSON200      *ResponsesBridgeResponse
+	JSON201      *ResponsesBridgeResponse
 	JSON400      *ErrorsValidationError
 	JSON500      *string
 }
@@ -1671,7 +1636,7 @@ func (r GetConversationsResponse) StatusCode() int {
 type PostConversationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ModelsConversation
+	JSON201      *ResponsesConversationResponse
 	JSON400      *ErrorsValidationError
 	JSON404      *ErrorsNotFoundError
 	JSON500      *string
@@ -1796,7 +1761,7 @@ func (r GetConversationsIdMessagesResponse) StatusCode() int {
 type PostConversationsIdMessagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ModelsConversationMessage
+	JSON201      *ResponsesConversationMessageResponse
 	JSON400      *ErrorsValidationError
 	JSON404      *ErrorsNotFoundError
 	JSON500      *string
@@ -1895,8 +1860,8 @@ func (r DeleteConversationsIdParticipantsParticipantIdResponse) StatusCode() int
 type PostParticipantsAgentsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ModelsParticipant
-	JSON201      *ModelsParticipant
+	JSON200      *ResponsesParticipantResponse
+	JSON201      *ResponsesParticipantResponse
 	JSON400      *ErrorsValidationError
 	JSON404      *ErrorsNotFoundError
 	JSON500      *string
@@ -1921,7 +1886,7 @@ func (r PostParticipantsAgentsResponse) StatusCode() int {
 type PostParticipantsUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ModelsParticipant
+	JSON201      *ResponsesParticipantResponse
 	JSON400      *ErrorsValidationError
 	JSON500      *string
 }
@@ -2165,7 +2130,7 @@ func ParseGetAgentCardsEnsDomainResponse(rsp *http.Response) (*GetAgentCardsEnsD
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ModelsRemoteAgentCard
+		var dest ResponsesRemoteAgentCardResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2292,14 +2257,14 @@ func ParsePostBridgesResponse(rsp *http.Response) (*PostBridgesResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ModelsBridge
+		var dest ResponsesBridgeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ModelsBridge
+		var dest ResponsesBridgeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2372,7 +2337,7 @@ func ParsePostConversationsResponse(rsp *http.Response) (*PostConversationsRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ModelsConversation
+		var dest ResponsesConversationResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2607,7 +2572,7 @@ func ParsePostConversationsIdMessagesResponse(rsp *http.Response) (*PostConversa
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ModelsConversationMessage
+		var dest ResponsesConversationMessageResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2788,14 +2753,14 @@ func ParsePostParticipantsAgentsResponse(rsp *http.Response) (*PostParticipantsA
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ModelsParticipant
+		var dest ResponsesParticipantResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ModelsParticipant
+		var dest ResponsesParticipantResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2842,7 +2807,7 @@ func ParsePostParticipantsUsersResponse(rsp *http.Response) (*PostParticipantsUs
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ModelsParticipant
+		var dest ResponsesParticipantResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

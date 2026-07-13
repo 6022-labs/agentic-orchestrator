@@ -38,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.RemoteAgentCard"
+                            "$ref": "#/definitions/responses.RemoteAgentCardResponse"
                         }
                     },
                     "400": {
@@ -210,13 +210,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Bridge"
+                            "$ref": "#/definitions/responses.BridgeResponse"
                         }
                     },
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Bridge"
+                            "$ref": "#/definitions/responses.BridgeResponse"
                         }
                     },
                     "400": {
@@ -300,7 +300,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Conversation"
+                            "$ref": "#/definitions/responses.ConversationResponse"
                         }
                     },
                     "400": {
@@ -557,7 +557,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.ConversationMessage"
+                            "$ref": "#/definitions/responses.ConversationMessageResponse"
                         }
                     },
                     "400": {
@@ -761,13 +761,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Participant"
+                            "$ref": "#/definitions/responses.ParticipantResponse"
                         }
                     },
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Participant"
+                            "$ref": "#/definitions/responses.ParticipantResponse"
                         }
                     },
                     "400": {
@@ -819,7 +819,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Participant"
+                            "$ref": "#/definitions/responses.ParticipantResponse"
                         }
                     },
                     "400": {
@@ -913,147 +913,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Bridge": {
-            "type": "object",
-            "properties": {
-                "baseUrl": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "kind": {
-                    "$ref": "#/definitions/enums.BridgeKind"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Conversation": {
-            "type": "object",
-            "properties": {
-                "bridgeId": {
-                    "type": "string"
-                },
-                "concludedAt": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/enums.ConversationStatus"
-                },
-                "unconcludedAt": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ConversationMessage": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "conversationId": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "participantId": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Participant": {
-            "type": "object",
-            "properties": {
-                "collectionAddress": {
-                    "type": "string"
-                },
-                "collectionTokenId": {
-                    "type": "integer"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "displayName": {
-                    "type": "string"
-                },
-                "ensDomain": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isProcessing": {
-                    "type": "boolean"
-                },
-                "lastProcessedAt": {
-                    "type": "string"
-                },
-                "role": {
-                    "$ref": "#/definitions/enums.ParticipantRole"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.RemoteAgentCard": {
-            "type": "object",
-            "properties": {
-                "endpoints": {
-                    "$ref": "#/definitions/models.RemoteAgentCardEndpoints"
-                },
-                "ensDomain": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "paymentMethods": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "protocol": {
-                    "type": "string"
-                },
-                "protocolVersion": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.RemoteAgentCardEndpoints": {
-            "type": "object",
-            "properties": {
-                "chatCompletions": {
-                    "type": "string"
-                },
-                "responses": {
                     "type": "string"
                 }
             }
@@ -1178,6 +1037,26 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.BridgeResponse": {
+            "type": "object",
+            "properties": {
+                "baseUrl": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/definitions/enums.BridgeKind"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.ConversationMessageResponse": {
             "type": "object",
             "properties": {
@@ -1278,6 +1157,43 @@ const docTemplate = `{
                     "$ref": "#/definitions/enums.ParticipantRole"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RemoteAgentCardEndpointsResponse": {
+            "type": "object",
+            "properties": {
+                "chatCompletions": {
+                    "type": "string"
+                },
+                "responses": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RemoteAgentCardResponse": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "$ref": "#/definitions/responses.RemoteAgentCardEndpointsResponse"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "protocolVersion": {
                     "type": "string"
                 }
             }

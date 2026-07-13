@@ -58,98 +58,6 @@ definitions:
       message:
         type: string
     type: object
-  models.Bridge:
-    properties:
-      baseUrl:
-        type: string
-      createdAt:
-        type: string
-      id:
-        type: string
-      kind:
-        $ref: '#/definitions/enums.BridgeKind'
-      updatedAt:
-        type: string
-    type: object
-  models.Conversation:
-    properties:
-      bridgeId:
-        type: string
-      concludedAt:
-        type: string
-      createdAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      status:
-        $ref: '#/definitions/enums.ConversationStatus'
-      unconcludedAt:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  models.ConversationMessage:
-    properties:
-      content:
-        type: string
-      conversationId:
-        type: string
-      createdAt:
-        type: string
-      id:
-        type: string
-      participantId:
-        type: string
-    type: object
-  models.Participant:
-    properties:
-      collectionAddress:
-        type: string
-      collectionTokenId:
-        type: integer
-      createdAt:
-        type: string
-      displayName:
-        type: string
-      ensDomain:
-        type: string
-      id:
-        type: string
-      isProcessing:
-        type: boolean
-      lastProcessedAt:
-        type: string
-      role:
-        $ref: '#/definitions/enums.ParticipantRole'
-      updatedAt:
-        type: string
-    type: object
-  models.RemoteAgentCard:
-    properties:
-      endpoints:
-        $ref: '#/definitions/models.RemoteAgentCardEndpoints'
-      ensDomain:
-        type: string
-      name:
-        type: string
-      paymentMethods:
-        items:
-          type: string
-        type: array
-      protocol:
-        type: string
-      protocolVersion:
-        type: string
-    type: object
-  models.RemoteAgentCardEndpoints:
-    properties:
-      chatCompletions:
-        type: string
-      responses:
-        type: string
-    type: object
   requests.ConversationParticipantRequest:
     properties:
       participantId:
@@ -227,6 +135,19 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.BridgeResponse:
+    properties:
+      baseUrl:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      kind:
+        $ref: '#/definitions/enums.BridgeKind'
+      updatedAt:
+        type: string
+    type: object
   responses.ConversationMessageResponse:
     properties:
       content:
@@ -295,6 +216,30 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.RemoteAgentCardEndpointsResponse:
+    properties:
+      chatCompletions:
+        type: string
+      responses:
+        type: string
+    type: object
+  responses.RemoteAgentCardResponse:
+    properties:
+      endpoints:
+        $ref: '#/definitions/responses.RemoteAgentCardEndpointsResponse'
+      ensDomain:
+        type: string
+      name:
+        type: string
+      paymentMethods:
+        items:
+          type: string
+        type: array
+      protocol:
+        type: string
+      protocolVersion:
+        type: string
+    type: object
 info:
   contact: {}
   description: Bridge-agnostic conversation broker for the agent reasoning domain.
@@ -317,7 +262,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.RemoteAgentCard'
+            $ref: '#/definitions/responses.RemoteAgentCardResponse'
         "400":
           description: Bad Request
           schema:
@@ -436,11 +381,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Bridge'
+            $ref: '#/definitions/responses.BridgeResponse'
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Bridge'
+            $ref: '#/definitions/responses.BridgeResponse'
         "400":
           description: Bad Request
           schema:
@@ -496,7 +441,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Conversation'
+            $ref: '#/definitions/responses.ConversationResponse'
         "400":
           description: Bad Request
           schema:
@@ -669,7 +614,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.ConversationMessage'
+            $ref: '#/definitions/responses.ConversationMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -806,11 +751,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Participant'
+            $ref: '#/definitions/responses.ParticipantResponse'
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Participant'
+            $ref: '#/definitions/responses.ParticipantResponse'
         "400":
           description: Bad Request
           schema:
@@ -845,7 +790,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Participant'
+            $ref: '#/definitions/responses.ParticipantResponse'
         "400":
           description: Bad Request
           schema:

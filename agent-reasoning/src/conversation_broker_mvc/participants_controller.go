@@ -42,8 +42,8 @@ func (c *ParticipantsController) InitRoutes(app fiber.Router) {
 // @Accept json
 // @Produce json
 // @Param request body requests.RegisterAgentRequest true "Register Agent Request"
-// @Success 200 {object} models.Participant
-// @Success 201 {object} models.Participant
+// @Success 200 {object} responses.ParticipantResponse
+// @Success 201 {object} responses.ParticipantResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
@@ -77,7 +77,7 @@ func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body requests.RegisterUserRequest true "Register User Request"
-// @Success 201 {object} models.Participant
+// @Success 201 {object} responses.ParticipantResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /participants/users [post]

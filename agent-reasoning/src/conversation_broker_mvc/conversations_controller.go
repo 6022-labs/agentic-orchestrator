@@ -198,7 +198,7 @@ func (c *ConversationsController) UpdateDescription(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body requests.RegisterConversationRequest true "Register Conversation Request"
-// @Success 201 {object} models.Conversation
+// @Success 201 {object} responses.ConversationResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
@@ -352,7 +352,7 @@ func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
 // @Produce json
 // @Param id path string true "Conversation ID"
 // @Param request body requests.IngestMessageRequest true "Ingest Message Request"
-// @Success 201 {object} models.ConversationMessage
+// @Success 201 {object} responses.ConversationMessageResponse
 // @Failure 400 {object} errors.ValidationError
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"

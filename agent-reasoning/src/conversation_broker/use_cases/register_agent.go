@@ -5,15 +5,15 @@ import (
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
 	"gorm.io/gorm"
 )
 
 type RegisterAgentInterface interface {
-	Register(request *requests.RegisterAgentRequest) (*models.Participant, bool, error)
+	Register(request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error)
 }
 
 // RegisterAgent upserts an agent participant by its on-chain identity bundle
@@ -35,7 +35,7 @@ func NewRegisterAgent(
 	}
 }
 
-func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*models.Participant, bool, error) {
+func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error) {
 	if err := request.Validate(); err != nil {
 		return nil, false, err
 	}
@@ -46,7 +46,7 @@ func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*mode
 		return nil, false, fmt.Errorf("failed to lookup agent participant: %w", err)
 	}
 	if existing != nil {
-		return existing, true, nil
+		return responses.ParticipantResponseFromModel(existing), true, nil
 	}
 
 	registryAgent, err := uc.agentRegistryRequester.GetAgent(request.CollectionAddress, tokenId)
@@ -66,5 +66,5 @@ func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*mode
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to save agent participant: %w", err)
 	}
-	return saved, false, nil
+	return responses.ParticipantResponseFromModel(saved), false, nil
 }
