@@ -28,6 +28,10 @@ func (rs *RedisStorage) Read(key string) (string, error) {
 	return rs.redisClient.Get(context.Background(), key).Result()
 }
 
+func (rs *RedisStorage) ReadAndDelete(key string) (string, error) {
+	return rs.redisClient.GetDel(context.Background(), key).Result()
+}
+
 func (rs *RedisStorage) Delete(key string) error {
 	return rs.redisClient.Del(context.Background(), key).Err()
 }

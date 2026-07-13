@@ -39,10 +39,6 @@ func (s *NonceStore) Generate() (string, time.Time, error) {
 }
 
 func (s *NonceStore) Consume(nonce string) bool {
-	path := fmt.Sprintf(nonceCachePathTemplate, nonce)
-	if _, err := s.cacheStorage.Read(path); err != nil {
-		return false
-	}
-	_ = s.cacheStorage.Delete(path)
-	return true
+	_, err := s.cacheStorage.ReadAndDelete(fmt.Sprintf(nonceCachePathTemplate, nonce))
+	return err == nil
 }

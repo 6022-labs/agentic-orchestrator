@@ -69,6 +69,21 @@ func (mr *MockCacheStorageInterfaceMockRecorder) Read(key any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockCacheStorageInterface)(nil).Read), key)
 }
 
+// ReadAndDelete mocks base method.
+func (m *MockCacheStorageInterface) ReadAndDelete(key string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadAndDelete", key)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadAndDelete indicates an expected call of ReadAndDelete.
+func (mr *MockCacheStorageInterfaceMockRecorder) ReadAndDelete(key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAndDelete", reflect.TypeOf((*MockCacheStorageInterface)(nil).ReadAndDelete), key)
+}
+
 // Store mocks base method.
 func (m *MockCacheStorageInterface) Store(key, value string, expiration *time.Duration) error {
 	m.ctrl.T.Helper()
