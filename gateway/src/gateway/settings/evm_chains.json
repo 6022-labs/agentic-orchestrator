@@ -1,0 +1,19 @@
+{
+  "_comment": "Well-known per-chain console config: contract addresses and block explorer. Explicit blockchain.evm_chains.<chainId>.* settings override these; with no configured chain, every chain with a complete deployment is served.",
+  "chains": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "collectionsManagerAddress": "0xA39dC43bCAf07C142FF230cC73A8229347287958",
+      "collectionCreatorAddress": "",
+      "scannerBaseUrl": "https://polygonscan.com"
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "collectionsManagerAddress": "0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8",
+      "collectionCreatorAddress": "0x65907d4b82499134e01Ce05915EE0fE5A542C693",
+      "scannerBaseUrl": "https://amoy.polygonscan.com"
+    }
+  ]
+}

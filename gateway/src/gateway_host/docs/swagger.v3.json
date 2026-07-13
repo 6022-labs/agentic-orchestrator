@@ -286,6 +286,9 @@
                     },
                     "collectionsManagerAddress": {
                         "type": "string"
+                    },
+                    "scannerBaseUrl": {
+                        "type": "string"
                     }
                 },
                 "type": "object"

@@ -23,6 +23,7 @@ func (uc *GetBlockchainConfig) Get() (*responses.BlockchainConfigResponse, error
 		evmChains[chainId] = responses.EvmChainConfig{
 			CollectionsManagerAddress: chain.CollectionsManagerAddress,
 			CollectionCreatorAddress:  chain.CollectionCreatorAddress,
+			ScannerBaseUrl:            chain.ScannerBaseUrl,
 		}
 	}
 

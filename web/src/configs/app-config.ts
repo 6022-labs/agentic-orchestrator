@@ -4,6 +4,7 @@ import axios from "axios"
 export type EvmChainConfig = {
   collectionsManagerAddress: string
   collectionCreatorAddress: string
+  scannerBaseUrl: string
 }
 
 // Config served by the gateway's GET /config at boot; evmChains keyed by chain id.
@@ -63,5 +64,9 @@ export function getPrimaryEvmChainConfig(): EvmChainConfig {
       configured?.collectionCreatorAddress ||
       env.VITE_AGENT_COLLECTION_CREATOR_ADDRESS ||
       "",
+    scannerBaseUrl:
+      configured?.scannerBaseUrl ||
+      env.VITE_SCANNER_BASE_URL ||
+      "https://amoy.polygonscan.com",
   }
 }

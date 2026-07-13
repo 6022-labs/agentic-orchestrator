@@ -1045,6 +1045,9 @@ const docTemplate = `{
                 },
                 "collectionsManagerAddress": {
                     "type": "string"
+                },
+                "scannerBaseUrl": {
+                    "type": "string"
                 }
             }
         },
