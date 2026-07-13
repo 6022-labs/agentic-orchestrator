@@ -3,7 +3,7 @@ package mappings
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/clients"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/helpers"
+	"github.com/samber/lo"
 )
 
 // ExternalAgentCardResponse is the broker's generated 6022-card wire shape, named locally to carry mapping.
@@ -16,8 +16,8 @@ func (card *ExternalAgentCardResponse) ToUseCaseResponse() *responses.AgentCardR
 
 	endpoints := responses.AgentCardEndpointsResponse{}
 	if card.Endpoints != nil {
-		endpoints.Responses = helpers.DerefString(card.Endpoints.Responses)
-		endpoints.ChatCompletions = helpers.DerefString(card.Endpoints.ChatCompletions)
+		endpoints.Responses = lo.FromPtr(card.Endpoints.Responses)
+		endpoints.ChatCompletions = lo.FromPtr(card.Endpoints.ChatCompletions)
 	}
 
 	var paymentMethods []string
@@ -26,10 +26,10 @@ func (card *ExternalAgentCardResponse) ToUseCaseResponse() *responses.AgentCardR
 	}
 
 	return &responses.AgentCardResponse{
-		Protocol:        helpers.DerefString(card.Protocol),
-		ProtocolVersion: helpers.DerefString(card.ProtocolVersion),
-		Name:            helpers.DerefString(card.Name),
-		EnsDomain:       helpers.DerefString(card.EnsDomain),
+		Protocol:        lo.FromPtr(card.Protocol),
+		ProtocolVersion: lo.FromPtr(card.ProtocolVersion),
+		Name:            lo.FromPtr(card.Name),
+		EnsDomain:       lo.FromPtr(card.EnsDomain),
 		Endpoints:       endpoints,
 		PaymentMethods:  paymentMethods,
 	}

@@ -8,13 +8,6 @@ import (
 
 // Pointer/scalar conversions shared by the generated-client mapping types.
 
-func DerefString(value *string) string {
-	if value == nil {
-		return ""
-	}
-	return *value
-}
-
 func ParseUuid(value *string) uuid.UUID {
 	if value == nil {
 		return uuid.Nil

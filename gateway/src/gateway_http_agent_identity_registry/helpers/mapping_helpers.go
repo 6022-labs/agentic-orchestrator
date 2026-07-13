@@ -7,20 +7,6 @@ import (
 
 // Pointer/scalar conversions shared by the generated-client mapping types.
 
-func DerefString(value *string) string {
-	if value == nil {
-		return ""
-	}
-	return *value
-}
-
-func DerefStringMap(value *map[string]string) map[string]string {
-	if value == nil {
-		return nil
-	}
-	return *value
-}
-
 func IntToUint64Ptr(value *int) *uint64 {
 	if value == nil {
 		return nil

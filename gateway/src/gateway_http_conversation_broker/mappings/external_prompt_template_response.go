@@ -3,7 +3,7 @@ package mappings
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/clients"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/helpers"
+	"github.com/samber/lo"
 )
 
 // ExternalPromptTemplateResponse is the broker's generated template wire shape, named locally to carry mapping.
@@ -25,9 +25,9 @@ func (template *ExternalPromptTemplateResponse) ToUseCaseResponse() *responses.A
 	}
 
 	return &responses.AgentPromptTemplateResponse{
-		CollectionAddress: helpers.DerefString(template.CollectionAddress),
+		CollectionAddress: lo.FromPtr(template.CollectionAddress),
 		CollectionTokenId: collectionTokenId,
 		Key:               key,
-		Content:           helpers.DerefString(template.Content),
+		Content:           lo.FromPtr(template.Content),
 	}
 }
