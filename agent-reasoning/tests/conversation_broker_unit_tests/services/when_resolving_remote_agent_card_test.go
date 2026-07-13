@@ -3,6 +3,7 @@ package services_test
 import (
 	"encoding/json"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -63,7 +64,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(1)
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
 			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().
@@ -87,6 +88,77 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, "6022", card.Protocol)
 			assert.Equal(t, "https://node.example/api/responses", card.Endpoints.Responses)
+		})
+	})
+
+	t.Run("Given concurrent resolutions miss the cache for the same domain", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) (chan struct{}, chan struct{}) {
+			misses := make(chan struct{}, 3)
+			release := make(chan struct{})
+
+			var storeMutex sync.Mutex
+			stored := ""
+			suite.mockCacheStorage.EXPECT().
+				Read("remote-agent-cards/agent.eth").
+				DoAndReturn(func(string) (string, error) {
+					storeMutex.Lock()
+					defer storeMutex.Unlock()
+					if stored == "" {
+						misses <- struct{}{}
+						return "", errors.New("miss")
+					}
+					return stored, nil
+				}).
+				Times(4)
+			suite.mockEnsUrlResolver.EXPECT().
+				ResolveUrl("agent.eth").
+				DoAndReturn(func(string) (string, error) {
+					<-release
+					return "https://node.example", nil
+				}).
+				Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(key, value string, ttl *time.Duration) error {
+					storeMutex.Lock()
+					defer storeMutex.Unlock()
+					stored = value
+					return nil
+				}).
+				Times(1)
+			return misses, release
+		}
+
+		t.Run("Should resolve once and serve the waiter from the cache", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			misses, release := initSuite(suite)
+
+			var wg sync.WaitGroup
+			results := make([]*models.RemoteAgentCard, 2)
+			for i := range results {
+				wg.Add(1)
+				go func(i int) {
+					defer wg.Done()
+					card, err := suite.sut.ResolveCard("agent.eth")
+					assert.NoError(t, err)
+					results[i] = card
+				}(i)
+			}
+
+			// Hold the resolution until both outer reads plus the lock holder's
+			// re-check have missed; the waiter's re-check then must hit the cache.
+			<-misses
+			<-misses
+			<-misses
+			close(release)
+			wg.Wait()
+
+			assert.Equal(t, results[0], results[1])
 		})
 	})
 
@@ -116,7 +188,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("not-json", nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("not-json", nil).Times(2)
 			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
 			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
@@ -139,7 +211,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
 			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", errors.New("boom")).Times(1)
 		}
 
@@ -159,7 +231,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
 			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", nil).Times(1)
 		}
 

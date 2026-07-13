@@ -3,6 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
@@ -21,6 +23,7 @@ type RemoteAgentCardResolver struct {
 	ensUrlResolver                interfaces.EnsUrlResolverInterface
 	remoteAgentCardRequester      interfaces.RemoteAgentCardRequesterInterface
 	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings
+	resolutionLocks               sync.Map
 }
 
 func NewRemoteAgentCardResolver(
@@ -40,15 +43,39 @@ func NewRemoteAgentCardResolver(
 }
 
 func (r *RemoteAgentCardResolver) ResolveCard(ensDomain string) (*models.RemoteAgentCard, error) {
+	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 	cachePath := fmt.Sprintf(remoteAgentCardCachePathTemplate, ensDomain)
 
-	if cached, err := r.cacheStorage.Read(cachePath); err == nil {
-		var card models.RemoteAgentCard
-		if err := json.Unmarshal([]byte(cached), &card); err == nil && card.Protocol != "" {
-			return &card, nil
-		}
+	if card, ok := r.readCachedCard(cachePath); ok {
+		return card, nil
 	}
 
+	lock, _ := r.resolutionLocks.LoadOrStore(ensDomain, &sync.Mutex{})
+	mutex := lock.(*sync.Mutex)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if card, ok := r.readCachedCard(cachePath); ok {
+		return card, nil
+	}
+
+	return r.resolveAndCacheCard(ensDomain, cachePath)
+}
+
+func (r *RemoteAgentCardResolver) readCachedCard(cachePath string) (*models.RemoteAgentCard, bool) {
+	cached, err := r.cacheStorage.Read(cachePath)
+	if err != nil {
+		return nil, false
+	}
+
+	var card models.RemoteAgentCard
+	if err := json.Unmarshal([]byte(cached), &card); err != nil || card.Protocol == "" {
+		return nil, false
+	}
+	return &card, true
+}
+
+func (r *RemoteAgentCardResolver) resolveAndCacheCard(ensDomain string, cachePath string) (*models.RemoteAgentCard, error) {
 	agentUrl, err := r.ensUrlResolver.ResolveUrl(ensDomain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve url for %s: %w", ensDomain, err)
