@@ -1,0 +1,15 @@
+{
+  "_comment": "Default sync start block per EVM chain id: the deployment block of the well-known AgentCollectionsManager. An explicit sync.start_block setting overrides these.",
+  "startBlocks": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "startBlock": 77933681
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "startBlock": 39471293
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "_comment": "Well-known AgentCollectionsManager contract addresses per EVM chain id, resolved at startup from blockchain.chain_id. Add the deployed address per chain and rebuild.",
+  "_comment": "Well-known AgentCollectionsManager contract addresses per EVM chain id. An explicit agent_collections_manager.smart_contract_address setting overrides these.",
   "managers": [
     {
       "chainId": 137,
@@ -9,7 +9,7 @@
     {
       "chainId": 80002,
       "name": "polygon-amoy",
-      "address": "0x2e0A2C00601F7DCa8B4b7ae05A5fd27bb46080d3"
+      "address": "0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8"
     }
   ]
 }

@@ -1,32 +1,68 @@
 package settings
 
 import (
+	_ "embed"
+	"encoding/json"
 	"time"
 
+	registry_common_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/zap"
 )
 
 const SyncSettingsKey = "sync"
 
+const defaultBlockFinalizationDelay = 2 * time.Second
+
+//go:embed sync_start_blocks.json
+var syncStartBlocksJson []byte
+
+type syncStartBlockEntry struct {
+	ChainId    int64  `json:"chainId"`
+	Name       string `json:"name"`
+	StartBlock uint64 `json:"startBlock"`
+}
+
+type syncStartBlocksFile struct {
+	StartBlocks []syncStartBlockEntry `json:"startBlocks"`
+}
+
 type SyncSettings struct {
 	StartBlock             uint64
 	BlockFinalizationDelay time.Duration
 }
 
-func NewSyncSettings(logger *zap.Logger, k *koanf.Koanf) *SyncSettings {
-	startBlockInt := k.Int64(SyncSettingsKey + ".start_block")
-
-	if startBlockInt <= 0 {
-		logger.Fatal("please set a valid sync.start_block value in your configuration")
+func NewSyncSettings(
+	logger *zap.Logger,
+	k *koanf.Koanf,
+	blockchainSettings *registry_common_settings.BlockchainSettings,
+) *SyncSettings {
+	var file syncStartBlocksFile
+	if err := json.Unmarshal(syncStartBlocksJson, &file); err != nil {
+		logger.Fatal("failed to parse built-in sync_start_blocks.json", zap.Error(err))
 	}
 
-	startBlock := uint64(startBlockInt)
+	startBlockInt := k.Int64(SyncSettingsKey + ".start_block")
+	if startBlockInt <= 0 {
+		for _, entry := range file.StartBlocks {
+			if entry.ChainId == blockchainSettings.ChainId {
+				startBlockInt = int64(entry.StartBlock)
+				break
+			}
+		}
+	}
+
+	if startBlockInt <= 0 {
+		logger.Fatal("no built-in start block for this chain, please set a valid sync.start_block value in your configuration", zap.Int64("chainId", blockchainSettings.ChainId))
+	}
 
 	blockFinalizationDelay := k.Duration(SyncSettingsKey + ".block_finalization_delay")
+	if blockFinalizationDelay <= 0 {
+		blockFinalizationDelay = defaultBlockFinalizationDelay
+	}
 
 	return &SyncSettings{
-		StartBlock:             startBlock,
+		StartBlock:             uint64(startBlockInt),
 		BlockFinalizationDelay: blockFinalizationDelay,
 	}
 }
