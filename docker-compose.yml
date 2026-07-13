@@ -103,21 +103,15 @@ services:
     ports:
       - "5101:3000"
     environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=3000
-      - REDIS_HOST=redis:6379
-      - REDIS_DB=0
-      - REDIS_PASSWORD=
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - PUBLIC_KEY=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - SLACK_API_BASE_URL=https://slack.com
-      - SLACK_CLIENT_SECRET=change-me
-      - SLACK_SIGNING_SECRET=change-me
-      - SLACK_BOT_TOKEN=xoxb-change-me
-      - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
-      - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - SLACK__APP_ID=change-me
+      - SLACK__CLIENT_SECRET=change-me
+      - SLACK__SIGNING_SECRET=change-me
+      - SLACK__BOT_TOKEN=xoxb-change-me
       - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
       - CONVERSATION_BROKER__CALLBACK_URL=http://slack-bridge-internal-host:3000
       - CONVERSATION_BROKER__BRIDGE_ID=1b2c3d4e-5555-4666-8777-888899990000
@@ -127,8 +121,6 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
-      vault:
         condition: service_started
       conversation-broker-host:
         condition: service_started
@@ -141,33 +133,26 @@ services:
     ports:
       - "5102:3000"
     environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=3000
-      - REDIS_HOST=redis:6379
-      - REDIS_DB=0
-      - REDIS_PASSWORD=
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - PUBLIC_KEY=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - SLACK_API_BASE_URL=https://slack.com
-      - SLACK_CLIENT_SECRET=change-me
-      - SLACK_SIGNING_SECRET=change-me
-      - SLACK_BOT_TOKEN=xoxb-change-me
-      - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
-      - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - SLACK__APP_ID=change-me
+      - SLACK__CLIENT_SECRET=change-me
+      - SLACK__SIGNING_SECRET=change-me
+      - SLACK__BOT_TOKEN=xoxb-change-me
+      - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
+      - VERIFY_WALLET_OWNERSHIP__ORCHESTRATOR_FRONT_BASE_URL=http://localhost:3000
       - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
       - CONVERSATION_BROKER__CALLBACK_URL=http://slack-bridge-internal-host:3000
       - CONVERSATION_BROKER__BRIDGE_ID=1b2c3d4e-5555-4666-8777-888899990000
-      - ORCHESTRATOR_FRONT_BASE_URL=http://localhost:3000
     networks:
       orchestrator-network:
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
-      vault:
         condition: service_started
 
   web-ui:
@@ -224,25 +209,6 @@ services:
     volumes:
       - ./pgadmin-servers.json:/pgadmin4/servers.json
 
-  vault:
-    image: hashicorp/vault:1.21
-    container_name: vault
-    ports:
-      - "8200:8200"
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "wBGKZCJjfIGqIKB3HMmvcQVt"
-    volumes:
-      - vault-data:/vault/file
-    networks:
-      orchestrator-network:
-    command: >
-      /bin/sh -c "
-      vault server -dev -dev-listen-address=0.0.0.0:8200 -dev-root-token-id=wBGKZCJjfIGqIKB3HMmvcQVt &
-      sleep 5 &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets disable secret &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets enable -version=1 -path=secret kv &&
-      wait"
-
   redis:
     image: "redis:8-alpine"
     container_name: redis
@@ -271,5 +237,4 @@ networks:
 
 volumes:
   db-data:
-  vault-data:
   evm-node-data:
