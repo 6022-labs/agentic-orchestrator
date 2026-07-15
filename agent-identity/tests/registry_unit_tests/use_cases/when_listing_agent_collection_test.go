@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )

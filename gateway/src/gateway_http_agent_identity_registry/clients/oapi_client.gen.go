@@ -35,6 +35,7 @@ type ResponsesAgentCollectionResponse struct {
 
 // ResponsesAgentResponse defines model for responses.AgentResponse.
 type ResponsesAgentResponse struct {
+	Addresses         *map[string]string `json:"addresses,omitempty"`
 	Attributes        *map[string]string `json:"attributes,omitempty"`
 	CloneOf           *int               `json:"cloneOf,omitempty"`
 	CollectionAddress *string            `json:"collectionAddress,omitempty"`
@@ -47,7 +48,6 @@ type ResponsesAgentResponse struct {
 	Owner             *string            `json:"owner,omitempty"`
 	ProposalId        *int               `json:"proposalId,omitempty"`
 	Role              *EnumsAgentRole    `json:"role,omitempty"`
-	WalletAddress     *string            `json:"walletAddress,omitempty"`
 }
 
 // ResponsesListAgentsResponse defines model for responses.ListAgentsResponse.

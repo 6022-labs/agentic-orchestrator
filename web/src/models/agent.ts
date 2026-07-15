@@ -11,7 +11,8 @@ export type Agent = {
   cloneOf?: string
   attributes: Record<string, string>
   ensDomain: string
-  walletAddress: string
+  // Address type (e.g. "evm", "btc") -> address value.
+  addresses: Record<string, string>
   proposalId?: number
   collectionTokenId?: number
   collectionAddress: string

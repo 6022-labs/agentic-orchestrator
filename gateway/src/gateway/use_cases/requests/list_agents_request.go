@@ -7,7 +7,6 @@ const (
 	ListAgentSortByName              ListAgentSortBy = "name"
 	ListAgentSortByOwner             ListAgentSortBy = "owner"
 	ListAgentSortByCreatedAt         ListAgentSortBy = "createdAt"
-	ListAgentSortByWalletAddress     ListAgentSortBy = "walletAddress"
 	ListAgentSortByCollectionAddress ListAgentSortBy = "collectionAddress"
 )
 
@@ -16,7 +15,6 @@ func GetAllListAgentSortBy() ListAgentSortByList {
 		ListAgentSortByName,
 		ListAgentSortByOwner,
 		ListAgentSortByCreatedAt,
-		ListAgentSortByWalletAddress,
 		ListAgentSortByCollectionAddress,
 	}
 }
@@ -34,8 +32,6 @@ func (s *ListAgentSortBy) ToDatabaseField() *string {
 		value = "owner"
 	case ListAgentSortByCreatedAt:
 		value = "created_at"
-	case ListAgentSortByWalletAddress:
-		value = "wallet_address"
 	case ListAgentSortByCollectionAddress:
 		value = "collection_address"
 	default:

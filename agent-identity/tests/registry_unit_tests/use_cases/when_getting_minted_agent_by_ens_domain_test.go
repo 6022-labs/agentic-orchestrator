@@ -5,6 +5,8 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
 	"github.com/stretchr/testify/assert"
@@ -14,19 +16,22 @@ import (
 type WhenGettingMintedAgentByEnsDomainTestingSuite struct {
 	sut *use_cases.GetMintedAgentByEnsDomain
 
-	mockAgentRepository *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentRepository        *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentAddressRepository *repositories_mocks.MockAgentAddressRepositoryInterface
 }
 
 func WhenGettingMintedAgentByEnsDomainBeforeEach(t *testing.T) *WhenGettingMintedAgentByEnsDomainTestingSuite {
 	mockController := gomock.NewController(t)
 
 	mockAgentRepository := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
+	mockAgentAddressRepository := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 
-	sut := use_cases.NewGetMintedAgentByEnsDomain(mockAgentRepository)
+	sut := use_cases.NewGetMintedAgentByEnsDomain(mockAgentRepository, mockAgentAddressRepository)
 
 	return &WhenGettingMintedAgentByEnsDomainTestingSuite{
-		sut:                 sut,
-		mockAgentRepository: mockAgentRepository,
+		sut:                        sut,
+		mockAgentRepository:        mockAgentRepository,
+		mockAgentAddressRepository: mockAgentAddressRepository,
 	}
 }
 
@@ -100,6 +105,13 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 				Return(agent, nil).
 				Times(1)
 
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentId(agent.ID).
+				Return([]*models.AgentAddress{
+					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").Build(),
+				}, nil).
+				Times(1)
+
 			req := &requests.GetAgentByEnsDomainRequest{
 				EnsDomain: agent.EnsDomain,
 			}
@@ -111,7 +123,9 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			assert.Equal(t, agent.Name, resp.Name)
 			assert.Equal(t, agent.Role, resp.Role)
 			assert.Equal(t, agent.Owner, resp.Owner)
-			assert.Equal(t, agent.WalletAddress, resp.WalletAddress)
+			assert.Equal(t, map[enums.AddressType]string{
+				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
+			}, resp.Addresses)
 			assert.Equal(t, agent.CollectionAddress, resp.CollectionAddress)
 			assert.Equal(t, agent.CollectionTokenId, resp.CollectionTokenId)
 			assert.Equal(t, agent.EnsDomain, resp.EnsDomain)

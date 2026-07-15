@@ -46,7 +46,6 @@ func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagina
 
 	db := r.client.GetDB().Model(&models.Agent{})
 
-
 	if params.ElementsPerPage != nil {
 		offset := 0
 		if params.Page != nil && *params.Page > 0 {
@@ -80,7 +79,6 @@ func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (ui
 
 	db := r.client.GetDB().Model(&models.Agent{})
 
-
 	tx := db.Count(&count)
 	if tx.Error != nil {
 		return 0, tx.Error
@@ -98,17 +96,6 @@ func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	}
 
 	return entity, nil
-}
-
-func (r *AgentRepository) GetByWalletAddress(walletAddress string) (*models.Agent, error) {
-	agent := &models.Agent{}
-
-	tx := r.client.GetDB().Where("wallet_address ILIKE ?", walletAddress).First(agent)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return agent, nil
 }
 
 func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
@@ -142,21 +129,6 @@ func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent,
 	}
 
 	return agents, nil
-}
-
-func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress string, walletAddress string) (*models.Agent, error) {
-	agent := &models.Agent{}
-
-	tx := r.client.GetDB().Where(
-		"collection_token_id IS NULL AND collection_address = ? AND wallet_address = ?",
-		collectionAddress,
-		walletAddress,
-	).First(agent)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return agent, nil
 }
 
 func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error) {

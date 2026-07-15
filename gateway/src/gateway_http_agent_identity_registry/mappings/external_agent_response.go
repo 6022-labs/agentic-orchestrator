@@ -31,7 +31,7 @@ func (response *ExternalAgentResponse) ToUseCaseResponse() *responses.AgentRespo
 		CloneOf:           helpers.IntToUint64Ptr(response.CloneOf),
 		Attributes:        lo.FromPtr(response.Attributes),
 		EnsDomain:         lo.FromPtr(response.EnsDomain),
-		WalletAddress:     lo.FromPtr(response.WalletAddress),
+		Addresses:         lo.FromPtr(response.Addresses),
 		ProposalId:        helpers.IntToUint64Ptr(response.ProposalId),
 		CollectionTokenId: helpers.IntToUint64Ptr(response.CollectionTokenId),
 		CollectionAddress: lo.FromPtr(response.CollectionAddress),

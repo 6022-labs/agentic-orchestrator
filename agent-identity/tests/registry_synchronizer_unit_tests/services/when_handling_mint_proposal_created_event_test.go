@@ -2,10 +2,12 @@ package services_test
 
 import (
 	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
@@ -22,6 +24,7 @@ import (
 
 type WhenHandlingMintProposalCreatedEventTestingSuite struct {
 	agentRepositoryMock                *repositories_mocks.MockAgentRepositoryInterface
+	agentAddressRepositoryMock         *repositories_mocks.MockAgentAddressRepositoryInterface
 	agentCollectionRepositoryMock      *repositories_mocks.MockAgentCollectionRepositoryInterface
 	agentCollectionRequesterMock       *interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
 	decentralizedDomainNameBuilderMock *registry_common_interfaces_mocks.MockDecentralizedDomainNameBuilderInterface
@@ -33,6 +36,7 @@ func WhenHandlingMintProposalCreatedEventBeforeEach(t *testing.T) *WhenHandlingM
 	mockController := gomock.NewController(t)
 
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
+	agentAddressRepositoryMock := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
 	agentCollectionRequesterMock := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
 	decentralizedDomainNameBuilderMock := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
@@ -40,6 +44,7 @@ func WhenHandlingMintProposalCreatedEventBeforeEach(t *testing.T) *WhenHandlingM
 	sut := services.NewMintProposalCreatedEventHandler(
 		zap.NewNop(),
 		agentRepositoryMock,
+		agentAddressRepositoryMock,
 		agentCollectionRepositoryMock,
 		agentCollectionRequesterMock,
 		decentralizedDomainNameBuilderMock,
@@ -47,6 +52,7 @@ func WhenHandlingMintProposalCreatedEventBeforeEach(t *testing.T) *WhenHandlingM
 
 	return &WhenHandlingMintProposalCreatedEventTestingSuite{
 		agentRepositoryMock:                agentRepositoryMock,
+		agentAddressRepositoryMock:         agentAddressRepositoryMock,
 		agentCollectionRepositoryMock:      agentCollectionRepositoryMock,
 		agentCollectionRequesterMock:       agentCollectionRequesterMock,
 		decentralizedDomainNameBuilderMock: decentralizedDomainNameBuilderMock,
@@ -58,14 +64,20 @@ func WhenHandlingMintProposalCreatedEventBeforeEach(t *testing.T) *WhenHandlingM
 func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 	t.Parallel()
 
+	// Proposals carry a btc entry first and lowercase evm values: handlers must skip
+	// non-evm entries and normalize to the checksummed form.
 	newMintProposal := func(proposalID uint64, wallets []common.Address) *abi.MintProposal {
+		addresses := []abi.AgentAddress{{AddressType: "btc", Value: "bc1qexampleonly"}}
+		for _, wallet := range wallets {
+			addresses = append(addresses, abi.AgentAddress{AddressType: "evm", Value: strings.ToLower(wallet.Hex())})
+		}
 		return &abi.MintProposal{
 			Id:         new(big.Int).SetUint64(proposalID),
 			Name:       "TestAgent",
 			Role:       "expert",
 			Owner:      common_tests.RandomEthAddress(),
 			Creator:    common_tests.RandomEthAddress(),
-			Wallets:    wallets,
+			Addresses:  addresses,
 			Images:     []abi.KeyValue{{Key: "avatar", Value: "ipfs://test"}},
 			Attributes: []abi.KeyValue{{Key: "bio", Value: "test bio"}},
 		}
@@ -109,13 +121,14 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given proposal has no wallets", func(t *testing.T) {
+	t.Run("Given proposal carries only unknown address types", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingMintProposalCreatedEventTestingSuite) *abi.AgentCollectionV1MintProposalCreated {
 			collectionAddress := common_tests.RandomEthAddress()
 			event := newEvent(collectionAddress, 2, 200)
 			proposal := newMintProposal(2, []common.Address{})
+			proposal.Addresses = []abi.AgentAddress{{AddressType: "solana", Value: "unknown-type-value"}}
 			suite.agentCollectionRequesterMock.
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(200)).
@@ -133,7 +146,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			err := suite.sut.Handle(event)
 
 			assert.Error(t, err)
-			assert.ErrorContains(t, err, "no agent wallets found")
+			assert.ErrorContains(t, err, "no known agent address found")
 		})
 	})
 
@@ -149,9 +162,9 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(300)).
 				Return(proposal, nil)
-			suite.agentRepositoryMock.
+			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(nil, assert.AnError)
 
 			return event
@@ -180,7 +193,6 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal := newMintProposal(8, []common.Address{agentWallet})
 			tokenId := uint64(42)
 			mintedAgent := model_builders.NewAgentBuilder().
-				WithWalletAddress(agentWallet.Hex()).
 				WithCollectionAddress(collectionAddress.Hex()).
 				WithCollectionTokenId(&tokenId).
 				WithProposalId(nil).
@@ -190,13 +202,13 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(800)).
 				Return(proposal, nil)
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				Return(model_builders.NewAgentAddressBuilder().WithAgentId(mintedAgent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
-				Return(nil, gorm.ErrRecordNotFound)
-			suite.agentRepositoryMock.
-				EXPECT().
-				GetByWalletAddress(agentWallet.Hex()).
+				GetById(mintedAgent.ID).
 				Return(mintedAgent, nil)
 
 			return event
@@ -227,13 +239,13 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(900)).
 				Return(proposal, nil)
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				Return(model_builders.NewAgentAddressBuilder().Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
-				Return(nil, gorm.ErrRecordNotFound)
-			suite.agentRepositoryMock.
-				EXPECT().
-				GetByWalletAddress(agentWallet.Hex()).
+				GetById(gomock.Any()).
 				Return(nil, assert.AnError)
 
 			return event
@@ -248,7 +260,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			err := suite.sut.Handle(event)
 
 			assert.Error(t, err)
-			assert.ErrorContains(t, err, "failed to get agent by wallet address")
+			assert.ErrorContains(t, err, "failed to get agent by address")
 		})
 	})
 
@@ -264,13 +276,13 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(500)).
 				Return(proposal, nil)
-			suite.agentRepositoryMock.
+			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(nil, gorm.ErrRecordNotFound)
-			suite.agentRepositoryMock.
+			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByWalletAddress(agentWallet.Hex()).
+				GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly").
 				Return(nil, gorm.ErrRecordNotFound)
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
@@ -284,7 +296,6 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				EXPECT().
 				Save(gomock.Any()).
 				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
-					assert.Equal(t, agentWallet.Hex(), saved.WalletAddress)
 					assert.Equal(t, collectionAddress.Hex(), saved.CollectionAddress)
 					assert.Equal(t, "TestAgent", saved.Name)
 					assert.Equal(t, "testagent.genesis.eth", saved.EnsDomain)
@@ -296,6 +307,13 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 					}
 					return saved, nil
 				})
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				ReplaceAllForAgent(gomock.Any(), map[enums.AddressType]string{
+					enums.AddressTypeEvm: strings.ToLower(agentWallet.Hex()),
+					enums.AddressTypeBtc: "bc1qexampleonly",
+				}).
+				Return(nil)
 
 			return event, agentWallet
 		}
@@ -318,16 +336,23 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 		initSuite := func(suite *WhenHandlingMintProposalCreatedEventTestingSuite) *abi.AgentCollectionV1MintProposalCreated {
 			collectionAddress := common_tests.RandomEthAddress()
 			agentWallet := common_tests.RandomEthAddress()
-			agent := model_builders.NewAgentBuilder().Build()
+			agent := model_builders.NewAgentBuilder().
+				WithCollectionAddress(collectionAddress.Hex()).
+				WithCollectionTokenId(nil).
+				Build()
 			event := newEvent(collectionAddress, 6, 600)
 			proposal := newMintProposal(6, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(600)).
 				Return(proposal, nil)
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				Return(model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				GetById(agent.ID).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
@@ -356,16 +381,23 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 		initSuite := func(suite *WhenHandlingMintProposalCreatedEventTestingSuite) *abi.AgentCollectionV1MintProposalCreated {
 			collectionAddress := common_tests.RandomEthAddress()
 			agentWallet := common_tests.RandomEthAddress()
-			agent := model_builders.NewAgentBuilder().Build()
+			agent := model_builders.NewAgentBuilder().
+				WithCollectionAddress(collectionAddress.Hex()).
+				WithCollectionTokenId(nil).
+				Build()
 			event := newEvent(collectionAddress, 7, 700)
 			proposal := newMintProposal(7, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
 				GetMintProposal(collectionAddress, gomock.Any(), uint64(700)).
 				Return(proposal, nil)
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				Return(model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress.Hex(), agentWallet.Hex()).
+				GetById(agent.ID).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
@@ -376,6 +408,13 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 					}
 					return saved, nil
 				})
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				ReplaceAllForAgent(agent.ID, map[enums.AddressType]string{
+					enums.AddressTypeEvm: strings.ToLower(agentWallet.Hex()),
+					enums.AddressTypeBtc: "bc1qexampleonly",
+				}).
+				Return(nil)
 			return event
 		}
 

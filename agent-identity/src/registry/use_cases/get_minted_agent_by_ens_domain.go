@@ -14,11 +14,18 @@ type GetMintedAgentByEnsDomainInterface interface {
 }
 
 type GetMintedAgentByEnsDomain struct {
-	agentRepository repositories.AgentRepositoryInterface
+	agentRepository        repositories.AgentRepositoryInterface
+	agentAddressRepository repositories.AgentAddressRepositoryInterface
 }
 
-func NewGetMintedAgentByEnsDomain(agentRepository repositories.AgentRepositoryInterface) *GetMintedAgentByEnsDomain {
-	return &GetMintedAgentByEnsDomain{agentRepository: agentRepository}
+func NewGetMintedAgentByEnsDomain(
+	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
+) *GetMintedAgentByEnsDomain {
+	return &GetMintedAgentByEnsDomain{
+		agentRepository:        agentRepository,
+		agentAddressRepository: agentAddressRepository,
+	}
 }
 
 func (s *GetMintedAgentByEnsDomain) Get(request *requests.GetAgentByEnsDomainRequest) (*responses.AgentResponse, error) {
@@ -30,5 +37,10 @@ func (s *GetMintedAgentByEnsDomain) Get(request *requests.GetAgentByEnsDomainReq
 		return nil, nil
 	}
 
-	return responses.AgentResponseFromModel(agent), nil
+	agentAddresses, err := s.agentAddressRepository.GetAllByAgentId(agent.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return responses.AgentResponseFromModel(agent, agentAddresses), nil
 }

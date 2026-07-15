@@ -18,19 +18,22 @@ import (
 type WhenListingAgentsTestingSuite struct {
 	sut *use_cases.ListAgents
 
-	mockAgentRepository *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentRepository        *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentAddressRepository *repositories_mocks.MockAgentAddressRepositoryInterface
 }
 
 func WhenListingAgentsBeforeEach(t *testing.T) *WhenListingAgentsTestingSuite {
 	mockController := gomock.NewController(t, gomock.WithOverridableExpectations())
 
 	mockAgentRepository := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
+	mockAgentAddressRepository := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 
-	sut := use_cases.NewListAgents(mockAgentRepository)
+	sut := use_cases.NewListAgents(mockAgentRepository, mockAgentAddressRepository)
 
 	return &WhenListingAgentsTestingSuite{
-		sut:                 sut,
-		mockAgentRepository: mockAgentRepository,
+		sut:                        sut,
+		mockAgentRepository:        mockAgentRepository,
+		mockAgentAddressRepository: mockAgentAddressRepository,
 	}
 }
 
@@ -109,6 +112,13 @@ func TestWhenListingAgents(t *testing.T) {
 				Return(uint(len(agents)), nil).
 				Times(1)
 
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return([]*models.AgentAddress{
+					model_builders.NewAgentAddressBuilder().WithAgentId(agents[0].ID).WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").Build(),
+				}, nil).
+				Times(1)
+
 			page := uint(1)
 			elementsPerPage := uint(10)
 			req := &requests.ListAgentsRequest{
@@ -137,7 +147,6 @@ func TestWhenListingAgents(t *testing.T) {
 				if assert.NotNil(t, existingAgent) {
 					assert.Equal(t, existingAgent.Name, fetchedAgent.Name)
 					assert.Equal(t, existingAgent.Owner, fetchedAgent.Owner)
-					assert.Equal(t, existingAgent.WalletAddress, fetchedAgent.WalletAddress)
 				}
 			}
 		})
@@ -161,6 +170,11 @@ func TestWhenListingAgents(t *testing.T) {
 			basics.mockAgentRepository.EXPECT().
 				SearchCount(gomock.Any()).
 				Return(uint(0), nil).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
 				Times(1)
 
 			req := &requests.ListAgentsRequest{}

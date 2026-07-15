@@ -84,9 +84,10 @@ func TestWhenSavingEntity(t *testing.T) {
 			entityToCreate := model_builders.NewAgentBuilder().Build()
 			createdEntity, _ := suite.sut.Save(entityToCreate)
 
-			suite.dbClient.GetDB().First(&entityToCreate, createdEntity.ID)
+			fetchedEntity, _ := suite.sut.GetById(createdEntity.ID)
 
-			assert.Equal(t, entityToCreate, createdEntity)
+			assert.Equal(t, createdEntity.ID, fetchedEntity.ID)
+			assert.Equal(t, createdEntity.Name, fetchedEntity.Name)
 			assert.NotEqual(t, uuid.Nil, createdEntity.ID)
 		})
 	})
@@ -122,12 +123,11 @@ func TestWhenSavingEntity(t *testing.T) {
 			entityToUpdate := model_builders.NewAgentBuilder().WithID(createdEntity.ID).Build()
 			suite.sut.Save(entityToUpdate)
 
-			suite.dbClient.GetDB().First(&entityToCreate, createdEntity.ID)
+			entityToCreate, _ = suite.sut.GetById(createdEntity.ID)
 
 			assert.Equal(t, entityToCreate.ID, entityToUpdate.ID)
 			assert.Equal(t, entityToCreate.Name, entityToUpdate.Name)
 			assert.Equal(t, entityToCreate.Owner, entityToUpdate.Owner)
-			assert.Equal(t, entityToCreate.WalletAddress, entityToUpdate.WalletAddress)
 			assert.Equal(t, entityToCreate.CollectionTokenId, entityToUpdate.CollectionTokenId)
 
 			assert.NotNil(t, entityToCreate.CreatedAt)

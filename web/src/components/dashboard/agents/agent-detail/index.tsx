@@ -125,7 +125,7 @@ export default function AgentDetailSection() {
                 />
                 <AgentField
                   label="Wallet"
-                  value={truncateEthAddress(agent.walletAddress)}
+                  value={truncateEthAddress(agent.addresses?.["evm"])}
                 />
                 <AgentField
                   label="Collection"

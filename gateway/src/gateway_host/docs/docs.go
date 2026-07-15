@@ -299,7 +299,6 @@ const docTemplate = `{
                             "name",
                             "owner",
                             "createdAt",
-                            "walletAddress",
                             "collectionAddress"
                         ],
                         "type": "string",
@@ -307,7 +306,6 @@ const docTemplate = `{
                             "ListAgentSortByName",
                             "ListAgentSortByOwner",
                             "ListAgentSortByCreatedAt",
-                            "ListAgentSortByWalletAddress",
                             "ListAgentSortByCollectionAddress"
                         ],
                         "name": "sortBy",
@@ -772,14 +770,12 @@ const docTemplate = `{
                 "name",
                 "owner",
                 "createdAt",
-                "walletAddress",
                 "collectionAddress"
             ],
             "x-enum-varnames": [
                 "ListAgentSortByName",
                 "ListAgentSortByOwner",
                 "ListAgentSortByCreatedAt",
-                "ListAgentSortByWalletAddress",
                 "ListAgentSortByCollectionAddress"
             ]
         },
@@ -910,6 +906,12 @@ const docTemplate = `{
         "responses.AgentResponse": {
             "type": "object",
             "properties": {
+                "addresses": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "attributes": {
                     "type": "object",
                     "additionalProperties": {
@@ -951,9 +953,6 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/enums.AgentRole"
-                },
-                "walletAddress": {
-                    "type": "string"
                 }
             }
         },

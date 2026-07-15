@@ -23,6 +23,10 @@ definitions:
     type: object
   responses.AgentResponse:
     properties:
+      addresses:
+        additionalProperties:
+          type: string
+        type: object
       attributes:
         additionalProperties:
           type: string
@@ -51,8 +55,6 @@ definitions:
         type: integer
       role:
         $ref: '#/definitions/enums.AgentRole'
-      walletAddress:
-        type: string
     type: object
   responses.ListAgentsResponse:
     properties:

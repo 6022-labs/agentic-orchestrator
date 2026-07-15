@@ -92,8 +92,8 @@ func TestWhenSearchingAgents(t *testing.T) {
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				ElementsPerPage:   ptrUint(2),
-				Page:              ptrUint(1),
+				ElementsPerPage: ptrUint(2),
+				Page:            ptrUint(1),
 			}
 			agents, err := suite.sut.Search(params)
 
@@ -112,8 +112,8 @@ func TestWhenSearchingAgents(t *testing.T) {
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				ElementsPerPage:   ptrUint(2),
-				Page:              ptrUint(2),
+				ElementsPerPage: ptrUint(2),
+				Page:            ptrUint(2),
 			}
 			agents, err := suite.sut.Search(params)
 

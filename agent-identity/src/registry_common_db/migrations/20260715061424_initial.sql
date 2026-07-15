@@ -1,4 +1,13 @@
 -- +goose Up
+-- create "agent_addresses" table
+CREATE TABLE "public"."agent_addresses" (
+  "agent_id" uuid NOT NULL,
+  "type" text NOT NULL,
+  "address" text NOT NULL,
+  "updated_at" timestamp NOT NULL,
+  "created_at" timestamp NOT NULL,
+  PRIMARY KEY ("agent_id", "type")
+);
 -- create "agent_collections" table
 CREATE TABLE "public"."agent_collections" (
   "address" text NOT NULL,
@@ -22,7 +31,6 @@ CREATE TABLE "public"."agents" (
   "ens_domain" text NOT NULL,
   "role" text NOT NULL,
   "creator" text NOT NULL,
-  "wallet_address" text NOT NULL,
   "owner" text NULL,
   "images" jsonb NULL,
   "attributes" jsonb NULL,
@@ -47,3 +55,5 @@ DROP TABLE "public"."agents";
 DROP INDEX "public"."idx_agent_collections_address";
 -- reverse: create "agent_collections" table
 DROP TABLE "public"."agent_collections";
+-- reverse: create "agent_addresses" table
+DROP TABLE "public"."agent_addresses";

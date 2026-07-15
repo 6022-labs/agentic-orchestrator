@@ -2,37 +2,41 @@ package services
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"go.uber.org/zap"
 )
 
-type AgentWalletAddedEventHandler struct {
+type AgentAddressRemovedEventHandler struct {
+	*AbstractAgentAddressEventHandler
 	logger                             *zap.Logger
-	agentRepository                    repositories.AgentRepositoryInterface
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface
 }
 
-func NewAgentWalletAddedEventHandler(
+func NewAgentAddressRemovedEventHandler(
 	logger *zap.Logger,
 	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface,
-) *AgentWalletAddedEventHandler {
-	return &AgentWalletAddedEventHandler{
-		logger: logger,
+) *AgentAddressRemovedEventHandler {
+	return &AgentAddressRemovedEventHandler{
+		AbstractAgentAddressEventHandler: NewAbstractAgentAddressEventHandler(agentRepository, agentAddressRepository),
 
-		agentRepository:                    agentRepository,
+		logger:                             logger,
 		agentCollectionBlockchainRequester: agentCollectionBlockchainRequester,
 	}
 }
 
-func (handler *AgentWalletAddedEventHandler) Handle(event *abi.AgentCollectionV1AgentWalletAdded) error {
-	handler.logger.Info("Handling AgentWalletAdded event",
+func (handler *AgentAddressRemovedEventHandler) Handle(event *abi.AgentCollectionV1AgentAddressRemoved) error {
+	handler.logger.Info("Handling AgentAddressRemoved event",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
-		zap.String("wallet", event.Wallet.Hex()),
+		zap.String("addressType", event.AddressType),
+		zap.String("value", event.Value),
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())
@@ -45,18 +49,22 @@ func (handler *AgentWalletAddedEventHandler) Handle(event *abi.AgentCollectionV1
 		return fmt.Errorf("failed to get agent information: %w", err)
 	}
 
-	walletAddress := ""
-	if len(agentInformation.Wallets) > 0 {
-		walletAddress = agentInformation.Wallets[0].Hex()
-	}
+	addresses := handler.typedAddresses(agentInformation.Addresses)
 
-	if agent.WalletAddress == walletAddress {
+	currentRows, err := handler.agentAddressRepository.GetAllByAgentId(agent.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get agent addresses: %w", err)
+	}
+	current := map[enums.AddressType]string{}
+	for _, row := range currentRows {
+		current[row.Type] = row.Address
+	}
+	if maps.Equal(current, addresses) {
 		return nil
 	}
 
-	agent.WalletAddress = walletAddress
-	if _, err := handler.agentRepository.Save(agent); err != nil {
-		return fmt.Errorf("failed to save agent: %w", err)
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 
 	return nil

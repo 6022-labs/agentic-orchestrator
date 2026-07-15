@@ -28,6 +28,14 @@ func AddRegistryCommonDbConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		infra_repositories.NewAgentAddressRepository,
+		dig.As(new(repositories.AgentAddressRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		infra_repositories.NewAgentCollectionRepository,
 		dig.As(new(repositories.AgentCollectionRepositoryInterface)),
 	)

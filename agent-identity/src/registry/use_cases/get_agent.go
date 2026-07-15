@@ -11,11 +11,18 @@ type GetAgentInterface interface {
 }
 
 type GetAgent struct {
-	agentRepository repositories.AgentRepositoryInterface
+	agentRepository        repositories.AgentRepositoryInterface
+	agentAddressRepository repositories.AgentAddressRepositoryInterface
 }
 
-func NewGetAgent(agentRepository repositories.AgentRepositoryInterface) *GetAgent {
-	return &GetAgent{agentRepository: agentRepository}
+func NewGetAgent(
+	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
+) *GetAgent {
+	return &GetAgent{
+		agentRepository:        agentRepository,
+		agentAddressRepository: agentAddressRepository,
+	}
 }
 
 func (s *GetAgent) Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentResponse, error) {
@@ -30,5 +37,10 @@ func (s *GetAgent) Get(request *requests.AgentByCollectionTokenIdRequest) (*resp
 		return nil, nil
 	}
 
-	return responses.AgentResponseFromModel(agent), nil
+	agentAddresses, err := s.agentAddressRepository.GetAllByAgentId(agent.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return responses.AgentResponseFromModel(agent, agentAddresses), nil
 }

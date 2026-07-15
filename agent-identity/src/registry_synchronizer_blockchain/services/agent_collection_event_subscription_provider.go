@@ -263,15 +263,15 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletAdded, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	eventDef, ok := abiSpec.Events["AgentWalletAdded"]
+	eventDef, ok := abiSpec.Events["AgentAddressAdded"]
 	if !ok {
-		return nil, nil, fmt.Errorf("event AgentWalletAdded not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event AgentAddressAdded not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
@@ -286,7 +286,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletAddedSubscrip
 		return nil, nil, err
 	}
 
-	logs := make(chan *abi.AgentCollectionV1AgentWalletAdded, 64)
+	logs := make(chan *abi.AgentCollectionV1AgentAddressAdded, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -294,9 +294,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletAddedSubscrip
 		for {
 			select {
 			case log := <-subscriptionLogs:
-				parsedEvent, parseErr := filterer.ParseAgentWalletAdded(log)
+				parsedEvent, parseErr := filterer.ParseAgentAddressAdded(log)
 				if parseErr != nil {
-					return fmt.Errorf("failed to parse AgentWalletAdded log: %w", parseErr)
+					return fmt.Errorf("failed to parse AgentAddressAdded log: %w", parseErr)
 				}
 				select {
 				case logs <- parsedEvent:
@@ -314,21 +314,21 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletAddedSubscrip
 	})
 
 	s.logger.Debug(
-		"Subscribed to AgentCollection AgentWalletAdded events",
+		"Subscribed to AgentCollection AgentAddressAdded events",
 	)
 
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentWalletRemoved, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	eventDef, ok := abiSpec.Events["AgentWalletRemoved"]
+	eventDef, ok := abiSpec.Events["AgentAddressRemoved"]
 	if !ok {
-		return nil, nil, fmt.Errorf("event AgentWalletRemoved not found in AgentCollectionV1 ABI")
+		return nil, nil, fmt.Errorf("event AgentAddressRemoved not found in AgentCollectionV1 ABI")
 	}
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
@@ -343,7 +343,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletRemovedSubscr
 		return nil, nil, err
 	}
 
-	logs := make(chan *abi.AgentCollectionV1AgentWalletRemoved, 64)
+	logs := make(chan *abi.AgentCollectionV1AgentAddressRemoved, 64)
 
 	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
 		defer close(logs)
@@ -351,9 +351,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletRemovedSubscr
 		for {
 			select {
 			case log := <-subscriptionLogs:
-				parsedEvent, parseErr := filterer.ParseAgentWalletRemoved(log)
+				parsedEvent, parseErr := filterer.ParseAgentAddressRemoved(log)
 				if parseErr != nil {
-					return fmt.Errorf("failed to parse AgentWalletRemoved log: %w", parseErr)
+					return fmt.Errorf("failed to parse AgentAddressRemoved log: %w", parseErr)
 				}
 				select {
 				case logs <- parsedEvent:
@@ -371,7 +371,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentWalletRemovedSubscr
 	})
 
 	s.logger.Debug(
-		"Subscribed to AgentCollection AgentWalletRemoved events",
+		"Subscribed to AgentCollection AgentAddressRemoved events",
 	)
 
 	return logs, wrappedSub, nil

@@ -28,6 +28,22 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "sender",
         "type": "address"
@@ -131,6 +147,33 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      }
+    ],
+    "name": "EmptyAddressValue",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "InvalidAddressType",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "cloneOf",
         "type": "uint256"
@@ -148,6 +191,17 @@
       }
     ],
     "name": "InvalidCollectionName",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "InvalidEvmAddressValue",
     "type": "error"
   },
   {
@@ -169,6 +223,11 @@
   {
     "inputs": [],
     "name": "MissingDefaultImage",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MissingEvmAddress",
     "type": "error"
   },
   {
@@ -211,6 +270,43 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "name": "StringsInsufficientHexLength",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "UsedAgentAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -227,33 +323,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "UsedWallet",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "WalletNotFound",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "string",
         "name": "parameter",
         "type": "string"
@@ -261,6 +330,56 @@
     ],
     "name": "ZeroAddress",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressRemoved",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -372,44 +491,6 @@
       }
     ],
     "name": "AgentImageUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "AgentWalletAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "AgentWalletRemoved",
     "type": "event"
   },
   {
@@ -704,12 +785,17 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
       }
     ],
-    "name": "addAgentWallet",
+    "name": "addAgentAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -831,6 +917,85 @@
   {
     "inputs": [],
     "name": "addOrUpdateAgentImageProposalsLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "addressOfByIndex",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "addressToTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "addressesCountOf",
     "outputs": [
       {
         "internalType": "uint256",
@@ -994,9 +1159,21 @@
         "type": "string"
       },
       {
-        "internalType": "address[]",
-        "name": "wallets",
-        "type": "address[]"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress[]",
+        "name": "addresses",
+        "type": "tuple[]"
       },
       {
         "components": [
@@ -1250,11 +1427,6 @@
             "type": "address"
           },
           {
-            "internalType": "address[]",
-            "name": "wallets",
-            "type": "address[]"
-          },
-          {
             "components": [
               {
                 "internalType": "string",
@@ -1304,6 +1476,23 @@
             "internalType": "struct NullableUint256",
             "name": "cloneOf",
             "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "addressType",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "value",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AgentAddress[]",
+            "name": "addresses",
+            "type": "tuple[]"
           }
         ],
         "internalType": "struct AgentInformation",
@@ -1413,9 +1602,21 @@
         "type": "string"
       },
       {
-        "internalType": "address[]",
-        "name": "wallets",
-        "type": "address[]"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress[]",
+        "name": "addresses",
+        "type": "tuple[]"
       },
       {
         "components": [
@@ -1525,11 +1726,6 @@
             "type": "address"
           },
           {
-            "internalType": "address[]",
-            "name": "wallets",
-            "type": "address[]"
-          },
-          {
             "components": [
               {
                 "internalType": "string",
@@ -1579,6 +1775,23 @@
             "internalType": "struct NullableUint256",
             "name": "cloneOf",
             "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "addressType",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "value",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AgentAddress[]",
+            "name": "addresses",
+            "type": "tuple[]"
           }
         ],
         "internalType": "struct MintProposal",
@@ -1733,11 +1946,16 @@
       },
       {
         "internalType": "string",
-        "name": "key",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
         "type": "string"
       }
     ],
-    "name": "removeAgentImage",
+    "name": "removeAgentAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1750,12 +1968,12 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
       }
     ],
-    "name": "removeAgentWallet",
+    "name": "removeAgentImage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1982,68 +2200,6 @@
     "name": "updateDescription",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "walletOfByIndex",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "walletToTokenId",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "walletsCountOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

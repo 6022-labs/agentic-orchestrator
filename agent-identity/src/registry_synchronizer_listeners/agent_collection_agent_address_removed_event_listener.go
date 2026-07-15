@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type AgentCollectionAgentWalletRemovedListener struct {
+type AgentCollectionAgentAddressRemovedListener struct {
 	*AbstractUpdatableSubscriptionListener
 
 	logger *zap.Logger
@@ -24,13 +24,13 @@ type AgentCollectionAgentWalletRemovedListener struct {
 	trackedAddresses []common.Address
 }
 
-func NewAgentCollectionAgentWalletRemovedListener(
+func NewAgentCollectionAgentAddressRemovedListener(
 	logger *zap.Logger,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
-) *AgentCollectionAgentWalletRemovedListener {
-	el := &AgentCollectionAgentWalletRemovedListener{
+) *AgentCollectionAgentAddressRemovedListener {
+	el := &AgentCollectionAgentAddressRemovedListener{
 		logger: logger,
 
 		agentCollectionRepository:                agentCollectionRepository,
@@ -44,11 +44,11 @@ func NewAgentCollectionAgentWalletRemovedListener(
 	return el
 }
 
-func (listener *AgentCollectionAgentWalletRemovedListener) Listen() error {
+func (listener *AgentCollectionAgentAddressRemovedListener) Listen() error {
 	return listener.AbstractUpdatableSubscriptionListener.Listen()
 }
 
-func (listener *AgentCollectionAgentWalletRemovedListener) SubscribeAll() error {
+func (listener *AgentCollectionAgentAddressRemovedListener) SubscribeAll() error {
 	collections, err := listener.agentCollectionRepository.GetAll()
 	if err != nil {
 		return fmt.Errorf("failed to get agent collections: %w", err)
@@ -60,7 +60,7 @@ func (listener *AgentCollectionAgentWalletRemovedListener) SubscribeAll() error 
 	}
 
 	if len(collectionAddresses) == 0 {
-		listener.logger.Info("no agent collections found, skipping subscription to AgentCollection.AgentWalletRemoved events")
+		listener.logger.Info("no agent collections found, skipping subscription to AgentCollection.AgentAddressRemoved events")
 		return nil
 	}
 
@@ -69,9 +69,9 @@ func (listener *AgentCollectionAgentWalletRemovedListener) SubscribeAll() error 
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentWalletRemovedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAddressRemovedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to subscribe to AgentCollection.AgentWalletRemoved events: %w", err)
+		return fmt.Errorf("failed to subscribe to AgentCollection.AgentAddressRemoved events: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -79,12 +79,12 @@ func (listener *AgentCollectionAgentWalletRemovedListener) SubscribeAll() error 
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("subscribed to AgentCollection.AgentWalletRemoved events", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info("subscribed to AgentCollection.AgentAddressRemoved events", zap.Int("collectionCount", len(addressesToSubscribe)))
 
 	return nil
 }
 
-func (listener *AgentCollectionAgentWalletRemovedListener) Subscribe(collectionAddress common.Address) error {
+func (listener *AgentCollectionAgentAddressRemovedListener) Subscribe(collectionAddress common.Address) error {
 	listener.mu.Lock()
 	if slices.Contains(listener.trackedAddresses, collectionAddress) {
 		listener.mu.Unlock()
@@ -97,14 +97,14 @@ func (listener *AgentCollectionAgentWalletRemovedListener) Subscribe(collectionA
 	return nil
 }
 
-func (listener *AgentCollectionAgentWalletRemovedListener) rebuildSubscription() error {
+func (listener *AgentCollectionAgentAddressRemovedListener) rebuildSubscription() error {
 	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentWalletRemovedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAddressRemovedSubscription(addressesToSubscribe)
 	if err != nil {
-		return fmt.Errorf("failed to rebuild AgentCollection.AgentWalletRemoved subscription: %w", err)
+		return fmt.Errorf("failed to rebuild AgentCollection.AgentAddressRemoved subscription: %w", err)
 	}
 
 	listener.mu.Lock()
@@ -115,11 +115,11 @@ func (listener *AgentCollectionAgentWalletRemovedListener) rebuildSubscription()
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("rebuilt AgentCollection.AgentWalletRemoved subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info("rebuilt AgentCollection.AgentAddressRemoved subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
 	return nil
 }
 
-func (listener *AgentCollectionAgentWalletRemovedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1AgentWalletRemoved) {
+func (listener *AgentCollectionAgentAddressRemovedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1AgentAddressRemoved) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -134,9 +134,9 @@ func (listener *AgentCollectionAgentWalletRemovedListener) startSubscriptionHand
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentWalletRemovedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentWalletRemoved{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentAddressRemovedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentAddressRemoved{event}); err != nil {
 					listener.logger.Error(
-						"failed to enqueue AgentCollection.AgentWalletRemoved event",
+						"failed to enqueue AgentCollection.AgentAddressRemoved event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),
 						zap.Error(err),
 					)

@@ -20,17 +20,15 @@ type Agent struct {
 	CollectionAddress string  `json:"collectionAddress"`
 	ProposalId        *uint64 `gorm:"type:numeric" json:"proposalId"`
 
-	Name          string          `gorm:"not null" json:"name"`
-	CloneOf       *uint64         `gorm:"type:numeric" json:"cloneOf"`
-	EnsDomain     string          `gorm:"not null" json:"ensDomain"`
-	Role          enums.AgentRole `gorm:"type:text;not null" json:"role"`
-	Creator       string          `gorm:"not null" json:"creator"`
-	WalletAddress string          `gorm:"not null" json:"walletAddress"`
-	Owner         *string         `json:"owner"`
+	Name      string          `gorm:"not null" json:"name"`
+	CloneOf   *uint64         `gorm:"type:numeric" json:"cloneOf"`
+	EnsDomain string          `gorm:"not null" json:"ensDomain"`
+	Role      enums.AgentRole `gorm:"type:text;not null" json:"role"`
+	Creator   string          `gorm:"not null" json:"creator"`
+	Owner     *string         `json:"owner"`
 
 	Images     map[string]string `gorm:"type:jsonb;serializer:json" json:"images"`
 	Attributes map[string]string `gorm:"type:jsonb;serializer:json" json:"attributes"`
-
 
 	UpdatedAt time.Time  `gorm:"type:timestamp;not null" json:"updatedAt"`
 	CreatedAt time.Time  `gorm:"type:timestamp;not null" json:"createdAt"`

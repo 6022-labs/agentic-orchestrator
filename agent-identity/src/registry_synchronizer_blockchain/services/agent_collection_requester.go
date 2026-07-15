@@ -297,8 +297,8 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentWalletAdded, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentWalletAdded
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentAddressAdded
 
 	for _, address := range fromAddresses {
 		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
@@ -306,7 +306,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletAddedEvent(fro
 			return nil, err
 		}
 
-		iter, err := agentCollection.FilterAgentWalletAdded(&bind.FilterOpts{
+		iter, err := agentCollection.FilterAgentAddressAdded(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
@@ -323,8 +323,8 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletAddedEvent(fro
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentWalletRemoved, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentWalletRemoved
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentAddressRemoved
 
 	for _, address := range fromAddresses {
 		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
@@ -332,7 +332,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentWalletRemovedEvent(f
 			return nil, err
 		}
 
-		iter, err := agentCollection.FilterAgentWalletRemoved(&bind.FilterOpts{
+		iter, err := agentCollection.FilterAgentAddressRemoved(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),

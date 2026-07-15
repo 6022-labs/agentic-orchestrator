@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -14,12 +13,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type MintProposalCreatedEventHandler struct {
+	*AbstractAgentAddressEventHandler
 	logger                         *zap.Logger
-	agentRepository                repositories.AgentRepositoryInterface
 	agentCollectionRepository      repositories.AgentCollectionRepositoryInterface
 	agentCollectionRequester       interfaces.AgentCollectionBlockchainRequesterInterface
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface
@@ -28,13 +26,15 @@ type MintProposalCreatedEventHandler struct {
 func NewMintProposalCreatedEventHandler(
 	logger *zap.Logger,
 	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	agentCollectionRequester interfaces.AgentCollectionBlockchainRequesterInterface,
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *MintProposalCreatedEventHandler {
 	return &MintProposalCreatedEventHandler{
+		AbstractAgentAddressEventHandler: NewAbstractAgentAddressEventHandler(agentRepository, agentAddressRepository),
+
 		logger:                         logger,
-		agentRepository:                agentRepository,
 		agentCollectionRepository:      agentCollectionRepository,
 		agentCollectionRequester:       agentCollectionRequester,
 		decentralizedDomainNameBuilder: decentralizedDomainNameBuilder,
@@ -55,39 +55,25 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		)
 	}
 
-	if len(mintProposal.Wallets) == 0 {
-		return fmt.Errorf("no agent wallets found for collection address %s and proposal id %d",
+	addresses := handler.typedAddresses(mintProposal.Addresses)
+	if len(addresses) == 0 {
+		return fmt.Errorf("no known agent address found for collection address %s and proposal id %d",
 			collectionAddress.Hex(),
 			proposalId.Uint64(),
 		)
 	}
 
-	agentWallet := mintProposal.Wallets[0]
+	agent, err := handler.findAgentByAddresses(addresses)
+	if err != nil {
+		return fmt.Errorf("failed to get agent by address: %w", err)
+	}
 
-	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndWalletAddress(
-		collectionAddress.Hex(),
-		agentWallet.Hex(),
-	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("failed to get agent by collection address %s and wallet address %s: %w",
-			collectionAddress.Hex(),
-			agentWallet.Hex(),
-			err,
-		)
+	// An agent already minted (or drafted in another collection) holds one of the addresses; nothing to sync.
+	if agent != nil && (agent.CollectionAddress != collectionAddress.Hex() || agent.CollectionTokenId != nil) {
+		return nil
 	}
 
 	if agent == nil {
-		existingAgent, err := handler.agentRepository.GetByWalletAddress(agentWallet.Hex())
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("failed to get agent by wallet address %s: %w",
-				agentWallet.Hex(),
-				err,
-			)
-		}
-		if existingAgent != nil {
-			return nil
-		}
-
 		var agentRole enums.AgentRole
 		if err := agentRole.Set(mintProposal.Role); err != nil {
 			return fmt.Errorf("failed to set agent role: %w", err)
@@ -101,7 +87,6 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		ownerHex := mintProposal.Owner.Hex()
 
 		agent = &models.Agent{
-			WalletAddress:     agentWallet.Hex(),
 			CollectionAddress: collectionAddress.Hex(),
 			Name:              mintProposal.Name,
 			Role:              agentRole,
@@ -129,11 +114,15 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 	agent.ProposalId = lo.ToPtr(proposalId.Uint64())
 	_, err = handler.agentRepository.Save(agent)
 	if err != nil {
-		return fmt.Errorf("failed to save agent with collection address %s and wallet address %s: %w",
+		return fmt.Errorf("failed to save agent with collection address %s and proposal id %d: %w",
 			collectionAddress.Hex(),
-			agentWallet.Hex(),
+			proposalId.Uint64(),
 			err,
 		)
+	}
+
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 
 	return nil

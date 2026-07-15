@@ -17,7 +17,7 @@ type AgentBuilder struct {
 	role              enums.AgentRole
 	owner             *string
 	creator           string
-	walletAddress     string
+	addresses         map[string]string
 	images            map[string]string
 	attributes        map[string]string
 	ensDomain         string
@@ -41,17 +41,17 @@ func NewAgentBuilder() *AgentBuilder {
 	creator := owner
 
 	return &AgentBuilder{
-		id:                id,
-		name:              name,
-		role:              role,
-		owner:             &owner,
-		creator:           creator,
-		ensDomain:         ensDomain,
+		id:        id,
+		name:      name,
+		role:      role,
+		owner:     &owner,
+		creator:   creator,
+		ensDomain: ensDomain,
 		images: map[string]string{
 			"default": "QmTzQ1Z5b7g8d9f8e6c3b2a1c4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
 		},
 		attributes:        map[string]string{},
-		walletAddress:     common_tests.RandomEthAddress().Hex(),
+		addresses:         map[string]string{"evm": common_tests.RandomEthAddress().Hex()},
 		proposalId:        &proposalId,
 		collectionTokenId: &collectionTokenId,
 		collectionAddress: common_tests.RandomEthAddress().Hex(),
@@ -113,8 +113,8 @@ func (b *AgentBuilder) WithCollectionAddress(collectionAddress string) *AgentBui
 	return b
 }
 
-func (b *AgentBuilder) WithWalletAddress(walletAddress string) *AgentBuilder {
-	b.walletAddress = walletAddress
+func (b *AgentBuilder) WithAddresses(addresses map[string]string) *AgentBuilder {
+	b.addresses = addresses
 	return b
 }
 
@@ -129,7 +129,7 @@ func (b *AgentBuilder) Build() *responses.AgentResponse {
 		EnsDomain:         b.ensDomain,
 		ProposalId:        b.proposalId,
 		Attributes:        b.attributes,
-		WalletAddress:     b.walletAddress,
+		Addresses:         b.addresses,
 		CollectionTokenId: b.collectionTokenId,
 		CollectionAddress: b.collectionAddress,
 	}

@@ -22,12 +22,12 @@ func AddRegistrySynchronizerListenersConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = addAgentCollectionAgentWalletAddedListenerConfiguration(container)
+	err = addAgentCollectionAgentAddressAddedListenerConfiguration(container)
 	if err != nil {
 		panic(err)
 	}
 
-	err = addAgentCollectionAgentWalletRemovedListenerConfiguration(container)
+	err = addAgentCollectionAgentAddressRemovedListenerConfiguration(container)
 	if err != nil {
 		panic(err)
 	}
@@ -170,13 +170,13 @@ func addAgentCollectionAgentAttributeUpdatedListenerConfiguration(container *dig
 	return nil
 }
 
-func addAgentCollectionAgentWalletAddedListenerConfiguration(container *dig.Container) error {
-	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentWalletAddedListener)
+func addAgentCollectionAgentAddressAddedListenerConfiguration(container *dig.Container) error {
+	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentAddressAddedListener)
 	if err != nil {
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) interfaces.CollectionEventSubscriberInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressAddedListener) interfaces.CollectionEventSubscriberInterface {
 		return l
 	},
 		dig.Group("collection_event_subscribers"),
@@ -186,7 +186,7 @@ func addAgentCollectionAgentWalletAddedListenerConfiguration(container *dig.Cont
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) interfaces.OnBlockProcessedHandlerInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressAddedListener) interfaces.OnBlockProcessedHandlerInterface {
 		return l
 	},
 		dig.Group("on_block_processed_handlers"),
@@ -196,7 +196,7 @@ func addAgentCollectionAgentWalletAddedListenerConfiguration(container *dig.Cont
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletAddedListener) registry_synchronizer_listeners.EventListenerInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressAddedListener) registry_synchronizer_listeners.EventListenerInterface {
 		return l
 	},
 		dig.Group("event_listeners"),
@@ -209,13 +209,13 @@ func addAgentCollectionAgentWalletAddedListenerConfiguration(container *dig.Cont
 	return nil
 }
 
-func addAgentCollectionAgentWalletRemovedListenerConfiguration(container *dig.Container) error {
-	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentWalletRemovedListener)
+func addAgentCollectionAgentAddressRemovedListenerConfiguration(container *dig.Container) error {
+	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentAddressRemovedListener)
 	if err != nil {
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) interfaces.CollectionEventSubscriberInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressRemovedListener) interfaces.CollectionEventSubscriberInterface {
 		return l
 	},
 		dig.Group("collection_event_subscribers"),
@@ -225,7 +225,7 @@ func addAgentCollectionAgentWalletRemovedListenerConfiguration(container *dig.Co
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) interfaces.OnBlockProcessedHandlerInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressRemovedListener) interfaces.OnBlockProcessedHandlerInterface {
 		return l
 	},
 		dig.Group("on_block_processed_handlers"),
@@ -235,7 +235,7 @@ func addAgentCollectionAgentWalletRemovedListenerConfiguration(container *dig.Co
 		return err
 	}
 
-	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentWalletRemovedListener) registry_synchronizer_listeners.EventListenerInterface {
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentAddressRemovedListener) registry_synchronizer_listeners.EventListenerInterface {
 		return l
 	},
 		dig.Group("event_listeners"),

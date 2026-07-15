@@ -32,6 +32,12 @@
             },
             "responses.AgentResponse": {
                 "properties": {
+                    "addresses": {
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "type": "object"
+                    },
                     "attributes": {
                         "additionalProperties": {
                             "type": "string"
@@ -73,9 +79,6 @@
                     },
                     "role": {
                         "$ref": "#/components/schemas/enums.AgentRole"
-                    },
-                    "walletAddress": {
-                        "type": "string"
                     }
                 },
                 "type": "object"

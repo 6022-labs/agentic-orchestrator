@@ -213,6 +213,12 @@ const docTemplate = `{
         "responses.AgentResponse": {
             "type": "object",
             "properties": {
+                "addresses": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "attributes": {
                     "type": "object",
                     "additionalProperties": {
@@ -254,9 +260,6 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/enums.AgentRole"
-                },
-                "walletAddress": {
-                    "type": "string"
                 }
             }
         },

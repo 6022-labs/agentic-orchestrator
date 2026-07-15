@@ -10,14 +10,13 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
-	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type MintedEventHandler struct {
+	*AbstractAgentAddressEventHandler
 	logger                             *zap.Logger
-	agentRepository                    repositories.AgentRepositoryInterface
 	agentCollectionRepository          repositories.AgentCollectionRepositoryInterface
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface
 	decentralizedDomainNameBuilder     registry_common_interfaces.DecentralizedDomainNameBuilderInterface
@@ -26,14 +25,15 @@ type MintedEventHandler struct {
 func NewMintedEventHandler(
 	logger *zap.Logger,
 	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	agentCollectionBlockchainRequester interfaces.AgentCollectionBlockchainRequesterInterface,
 	decentralizedDomainNameBuilder registry_common_interfaces.DecentralizedDomainNameBuilderInterface,
 ) *MintedEventHandler {
 	return &MintedEventHandler{
-		logger: logger,
+		AbstractAgentAddressEventHandler: NewAbstractAgentAddressEventHandler(agentRepository, agentAddressRepository),
 
-		agentRepository:                    agentRepository,
+		logger:                             logger,
 		agentCollectionRepository:          agentCollectionRepository,
 		decentralizedDomainNameBuilder:     decentralizedDomainNameBuilder,
 		agentCollectionBlockchainRequester: agentCollectionBlockchainRequester,
@@ -61,9 +61,10 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 		return fmt.Errorf("failed to set agent role: %w", err)
 	}
 
-	agent, err := handler.findAgentByWalletAddresses(agentInformation.Wallets)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("failed to find agent by wallet addresses: %w", err)
+	addresses := handler.typedAddresses(agentInformation.Addresses)
+	agent, err := handler.findAgentByAddresses(addresses)
+	if err != nil {
+		return fmt.Errorf("failed to find agent by addresses: %w", err)
 	}
 
 	if agent == nil {
@@ -88,7 +89,6 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 
 	ownerHex := owner.Hex()
 
-	agent.WalletAddress = agentInformation.Wallets[0].Hex()
 	agent.Creator = agentInformation.Creator.Hex()
 	agent.Role = agentRole
 	agent.Owner = &ownerHex
@@ -125,20 +125,9 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 		return fmt.Errorf("failed to save agent: %w", err)
 	}
 
-	return nil
-}
-
-func (handler *MintedEventHandler) findAgentByWalletAddresses(walletAddress []common.Address) (*models.Agent, error) {
-	for _, wallet := range walletAddress {
-		agent, err := handler.agentRepository.GetByWalletAddress(wallet.Hex())
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("failed to get agent by wallet address: %w", err)
-		}
-
-		if agent != nil {
-			return agent, nil
-		}
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 
-	return nil, gorm.ErrRecordNotFound
+	return nil
 }
