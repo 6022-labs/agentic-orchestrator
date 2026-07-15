@@ -9,7 +9,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 type WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite struct {
@@ -37,15 +36,16 @@ func TestWhenGettingAgentPromptTemplateByAgentAndKey(t *testing.T) {
 	t.Run("Given no template for the agent and key", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return record not found", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach()
 			defer WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(suite)
 
-			_, err := suite.sut.GetByAgentAndKey("0xabc", 1, enums.AgentPromptTemplateKeyCloneSystem)
+			template, err := suite.sut.GetByAgentAndKey("0xabc", 1, enums.AgentPromptTemplateKeyCloneSystem)
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
+			assert.Nil(t, template)
 		})
 	})
 

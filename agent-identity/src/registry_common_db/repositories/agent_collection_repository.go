@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	"gorm.io/gorm"
 )
 
 type AgentCollectionRepository struct {
@@ -34,6 +37,9 @@ func (r *AgentCollectionRepository) GetByAddress(address string) (*models.AgentC
 	collection := &models.AgentCollection{}
 
 	tx := r.client.GetDB().Where("address = ?", address).First(collection)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

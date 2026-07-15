@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenRegisteringConversationTestingSuite struct {
@@ -94,7 +93,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 		initSuite := func(suite *WhenRegisteringConversationTestingSuite, request *requests.RegisterConversationRequest) {
 			suite.mockBridgeRepository.EXPECT().
 				GetById(request.BridgeID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 
@@ -121,7 +120,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			suite.mockBridgeRepository.EXPECT().GetById(bridge.ID).Return(bridge, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().
 				GetById(missingParticipantId).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

@@ -83,14 +83,14 @@ func TestWhenGettingAgentAddressByTypeAndAddress(t *testing.T) {
 	t.Run("Given the row does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return an error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			suite := WhenGettingAgentAddressByTypeAndAddressBeforeEach()
 			defer WhenGettingAgentAddressByTypeAndAddressAfterEach(suite)
 
 			row, err := suite.sut.GetByTypeAndAddress(enums.AddressTypeEvm, "0xunknown")
 
 			assert.Nil(t, row)
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
 		})
 	})
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenSavingAgentPromptTemplateTestingSuite struct {
@@ -71,7 +70,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				Save(gomock.Any()).
@@ -143,7 +142,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				Save(gomock.Any()).

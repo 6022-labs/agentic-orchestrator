@@ -11,7 +11,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenBuildingConversationPromptsTestingSuite struct {
@@ -114,7 +113,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(2)
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetMintedAgentByEnsDomain(gomock.Any()).
@@ -157,7 +156,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyFacilitatorConclude).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetMintedAgentByEnsDomain(gomock.Any()).

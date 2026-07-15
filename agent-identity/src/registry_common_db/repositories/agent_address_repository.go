@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
@@ -26,6 +28,9 @@ func (r *AgentAddressRepository) GetByTypeAndAddress(addressType enums.AddressTy
 	agentAddress := &models.AgentAddress{}
 
 	tx := r.client.GetDB().Where("type = ? AND address = ?", addressType, address).First(agentAddress)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

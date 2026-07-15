@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenProcessingConversationTestingSuite struct {
@@ -148,7 +147,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(nil, gorm.ErrRecordNotFound).Times(1)
+			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(nil, nil).Times(1)
 			suite.mockConversationConclude.EXPECT().Conclude(conversation.ID).Return(nil).Times(1)
 		}
 

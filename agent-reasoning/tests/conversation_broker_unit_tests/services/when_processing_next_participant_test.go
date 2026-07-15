@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenProcessingNextParticipantTestingSuite struct {
@@ -64,7 +63,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
 				GetNextAgentToProcess(gomock.Any()).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

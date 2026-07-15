@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenGettingMintedAgentsByEnsTestingSuite struct {
@@ -110,7 +109,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 
 			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(createdEntity.EnsDomain)
 
-			assert.Equal(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})
@@ -126,7 +125,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 
 			fetchedEntity, err := suite.sut.GetMintedByEnsDomain("nonexistent.ens")
 
-			assert.Equal(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})

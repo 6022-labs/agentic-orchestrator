@@ -9,7 +9,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/common_tests/model_builders"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 type WhenGettingNextAgentToProcessTestingSuite struct {
@@ -37,7 +36,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 	t.Run("Given no participant in database", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return record-not-found", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingNextAgentToProcessBeforeEach()
@@ -45,7 +44,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 
 			next, err := suite.sut.GetNextAgentToProcess(20)
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, next)
 		})
 	})
@@ -64,7 +63,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 
 			next, err := suite.sut.GetNextAgentToProcess(20)
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, next)
 		})
 	})
@@ -84,7 +83,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 
 			next, err := suite.sut.GetNextAgentToProcess(20)
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, next)
 		})
 	})
@@ -141,7 +140,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 	t.Run("Given only user participants exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return record-not-found", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingNextAgentToProcessBeforeEach()
@@ -152,7 +151,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 
 			next, err := suite.sut.GetNextAgentToProcess(20)
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, next)
 		})
 	})

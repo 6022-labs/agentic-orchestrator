@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenProcessingBlockEventsTestingSuite struct {
@@ -106,7 +105,7 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
 				Get().
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
 				Save(gomock.Any()).

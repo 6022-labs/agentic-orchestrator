@@ -1,6 +1,10 @@
 package repositories
 
 import (
+	"errors"
+
+	"gorm.io/gorm"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
@@ -28,6 +32,9 @@ func (r *AgentPromptTemplateRepository) GetByAgentAndKey(
 		Where("key = ?", key).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

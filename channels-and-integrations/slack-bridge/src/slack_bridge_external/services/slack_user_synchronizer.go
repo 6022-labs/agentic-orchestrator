@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -10,7 +9,6 @@ import (
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type SlackUserSynchronizer struct {
@@ -38,7 +36,7 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 	s.logger.Debug("Starting user synchronization", zap.String("id", id))
 
 	existingUserInDatabase, err := s.slackUserRepository.GetById(id)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
 	}
 

@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenUpdatingConversationDescriptionTestingSuite struct {
@@ -69,7 +68,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 		initSuite := func(suite *WhenUpdatingConversationDescriptionTestingSuite, request *requests.UpdateConversationDescriptionRequest) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(request.ConversationID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

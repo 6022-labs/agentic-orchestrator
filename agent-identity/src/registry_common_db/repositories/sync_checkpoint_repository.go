@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
+	"gorm.io/gorm"
 )
 
 type SyncCheckpointRepository struct {
@@ -23,6 +26,9 @@ func (r *SyncCheckpointRepository) Get() (*models.SyncCheckpoint, error) {
 	checkpoint := &models.SyncCheckpoint{}
 
 	tx := r.client.GetDB().First(checkpoint)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

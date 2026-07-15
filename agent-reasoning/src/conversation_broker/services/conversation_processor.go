@@ -16,7 +16,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 // facilitatorConcludeMarker in a facilitator completion (or the message that
@@ -86,15 +85,15 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 	}
 
 	bridge, err := p.bridgeRepository.GetById(conversation.BridgeID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
+		return fmt.Errorf("failed to fetch bridge: %w", err)
+	}
+	if bridge == nil {
 		p.logger.Warn("Bridge not found for conversation", logFields...)
 		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
 			return fmt.Errorf("failed to conclude orphan conversation: %w", err)
 		}
 		return nil
-	}
-	if err != nil {
-		return fmt.Errorf("failed to fetch bridge: %w", err)
 	}
 
 	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(participant, conversation.ID)
@@ -208,11 +207,11 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 
 	// Reload under lock to catch a concurrent conclude.
 	reloaded, err := p.conversationRepository.GetById(conversation.ID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("conversation %s vanished before sending completions", conversation.ID)
-	}
 	if err != nil {
 		return fmt.Errorf("failed to reload conversation: %w", err)
+	}
+	if reloaded == nil {
+		return fmt.Errorf("conversation %s vanished before sending completions", conversation.ID)
 	}
 	if reloaded.Status == enums.ConversationStatusConcluded {
 		p.logger.Warn("Conversation already concluded, skipping completions",

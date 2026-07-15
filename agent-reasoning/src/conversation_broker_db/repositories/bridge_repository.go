@@ -1,10 +1,13 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type BridgeRepository struct {
@@ -23,6 +26,9 @@ func (r *BridgeRepository) GetById(id uuid.UUID) (*models.Bridge, error) {
 		Where("id = ?", id).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

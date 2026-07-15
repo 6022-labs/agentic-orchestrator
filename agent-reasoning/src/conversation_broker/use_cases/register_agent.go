@@ -1,7 +1,6 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
@@ -9,7 +8,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
-	"gorm.io/gorm"
 )
 
 type RegisterAgentInterface interface {
@@ -42,7 +40,7 @@ func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*resp
 
 	tokenId := request.ParsedCollectionTokenId()
 	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, tokenId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, false, fmt.Errorf("failed to lookup agent participant: %w", err)
 	}
 	if existing != nil {

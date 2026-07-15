@@ -1,7 +1,6 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
@@ -9,7 +8,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
-	"gorm.io/gorm"
 )
 
 type RegisterConversationInterface interface {
@@ -42,21 +40,21 @@ func (uc *RegisterConversation) Register(request *requests.RegisterConversationR
 		return nil, err
 	}
 
-	_, err := uc.bridgeRepository.GetById(request.BridgeID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, cb_errors.NewNotFoundError("bridge", request.BridgeID.String())
-	}
+	bridge, err := uc.bridgeRepository.GetById(request.BridgeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load bridge: %w", err)
 	}
+	if bridge == nil {
+		return nil, cb_errors.NewNotFoundError("bridge", request.BridgeID.String())
+	}
 
 	for _, pid := range request.ParticipantIDs {
-		_, err := uc.participantRepository.GetById(pid)
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, cb_errors.NewNotFoundError("participant", pid.String())
-		}
+		participant, err := uc.participantRepository.GetById(pid)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load participant %s: %w", pid, err)
+		}
+		if participant == nil {
+			return nil, cb_errors.NewNotFoundError("participant", pid.String())
 		}
 	}
 

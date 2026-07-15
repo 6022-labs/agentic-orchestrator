@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenGettingConversationMessagesTestingSuite struct {
@@ -62,7 +61,7 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(request.ConversationID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

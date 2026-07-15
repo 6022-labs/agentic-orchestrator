@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenConcludingConversationIfExistsTestingSuite struct {
@@ -46,7 +45,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 		initSuite := func(suite *WhenConcludingConversationIfExistsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(conversationId).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			// No Save expectation — best-effort: missing conversation is a no-op.
 		}

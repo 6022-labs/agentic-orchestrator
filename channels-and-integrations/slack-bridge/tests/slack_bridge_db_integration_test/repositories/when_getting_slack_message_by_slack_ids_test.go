@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenGettingSlackMessageBySlackIdsTestingSuite struct {
@@ -83,9 +82,10 @@ func TestWhenGettingSlackMessageBySlackIds(t *testing.T) {
 			suite := WhenGettingSlackMessageBySlackIdsBeforeEach()
 			defer WhenGettingSlackMessageBySlackIdsAfterEach(suite)
 
-			_, err := suite.sut.GetBySlackIds("C-missing", "0.0")
+			entity, err := suite.sut.GetBySlackIds("C-missing", "0.0")
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.NoError(t, err)
+			assert.Nil(t, entity)
 		})
 	})
 }

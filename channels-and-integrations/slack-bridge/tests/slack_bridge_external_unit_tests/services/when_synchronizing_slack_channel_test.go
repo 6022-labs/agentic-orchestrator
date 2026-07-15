@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenSynchronizingSlackChannelTestingSuite struct {
@@ -95,7 +94,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
 			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(gomock.Any()).Return(&interfaces.ChannelInformation{IsMember: false}, nil)
 			suite.mockSlackChannelRequester.EXPECT().JoinChannel(gomock.Any()).Return(assert.AnError)
 		}

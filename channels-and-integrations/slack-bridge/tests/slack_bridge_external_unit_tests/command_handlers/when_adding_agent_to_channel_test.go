@@ -249,6 +249,52 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the channel is not yet in the database", func(t *testing.T) {
+		t.Parallel()
+
+		brokerAgentId := uuid.New()
+
+		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(nil, nil)
+
+			slackChannel := model_builders.NewSlackChannelBuilder().Build()
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+
+			slackAgent := model_builders.NewSlackAgentBuilder().
+				WithCollectionAddress(request.CollectionAddress).
+				WithCollectionTokenId(request.CollectionTokenId).
+				Build()
+			slackAgent.BrokerParticipantId = &brokerAgentId
+			suite.mockSlackAgentSynchronizer.EXPECT().
+				Sync(request.CollectionAddress, request.CollectionTokenId).
+				Return(slackAgent, nil)
+
+			suite.mockSlackChannelRepository.EXPECT().AddAgent(slackChannel, slackAgent).Return(slackChannel, nil)
+
+			suite.mockSlackConversationRepository.EXPECT().
+				ListByChannelId(request.ChannelID).
+				Return([]*models.SlackConversation{}, nil)
+		}
+
+		t.Run("Should sync the channel and add the agent", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenAddingAgentToChannelBeforeEach(t)
+
+			request := &requests.AddAgentToChannelRequest{
+				ChannelID:         "chan",
+				CollectionTokenId: 123,
+				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+			}
+
+			initSuite(suite, request)
+
+			err := suite.sut.Add(request)
+
+			assert.NoError(t, err)
+		})
+	})
+
 	t.Run("Given all steps succeed and the channel has existing broker conversations", func(t *testing.T) {
 		t.Parallel()
 

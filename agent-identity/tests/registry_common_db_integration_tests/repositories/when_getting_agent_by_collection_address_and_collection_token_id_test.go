@@ -94,7 +94,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 	t.Run("Given entity does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach()
 			defer WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite)
 
@@ -112,7 +112,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				nonExistantCollectionTokenId,
 			)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})

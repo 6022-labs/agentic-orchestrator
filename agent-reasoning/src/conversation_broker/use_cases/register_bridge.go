@@ -1,14 +1,12 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
-	"gorm.io/gorm"
 )
 
 type RegisterBridgeInterface interface {
@@ -32,7 +30,7 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*re
 
 	if request.ID != nil {
 		existing, err := uc.bridgeRepository.GetById(*request.ID)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err != nil {
 			return nil, false, fmt.Errorf("failed to load existing bridge: %w", err)
 		}
 		if existing != nil {

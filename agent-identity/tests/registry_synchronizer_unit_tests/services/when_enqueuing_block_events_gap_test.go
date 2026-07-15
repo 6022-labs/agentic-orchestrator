@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenEnqueuingBlockEventsGapTestingSuite struct {
@@ -129,7 +128,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 
 			suite.mockSyncCheckpointRepository.EXPECT().
 				Get().
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().
@@ -162,7 +161,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 
 			suite.mockSyncCheckpointRepository.EXPECT().
 				Get().
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().

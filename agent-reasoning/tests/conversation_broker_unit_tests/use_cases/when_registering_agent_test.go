@@ -15,7 +15,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenRegisteringAgentTestingSuite struct {
@@ -150,7 +149,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, uint64(1)).
@@ -177,7 +176,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, uint64(1)).
@@ -218,7 +217,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 
 			suite.mockParticipantRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, uint64(1)).

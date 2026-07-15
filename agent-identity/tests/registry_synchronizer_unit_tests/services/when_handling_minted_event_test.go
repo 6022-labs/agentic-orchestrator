@@ -19,7 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingMintedEventTestingSuite struct {
@@ -161,11 +160,11 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(wallet.Hex())).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly").
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 
 			owner := common_tests.RandomEthAddress()
 			suite.agentCollectionBlockchainRequester.
@@ -176,7 +175,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
 				GetByAddress(collectionAddress.Hex()).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 
 			return event
 		}
@@ -214,7 +213,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly").
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 
 			owner := common_tests.RandomEthAddress()
 			suite.agentCollectionBlockchainRequester.

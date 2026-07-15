@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenGettingSlackConversationByBrokerConversationIdTestingSuite struct {
@@ -84,9 +83,10 @@ func TestWhenGettingSlackConversationByBrokerConversationId(t *testing.T) {
 			suite := WhenGettingSlackConversationByBrokerConversationIdBeforeEach()
 			defer WhenGettingSlackConversationByBrokerConversationIdAfterEach(suite)
 
-			_, err := suite.sut.GetByBrokerConversationId(uuid.New())
+			entity, err := suite.sut.GetByBrokerConversationId(uuid.New())
 
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.NoError(t, err)
+			assert.Nil(t, entity)
 		})
 	})
 }

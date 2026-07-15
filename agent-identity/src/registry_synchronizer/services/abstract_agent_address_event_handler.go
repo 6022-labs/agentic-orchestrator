@@ -1,14 +1,12 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
-	"gorm.io/gorm"
 )
 
 // AbstractAgentAddressEventHandler carries the typed-address mapping and lookup logic shared by the synchronizer handlers.
@@ -50,7 +48,7 @@ func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(addresses 
 			continue
 		}
 		agentAddress, err := handler.agentAddressRepository.GetByTypeAndAddress(addressType, value)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err != nil {
 			return nil, fmt.Errorf("failed to get agent address: %w", err)
 		}
 		if agentAddress == nil {
@@ -60,6 +58,9 @@ func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(addresses 
 		agent, err := handler.agentRepository.GetById(agentAddress.AgentId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get agent by id: %w", err)
+		}
+		if agent == nil {
+			continue
 		}
 		return agent, nil
 	}

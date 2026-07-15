@@ -1,14 +1,12 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
-	"gorm.io/gorm"
 )
 
 type AttachParticipantInterface interface {
@@ -37,20 +35,20 @@ func (uc *AttachParticipant) Attach(request *requests.ConversationParticipantReq
 	if err := request.Validate(); err != nil {
 		return err
 	}
-	_, err := uc.conversationRepository.GetById(request.ConversationID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
-	}
+	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
 	}
-
-	_, err = uc.participantRepository.GetById(request.ParticipantID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
+	if conversation == nil {
+		return cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
+
+	participant, err := uc.participantRepository.GetById(request.ParticipantID)
 	if err != nil {
 		return fmt.Errorf("failed to load participant: %w", err)
+	}
+	if participant == nil {
+		return cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 
 	link := &models.ConversationParticipant{

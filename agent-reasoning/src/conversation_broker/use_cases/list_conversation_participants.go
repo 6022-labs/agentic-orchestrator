@@ -1,14 +1,12 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
-	"gorm.io/gorm"
 )
 
 type ListConversationParticipantsInterface interface {
@@ -35,11 +33,12 @@ func (uc *ListConversationParticipants) List(request *requests.ConversationIdReq
 		return nil, err
 	}
 
-	if _, err := uc.conversationRepository.GetById(request.ConversationID); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
-		}
+	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
+	}
+	if conversation == nil {
+		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
 	participants, err := uc.participantRepository.ListByConversationId(request.ConversationID)

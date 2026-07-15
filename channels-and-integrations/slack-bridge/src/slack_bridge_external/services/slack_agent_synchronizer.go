@@ -1,14 +1,12 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
-	"gorm.io/gorm"
 )
 
 type SlackAgentSynchronizer struct {
@@ -36,7 +34,7 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 	}
 
 	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, err
 	}
 

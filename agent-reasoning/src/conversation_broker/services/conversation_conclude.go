@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type ConversationConclude struct {
@@ -23,22 +21,22 @@ func NewConversationConclude(conversationRepository repositories.ConversationRep
 
 func (s *ConversationConclude) Conclude(conversationId uuid.UUID) error {
 	conversation, err := s.conversationRepository.GetById(conversationId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return cb_errors.NewNotFoundError("conversation", conversationId.String())
-	}
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
+	}
+	if conversation == nil {
+		return cb_errors.NewNotFoundError("conversation", conversationId.String())
 	}
 	return s.concludeConversation(conversation)
 }
 
 func (s *ConversationConclude) ConcludeIfExists(conversationId uuid.UUID) error {
 	conversation, err := s.conversationRepository.GetById(conversationId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil
-	}
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
+	}
+	if conversation == nil {
+		return nil
 	}
 	return s.concludeConversation(conversation)
 }

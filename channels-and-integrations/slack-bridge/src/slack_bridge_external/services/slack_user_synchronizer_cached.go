@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -10,7 +9,6 @@ import (
 	external_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/settings"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 const USER_SYNC_CACHE_KEY_TEMPLATE = "slack_user_sync:%s"
@@ -41,7 +39,7 @@ func NewSlackUserSynchronizerCached(
 
 func (s *SlackUserSynchronizerCached) Sync(id string) (*models.SlackUser, error) {
 	inDatabaseUser, err := s.slackUserRepository.GetById(id)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, fmt.Errorf("error getting user %s from database: %w", id, err)
 	}
 

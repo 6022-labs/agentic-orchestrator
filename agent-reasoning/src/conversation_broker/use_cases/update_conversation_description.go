@@ -1,13 +1,11 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
-	"gorm.io/gorm"
 )
 
 type UpdateConversationDescriptionInterface interface {
@@ -28,11 +26,11 @@ func (uc *UpdateConversationDescription) Update(request *requests.UpdateConversa
 	}
 
 	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
-	}
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
+	}
+	if conversation == nil {
+		return cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
 	conversation.Description = request.Description

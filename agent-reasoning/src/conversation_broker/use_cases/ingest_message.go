@@ -1,7 +1,6 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/use_cases/responses"
-	"gorm.io/gorm"
 )
 
 type IngestMessageInterface interface {
@@ -42,19 +40,19 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*respon
 	}
 
 	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
+	if conversation == nil {
+		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
+	}
 
 	participant, err := uc.participantRepository.GetById(request.ParticipantID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to load participant: %w", err)
+	}
+	if participant == nil {
+		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 
 	// Reopen the conversation when a human posts

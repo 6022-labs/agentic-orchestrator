@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -11,7 +10,6 @@ import (
 	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type MintedEventHandler struct {
@@ -80,7 +78,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	}
 
 	agentCollection, err := handler.agentCollectionRepository.GetByAddress(event.Raw.Address.Hex())
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get agent collection by address: %w", err)
 	}
 	if agentCollection == nil {

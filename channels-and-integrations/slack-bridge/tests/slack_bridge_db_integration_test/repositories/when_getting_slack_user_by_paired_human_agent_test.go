@@ -71,7 +71,7 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 
 			pairedSlackUserToHumanAgent, err := suite.sut.GetByPairedHumanAgent(collectionAddress, collectionTokenId)
 
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, pairedSlackUserToHumanAgent)
 		})
 	})
@@ -113,7 +113,7 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 				9999,
 			)
 
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, slackUser)
 		})
 	})
@@ -155,7 +155,7 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 				collectionTokenId,
 			)
 
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, slackUser)
 		})
 	})

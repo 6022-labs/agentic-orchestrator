@@ -11,7 +11,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenGettingAgentPromptTemplateTestingSuite struct {
@@ -91,7 +90,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

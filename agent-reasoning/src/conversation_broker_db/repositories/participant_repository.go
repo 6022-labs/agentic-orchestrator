@@ -1,11 +1,14 @@
 package repositories
 
 import (
+	"errors"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ParticipantRepository struct {
@@ -24,6 +27,9 @@ func (r *ParticipantRepository) GetById(id uuid.UUID) (*models.Participant, erro
 		Where("id = ?", id).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +45,9 @@ func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +72,9 @@ func (r *ParticipantRepository) GetNextAgentToProcess(
 		Order("last_processed_at ASC NULLS FIRST").
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

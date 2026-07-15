@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
+	"gorm.io/gorm"
 )
 
 type SlackChannelRepository struct {
@@ -25,6 +28,9 @@ func (r *SlackChannelRepository) GetById(id string) (*models.SlackChannel, error
 		First(&entity).
 		Error
 
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

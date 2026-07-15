@@ -1125,6 +1125,6 @@ func (_AgentCollectionCreatorV1 *AgentCollectionCreatorV1Filterer) ParseRoleRevo
 
 // --- RawLog() methods added by go generate ---
 func (e AgentCollectionCreatorV1DefaultCollectionsDescriptorUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionCreatorV1RoleAdminChanged) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionCreatorV1RoleGranted) RawLog() types.Log { return e.Raw }
-func (e AgentCollectionCreatorV1RoleRevoked) RawLog() types.Log { return e.Raw }
+func (e AgentCollectionCreatorV1RoleAdminChanged) RawLog() types.Log                    { return e.Raw }
+func (e AgentCollectionCreatorV1RoleGranted) RawLog() types.Log                         { return e.Raw }
+func (e AgentCollectionCreatorV1RoleRevoked) RawLog() types.Log                         { return e.Raw }

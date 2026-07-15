@@ -91,7 +91,7 @@ func TestWhenRemovingAgent(t *testing.T) {
 
 			fetchedAgent, err := suite.sut.GetById(agent.ID)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedAgent)
 		})
 	})

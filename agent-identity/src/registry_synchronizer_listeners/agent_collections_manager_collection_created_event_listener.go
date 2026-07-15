@@ -15,8 +15,8 @@ import (
 type AgentCollectionsManagerCollectionCreatedListener struct {
 	logger *zap.Logger
 
-	agentCollectionsManagerSettings                *settings.AgentCollectionsManagerSettings
-	blockEventsQueue                               interfaces.BlockEventsQueueInterface
+	agentCollectionsManagerSettings                  *settings.AgentCollectionsManagerSettings
+	blockEventsQueue                                 interfaces.BlockEventsQueueInterface
 	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface
 
 	subscription ethereum.Subscription
@@ -34,8 +34,8 @@ func NewAgentCollectionsManagerCollectionCreatedListener(
 	return &AgentCollectionsManagerCollectionCreatedListener{
 		logger: logger,
 
-		agentCollectionsManagerSettings:                agentCollectionsManagerSettings,
-		blockEventsQueue:                               blockEventsQueue,
+		agentCollectionsManagerSettings:                  agentCollectionsManagerSettings,
+		blockEventsQueue:                                 blockEventsQueue,
 		agentCollectionsManagerEventSubscriptionProvider: agentCollectionsManagerEventSubscriptionProvider,
 
 		errCh: make(chan error, 8),

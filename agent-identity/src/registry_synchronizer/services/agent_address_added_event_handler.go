@@ -43,6 +43,9 @@ func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV
 	if err != nil {
 		return fmt.Errorf("failed to get agent by collection address and token id: %w", err)
 	}
+	if agent == nil {
+		return fmt.Errorf("agent not found for collection %s and token id %d", event.Raw.Address.Hex(), event.TokenId.Uint64())
+	}
 
 	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(event.Raw.Address, *event.TokenId)
 	if err != nil {

@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenAttachingParticipantTestingSuite struct {
@@ -91,7 +90,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 		initSuite := func(suite *WhenAttachingParticipantTestingSuite, request *requests.ConversationParticipantRequest) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(request.ConversationID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 
@@ -117,7 +116,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().
 				GetById(request.ParticipantID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

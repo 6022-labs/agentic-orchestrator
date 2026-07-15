@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenRegisteringBridgeTestingSuite struct {
@@ -216,7 +215,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 		newId := uuid.New()
 
 		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
-			suite.mockBridgeRepository.EXPECT().GetById(newId).Return(nil, gorm.ErrRecordNotFound).Times(1)
+			suite.mockBridgeRepository.EXPECT().GetById(newId).Return(nil, nil).Times(1)
 			suite.mockBridgeRepository.EXPECT().
 				Save(gomock.Any()).
 				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {

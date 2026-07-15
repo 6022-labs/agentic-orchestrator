@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type ConversationProcessorDaemon struct {
@@ -95,10 +93,6 @@ func (d *ConversationProcessorDaemon) runLoop() {
 
 func (d *ConversationProcessorDaemon) processNextParticipant() {
 	participant, err := d.participantRepository.GetNextAgentToProcess(d.processingSettings.ParticipantProcessingInterval)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		d.logger.Debug("No participants to process at the moment")
-		return
-	}
 	if err != nil {
 		d.logger.Error("Failed to fetch next participant to process", zap.Error(err))
 		return

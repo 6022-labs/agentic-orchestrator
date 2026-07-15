@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -13,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type BlockEventsGapEnqueuer struct {
@@ -68,7 +66,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 	}
 
 	syncCheckpoint, err := b.syncCheckpointRepository.Get()
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get sync checkpoint: %w", err)
 	}
 

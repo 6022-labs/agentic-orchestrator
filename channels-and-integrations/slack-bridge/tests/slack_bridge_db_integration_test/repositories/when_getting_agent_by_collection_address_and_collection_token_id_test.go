@@ -70,7 +70,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 
 			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId)
 
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, agent)
 		})
 	})
@@ -94,7 +94,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 			suite.sut.Save(agentModel)
 
 			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId+1)
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, agent)
 		})
 	})
@@ -118,7 +118,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 			suite.sut.Save(agentModel)
 
 			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId("non-existing-address", collectionTokenId)
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, agent)
 		})
 	})

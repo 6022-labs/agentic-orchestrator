@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 const (
@@ -177,7 +175,7 @@ func (p *BlockEventsProcessor) saveOrUpdateSyncCheckpoint(blockNumber uint64) er
 	defer p.syncCheckpointMu.Unlock()
 
 	checkpoint, err := p.syncCheckpointRepository.Get()
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get sync checkpoint: %w", err)
 	}
 

@@ -19,7 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingMintProposalCreatedEventTestingSuite struct {
@@ -279,11 +278,11 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly").
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
 				GetByAddress(collectionAddress.Hex()).

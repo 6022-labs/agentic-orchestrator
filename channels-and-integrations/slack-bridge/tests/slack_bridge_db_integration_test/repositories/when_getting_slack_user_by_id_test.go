@@ -70,7 +70,7 @@ func TestWhenGettingSlackUserById(t *testing.T) {
 
 			slackUser, err := suite.sut.GetById(id)
 
-			assert.NotNil(t, err)
+			assert.NoError(t, err)
 			assert.Nil(t, slackUser)
 		})
 	})

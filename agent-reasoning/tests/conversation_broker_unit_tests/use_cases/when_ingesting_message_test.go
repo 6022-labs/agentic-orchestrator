@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenIngestingMessageTestingSuite struct {
@@ -93,7 +92,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(request.ConversationID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 
@@ -119,7 +118,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().
 				GetById(request.ParticipantID).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

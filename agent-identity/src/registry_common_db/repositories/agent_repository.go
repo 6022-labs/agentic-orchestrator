@@ -1,10 +1,13 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type AgentRepository struct {
@@ -90,7 +93,9 @@ func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (ui
 func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	entity := new(models.Agent)
 	tx := r.client.GetDB().First(entity, id)
-
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -102,6 +107,9 @@ func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionA
 	agent := &models.Agent{}
 
 	tx := r.client.GetDB().Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -113,6 +121,9 @@ func (r *AgentRepository) GetMintedByEnsDomain(ensDomain string) (*models.Agent,
 	agent := &models.Agent{}
 
 	tx := r.client.GetDB().Where("ens_domain = ? AND collection_token_id IS NOT NULL", ensDomain).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -139,6 +150,9 @@ func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collec
 		collectionAddress,
 		proposalId,
 	).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

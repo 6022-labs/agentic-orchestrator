@@ -7,7 +7,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type TransferEventHandler struct {
@@ -37,7 +36,7 @@ func (handler *TransferEventHandler) Handle(event *abi.AgentCollectionV1Transfer
 		event.Raw.Address.Hex(),
 		event.TokenId.Uint64(),
 	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get agent by collection and token id: %w", err)
 	}
 	if agent == nil {

@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenConcludingConversationTestingSuite struct {
@@ -47,7 +46,7 @@ func TestWhenConcludingConversation(t *testing.T) {
 		initSuite := func(suite *WhenConcludingConversationTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
 				GetById(conversationId).
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 		}
 

@@ -1,10 +1,13 @@
 package repositories
 
 import (
+	"errors"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
+	"gorm.io/gorm"
 )
 
 type SlackAgentRepository struct {
@@ -25,6 +28,9 @@ func (r *SlackAgentRepository) GetByCollectionAddressAndCollectionTokenId(collec
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +61,3 @@ func (r *SlackAgentRepository) UpdateIconImageCid(collectionAddress string, coll
 
 	return result.Error
 }
-

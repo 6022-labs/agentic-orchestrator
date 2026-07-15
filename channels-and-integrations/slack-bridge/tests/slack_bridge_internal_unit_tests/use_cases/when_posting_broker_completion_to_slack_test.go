@@ -7,20 +7,19 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
-	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"gorm.io/gorm"
 )
 
 type WhenPostingBrokerCompletionToSlackTestingSuite struct {
 	sut *use_cases.PostBrokerCompletionToSlack
 
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockSlackAgentRepository            *repositories_mocks.MockSlackAgentRepositoryInterface
-	mockSlackThreadRequester            *interfaces_mocks.MockSlackThreadRequesterInterface
+	mockSlackAgentRepository        *repositories_mocks.MockSlackAgentRepositoryInterface
+	mockSlackThreadRequester        *interfaces_mocks.MockSlackThreadRequesterInterface
 }
 
 func WhenPostingBrokerCompletionToSlackBeforeEach(t *testing.T) *WhenPostingBrokerCompletionToSlackTestingSuite {
@@ -37,10 +36,10 @@ func WhenPostingBrokerCompletionToSlackBeforeEach(t *testing.T) *WhenPostingBrok
 	)
 
 	return &WhenPostingBrokerCompletionToSlackTestingSuite{
-		sut:                                 sut,
+		sut:                             sut,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockSlackAgentRepository:            mockSlackAgentRepository,
-		mockSlackThreadRequester:            mockSlackThreadRequester,
+		mockSlackAgentRepository:        mockSlackAgentRepository,
+		mockSlackThreadRequester:        mockSlackThreadRequester,
 	}
 }
 
@@ -88,7 +87,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
 			suite.mockSlackConversationRepository.EXPECT().
 				GetByBrokerConversationId(req.ConversationId).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 		}
 
 		t.Run("Should return ErrConversationLinkNotFound", func(t *testing.T) {
@@ -116,7 +115,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				}, nil)
 			suite.mockSlackAgentRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 		}
 
 		t.Run("Should return ErrSlackAgentNotFound", func(t *testing.T) {

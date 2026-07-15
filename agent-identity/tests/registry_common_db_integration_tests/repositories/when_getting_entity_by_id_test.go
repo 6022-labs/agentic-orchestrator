@@ -78,16 +78,17 @@ func TestWhenGettingEntityById(t *testing.T) {
 	t.Run("Given entity does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingEntityByIdBeforeEach()
 			defer WhenGettingEntityByIdBeforeEachAfterEach(suite)
 
 			nonExistentID := uuid.New()
-			_, err := suite.sut.GetById(nonExistentID)
+			fetchedAgent, err := suite.sut.GetById(nonExistentID)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
+			assert.Nil(t, fetchedAgent)
 		})
 	})
 }
