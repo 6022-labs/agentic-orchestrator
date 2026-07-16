@@ -30,6 +30,7 @@ type WhenProcessingConversationTestingSuite struct {
 	mockConversationRepository          *repositories_mocks.MockConversationRepositoryInterface
 	mockConversationMessageRepository   *repositories_mocks.MockConversationMessageRepositoryInterface
 	mockParticipantRepository           *repositories_mocks.MockParticipantRepositoryInterface
+	mockEmojiDecoder                    *interfaces_mocks.MockEmojiDecoderInterface
 }
 
 func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversationTestingSuite {
@@ -44,6 +45,11 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
 	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(mockController)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
+
+	mockEmojiDecoder := interfaces_mocks.NewMockEmojiDecoderInterface(mockController)
+	mockEmojiDecoder.EXPECT().DemojizeContent(gomock.Any()).
+		DoAndReturn(func(content string) string { return content }).
+		AnyTimes()
 
 	processingSettings := &settings.ProcessingSettings{
 		ParticipantProcessingInterval:               20,
@@ -64,6 +70,7 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		mockConversationRepository,
 		mockConversationMessageRepository,
 		mockParticipantRepository,
+		mockEmojiDecoder,
 	)
 
 	return &WhenProcessingConversationTestingSuite{
@@ -78,6 +85,7 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		mockConversationRepository:          mockConversationRepository,
 		mockConversationMessageRepository:   mockConversationMessageRepository,
 		mockParticipantRepository:           mockParticipantRepository,
+		mockEmojiDecoder:                    mockEmojiDecoder,
 	}
 }
 

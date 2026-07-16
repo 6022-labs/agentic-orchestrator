@@ -155,7 +155,7 @@ func (b *PromptParametersBuilder) resolveAgentParameter(target map[string]any, b
 		return fmt.Errorf("agent not found")
 	}
 
-	target[baseKey] = newAgentPromptParameter(agent)
+	target[baseKey] = b.newAgentPromptParameter(agent)
 
 	return nil
 }
@@ -177,7 +177,7 @@ func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]a
 		if agent == nil {
 			return fmt.Errorf("not all agents found")
 		}
-		agentParameters[i] = newAgentPromptParameter(agent)
+		agentParameters[i] = b.newAgentPromptParameter(agent)
 	}
 
 	target[baseKey] = agentParameters
@@ -196,7 +196,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(target map[stri
 		return fmt.Errorf("failed to get potential agent by ENS domain: %w", err)
 	}
 
-	target[baseKey] = newPotentialAgentPromptParameter(strVal, agent)
+	target[baseKey] = b.newPotentialAgentPromptParameter(strVal, agent)
 
 	return nil
 }
@@ -223,7 +223,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(target map
 	potentialAgentParameters := make([]*potentialAgentPromptParameter, len(strVals))
 
 	for i, strVal := range strVals {
-		potentialAgentParameters[i] = newPotentialAgentPromptParameter(strVal, agentMap[strVal])
+		potentialAgentParameters[i] = b.newPotentialAgentPromptParameter(strVal, agentMap[strVal])
 	}
 
 	target[baseKey] = potentialAgentParameters
@@ -250,4 +250,33 @@ func (b *PromptParametersBuilder) interfaceToStringSlice(vals any) ([]string, er
 	}
 
 	return out, nil
+}
+
+func (b *PromptParametersBuilder) newAgentPromptParameter(agent *models.RegistryAgent) *agentPromptParameter {
+	owner := ""
+	if agent.Owner != nil {
+		owner = *agent.Owner
+	}
+	return &agentPromptParameter{
+		Name:          agent.Name,
+		Role:          agent.Role,
+		Owner:         owner,
+		EnsDomain:     agent.EnsDomain,
+		Attributes:    agent.Attributes,
+		WalletAddress: agent.WalletAddress,
+	}
+}
+
+func (b *PromptParametersBuilder) newPotentialAgentPromptParameter(name string, agent *models.RegistryAgent) *potentialAgentPromptParameter {
+	this := &potentialAgentPromptParameter{
+		Name:    name,
+		IsAgent: agent != nil,
+	}
+
+	if agent != nil {
+		this.Name = agent.Name
+		this.agentPromptParameter = b.newAgentPromptParameter(agent)
+	}
+
+	return this
 }

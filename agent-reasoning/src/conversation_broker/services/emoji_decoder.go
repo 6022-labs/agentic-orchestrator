@@ -1,4 +1,4 @@
-package utils
+package services
 
 import (
 	"sort"
@@ -7,13 +7,22 @@ import (
 	"github.com/kyokomi/emoji/v2"
 )
 
-var demojizeReplacer = buildDemojizeReplacer()
+// EmojiDecoder maps emoji glyphs back to their canonical shortcodes.
+type EmojiDecoder struct {
+	replacer *strings.Replacer
+}
+
+func NewEmojiDecoder() *EmojiDecoder {
+	decoder := &EmojiDecoder{}
+	decoder.replacer = decoder.buildDemojizeReplacer()
+	return decoder
+}
 
 // buildDemojizeReplacer compiles a strings.Replacer that maps every unicode
-// emoji glyph in kyokomi's table back to its canonical shortcode (the LLM
-// emit form). Sort by glyph length descending so multi-codepoint sequences
-// (e.g. ZWJ-joined emoji) win over their sub-glyphs.
-func buildDemojizeReplacer() *strings.Replacer {
+// emoji glyph in kyokomi's table back to its canonical shortcode. Sort by
+// glyph length descending so multi-codepoint sequences (e.g. ZWJ-joined
+// emoji) win over their sub-glyphs.
+func (d *EmojiDecoder) buildDemojizeReplacer() *strings.Replacer {
 	revMap := emoji.RevCodeMap()
 
 	type pair struct {
@@ -42,6 +51,6 @@ func buildDemojizeReplacer() *strings.Replacer {
 	return strings.NewReplacer(flat...)
 }
 
-func DemojizeContent(content string) string {
-	return demojizeReplacer.Replace(content)
+func (d *EmojiDecoder) DemojizeContent(content string) string {
+	return d.replacer.Replace(content)
 }

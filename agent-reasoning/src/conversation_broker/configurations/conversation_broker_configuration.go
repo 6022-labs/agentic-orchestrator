@@ -45,6 +45,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewEmojiDecoder,
+		dig.As(new(service_interfaces.EmojiDecoderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewConversationProcessor,
 		dig.As(new(service_interfaces.ConversationProcessorInterface)),
 	)

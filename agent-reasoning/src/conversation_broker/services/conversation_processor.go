@@ -13,7 +13,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -34,6 +33,7 @@ type ConversationProcessor struct {
 	conversationRepository          repositories.ConversationRepositoryInterface
 	conversationMessageRepository   repositories.ConversationMessageRepositoryInterface
 	participantRepository           repositories.ParticipantRepositoryInterface
+	emojiDecoder                    interfaces.EmojiDecoderInterface
 
 	// One lock per conversation. In-process only — swap for a Postgres
 	// advisory lock if the broker ever runs as multiple replicas.
@@ -52,6 +52,7 @@ func NewConversationProcessor(
 	conversationRepository repositories.ConversationRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
+	emojiDecoder interfaces.EmojiDecoderInterface,
 ) *ConversationProcessor {
 	return &ConversationProcessor{
 		logger:                          logger,
@@ -65,6 +66,7 @@ func NewConversationProcessor(
 		conversationRepository:          conversationRepository,
 		conversationMessageRepository:   conversationMessageRepository,
 		participantRepository:           participantRepository,
+		emojiDecoder:                    emojiDecoder,
 	}
 }
 
@@ -256,7 +258,7 @@ func (p *ConversationProcessor) carriesConcludeMarker(completions []string, mess
 func (p *ConversationProcessor) demojizeAll(completions []string) []string {
 	out := make([]string, len(completions))
 	for i, completion := range completions {
-		out[i] = utils.DemojizeContent(completion)
+		out[i] = p.emojiDecoder.DemojizeContent(completion)
 	}
 	return out
 }
