@@ -148,7 +148,7 @@ func (listener *AgentCollectionAgentAddressAddedListener) startSubscriptionHandl
 					return
 				}
 				select {
-				case listener.errCh <- fmt.Errorf("agent collection agent attribute updated subscription error: %w", err):
+				case listener.errCh <- fmt.Errorf("agent collection agent address added subscription error: %w", err):
 				default:
 				}
 				return
