@@ -1,104 +1,121 @@
 package services_test
 
 import (
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
 
-	"encoding/hex"
-
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services"
+	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
-const (
-	chain_id    = 80002
-	public_key  = "0xd389d997Df5654b87914492E1e0C6861bfe835DE"
-	private_key = "b4c2dd8c816efd854aecde7167b0a5db630854f426c50eb2b8784b9a89c9f95a"
-)
+const signerAddress = "0xd389d997Df5654b87914492E1e0C6861bfe835DE"
 
 type WhenValidatingSignedMessageTestSuite struct {
 	sut *services.SignedMessageValidator
+
+	mockEcdsaSigner *interfaces_mocks.MockECDSASignerInterface
 }
 
-func WhenValidatingSignedMessageBeforeEach() *WhenValidatingSignedMessageTestSuite {
-	sut := services.NewSignedMessageValidator()
+func WhenValidatingSignedMessageBeforeEach(t *testing.T) *WhenValidatingSignedMessageTestSuite {
+	mockController := gomock.NewController(t)
+
+	mockEcdsaSigner := interfaces_mocks.NewMockECDSASignerInterface(mockController)
 
 	return &WhenValidatingSignedMessageTestSuite{
-		sut: sut,
+		sut:             services.NewSignedMessageValidator(mockEcdsaSigner),
+		mockEcdsaSigner: mockEcdsaSigner,
 	}
 }
 
-func generateMessage(nonce string) string {
-	return strings.Join([]string{
-		"localhost:5173 wants you to sign in with your Ethereum account:\n",
-		public_key,
-		"\n\nPlease sign with your account\n\nURI: http://localhost:5173\nVersion: 1\nChain ID: ",
-		fmt.Sprintf("%d", chain_id),
-		"\nNonce: ",
-		nonce,
-		"\nIssued At: 2025-03-02T18:24:14.110Z",
-	}, "")
-}
-
-func signMessage(message string) (string, error) {
-	privateKey, err := crypto.HexToECDSA(private_key)
-	if err != nil {
-		return "", err
-	}
-
+// prefixedHash mirrors the validator's EIP-191 personal_sign hash.
+func prefixedHash(message string) []byte {
 	prefixedMessage := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(message), message)
-	hash := crypto.Keccak256Hash([]byte(prefixedMessage))
-	signature, err := crypto.Sign(hash.Bytes(), privateKey)
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(signature), nil
+	return crypto.Keccak256Hash([]byte(prefixedMessage)).Bytes()
 }
 
 func TestWhenValidatingSignedMessage(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given nonce does not match the one received", func(t *testing.T) {
-		t.Parallel()
+	message := "localhost:5173 wants you to sign in with your Ethereum account"
+	sigBytes := make([]byte, 65)
+	sigBytes[64] = 1
+	signatureHex := "0x" + hex.EncodeToString(sigBytes)
 
-		t.Run("Should return false", func(t *testing.T) {
-			t.Parallel()
-
-			baseNonce := "nonce"
-			signedNonce := "invalid_signed_nonce"
-
-			suite := WhenValidatingSignedMessageBeforeEach()
-
-			baseNonceMessage := generateMessage(baseNonce)
-			signedNonceMessage := generateMessage(signedNonce)
-			signedNonceSignature, _ := signMessage(signedNonceMessage)
-
-			result := suite.sut.Validate(baseNonceMessage, signedNonceSignature, public_key)
-
-			assert.False(t, result)
-		})
-	})
-
-	t.Run("Given nonce match the one received", func(t *testing.T) {
+	t.Run("Given the recovered address matches", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return true", func(t *testing.T) {
 			t.Parallel()
 
-			nonce := "nonce"
+			suite := WhenValidatingSignedMessageBeforeEach(t)
+			suite.mockEcdsaSigner.EXPECT().
+				RecoverAddress(prefixedHash(message), sigBytes).
+				Return(signerAddress, nil)
 
-			baseNonceMessage := generateMessage(nonce)
-			signedNonceMessage := generateMessage(nonce)
-			signedNonceSignature, _ := signMessage(signedNonceMessage)
+			assert.True(t, suite.sut.Validate(message, signatureHex, signerAddress))
+		})
+	})
 
-			suite := WhenValidatingSignedMessageBeforeEach()
+	t.Run("Given the recovered address matches with a different casing", func(t *testing.T) {
+		t.Parallel()
 
-			result := suite.sut.Validate(baseNonceMessage, signedNonceSignature, public_key)
+		t.Run("Should return true", func(t *testing.T) {
+			t.Parallel()
 
-			assert.True(t, result)
+			suite := WhenValidatingSignedMessageBeforeEach(t)
+			suite.mockEcdsaSigner.EXPECT().
+				RecoverAddress(prefixedHash(message), sigBytes).
+				Return(strings.ToLower(signerAddress), nil)
+
+			assert.True(t, suite.sut.Validate(message, signatureHex, signerAddress))
+		})
+	})
+
+	t.Run("Given the recovered address differs", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return false", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenValidatingSignedMessageBeforeEach(t)
+			suite.mockEcdsaSigner.EXPECT().
+				RecoverAddress(prefixedHash(message), sigBytes).
+				Return("0x0000000000000000000000000000000000000001", nil)
+
+			assert.False(t, suite.sut.Validate(message, signatureHex, signerAddress))
+		})
+	})
+
+	t.Run("Given the signer fails to recover", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return false", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenValidatingSignedMessageBeforeEach(t)
+			suite.mockEcdsaSigner.EXPECT().
+				RecoverAddress(prefixedHash(message), sigBytes).
+				Return("", errors.New("invalid signature"))
+
+			assert.False(t, suite.sut.Validate(message, signatureHex, signerAddress))
+		})
+	})
+
+	t.Run("Given the signature is not valid hex", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return false without calling the signer", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenValidatingSignedMessageBeforeEach(t)
+
+			assert.False(t, suite.sut.Validate(message, "0xnot-hex", signerAddress))
 		})
 	})
 }

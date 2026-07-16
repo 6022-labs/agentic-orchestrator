@@ -40,6 +40,21 @@ func (m *MockECDSASignerInterface) EXPECT() *MockECDSASignerInterfaceMockRecorde
 	return m.recorder
 }
 
+// RecoverAddress mocks base method.
+func (m *MockECDSASignerInterface) RecoverAddress(hash, signature []byte) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecoverAddress", hash, signature)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecoverAddress indicates an expected call of RecoverAddress.
+func (mr *MockECDSASignerInterfaceMockRecorder) RecoverAddress(hash, signature any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoverAddress", reflect.TypeOf((*MockECDSASignerInterface)(nil).RecoverAddress), hash, signature)
+}
+
 // RecoverPublicKey mocks base method.
 func (m *MockECDSASignerInterface) RecoverPublicKey(data, signature []byte) (*string, error) {
 	m.ctrl.T.Helper()
