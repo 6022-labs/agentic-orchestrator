@@ -11,24 +11,38 @@ import (
 )
 
 func TestWhenLoadingRemoteAgentResolutionSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"remote_agent_resolution.cache_ttl_seconds": uint64(60),
 		}, "."), nil)
 
-		settings := broker_settings.NewRemoteAgentResolutionSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(60), settings.CacheTtlSeconds)
+			settings := broker_settings.NewRemoteAgentResolutionSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(60), settings.CacheTtlSeconds)
+		})
 	})
 
-	t.Run("Defaults missing values", func(t *testing.T) {
+	t.Run("Given no configuration", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := broker_settings.NewRemoteAgentResolutionSettings(zap.NewNop(), k)
+		t.Run("Should fall back to defaults", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(300), settings.CacheTtlSeconds)
+			settings := broker_settings.NewRemoteAgentResolutionSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(300), settings.CacheTtlSeconds)
+		})
 	})
 }

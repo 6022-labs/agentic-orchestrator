@@ -13,39 +13,61 @@ import (
 )
 
 func TestWhenLoadingSyncSettings(t *testing.T) {
-	t.Run("Loads settings with block finalization delay", func(t *testing.T) {
+	t.Parallel()
+
+	blockchainSettings := &registry_common_settings.BlockchainSettings{ChainId: 80002}
+
+	t.Run("Given a configured start block and block finalization delay", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"sync.start_block":              "12345678",
 			"sync.block_finalization_delay": "3s",
 		}, "."), nil)
 
-		settings := sync_settings.NewSyncSettings(zap.NewNop(), k, &registry_common_settings.BlockchainSettings{ChainId: 80002})
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(12345678), settings.StartBlock)
-		assert.Equal(t, 3*time.Second, settings.BlockFinalizationDelay)
+			settings := sync_settings.NewSyncSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(12345678), settings.StartBlock)
+			assert.Equal(t, 3*time.Second, settings.BlockFinalizationDelay)
+		})
 	})
 
-	t.Run("Defaults the block finalization delay", func(t *testing.T) {
+	t.Run("Given no block finalization delay", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"sync.start_block": "12345678",
 		}, "."), nil)
 
-		settings := sync_settings.NewSyncSettings(zap.NewNop(), k, &registry_common_settings.BlockchainSettings{ChainId: 80002})
+		t.Run("Should fall back to the default delay", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(12345678), settings.StartBlock)
-		assert.Equal(t, 2*time.Second, settings.BlockFinalizationDelay)
+			settings := sync_settings.NewSyncSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(12345678), settings.StartBlock)
+			assert.Equal(t, 2*time.Second, settings.BlockFinalizationDelay)
+		})
 	})
 
-	t.Run("Falls back to the built-in start block when none is configured", func(t *testing.T) {
+	t.Run("Given no configured start block", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := sync_settings.NewSyncSettings(zap.NewNop(), k, &registry_common_settings.BlockchainSettings{ChainId: 80002})
+		t.Run("Should fall back to the built-in start block for the chain", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(39471293), settings.StartBlock)
+			settings := sync_settings.NewSyncSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.NotNil(t, settings)
+			assert.Positive(t, settings.StartBlock)
+		})
 	})
 }

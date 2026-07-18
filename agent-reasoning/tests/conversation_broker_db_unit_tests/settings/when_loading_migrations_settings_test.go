@@ -11,16 +11,24 @@ import (
 )
 
 func TestWhenLoadingMigrationsSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured folder path pointing to an existing directory", func(t *testing.T) {
+		t.Parallel()
+
 		folder := t.TempDir()
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"migrations.folder_path": folder,
 		}, "."), nil)
 
-		settings := migrations_settings.NewMigrationsSettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, folder, settings.MigrationsFolderPath)
+			settings := migrations_settings.NewMigrationsSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, folder, settings.MigrationsFolderPath)
+		})
 	})
 }

@@ -11,15 +11,23 @@ import (
 )
 
 func TestWhenLoadingBlockchainSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured chain id", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"blockchain.chain_id": 1,
 		}, "."), nil)
 
-		settings := blockchain_settings.NewBlockchainSettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, int64(1), settings.ChainId)
+			settings := blockchain_settings.NewBlockchainSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, int64(1), settings.ChainId)
+		})
 	})
 }

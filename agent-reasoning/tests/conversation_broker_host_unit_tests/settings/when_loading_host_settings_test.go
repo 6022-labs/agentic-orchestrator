@@ -11,17 +11,41 @@ import (
 )
 
 func TestWhenLoadingHostSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"host.api_port":         9201,
 			"host.body_limit_bytes": 1024,
 		}, "."), nil)
 
-		settings := host_settings.NewHostSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, 9201, settings.ApiPort)
-		assert.Equal(t, 1024, settings.BodyLimitBytes)
+			settings := host_settings.NewHostSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, 9201, settings.ApiPort)
+			assert.Equal(t, 1024, settings.BodyLimitBytes)
+		})
+	})
+
+	t.Run("Given no configuration", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+
+		t.Run("Should fall back to defaults", func(t *testing.T) {
+			t.Parallel()
+
+			settings := host_settings.NewHostSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, 3000, settings.ApiPort)
+			assert.Equal(t, 4*1024*1024, settings.BodyLimitBytes)
+		})
 	})
 }

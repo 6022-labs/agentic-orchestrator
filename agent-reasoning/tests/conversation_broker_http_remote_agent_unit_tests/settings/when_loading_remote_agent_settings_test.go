@@ -11,27 +11,41 @@ import (
 )
 
 func TestWhenLoadingRemoteAgentSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"remote_agent.request_timeout_seconds":            uint64(60),
 			"remote_agent.well_known_request_timeout_seconds": uint64(5),
 		}, "."), nil)
 
-		settings := remote_agent_settings.NewRemoteAgentSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(60), settings.RequestTimeoutSeconds)
-		assert.Equal(t, uint64(5), settings.WellKnownRequestTimeoutSeconds)
+			settings := remote_agent_settings.NewRemoteAgentSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(60), settings.RequestTimeoutSeconds)
+			assert.Equal(t, uint64(5), settings.WellKnownRequestTimeoutSeconds)
+		})
 	})
 
-	t.Run("Defaults missing values", func(t *testing.T) {
+	t.Run("Given no configuration", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := remote_agent_settings.NewRemoteAgentSettings(zap.NewNop(), k)
+		t.Run("Should fall back to defaults", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, uint64(120), settings.RequestTimeoutSeconds)
-		assert.Equal(t, uint64(10), settings.WellKnownRequestTimeoutSeconds)
+			settings := remote_agent_settings.NewRemoteAgentSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, uint64(120), settings.RequestTimeoutSeconds)
+			assert.Equal(t, uint64(10), settings.WellKnownRequestTimeoutSeconds)
+		})
 	})
 }

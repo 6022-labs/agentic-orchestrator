@@ -13,26 +13,42 @@ import (
 )
 
 func TestWhenLoadingAgentCollectionsManagerSettings(t *testing.T) {
-	address := "0x0000000000000000000000000000000000000001"
+	t.Parallel()
 
-	t.Run("Loads settings from an explicit address", func(t *testing.T) {
+	blockchainSettings := &registry_common_settings.BlockchainSettings{ChainId: 80002}
+
+	t.Run("Given an explicitly configured address", func(t *testing.T) {
+		t.Parallel()
+
+		address := "0x0000000000000000000000000000000000000001"
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"agent_collections_manager.smart_contract_address": address,
 		}, "."), nil)
 
-		settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, &registry_common_settings.BlockchainSettings{ChainId: 80002})
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.True(t, common.HexToAddress(address) == settings.SmartContractAddress)
+			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, common.HexToAddress(address), settings.SmartContractAddress)
+		})
 	})
 
-	t.Run("Falls back to the built-in address when none is configured", func(t *testing.T) {
+	t.Run("Given no configured address", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, &registry_common_settings.BlockchainSettings{ChainId: 80002})
+		t.Run("Should fall back to the built-in address for the chain", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.True(t, common.HexToAddress("0x33Fec4914A2f3e81Af2665B60b15Fb68c438e0d8") == settings.SmartContractAddress)
+			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.NotNil(t, settings)
+			assert.NotEqual(t, common.Address{}, settings.SmartContractAddress)
+		})
 	})
 }

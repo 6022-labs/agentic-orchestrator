@@ -11,24 +11,38 @@ import (
 )
 
 func TestWhenLoadingBridgeCallbackSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"bridge_callback.request_timeout_seconds": 60,
 		}, "."), nil)
 
-		settings := bridge_callback_settings.NewBridgeCallbackSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, 60, settings.RequestTimeoutSeconds)
+			settings := bridge_callback_settings.NewBridgeCallbackSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, 60, settings.RequestTimeoutSeconds)
+		})
 	})
 
-	t.Run("Defaults request_timeout_seconds when unset", func(t *testing.T) {
+	t.Run("Given no configuration", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := bridge_callback_settings.NewBridgeCallbackSettings(zap.NewNop(), k)
+		t.Run("Should fall back to defaults", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, 30, settings.RequestTimeoutSeconds)
+			settings := bridge_callback_settings.NewBridgeCallbackSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, 30, settings.RequestTimeoutSeconds)
+		})
 	})
 }

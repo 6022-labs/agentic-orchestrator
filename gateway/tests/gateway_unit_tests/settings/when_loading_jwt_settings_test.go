@@ -11,18 +11,67 @@ import (
 )
 
 func TestWhenLoadingJwtSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
+			"jwt.hash":        "test-signing-hash-at-least-32-characters",
+			"jwt.living_time": 3600,
+			"jwt.nonce_ttl":   600,
+		}, "."), nil)
+
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
+
+			settings := jwt_settings.NewJwtSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "test-signing-hash-at-least-32-characters", settings.Hash)
+			assert.Equal(t, 3600, settings.LivingTime)
+			assert.Equal(t, 600, settings.NonceTtl)
+		})
+	})
+
+	t.Run("Given no nonce ttl", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
 			"jwt.hash":        "test-signing-hash-at-least-32-characters",
 			"jwt.living_time": 3600,
 		}, "."), nil)
 
-		settings := jwt_settings.NewJwtSettings(zap.NewNop(), k)
+		t.Run("Should fall back to 300", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "test-signing-hash-at-least-32-characters", settings.Hash)
-		assert.Equal(t, 3600, settings.LivingTime)
-		assert.Equal(t, 300, settings.NonceTtl)
+			settings := jwt_settings.NewJwtSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "test-signing-hash-at-least-32-characters", settings.Hash)
+			assert.Equal(t, 3600, settings.LivingTime)
+			assert.Equal(t, 300, settings.NonceTtl)
+		})
+	})
+
+	t.Run("Given a non-positive nonce ttl", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"jwt.hash":        "test-signing-hash-at-least-32-characters",
+			"jwt.living_time": 3600,
+			"jwt.nonce_ttl":   0,
+		}, "."), nil)
+
+		t.Run("Should fall back to 300", func(t *testing.T) {
+			t.Parallel()
+
+			settings := jwt_settings.NewJwtSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 300, settings.NonceTtl)
+		})
 	})
 }

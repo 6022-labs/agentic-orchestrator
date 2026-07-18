@@ -11,15 +11,23 @@ import (
 )
 
 func TestWhenLoadingDatabaseSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured database url", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"database.url": "postgres://user:pass@localhost:5432/broker",
 		}, "."), nil)
 
-		settings := db_settings.NewConversationBrokerDatabaseSettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "postgres://user:pass@localhost:5432/broker", settings.Url)
+			settings := db_settings.NewConversationBrokerDatabaseSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "postgres://user:pass@localhost:5432/broker", settings.Url)
+		})
 	})
 }

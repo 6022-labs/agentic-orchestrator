@@ -11,31 +11,45 @@ import (
 )
 
 func TestWhenLoadingEnsResolverSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"ens_resolver.rpc_url":                         "https://sepolia.example",
 			"ens_resolver.registry_address":                "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 			"ens_resolver.gateway_request_timeout_seconds": uint64(20),
 		}, "."), nil)
 
-		settings := blockchain_settings.NewEnsResolverSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "https://sepolia.example", settings.RpcUrl)
-		assert.Equal(t, uint64(20), settings.GatewayRequestTimeoutSeconds)
-		assert.Equal(t, "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e", settings.RegistryCommonAddress().Hex())
+			settings := blockchain_settings.NewEnsResolverSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "https://sepolia.example", settings.RpcUrl)
+			assert.Equal(t, uint64(20), settings.GatewayRequestTimeoutSeconds)
+			assert.Equal(t, "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e", settings.RegistryCommonAddress().Hex())
+		})
 	})
 
-	t.Run("Defaults the gateway timeout and the registry address", func(t *testing.T) {
+	t.Run("Given only the rpc url", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"ens_resolver.rpc_url": "https://sepolia.example",
 		}, "."), nil)
 
-		settings := blockchain_settings.NewEnsResolverSettings(zap.NewNop(), k)
+		t.Run("Should fall back to the default gateway timeout and canonical registry address", func(t *testing.T) {
+			t.Parallel()
 
-		assert.Equal(t, uint64(10), settings.GatewayRequestTimeoutSeconds)
-		assert.Equal(t, "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e", settings.RegistryCommonAddress().Hex())
+			settings := blockchain_settings.NewEnsResolverSettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(10), settings.GatewayRequestTimeoutSeconds)
+			assert.Equal(t, "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e", settings.RegistryCommonAddress().Hex())
+		})
 	})
 }
