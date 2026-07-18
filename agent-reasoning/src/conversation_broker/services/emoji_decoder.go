@@ -18,10 +18,7 @@ func NewEmojiDecoder() *EmojiDecoder {
 	return decoder
 }
 
-// buildDemojizeReplacer compiles a strings.Replacer that maps every unicode
-// emoji glyph in kyokomi's table back to its canonical shortcode. Sort by
-// glyph length descending so multi-codepoint sequences (e.g. ZWJ-joined
-// emoji) win over their sub-glyphs.
+// Sorted by glyph length descending so multi-codepoint (ZWJ) sequences win over their sub-glyphs.
 func (d *EmojiDecoder) buildDemojizeReplacer() *strings.Replacer {
 	revMap := emoji.RevCodeMap()
 
