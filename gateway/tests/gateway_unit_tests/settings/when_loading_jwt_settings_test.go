@@ -14,14 +14,15 @@ func TestWhenLoadingJwtSettings(t *testing.T) {
 	t.Run("Loads settings", func(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]interface{}{
-			"jwt.hash":        "hash-value",
+			"jwt.hash":        "test-signing-hash-at-least-32-characters",
 			"jwt.living_time": 3600,
 		}, "."), nil)
 
 		settings := jwt_settings.NewJwtSettings(zap.NewNop(), k)
 
 		assert.NotNil(t, settings)
-		assert.Equal(t, "hash-value", settings.Hash)
+		assert.Equal(t, "test-signing-hash-at-least-32-characters", settings.Hash)
 		assert.Equal(t, 3600, settings.LivingTime)
+		assert.Equal(t, 300, settings.NonceTtl)
 	})
 }

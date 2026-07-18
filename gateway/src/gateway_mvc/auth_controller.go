@@ -43,15 +43,26 @@ func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 
 // GetAuthChallenge godoc
 // @Summary      Get authentication challenge
-// @Description  Returns a single-use nonce the wallet must sign
+// @Description  Returns a single-use EIP-4361 message + expiry the wallet must sign verbatim
 // @Tags         authentication
 // @Produce      json
+// @Param        address query string true "wallet address the message is issued for"
+// @Param        chainId query int true "chain id of the connected wallet"
 // @Success      200 {object} responses.GetAuthChallengeResponse
+// @Failure      400 {object} errors.ValidationError
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /auth/challenge [get]
 func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
-	challenge, err := controller.getAuthChallenge.Get()
+	request := new(requests.GetAuthChallengeRequest)
+	if err := c.QueryParser(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	challenge, err := controller.getAuthChallenge.Execute(request)
 	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
 		controller.logger.Error("Failed to generate auth challenge", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
@@ -60,13 +71,14 @@ func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
 
 // VerifyAuth godoc
 // @Summary      Verify signed challenge
-// @Description  Verifies the signed nonce and returns a JWT token
+// @Description  Verifies the signed EIP-4361 message for the nonce and returns a JWT token
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
 // @Param        request body requests.VerifyAuthRequest true "verify request"
 // @Success      200 {object} responses.VerifyAuthResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      401 {object} errors.UnauthorizedError "challenge_not_found | signature_mismatch"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /auth/verify [post]
 func (controller *AuthController) VerifyAuth(c *fiber.Ctx) error {
@@ -75,10 +87,13 @@ func (controller *AuthController) VerifyAuth(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.verifyAuth.Verify(request)
+	response, err := controller.verifyAuth.Execute(request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if unauthorizedErr, ok := err.(*errors.UnauthorizedError); ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(unauthorizedErr)
 		}
 		controller.logger.Error("Failed to verify auth", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

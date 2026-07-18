@@ -8,9 +8,9 @@ import { useWallet } from "@/contexts/wallet-provider-context"
 import { getAuthChallenge, verifyAuth } from "@/queries/api/auth.queries"
 import { extractErrorMessage } from "@/lib/api-errors"
 
-// SIWE for the agent-node gateway: connect a wallet (Reown AppKit), then
-// challenge -> personal_sign(nonce) -> verify. Unlike a full SIWE message, the
-// gateway recovers the signer from the raw nonce, so we sign the nonce directly.
+// SIWE (EIP-4361) for the gateway: connect a wallet (Reown AppKit), fetch the
+// server-built sign-in message for the address, personal_sign it verbatim,
+// then exchange it for a JWT.
 export const useWalletAuth = () => {
   const { open } = useAppKit()
   const { wallet, isConnected } = useWallet()
@@ -29,11 +29,15 @@ export const useWalletAuth = () => {
       const provider = new BrowserProvider(wallet)
       const signer = await provider.getSigner()
       const address = await signer.getAddress()
+      const network = await provider.getNetwork()
 
-      const { data: challenge } = await getAuthChallenge()
-      const signature = await signer.signMessage(challenge.nonce)
+      const { data: challenge } = await getAuthChallenge(
+        address,
+        Number(network.chainId)
+      )
+      const signature = await signer.signMessage(challenge.message)
 
-      const { data } = await verifyAuth(address, signature, challenge.nonce)
+      const { data } = await verifyAuth(address, signature)
       signIn(data.token)
       toast.success("Signed in")
     } catch (error) {

@@ -11,8 +11,9 @@ package interfaces_mocks
 
 import (
 	reflect "reflect"
-	time "time"
 
+	interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
+	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,31 +42,30 @@ func (m *MockNonceStoreInterface) EXPECT() *MockNonceStoreInterfaceMockRecorder 
 }
 
 // Consume mocks base method.
-func (m *MockNonceStoreInterface) Consume(nonce string) bool {
+func (m *MockNonceStoreInterface) Consume(address common.Address) *interfaces.ChallengeEntry {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Consume", nonce)
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "Consume", address)
+	ret0, _ := ret[0].(*interfaces.ChallengeEntry)
 	return ret0
 }
 
 // Consume indicates an expected call of Consume.
-func (mr *MockNonceStoreInterfaceMockRecorder) Consume(nonce any) *gomock.Call {
+func (mr *MockNonceStoreInterfaceMockRecorder) Consume(address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockNonceStoreInterface)(nil).Consume), nonce)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockNonceStoreInterface)(nil).Consume), address)
 }
 
 // Generate mocks base method.
-func (m *MockNonceStoreInterface) Generate() (string, time.Time, error) {
+func (m *MockNonceStoreInterface) Generate(address common.Address, chainId uint64) (*interfaces.ChallengeEntry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generate")
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(time.Time)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "Generate", address, chainId)
+	ret0, _ := ret[0].(*interfaces.ChallengeEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Generate indicates an expected call of Generate.
-func (mr *MockNonceStoreInterfaceMockRecorder) Generate() *gomock.Call {
+func (mr *MockNonceStoreInterfaceMockRecorder) Generate(address, chainId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockNonceStoreInterface)(nil).Generate))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockNonceStoreInterface)(nil).Generate), address, chainId)
 }

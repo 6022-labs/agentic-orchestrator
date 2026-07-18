@@ -41,17 +41,17 @@ func (m *MockVerifyAuthInterface) EXPECT() *MockVerifyAuthInterfaceMockRecorder 
 	return m.recorder
 }
 
-// Verify mocks base method.
-func (m *MockVerifyAuthInterface) Verify(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error) {
+// Execute mocks base method.
+func (m *MockVerifyAuthInterface) Execute(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Verify", request)
+	ret := m.ctrl.Call(m, "Execute", request)
 	ret0, _ := ret[0].(*responses.VerifyAuthResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Verify indicates an expected call of Verify.
-func (mr *MockVerifyAuthInterfaceMockRecorder) Verify(request any) *gomock.Call {
+// Execute indicates an expected call of Execute.
+func (mr *MockVerifyAuthInterfaceMockRecorder) Execute(request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockVerifyAuthInterface)(nil).Verify), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockVerifyAuthInterface)(nil).Execute), request)
 }

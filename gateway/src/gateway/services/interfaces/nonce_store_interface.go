@@ -1,10 +1,22 @@
 package interfaces
 
-import "time"
+import (
+	"time"
 
-// NonceStoreInterface issues single-use login nonces with a TTL.
-// Consume returns false when the nonce is unknown or already used.
+	"github.com/ethereum/go-ethereum/common"
+)
+
+// ChallengeEntry is the stored challenge context needed to rebuild the exact EIP-4361 message at verify time.
+type ChallengeEntry struct {
+	Nonce     string    `json:"nonce"`
+	ChainId   uint64    `json:"chainId"`
+	IssuedAt  time.Time `json:"issuedAt"`
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+// NonceStoreInterface owns single-use login challenges keyed by wallet — a new
+// challenge replaces the previous one; unknown, used, or expired reads return nil.
 type NonceStoreInterface interface {
-	Generate() (string, time.Time, error)
-	Consume(nonce string) bool
+	Generate(address common.Address, chainId uint64) (*ChallengeEntry, error)
+	Consume(address common.Address) *ChallengeEntry
 }

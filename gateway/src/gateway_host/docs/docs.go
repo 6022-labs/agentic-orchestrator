@@ -343,7 +343,7 @@ const docTemplate = `{
         },
         "/auth/challenge": {
             "get": {
-                "description": "Returns a single-use nonce the wallet must sign",
+                "description": "Returns a single-use EIP-4361 message + expiry the wallet must sign verbatim",
                 "produces": [
                     "application/json"
                 ],
@@ -351,11 +351,33 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "Get authentication challenge",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "wallet address the message is issued for",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "chain id of the connected wallet",
+                        "name": "chainId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.GetAuthChallengeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
                     "500": {
@@ -369,7 +391,7 @@ const docTemplate = `{
         },
         "/auth/verify": {
             "post": {
-                "description": "Verifies the signed nonce and returns a JWT token",
+                "description": "Verifies the signed EIP-4361 message for the nonce and returns a JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -402,6 +424,12 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "challenge_not_found | signature_mismatch",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
                         }
                     },
                     "500": {
@@ -753,6 +781,17 @@ const docTemplate = `{
                 }
             }
         },
+        "errors.UnauthorizedError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.ValidationError": {
             "type": "object",
             "properties": {
@@ -811,9 +850,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
-                },
-                "nonce": {
                     "type": "string"
                 },
                 "signature": {
@@ -1056,7 +1092,7 @@ const docTemplate = `{
                 "expiresAt": {
                     "type": "string"
                 },
-                "nonce": {
+                "message": {
                     "type": "string"
                 }
             }

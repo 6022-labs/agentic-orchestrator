@@ -3,6 +3,6 @@ package responses
 import "time"
 
 type GetAuthChallengeResponse struct {
-	Nonce     string    `json:"nonce"`
+	Message   string    `json:"message"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }

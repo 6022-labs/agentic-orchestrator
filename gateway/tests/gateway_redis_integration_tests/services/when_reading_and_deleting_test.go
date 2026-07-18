@@ -52,7 +52,7 @@ func TestWhenReadingAndDeleting(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, "test-value", value)
 
-			_, err = suite.sut.Read(key)
+			_, err = suite.sut.ReadAndDelete(key)
 			assert.NotNil(t, err)
 		})
 	})

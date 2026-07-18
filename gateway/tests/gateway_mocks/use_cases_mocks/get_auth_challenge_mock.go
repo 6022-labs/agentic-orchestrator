@@ -12,6 +12,7 @@ package use_cases_mocks
 import (
 	reflect "reflect"
 
+	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -40,17 +41,17 @@ func (m *MockGetAuthChallengeInterface) EXPECT() *MockGetAuthChallengeInterfaceM
 	return m.recorder
 }
 
-// Get mocks base method.
-func (m *MockGetAuthChallengeInterface) Get() (*responses.GetAuthChallengeResponse, error) {
+// Execute mocks base method.
+func (m *MockGetAuthChallengeInterface) Execute(request *requests.GetAuthChallengeRequest) (*responses.GetAuthChallengeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get")
+	ret := m.ctrl.Call(m, "Execute", request)
 	ret0, _ := ret[0].(*responses.GetAuthChallengeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockGetAuthChallengeInterfaceMockRecorder) Get() *gomock.Call {
+// Execute indicates an expected call of Execute.
+func (mr *MockGetAuthChallengeInterfaceMockRecorder) Execute(request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetAuthChallengeInterface)(nil).Get))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetAuthChallengeInterface)(nil).Execute), request)
 }

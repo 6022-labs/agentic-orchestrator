@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -63,7 +64,7 @@ func TestWhenStoring(t *testing.T) {
 			err := suite.sut.Store("test-key-2", "test-value", &duration)
 			assert.Nil(t, err)
 
-			secret, err := suite.sut.Read("test-key-2")
+			secret, err := suite.redisClient.Get(context.Background(), "test-key-2").Result()
 			assert.Nil(t, err)
 			assert.Equal(t, "test-value", secret)
 		})
@@ -81,7 +82,7 @@ func TestWhenStoring(t *testing.T) {
 
 			time.Sleep(duration * 2)
 
-			secret, err := suite.sut.Read("test-key-3")
+			secret, err := suite.redisClient.Get(context.Background(), "test-key-3").Result()
 			assert.NotNil(t, err)
 			assert.Empty(t, secret)
 		})

@@ -33,6 +33,17 @@
                 },
                 "type": "object"
             },
+            "errors.UnauthorizedError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "errors.ValidationError": {
                 "properties": {
                     "field": {
@@ -55,9 +66,6 @@
             "requests.VerifyAuthRequest": {
                 "properties": {
                     "address": {
-                        "type": "string"
-                    },
-                    "nonce": {
                         "type": "string"
                     },
                     "signature": {
@@ -301,7 +309,7 @@
                     "expiresAt": {
                         "type": "string"
                     },
-                    "nonce": {
+                    "message": {
                         "type": "string"
                     }
                 },
@@ -739,7 +747,27 @@
         },
         "/auth/challenge": {
             "get": {
-                "description": "Returns a single-use nonce the wallet must sign",
+                "description": "Returns a single-use EIP-4361 message + expiry the wallet must sign verbatim",
+                "parameters": [
+                    {
+                        "description": "wallet address the message is issued for",
+                        "in": "query",
+                        "name": "address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "chain id of the connected wallet",
+                        "in": "query",
+                        "name": "chainId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "content": {
@@ -750,6 +778,16 @@
                             }
                         },
                         "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
                     },
                     "500": {
                         "content": {
@@ -770,7 +808,7 @@
         },
         "/auth/verify": {
             "post": {
-                "description": "Verifies the signed nonce and returns a JWT token",
+                "description": "Verifies the signed EIP-4361 message for the nonce and returns a JWT token",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -811,6 +849,16 @@
                             }
                         },
                         "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.UnauthorizedError"
+                                }
+                            }
+                        },
+                        "description": "challenge_not_found | signature_mismatch"
                     },
                     "500": {
                         "content": {

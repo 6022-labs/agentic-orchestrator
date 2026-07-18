@@ -5,41 +5,49 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type VerifyAuthInterface interface {
-	Verify(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error)
+	Execute(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error)
 }
 
 type VerifyAuth struct {
-	nonceStore             interfaces.NonceStoreInterface
-	signedMessageValidator interfaces.SignedMessageValidatorInterface
-	jwtManager             interfaces.JwtManagerInterface
+	nonceStore         interfaces.NonceStoreInterface
+	siweMessageBuilder interfaces.SiweMessageBuilderInterface
+	signatureVerifier  interfaces.SignatureVerifierInterface
+	jwtManager         interfaces.JwtManagerInterface
 }
 
 func NewVerifyAuth(
 	nonceStore interfaces.NonceStoreInterface,
-	signedMessageValidator interfaces.SignedMessageValidatorInterface,
+	siweMessageBuilder interfaces.SiweMessageBuilderInterface,
+	signatureVerifier interfaces.SignatureVerifierInterface,
 	jwtManager interfaces.JwtManagerInterface,
 ) *VerifyAuth {
 	return &VerifyAuth{
-		nonceStore:             nonceStore,
-		signedMessageValidator: signedMessageValidator,
-		jwtManager:             jwtManager,
+		nonceStore:         nonceStore,
+		siweMessageBuilder: siweMessageBuilder,
+		signatureVerifier:  signatureVerifier,
+		jwtManager:         jwtManager,
 	}
 }
 
-func (uc *VerifyAuth) Verify(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error) {
+func (uc *VerifyAuth) Execute(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	if !uc.nonceStore.Consume(request.Nonce) {
-		return nil, errors.NewValidationError("nonce", "nonce not found or expired")
+	address := common.HexToAddress(request.Address)
+	entry := uc.nonceStore.Consume(address)
+	if entry == nil {
+		return nil, errors.NewUnauthorizedError("challenge_not_found", "challenge not found or expired")
 	}
 
-	if !uc.signedMessageValidator.Validate(request.Nonce, request.Signature, request.Address) {
-		return nil, errors.NewValidationError("signature", "signature does not match address")
+	message := uc.siweMessageBuilder.Build(address, entry.ChainId, entry.Nonce, entry.IssuedAt, entry.ExpiresAt)
+	recovered, err := uc.signatureVerifier.Recover(message, request.Signature)
+	if err != nil || recovered != address {
+		return nil, errors.NewUnauthorizedError("signature_mismatch", "signature does not match address")
 	}
 
 	token, expiresAt, err := uc.jwtManager.CreateJwtToken(request.Address)

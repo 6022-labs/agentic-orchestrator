@@ -28,6 +28,11 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewSiweSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	// Services
 	err = container.Provide(
 		signature.NewECDSASigner,
@@ -46,8 +51,16 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewSignedMessageValidator,
-		dig.As(new(interfaces.SignedMessageValidatorInterface)),
+		services.NewSignatureVerifier,
+		dig.As(new(interfaces.SignatureVerifierInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewSiweMessageBuilder,
+		dig.As(new(interfaces.SiweMessageBuilderInterface)),
 	)
 	if err != nil {
 		panic(err)
