@@ -20,6 +20,19 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewOrchestratorSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewOrchestratorPrivateKeyFetcher,
+		dig.As(new(service_interfaces.OrchestratorPrivateKeyFetcherInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(
 		services.NewRemoteAgentCardResolver,
 		dig.As(new(service_interfaces.RemoteAgentCardResolverInterface)),
