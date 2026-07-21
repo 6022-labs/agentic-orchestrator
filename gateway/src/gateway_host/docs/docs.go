@@ -749,21 +749,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "enums.AgentRole": {
-            "type": "string",
-            "enum": [
-                "clone",
-                "human",
-                "expert",
-                "facilitator"
-            ],
-            "x-enum-varnames": [
-                "AgentRoleClone",
-                "AgentRoleHuman",
-                "AgentRoleExpert",
-                "AgentRoleFacilitator"
-            ]
-        },
         "enums.BridgePlatform": {
             "type": "string",
             "enum": [
@@ -988,7 +973,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "role": {
-                    "$ref": "#/definitions/enums.AgentRole"
+                    "type": "string"
                 }
             }
         },

@@ -1,7 +1,6 @@
 package responses
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/google/uuid"
 )
 
@@ -9,7 +8,6 @@ type AgentResponse struct {
 	ID uuid.UUID `json:"id"`
 
 	Name       string            `json:"name"`
-	Role       enums.AgentRole   `json:"role"`
 	Owner      *string           `json:"owner"`
 	Creator    string            `json:"creator"`
 	Images     map[string]string `json:"images"`

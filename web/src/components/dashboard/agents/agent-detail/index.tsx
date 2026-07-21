@@ -110,7 +110,7 @@ export default function AgentDetailSection() {
                     <h2 className="truncate text-xl font-semibold">
                       {agent.name}
                     </h2>
-                    <Badge variant="secondary">{agent.role}</Badge>
+                    <Badge variant="secondary">{agent.attributes["role"]}</Badge>
                   </div>
                   <p className="truncate text-sm text-muted-foreground">
                     {agent.ensDomain || "No ENS domain"}
@@ -162,7 +162,7 @@ export default function AgentDetailSection() {
             <PromptTemplatesPanel
               collectionAddress={collectionAddress}
               collectionTokenId={collectionTokenId}
-              role={agent.role}
+              role={agent.attributes["role"] ?? ""}
             />
           </div>
         </>

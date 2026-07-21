@@ -1,21 +1,6 @@
 {
     "components": {
         "schemas": {
-            "enums.AgentRole": {
-                "enum": [
-                    "clone",
-                    "human",
-                    "expert",
-                    "facilitator"
-                ],
-                "type": "string",
-                "x-enum-varnames": [
-                    "AgentRoleClone",
-                    "AgentRoleHuman",
-                    "AgentRoleExpert",
-                    "AgentRoleFacilitator"
-                ]
-            },
             "enums.BridgePlatform": {
                 "enum": [
                     "slack"
@@ -205,7 +190,7 @@
                         "type": "integer"
                     },
                     "role": {
-                        "$ref": "#/components/schemas/enums.AgentRole"
+                        "type": "string"
                     }
                 },
                 "type": "object"

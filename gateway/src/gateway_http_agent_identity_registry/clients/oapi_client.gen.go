@@ -15,17 +15,6 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
-// Defines values for EnumsAgentRole.
-const (
-	AgentRoleClone       EnumsAgentRole = "clone"
-	AgentRoleExpert      EnumsAgentRole = "expert"
-	AgentRoleFacilitator EnumsAgentRole = "facilitator"
-	AgentRoleHuman       EnumsAgentRole = "human"
-)
-
-// EnumsAgentRole defines model for enums.AgentRole.
-type EnumsAgentRole string
-
 // ResponsesAgentCollectionResponse defines model for responses.AgentCollectionResponse.
 type ResponsesAgentCollectionResponse struct {
 	Address *string `json:"address,omitempty"`
@@ -47,7 +36,6 @@ type ResponsesAgentResponse struct {
 	Name              *string            `json:"name,omitempty"`
 	Owner             *string            `json:"owner,omitempty"`
 	ProposalId        *int               `json:"proposalId,omitempty"`
-	Role              *EnumsAgentRole    `json:"role,omitempty"`
 }
 
 // ResponsesListAgentsResponse defines model for responses.ListAgentsResponse.

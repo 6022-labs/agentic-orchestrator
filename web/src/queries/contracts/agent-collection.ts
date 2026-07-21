@@ -58,7 +58,10 @@ export async function getMintProposals(
       id: proposal.id,
       collectionAddress: collectionAddress,
       name: proposal.name,
-      role: proposal.role,
+      role:
+        proposal.attributes?.find(
+          (attribute: { key: string }) => attribute.key === "role"
+        )?.value ?? "",
       owner: proposal.owner,
       mission: proposal.mission,
       creator: proposal.creator,

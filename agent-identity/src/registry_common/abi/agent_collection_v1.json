@@ -44,6 +44,17 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "DuplicateKey",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "sender",
         "type": "address"
@@ -231,6 +242,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "MissingRequiredKey",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "NoModerators",
     "type": "error"
@@ -265,6 +287,17 @@
       }
     ],
     "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalNotFound",
     "type": "error"
   },
   {
@@ -1066,6 +1099,30 @@
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "attributeOfByKey",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
     "name": "attributesCountOf",
@@ -1147,11 +1204,6 @@
         "internalType": "address",
         "name": "to",
         "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "role",
-        "type": "string"
       },
       {
         "internalType": "string",
@@ -1417,11 +1469,6 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          },
-          {
             "internalType": "address",
             "name": "creator",
             "type": "address"
@@ -1593,11 +1640,6 @@
       },
       {
         "internalType": "string",
-        "name": "role",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
         "name": "name",
         "type": "string"
       },
@@ -1708,11 +1750,6 @@
           {
             "internalType": "string",
             "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "role",
             "type": "string"
           },
           {
@@ -2012,25 +2049,6 @@
     "name": "revokeRole",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "roleOf",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -110,9 +110,9 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				EXPECT().
 				GetAgentInformation(collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{
-					Name:    "Agent",
-					Role:    "expert",
-					Creator: common_tests.RandomEthAddress(),
+					Name:       "Agent",
+					Attributes: []abi.KeyValue{{Key: "role", Value: "expert"}},
+					Creator:    common_tests.RandomEthAddress(),
 					Addresses: []abi.AgentAddress{
 						{AddressType: "btc", Value: "bc1qexampleonly"},
 						{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
@@ -149,9 +149,9 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				EXPECT().
 				GetAgentInformation(collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{
-					Name:    "Agent",
-					Role:    "expert",
-					Creator: common_tests.RandomEthAddress(),
+					Name:       "Agent",
+					Attributes: []abi.KeyValue{{Key: "role", Value: "expert"}},
+					Creator:    common_tests.RandomEthAddress(),
 					Addresses: []abi.AgentAddress{
 						{AddressType: "btc", Value: "bc1qexampleonly"},
 						{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
@@ -203,9 +203,9 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				EXPECT().
 				GetAgentInformation(collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{
-					Name:    "Agent",
-					Role:    "expert",
-					Creator: common_tests.RandomEthAddress(),
+					Name:       "Agent",
+					Attributes: []abi.KeyValue{{Key: "role", Value: "expert"}},
+					Creator:    common_tests.RandomEthAddress(),
 					Addresses: []abi.AgentAddress{
 						{AddressType: "btc", Value: "bc1qexampleonly"},
 					},
@@ -278,14 +278,16 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				GetAgentInformation(collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{
 					Name:    "Alice",
-					Role:    "human",
 					Creator: common_tests.RandomEthAddress(),
 					Addresses: []abi.AgentAddress{
 						{AddressType: "btc", Value: "bc1qexampleonly"},
 						{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
 					},
-					Images:     []abi.KeyValue{{Key: "avatar", Value: "ipfs://avatar"}},
-					Attributes: []abi.KeyValue{{Key: "skill", Value: "analysis"}},
+					Images: []abi.KeyValue{{Key: "avatar", Value: "ipfs://avatar"}},
+					Attributes: []abi.KeyValue{
+						{Key: "role", Value: "human"},
+						{Key: "skill", Value: "analysis"},
+					},
 				}, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
@@ -320,6 +322,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 					assert.Nil(t, saved.ProposalId)
 					assert.Equal(t, "ipfs://avatar", saved.Images["avatar"])
 					assert.Equal(t, "analysis", saved.Attributes["skill"])
+					assert.Equal(t, "human", saved.Attributes["role"])
 					if assert.NotNil(t, saved.Owner) {
 						assert.Equal(t, owner.Hex(), *saved.Owner)
 					}

@@ -71,14 +71,16 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			addresses = append(addresses, abi.AgentAddress{AddressType: "evm", Value: strings.ToLower(wallet.Hex())})
 		}
 		return &abi.MintProposal{
-			Id:         new(big.Int).SetUint64(proposalID),
-			Name:       "TestAgent",
-			Role:       "expert",
-			Owner:      common_tests.RandomEthAddress(),
-			Creator:    common_tests.RandomEthAddress(),
-			Addresses:  addresses,
-			Images:     []abi.KeyValue{{Key: "avatar", Value: "ipfs://test"}},
-			Attributes: []abi.KeyValue{{Key: "bio", Value: "test bio"}},
+			Id:        new(big.Int).SetUint64(proposalID),
+			Name:      "TestAgent",
+			Owner:     common_tests.RandomEthAddress(),
+			Creator:   common_tests.RandomEthAddress(),
+			Addresses: addresses,
+			Images:    []abi.KeyValue{{Key: "avatar", Value: "ipfs://test"}},
+			Attributes: []abi.KeyValue{
+				{Key: "role", Value: "expert"},
+				{Key: "bio", Value: "test bio"},
+			},
 		}
 	}
 
@@ -300,7 +302,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 					assert.Equal(t, "testagent.genesis.eth", saved.EnsDomain)
 					assert.NotNil(t, saved.Owner)
 					assert.Equal(t, map[string]string{"avatar": "ipfs://test"}, saved.Images)
-					assert.Equal(t, map[string]string{"bio": "test bio"}, saved.Attributes)
+					assert.Equal(t, map[string]string{"role": "expert", "bio": "test bio"}, saved.Attributes)
 					if assert.NotNil(t, saved.ProposalId) {
 						assert.Equal(t, uint64(5), *saved.ProposalId)
 					}

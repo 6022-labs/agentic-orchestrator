@@ -121,8 +121,8 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			assert.NotNil(t, resp)
 			assert.Equal(t, agent.ID, resp.ID)
 			assert.Equal(t, agent.Name, resp.Name)
-			assert.Equal(t, agent.Role, resp.Role)
 			assert.Equal(t, agent.Owner, resp.Owner)
+			assert.Equal(t, agent.Attributes, resp.Attributes)
 			assert.Equal(t, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 			}, resp.Addresses)

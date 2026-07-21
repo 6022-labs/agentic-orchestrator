@@ -29,7 +29,6 @@ CREATE TABLE "public"."agents" (
   "name" text NOT NULL,
   "clone_of" numeric NULL,
   "ens_domain" text NOT NULL,
-  "role" text NOT NULL,
   "creator" text NOT NULL,
   "owner" text NULL,
   "images" jsonb NULL,

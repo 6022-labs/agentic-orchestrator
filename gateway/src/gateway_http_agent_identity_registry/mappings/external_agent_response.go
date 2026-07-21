@@ -1,7 +1,6 @@
 package mappings
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/helpers"
@@ -16,15 +15,9 @@ func (response *ExternalAgentResponse) ToUseCaseResponse() *responses.AgentRespo
 		return nil
 	}
 
-	var role enums.AgentRole
-	if response.Role != nil {
-		role = enums.AgentRole(*response.Role)
-	}
-
 	return &responses.AgentResponse{
 		ID:                helpers.ParseUuid(response.Id),
 		Name:              lo.FromPtr(response.Name),
-		Role:              role,
 		Owner:             response.Owner,
 		Creator:           lo.FromPtr(response.Creator),
 		Images:            lo.FromPtr(response.Images),

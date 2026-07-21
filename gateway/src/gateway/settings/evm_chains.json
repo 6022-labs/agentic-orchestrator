@@ -12,7 +12,7 @@
       "chainId": 80002,
       "name": "polygon-amoy",
       "collectionsManagerAddress": "0xfE7Ea63728191f34B2626D5BCa715C264c561A70",
-      "collectionCreatorAddress": "0xD570Abc0420508004a62d83E95249505c476ec28",
+      "collectionCreatorAddress": "0x90dBa5E381c0E9b69B4258E29EB5D8d53406395e",
       "scannerBaseUrl": "https://amoy.polygonscan.com"
     }
   ]

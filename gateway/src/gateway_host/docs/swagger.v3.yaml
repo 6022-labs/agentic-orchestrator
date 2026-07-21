@@ -1,17 +1,5 @@
 components:
   schemas:
-    enums.AgentRole:
-      enum:
-      - clone
-      - human
-      - expert
-      - facilitator
-      type: string
-      x-enum-varnames:
-      - AgentRoleClone
-      - AgentRoleHuman
-      - AgentRoleExpert
-      - AgentRoleFacilitator
     enums.BridgePlatform:
       enum:
       - slack
@@ -136,7 +124,7 @@ components:
         proposalId:
           type: integer
         role:
-          $ref: '#/components/schemas/enums.AgentRole'
+          type: string
       type: object
     responses.BlockchainConfigResponse:
       properties:

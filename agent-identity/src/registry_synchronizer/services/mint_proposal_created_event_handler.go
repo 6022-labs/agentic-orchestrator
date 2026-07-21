@@ -6,7 +6,6 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	registry_common_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
@@ -74,11 +73,6 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 	}
 
 	if agent == nil {
-		var agentRole enums.AgentRole
-		if err := agentRole.Set(mintProposal.Role); err != nil {
-			return fmt.Errorf("failed to set agent role: %w", err)
-		}
-
 		agentCollection, err := handler.agentCollectionRepository.GetByAddress(collectionAddress.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to get agent collection by address %s: %w", collectionAddress.Hex(), err)
@@ -89,7 +83,6 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		agent = &models.Agent{
 			CollectionAddress: collectionAddress.Hex(),
 			Name:              mintProposal.Name,
-			Role:              agentRole,
 			Creator:           mintProposal.Creator.Hex(),
 			Owner:             &ownerHex,
 			EnsDomain:         handler.decentralizedDomainNameBuilder.BuildDomainName(mintProposal.Name, agentCollection.Name),

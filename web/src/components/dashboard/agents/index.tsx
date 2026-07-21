@@ -127,7 +127,7 @@ export default function AgentsSection() {
                     {agent.ensDomain || "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{agent.role}</Badge>
+                    <Badge variant="secondary">{agent.attributes["role"]}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {truncateEthAddress(agent.owner)}

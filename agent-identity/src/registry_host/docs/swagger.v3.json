@@ -1,21 +1,6 @@
 {
     "components": {
         "schemas": {
-            "enums.AgentRole": {
-                "enum": [
-                    "clone",
-                    "human",
-                    "expert",
-                    "facilitator"
-                ],
-                "type": "string",
-                "x-enum-varnames": [
-                    "AgentRoleClone",
-                    "AgentRoleHuman",
-                    "AgentRoleExpert",
-                    "AgentRoleFacilitator"
-                ]
-            },
             "responses.AgentCollectionResponse": {
                 "properties": {
                     "address": {
@@ -76,9 +61,6 @@
                     },
                     "proposalId": {
                         "type": "integer"
-                    },
-                    "role": {
-                        "$ref": "#/components/schemas/enums.AgentRole"
                     }
                 },
                 "type": "object"

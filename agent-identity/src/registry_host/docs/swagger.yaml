@@ -1,17 +1,5 @@
 basePath: /
 definitions:
-  enums.AgentRole:
-    enum:
-    - clone
-    - human
-    - expert
-    - facilitator
-    type: string
-    x-enum-varnames:
-    - AgentRoleClone
-    - AgentRoleHuman
-    - AgentRoleExpert
-    - AgentRoleFacilitator
   responses.AgentCollectionResponse:
     properties:
       address:
@@ -53,8 +41,6 @@ definitions:
         type: string
       proposalId:
         type: integer
-      role:
-        $ref: '#/definitions/enums.AgentRole'
     type: object
   responses.ListAgentsResponse:
     properties:

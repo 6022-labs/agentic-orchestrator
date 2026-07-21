@@ -1,17 +1,5 @@
 basePath: /
 definitions:
-  enums.AgentRole:
-    enum:
-    - clone
-    - human
-    - expert
-    - facilitator
-    type: string
-    x-enum-varnames:
-    - AgentRoleClone
-    - AgentRoleHuman
-    - AgentRoleExpert
-    - AgentRoleFacilitator
   enums.BridgePlatform:
     enum:
     - slack
@@ -161,7 +149,7 @@ definitions:
       proposalId:
         type: integer
       role:
-        $ref: '#/definitions/enums.AgentRole'
+        type: string
     type: object
   responses.BlockchainConfigResponse:
     properties:

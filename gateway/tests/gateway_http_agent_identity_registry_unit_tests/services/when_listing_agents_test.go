@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/services"
@@ -53,7 +52,7 @@ func TestWhenListingAgents(t *testing.T) {
 					Agents: &[]clients.ResponsesAgentResponse{{
 						Id:                lo.ToPtr(agentId.String()),
 						Name:              lo.ToPtr("Ada"),
-						Role:              lo.ToPtr(clients.AgentRoleExpert),
+						Attributes:        lo.ToPtr(map[string]string{"role": "expert"}),
 						EnsDomain:         lo.ToPtr("ada.experts.80002.protocol6022.eth"),
 						CollectionAddress: lo.ToPtr("0xabc"),
 						CollectionTokenId: lo.ToPtr(7),
@@ -84,7 +83,7 @@ func TestWhenListingAgents(t *testing.T) {
 					agent := result.Agents[0]
 					assert.Equal(t, agentId, agent.ID)
 					assert.Equal(t, "Ada", agent.Name)
-					assert.Equal(t, enums.AgentRoleExpert, agent.Role)
+					assert.Equal(t, "expert", agent.Attributes["role"])
 					assert.Equal(t, "ada.experts.80002.protocol6022.eth", agent.EnsDomain)
 					assert.Equal(t, "0xabc", agent.CollectionAddress)
 					if assert.NotNil(t, agent.CollectionTokenId) {

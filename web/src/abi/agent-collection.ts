@@ -28,6 +28,33 @@ export const AgentCollectionABI = [
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "DuplicateKey",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "sender",
         "type": "address"
@@ -131,6 +158,33 @@ export const AgentCollectionABI = [
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      }
+    ],
+    "name": "EmptyAddressValue",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "InvalidAddressType",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "cloneOf",
         "type": "uint256"
@@ -148,6 +202,17 @@ export const AgentCollectionABI = [
       }
     ],
     "name": "InvalidCollectionName",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "InvalidEvmAddressValue",
     "type": "error"
   },
   {
@@ -169,6 +234,22 @@ export const AgentCollectionABI = [
   {
     "inputs": [],
     "name": "MissingDefaultImage",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MissingEvmAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "MissingRequiredKey",
     "type": "error"
   },
   {
@@ -211,6 +292,54 @@ export const AgentCollectionABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "name": "StringsInsufficientHexLength",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "UsedAgentAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -227,33 +356,6 @@ export const AgentCollectionABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "UsedWallet",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "WalletNotFound",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "string",
         "name": "parameter",
         "type": "string"
@@ -261,6 +363,56 @@ export const AgentCollectionABI = [
     ],
     "name": "ZeroAddress",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "AgentAddressRemoved",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -372,44 +524,6 @@ export const AgentCollectionABI = [
       }
     ],
     "name": "AgentImageUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "AgentWalletAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "AgentWalletRemoved",
     "type": "event"
   },
   {
@@ -704,12 +818,17 @@ export const AgentCollectionABI = [
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
       }
     ],
-    "name": "addAgentWallet",
+    "name": "addAgentAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -844,6 +963,85 @@ export const AgentCollectionABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "addressOfByIndex",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
+      }
+    ],
+    "name": "addressToTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "addressesCountOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -890,6 +1088,30 @@ export const AgentCollectionABI = [
         "internalType": "struct KeyValue",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "attributeOfByKey",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -985,18 +1207,25 @@ export const AgentCollectionABI = [
       },
       {
         "internalType": "string",
-        "name": "role",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
         "name": "name",
         "type": "string"
       },
       {
-        "internalType": "address[]",
-        "name": "wallets",
-        "type": "address[]"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress[]",
+        "name": "addresses",
+        "type": "tuple[]"
       },
       {
         "components": [
@@ -1240,19 +1469,9 @@ export const AgentCollectionABI = [
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          },
-          {
             "internalType": "address",
             "name": "creator",
             "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "wallets",
-            "type": "address[]"
           },
           {
             "components": [
@@ -1304,6 +1523,23 @@ export const AgentCollectionABI = [
             "internalType": "struct NullableUint256",
             "name": "cloneOf",
             "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "addressType",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "value",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AgentAddress[]",
+            "name": "addresses",
+            "type": "tuple[]"
           }
         ],
         "internalType": "struct AgentInformation",
@@ -1404,18 +1640,25 @@ export const AgentCollectionABI = [
       },
       {
         "internalType": "string",
-        "name": "role",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
         "name": "name",
         "type": "string"
       },
       {
-        "internalType": "address[]",
-        "name": "wallets",
-        "type": "address[]"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "addressType",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct AgentAddress[]",
+        "name": "addresses",
+        "type": "tuple[]"
       },
       {
         "components": [
@@ -1510,11 +1753,6 @@ export const AgentCollectionABI = [
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          },
-          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -1523,11 +1761,6 @@ export const AgentCollectionABI = [
             "internalType": "address",
             "name": "creator",
             "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "wallets",
-            "type": "address[]"
           },
           {
             "components": [
@@ -1579,6 +1812,23 @@ export const AgentCollectionABI = [
             "internalType": "struct NullableUint256",
             "name": "cloneOf",
             "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "addressType",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "value",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AgentAddress[]",
+            "name": "addresses",
+            "type": "tuple[]"
           }
         ],
         "internalType": "struct MintProposal",
@@ -1733,11 +1983,16 @@ export const AgentCollectionABI = [
       },
       {
         "internalType": "string",
-        "name": "key",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
         "type": "string"
       }
     ],
-    "name": "removeAgentImage",
+    "name": "removeAgentAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1750,12 +2005,12 @@ export const AgentCollectionABI = [
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
       }
     ],
-    "name": "removeAgentWallet",
+    "name": "removeAgentImage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1794,25 +2049,6 @@ export const AgentCollectionABI = [
     "name": "revokeRole",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "roleOf",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1982,68 +2218,6 @@ export const AgentCollectionABI = [
     "name": "updateDescription",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "walletOfByIndex",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "walletToTokenId",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "walletsCountOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ] as const
