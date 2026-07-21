@@ -25,9 +25,30 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewX402PaymentSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(
 		services.NewOrchestratorPrivateKeyFetcher,
 		dig.As(new(service_interfaces.OrchestratorPrivateKeyFetcherInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewX402PaymentPayloadSigner,
+		dig.As(new(service_interfaces.X402PaymentPayloadSignerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewX402PaymentChallengeCache,
+		dig.As(new(service_interfaces.X402PaymentChallengeCacheInterface)),
 	)
 	if err != nil {
 		panic(err)

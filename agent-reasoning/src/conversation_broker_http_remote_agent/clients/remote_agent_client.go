@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strings"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/errors"
@@ -20,10 +21,11 @@ const (
 	wellKnown6022Protocol = "6022"
 )
 
+// RemoteAgentClientInterface is pure transport
 type RemoteAgentClientInterface interface {
 	GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, error)
-	CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest) (*models.ExternalResponse, error)
-	CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest) (*models.ExternalChatCompletionResponse, error)
+	CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error)
+	CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error)
 }
 
 type RemoteAgentClient struct {
@@ -74,23 +76,41 @@ func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.Exte
 	return &card, nil
 }
 
-func (client *RemoteAgentClient) CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest) (*models.ExternalResponse, error) {
+func (client *RemoteAgentClient) CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error) {
 	var response models.ExternalResponse
-	if err := client.post(endpointUrl, ensDomain, request, &response); err != nil {
+	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
 	}
 	return &response, nil
 }
 
-func (client *RemoteAgentClient) CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest) (*models.ExternalChatCompletionResponse, error) {
+func (client *RemoteAgentClient) CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error) {
 	var response models.ExternalChatCompletionResponse
-	if err := client.post(endpointUrl, ensDomain, request, &response); err != nil {
+	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
 	}
 	return &response, nil
 }
 
-func (client *RemoteAgentClient) post(url, ensDomain string, requestBody, responseBody any) error {
+// setRequestHeaders maps every non-empty `header`-tagged field to its HTTP header.
+func (client *RemoteAgentClient) setRequestHeaders(httpRequest *http.Request, headers *models.ExternalRequestHeaders) {
+	if headers == nil {
+		return
+	}
+
+	value := reflect.ValueOf(*headers)
+	for i := range value.NumField() {
+		headerName := value.Type().Field(i).Tag.Get("header")
+		if headerName == "" {
+			continue
+		}
+		if headerValue, ok := value.Field(i).Interface().(string); ok && headerValue != "" {
+			httpRequest.Header.Set(headerName, headerValue)
+		}
+	}
+}
+
+func (client *RemoteAgentClient) post(url, ensDomain string, headers *models.ExternalRequestHeaders, requestBody, responseBody any) error {
 	payload, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
@@ -101,6 +121,7 @@ func (client *RemoteAgentClient) post(url, ensDomain string, requestBody, respon
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 	httpRequest.Header.Set("Content-Type", "application/json")
+	client.setRequestHeaders(httpRequest, headers)
 
 	httpResponse, err := client.httpClient.Do(httpRequest)
 	if err != nil {

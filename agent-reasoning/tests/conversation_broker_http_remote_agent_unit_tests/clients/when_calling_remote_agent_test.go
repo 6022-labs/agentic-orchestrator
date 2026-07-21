@@ -106,17 +106,19 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 
 		var capturedMethod string
 		var capturedBody []byte
+		var capturedSignatureHeader string
 
 		initSuite := func(suite *WhenCallingRemoteAgentTestingSuite) {
 			suite.handler = func(w http.ResponseWriter, r *http.Request) {
 				capturedMethod = r.Method
 				capturedBody, _ = io.ReadAll(r.Body)
+				capturedSignatureHeader = r.Header.Get("PAYMENT-SIGNATURE")
 				w.Header().Set("Content-Type", "application/json")
 				_, _ = w.Write([]byte(`{"id":"resp_1","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"hi"}]}]}`))
 			}
 		}
 
-		t.Run("Should POST the request and decode the response", func(t *testing.T) {
+		t.Run("Should POST the request without a payment header and decode the response", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenCallingRemoteAgentBeforeEach()
@@ -126,11 +128,12 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			response, err := suite.sut.CreateResponse(suite.server.URL+"/api/responses", "agent.eth", &models.ExternalCreateResponseRequest{
 				Instructions: "be nice",
 				Input:        []*models.ExternalResponseInputMessage{{Type: "message", Role: "user", Content: "hello"}},
-			})
+			}, nil)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.MethodPost, capturedMethod)
 			assert.Equal(t, "completed", response.Status)
+			assert.Empty(t, capturedSignatureHeader)
 
 			var decoded map[string]any
 			assert.NoError(t, json.Unmarshal(capturedBody, &decoded))
@@ -138,29 +141,60 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the node answers 402 with a PAYMENT-REQUIRED header", func(t *testing.T) {
+	t.Run("Given a payment signature is provided", func(t *testing.T) {
 		t.Parallel()
+
+		var capturedSignatureHeader string
 
 		initSuite := func(suite *WhenCallingRemoteAgentTestingSuite) {
 			suite.handler = func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set(clients.PaymentRequiredHeader, "base64payload")
-				w.WriteHeader(http.StatusPaymentRequired)
+				capturedSignatureHeader = r.Header.Get("PAYMENT-SIGNATURE")
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"id":"resp_1","status":"completed"}`))
 			}
 		}
 
-		t.Run("Should return a PaymentRequiredError carrying the header", func(t *testing.T) {
+		t.Run("Should send it as the PAYMENT-SIGNATURE header", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenCallingRemoteAgentBeforeEach()
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.CreateResponse(suite.server.URL, "agent.eth", &models.ExternalCreateResponseRequest{})
+			_, err := suite.sut.CreateResponse(suite.server.URL, "agent.eth", &models.ExternalCreateResponseRequest{}, &models.ExternalRequestHeaders{PaymentSignature: "signed-payload"})
+
+			assert.NoError(t, err)
+			assert.Equal(t, "signed-payload", capturedSignatureHeader)
+		})
+	})
+
+	t.Run("Given the node answers 402 with a PAYMENT-REQUIRED header", func(t *testing.T) {
+		t.Parallel()
+
+		var requestCount int
+
+		initSuite := func(suite *WhenCallingRemoteAgentTestingSuite) {
+			suite.handler = func(w http.ResponseWriter, r *http.Request) {
+				requestCount++
+				w.Header().Set(clients.PaymentRequiredHeader, "base64payload")
+				w.WriteHeader(http.StatusPaymentRequired)
+			}
+		}
+
+		t.Run("Should return a PaymentRequiredError carrying the header without retrying", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCallingRemoteAgentBeforeEach()
+			defer WhenCallingRemoteAgentAfterEach(suite)
+			initSuite(suite)
+
+			_, err := suite.sut.CreateResponse(suite.server.URL, "agent.eth", &models.ExternalCreateResponseRequest{}, nil)
 
 			var paymentRequired *cb_errors.PaymentRequiredError
 			assert.ErrorAs(t, err, &paymentRequired)
 			assert.Equal(t, "agent.eth", paymentRequired.EnsDomain)
 			assert.Equal(t, "base64payload", paymentRequired.PaymentRequirements)
+			assert.Equal(t, 1, requestCount)
 		})
 	})
 
@@ -180,7 +214,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.CreateResponse(suite.server.URL, "agent.eth", &models.ExternalCreateResponseRequest{})
+			_, err := suite.sut.CreateResponse(suite.server.URL, "agent.eth", &models.ExternalCreateResponseRequest{}, nil)
 
 			assert.Error(t, err)
 			var paymentRequired *cb_errors.PaymentRequiredError
@@ -204,7 +238,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			response, err := suite.sut.CreateChatCompletion(suite.server.URL, "agent.eth", &models.ExternalChatCompletionRequest{})
+			response, err := suite.sut.CreateChatCompletion(suite.server.URL, "agent.eth", &models.ExternalChatCompletionRequest{}, nil)
 
 			assert.NoError(t, err)
 			assert.Len(t, response.Choices, 1)
