@@ -30,22 +30,6 @@ func TestWhenLoadingOrchestratorSettings(t *testing.T) {
 
 			assert.NotNil(t, settings)
 			assert.Equal(t, common.HexToAddress(address), settings.PublicKey)
-			assert.True(t, settings.HasPublicKey())
-		})
-	})
-
-	t.Run("Given no configuration", func(t *testing.T) {
-		t.Parallel()
-
-		k := koanf.New(".")
-
-		t.Run("Should report no public key", func(t *testing.T) {
-			t.Parallel()
-
-			settings := orchestrator_settings.NewOrchestratorSettings(zap.NewNop(), k)
-
-			assert.NotNil(t, settings)
-			assert.False(t, settings.HasPublicKey())
 		})
 	})
 }

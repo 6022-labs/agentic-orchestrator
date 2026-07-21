@@ -9,7 +9,7 @@ import (
 
 const VaultSettingsKey = "vault"
 
-// VaultSettings stays lenient when unset: Vault is only reached once a feature needs a secret.
+// VaultSettings configures the mandatory credential store backing the orchestrator wallet key.
 type VaultSettings struct {
 	Token         string `koanf:"token"`
 	Address       string `koanf:"address"`
@@ -28,6 +28,12 @@ func NewVaultSettings(logger *zap.Logger, k *koanf.Koanf) *VaultSettings {
 	settings.Token = strings.TrimSpace(settings.Token)
 	settings.KvV1MountPath = strings.TrimSpace(settings.KvV1MountPath)
 
+	if len(settings.Address) == 0 {
+		logger.Fatal("please set your vault.address value in your configuration")
+	}
+	if len(settings.Token) == 0 {
+		logger.Fatal("please set your vault.token value in your configuration")
+	}
 	if len(settings.KvV1MountPath) == 0 {
 		settings.KvV1MountPath = "secret"
 	}

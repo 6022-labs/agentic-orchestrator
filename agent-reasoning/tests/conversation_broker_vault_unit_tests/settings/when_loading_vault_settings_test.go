@@ -35,19 +35,20 @@ func TestWhenLoadingVaultSettings(t *testing.T) {
 		})
 	})
 
-	t.Run("Given no configuration", func(t *testing.T) {
+	t.Run("Given no mount path", func(t *testing.T) {
 		t.Parallel()
 
 		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"vault.address": "http://127.0.0.1:8200",
+			"vault.token":   "token",
+		}, "."), nil)
 
-		t.Run("Should stay lenient with the default mount path", func(t *testing.T) {
+		t.Run("Should default it to secret", func(t *testing.T) {
 			t.Parallel()
 
 			settings := vault_settings.NewVaultSettings(zap.NewNop(), k)
 
-			assert.NotNil(t, settings)
-			assert.Empty(t, settings.Address)
-			assert.Empty(t, settings.Token)
 			assert.Equal(t, "secret", settings.KvV1MountPath)
 		})
 	})
