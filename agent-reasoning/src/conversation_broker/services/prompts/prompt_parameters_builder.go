@@ -24,15 +24,6 @@ func NewPromptParametersBuilder(agentRegistryRequester interfaces.AgentRegistryR
 	}
 }
 
-func (b *PromptParametersBuilder) WithBase(base map[string]any) *PromptParametersBuilder {
-	out := make(map[string]any, len(base))
-	for k, v := range base {
-		out[k] = v
-	}
-	b.params = out
-	return b
-}
-
 func (b *PromptParametersBuilder) WithParam(path []string, value any, parameterType *PromptParameterType) *PromptParametersBuilder {
 	if len(path) == 0 {
 		return b
