@@ -164,14 +164,14 @@ func (b *ConversationPromptBuilder) buildParameters(
 	latestMessage := messages[len(messages)-1]
 
 	return NewPromptParametersBuilder(b.agentRegistryRequester).
-		WithParam([]string{"ChannelMembers"}, channelMembers, PromptParameterTypePotentialAgentArray.ToPointer()).
+		WithParam([]string{"ChannelMembers"}, channelMembers, lo.ToPtr(PromptParameterTypePotentialAgentArray)).
 		WithParam([]string{"ChannelDescription"}, description, nil).
 		WithParam([]string{"ConversationId"}, conversation.ID.String(), nil).
 		WithParam([]string{"ConversationMessageCount"}, messageCount, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialMessage.Content, nil).
 		WithParam([]string{"LatestRequest", "Content"}, latestMessage.Content, nil).
-		WithParam([]string{"InitialRequest", "Author"}, b.authorName(initialMessage, participantsById), PromptParameterTypePotentialAgent.ToPointer()).
-		WithParam([]string{"LatestRequest", "Author"}, b.authorName(latestMessage, participantsById), PromptParameterTypePotentialAgent.ToPointer()).
+		WithParam([]string{"InitialRequest", "Author"}, b.authorName(initialMessage, participantsById), lo.ToPtr(PromptParameterTypePotentialAgent)).
+		WithParam([]string{"LatestRequest", "Author"}, b.authorName(latestMessage, participantsById), lo.ToPtr(PromptParameterTypePotentialAgent)).
 		Build()
 }
 

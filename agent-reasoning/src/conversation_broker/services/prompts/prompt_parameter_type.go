@@ -18,10 +18,6 @@ func (t PromptParameterType) String() string {
 	return string(t)
 }
 
-func (t PromptParameterType) ToPointer() *PromptParameterType {
-	return &t
-}
-
 func PromptParameterTypeFromString(s string) (PromptParameterType, error) {
 	switch strings.ToLower(strings.TrimSpace(s)) {
 	case "agent":

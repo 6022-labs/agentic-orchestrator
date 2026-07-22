@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -92,8 +93,8 @@ func TestWhenSearchingAgents(t *testing.T) {
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				ElementsPerPage: ptrUint(2),
-				Page:            ptrUint(1),
+				ElementsPerPage: lo.ToPtr(uint(2)),
+				Page:            lo.ToPtr(uint(1)),
 			}
 			agents, err := suite.sut.Search(params)
 
@@ -112,8 +113,8 @@ func TestWhenSearchingAgents(t *testing.T) {
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
-				ElementsPerPage: ptrUint(2),
-				Page:            ptrUint(2),
+				ElementsPerPage: lo.ToPtr(uint(2)),
+				Page:            lo.ToPtr(uint(2)),
 			}
 			agents, err := suite.sut.Search(params)
 
@@ -122,6 +123,3 @@ func TestWhenSearchingAgents(t *testing.T) {
 		})
 	})
 }
-
-func ptrBool(b bool) *bool { return &b }
-func ptrUint(i uint) *uint { return &i }
