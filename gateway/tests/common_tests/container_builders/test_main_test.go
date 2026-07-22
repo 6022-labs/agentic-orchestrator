@@ -14,6 +14,5 @@ func TestMain(m *testing.M) {
 	stopPostgres()
 	stopRedis()
 	stopSQLServer()
-	stopVault()
 	os.Exit(code)
 }

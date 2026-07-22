@@ -7,10 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	AgentPrivateKeyVaultPathTemplate = "agent/%s/private_key"
-)
-
 // Agent holds the schema definition for the Agent entity.
 type Agent struct {
 	ID uuid.UUID `gorm:"type:uuid;not null" json:"id"`
