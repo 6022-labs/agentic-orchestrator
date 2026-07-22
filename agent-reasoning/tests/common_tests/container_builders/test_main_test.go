@@ -11,7 +11,6 @@ import (
 func TestMain(m *testing.M) {
 	code := m.Run()
 	stopPostgres()
-	stopVault()
 	stopRedis()
 	os.Exit(code)
 }

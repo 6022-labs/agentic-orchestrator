@@ -85,10 +85,7 @@ services:
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
       - REDIS__PASSWORD=
-      - ORCHESTRATOR__PUBLIC_KEY=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-      - VAULT__ADDRESS=http://vault:8200
-      - VAULT__TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT__KV_V1_MOUNT_PATH=secret
+      - WALLET__PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
     networks:
       orchestrator-network:
     depends_on:
@@ -97,8 +94,6 @@ services:
       redis:
         condition: service_started
       registry-host:
-        condition: service_started
-      vault:
         condition: service_started
 
   slack-bridge-internal-host:
@@ -223,26 +218,6 @@ services:
     networks:
       orchestrator-network:
 
-  vault:
-    image: hashicorp/vault:1.21
-    container_name: vault
-    ports:
-      - "8200:8200"
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "wBGKZCJjfIGqIKB3HMmvcQVt"
-    volumes:
-      - vault-data:/vault/file
-    networks:
-      orchestrator-network:
-    command: >
-      /bin/sh -c "
-      vault server -dev -dev-listen-address=0.0.0.0:8200 -dev-root-token-id=wBGKZCJjfIGqIKB3HMmvcQVt &
-      sleep 5 &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets disable secret &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets enable -version=1 -path=secret kv &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault kv put secret/orchestrator/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266/private_key value=ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 &&
-      wait"
-
   evm-node:
     image: ghcr.io/foundry-rs/foundry:v1.5.0
     container_name: evm-node
@@ -264,4 +239,3 @@ networks:
 volumes:
   db-data:
   evm-node-data:
-  vault-data:

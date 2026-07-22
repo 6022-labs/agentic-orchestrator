@@ -11,20 +11,16 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
-	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-reasoning/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
 type WhenSigningX402PaymentPayloadTestingSuite struct {
 	sut           *services.X402PaymentPayloadSigner
 	walletAddress common.Address
-
-	orchestratorPrivateKeyFetcher *interfaces_mocks.MockOrchestratorPrivateKeyFetcherInterface
 }
 
 func WhenSigningX402PaymentPayloadBeforeEach(t *testing.T) *WhenSigningX402PaymentPayloadTestingSuite {
@@ -32,23 +28,14 @@ func WhenSigningX402PaymentPayloadBeforeEach(t *testing.T) *WhenSigningX402Payme
 	require.NoError(t, err)
 	walletAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
 
-	orchestratorPrivateKeyFetcher := interfaces_mocks.NewMockOrchestratorPrivateKeyFetcherInterface(gomock.NewController(t))
-
 	return &WhenSigningX402PaymentPayloadTestingSuite{
 		sut: services.NewX402PaymentPayloadSigner(
 			zap.NewNop(),
-			orchestratorPrivateKeyFetcher,
-			&settings.OrchestratorSettings{PublicKey: walletAddress},
+			&settings.WalletSettings{PrivateKey: signerTestPrivateKey, Address: walletAddress},
 			&settings.X402PaymentSettings{SignatureLifetimeSeconds: 300, ClockDriftToleranceSeconds: 60},
 		),
-		walletAddress:                 walletAddress,
-		orchestratorPrivateKeyFetcher: orchestratorPrivateKeyFetcher,
+		walletAddress: walletAddress,
 	}
-}
-
-func (suite *WhenSigningX402PaymentPayloadTestingSuite) expectPrivateKeyFetch(times int) {
-	privateKey := signerTestPrivateKey
-	suite.orchestratorPrivateKeyFetcher.EXPECT().FetchPrivateKey().Return(&privateKey, nil).Times(times)
 }
 
 func TestWhenSigningX402PaymentPayload(t *testing.T) {
@@ -66,7 +53,6 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(1)
 
 			payload, err := suite.sut.Sign(paymentChallenge, "0")
 
@@ -109,7 +95,6 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(1)
 
 			payload, err := suite.sut.Sign(paymentChallenge, "0")
 
@@ -146,7 +131,6 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(1)
 
 			payload, err := suite.sut.Sign(paymentChallenge, "0")
 
@@ -173,7 +157,6 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(1)
 
 			_, err := suite.sut.Sign(paymentChallenge, "0")
 
@@ -189,72 +172,10 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			Accepts:     []models.X402PaymentOption{eip3009Option()},
 		}
 
-		t.Run("Should return an error without fetching the key", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			_, err := suite.sut.Sign(paymentChallenge, "0")
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given two consecutive signatures", func(t *testing.T) {
-		t.Parallel()
-
-		paymentChallenge := &models.X402PaymentChallenge{
-			X402Version: models.X402Version,
-			Accepts:     []models.X402PaymentOption{eip3009Option()},
-		}
-
-		t.Run("Should fetch the private key on every call", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(2)
-
-			_, err := suite.sut.Sign(paymentChallenge, "0")
-			require.NoError(t, err)
-			_, err = suite.sut.Sign(paymentChallenge, "0")
-			require.NoError(t, err)
-		})
-	})
-
-	t.Run("Given the credential store fails", func(t *testing.T) {
-		t.Parallel()
-
-		paymentChallenge := &models.X402PaymentChallenge{
-			X402Version: models.X402Version,
-			Accepts:     []models.X402PaymentOption{eip3009Option()},
-		}
-
-		t.Run("Should return the error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.orchestratorPrivateKeyFetcher.EXPECT().FetchPrivateKey().Return(nil, assert.AnError)
-
-			_, err := suite.sut.Sign(paymentChallenge, "0")
-
-			assert.ErrorIs(t, err, assert.AnError)
-		})
-	})
-
-	t.Run("Given the fetched key does not match the configured public key", func(t *testing.T) {
-		t.Parallel()
-
-		paymentChallenge := &models.X402PaymentChallenge{
-			X402Version: models.X402Version,
-			Accepts:     []models.X402PaymentOption{eip3009Option()},
-		}
-
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			otherKey := "59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-			suite.orchestratorPrivateKeyFetcher.EXPECT().FetchPrivateKey().Return(&otherKey, nil)
-
 			_, err := suite.sut.Sign(paymentChallenge, "0")
 
 			assert.Error(t, err)
@@ -273,7 +194,6 @@ func TestWhenSigningX402PaymentPayload(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSigningX402PaymentPayloadBeforeEach(t)
-			suite.expectPrivateKeyFetch(1)
 
 			payload, err := suite.sut.Sign(paymentChallenge, "1000")
 

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-reasoning/src/conversation_broker/settings"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -20,25 +19,22 @@ import (
 	"go.uber.org/zap"
 )
 
-// X402PaymentPayloadSigner EIP-712-signs x402 authorizations; the wallet key is fetched per call, never retained.
+// X402PaymentPayloadSigner EIP-712-signs x402 authorizations with the configured wallet key.
 type X402PaymentPayloadSigner struct {
-	logger                        *zap.Logger
-	orchestratorPrivateKeyFetcher interfaces.OrchestratorPrivateKeyFetcherInterface
-	orchestratorSettings          *settings.OrchestratorSettings
-	x402PaymentSettings           *settings.X402PaymentSettings
+	logger              *zap.Logger
+	walletSettings      *settings.WalletSettings
+	x402PaymentSettings *settings.X402PaymentSettings
 }
 
 func NewX402PaymentPayloadSigner(
 	logger *zap.Logger,
-	orchestratorPrivateKeyFetcher interfaces.OrchestratorPrivateKeyFetcherInterface,
-	orchestratorSettings *settings.OrchestratorSettings,
+	walletSettings *settings.WalletSettings,
 	x402PaymentSettings *settings.X402PaymentSettings,
 ) *X402PaymentPayloadSigner {
 	return &X402PaymentPayloadSigner{
-		logger:                        logger,
-		orchestratorPrivateKeyFetcher: orchestratorPrivateKeyFetcher,
-		orchestratorSettings:          orchestratorSettings,
-		x402PaymentSettings:           x402PaymentSettings,
+		logger:              logger,
+		walletSettings:      walletSettings,
+		x402PaymentSettings: x402PaymentSettings,
 	}
 }
 
@@ -85,20 +81,10 @@ func (signer *X402PaymentPayloadSigner) Sign(paymentChallenge *models.X402Paymen
 	return nil, errors.New("no supported payment option in accepts")
 }
 
-// fetchPrivateKey reads the key per call and rejects one that does not match the configured address.
 func (signer *X402PaymentPayloadSigner) fetchPrivateKey() (*ecdsa.PrivateKey, error) {
-	fetchedKey, err := signer.orchestratorPrivateKeyFetcher.FetchPrivateKey()
+	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(signer.walletSettings.PrivateKey, "0x"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch orchestrator private key: %w", err)
-	}
-
-	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(strings.TrimSpace(*fetchedKey), "0x"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid orchestrator private key: %w", err)
-	}
-
-	if crypto.PubkeyToAddress(privateKey.PublicKey) != signer.orchestratorSettings.PublicKey {
-		return nil, errors.New("orchestrator private key does not match the configured public key")
+		return nil, fmt.Errorf("invalid private key: %w", err)
 	}
 
 	return privateKey, nil

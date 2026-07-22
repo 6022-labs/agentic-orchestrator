@@ -20,20 +20,12 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewOrchestratorSettings)
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(settings.NewX402PaymentSettings)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(
-		services.NewOrchestratorPrivateKeyFetcher,
-		dig.As(new(service_interfaces.OrchestratorPrivateKeyFetcherInterface)),
-	)
+	err = container.Provide(settings.NewWalletSettings)
 	if err != nil {
 		panic(err)
 	}
