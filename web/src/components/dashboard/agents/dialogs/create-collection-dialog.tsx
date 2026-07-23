@@ -89,7 +89,7 @@ export default function CreateCollectionDialog({ onCreated }: Props) {
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <Plus />
-          New
+          New collection
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
