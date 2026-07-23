@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "AgentIdentity-RegistrySynchronizer"
+const appName = "6022-AgentIdentity-RegistrySynchronizer"
 
 // @title Agent Identity Registry API
 // @version 1.0

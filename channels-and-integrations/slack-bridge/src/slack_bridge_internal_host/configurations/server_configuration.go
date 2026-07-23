@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "SlackBridge-Internal"
+const appName = "6022-SlackBridge-Internal"
 
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)

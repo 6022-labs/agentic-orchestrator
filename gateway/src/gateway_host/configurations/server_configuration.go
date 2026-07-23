@@ -17,7 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "Gateway"
+const appName = "6022-Orchestrator-Gateway"
 
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)

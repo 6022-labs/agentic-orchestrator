@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "AgentIdentity-Registry"
+const appName = "6022-AgentIdentity-Registry"
 
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
