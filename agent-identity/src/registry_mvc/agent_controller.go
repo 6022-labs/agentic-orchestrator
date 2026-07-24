@@ -95,8 +95,6 @@ func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
-// IsInternalAgent godoc
-// @Summary      Check if agent is internal
 // GetMintedAgentByEnsDomain godoc
 // @Summary      Get agent by ENS domain
 // @Description  Retrieves a minted agent by its ENS domain name

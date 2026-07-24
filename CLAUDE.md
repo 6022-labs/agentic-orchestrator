@@ -6,9 +6,9 @@ The orchestrator: a single git repo and `go.work` multi-module workspace. These 
 | Module | Purpose |
 |---|---|
 | `agent-identity` | Identity domain (on-chain agent identity / NFT / ENS) |
-| `agent-reasoning` | Reasoning domain (LLM / MCP / inference) |
-| `agent-knowledge` | Knowledge domain (conversation transcripts / message store) |
+| `agent-reasoning` | Swarm domain (conversation broker, ENS discovery, remote-agent invocation) |
 | `gateway` | Auth + config gateway |
+| `channels-and-integrations/slack-bridge` | Slack channel bridge |
 
 A 6022-labs Go service — follow the canonical rules below, which are identical across all 6022-labs Go repos. This file is **self-contained**: it depends on no external plugin, skill, or shared file.
 

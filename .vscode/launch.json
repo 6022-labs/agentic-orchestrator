@@ -32,11 +32,11 @@
       "args": []
     },
     {
-      "name": "Agent Reasoning - Agent Compute Host",
+      "name": "Agent Reasoning - Conversation Broker Host",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/agent-reasoning/src/agent_compute_host",
+      "program": "${workspaceFolder}/agent-reasoning/src/conversation_broker_host",
       "env": {},
       "args": []
     },
@@ -55,15 +55,6 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/agent-identity/src/registry_synchronizer_host",
-      "env": {},
-      "args": []
-    },
-    {
-      "name": "Agent Knowledge - Database Connector Host",
-      "type": "go",
-      "request": "launch",
-      "mode": "auto",
-      "program": "${workspaceFolder}/agent-knowledge/src/database_connector_host",
       "env": {},
       "args": []
     }
