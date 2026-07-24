@@ -80,13 +80,14 @@ export default function AgentDetailSection() {
               <Button
                 variant="ghost"
                 size="icon"
+                className="size-6"
                 title="Open agent node"
                 aria-label="Open agent node"
                 onClick={() =>
                   openAgentNode(collectionAddress, collectionTokenId)
                 }
               >
-                <ExternalLink />
+                <ExternalLink className="size-3.5" />
               </Button>
             ) : null}
             <TransferAgentDialog

@@ -63,9 +63,16 @@ export default function TransferAgentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          <ArrowRightLeft />
-          Transfer
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-6"
+          title="Transfer agent"
+          aria-label="Transfer agent"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <ArrowRightLeft className="size-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent>

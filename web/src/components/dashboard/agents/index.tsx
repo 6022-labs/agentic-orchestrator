@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import EmptyState from "@/components/dashboard/empty-state"
 import CreateCollectionDialog from "@/components/dashboard/agents/dialogs/create-collection-dialog"
+import TransferAgentDialog from "@/components/dashboard/agents/dialogs/transfer-agent-dialog"
 import AgentAvatar from "@/components/dashboard/agents/agent-avatar"
 import { extractErrorMessage } from "@/lib/api-errors"
 import { truncateEthAddress } from "@/lib/utils"
@@ -108,7 +109,7 @@ export default function AgentsSection() {
                 <TableHead>Role</TableHead>
                 <TableHead>Owner</TableHead>
                 <TableHead>Collection</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -139,24 +140,34 @@ export default function AgentsSection() {
                     {collectionName(agent.collectionAddress)}
                   </TableCell>
                   <TableCell>
-                    {agent.ensDomain && agent.collectionTokenId != null && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-6"
-                        title="Open agent node"
-                        aria-label="Open agent node"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          openAgentNode(
-                            agent.collectionAddress,
-                            String(agent.collectionTokenId)
-                          )
-                        }}
-                      >
-                        <ExternalLink className="size-3.5" />
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {agent.ensDomain && agent.collectionTokenId != null && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          title="Open agent node"
+                          aria-label="Open agent node"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            openAgentNode(
+                              agent.collectionAddress,
+                              String(agent.collectionTokenId)
+                            )
+                          }}
+                        >
+                          <ExternalLink className="size-3.5" />
+                        </Button>
+                      )}
+                      {agent.collectionTokenId != null && (
+                        <TransferAgentDialog
+                          collectionAddress={agent.collectionAddress}
+                          collectionTokenId={String(agent.collectionTokenId)}
+                          agentName={agent.name}
+                          onTransferred={() => void load()}
+                        />
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
