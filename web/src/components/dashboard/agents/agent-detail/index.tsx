@@ -4,11 +4,10 @@ import { Link, useParams } from "react-router-dom"
 import { ArrowLeft, Bot, ExternalLink } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import EmptyState from "@/components/dashboard/empty-state"
-import AgentAvatar from "@/components/dashboard/agents/agent-avatar"
 import AgentCardPanel from "@/components/dashboard/agents/agent-detail/agent-card-panel"
 import PromptTemplatesPanel from "@/components/dashboard/agents/agent-detail/prompt-templates-panel"
 import TransferAgentDialog from "@/components/dashboard/agents/dialogs/transfer-agent-dialog"
@@ -16,15 +15,48 @@ import { canManageAgent } from "@/lib/agent-access"
 import { openAgentNode } from "@/lib/agent-node"
 import { extractErrorMessage } from "@/lib/api-errors"
 import { useWallet } from "@/contexts/wallet-provider-context"
-import { truncateEthAddress } from "@/lib/utils"
+import { ipfsImageUrl } from "@/lib/ipfs"
+import { chainIdFromEnsDomain } from "@/lib/ens-label"
+import {
+  getEnsAppUrl,
+  getOpenSeaUrl,
+  getRaribleUrl,
+  getScannerAddressUrl,
+} from "@/configs/networks"
 import type { Agent } from "@/models/agent"
 import { getAgent } from "@/queries/api/agents.queries"
 
-function AgentField({ label, value }: { label: string; value?: string }) {
+function Row({
+  label,
+  value,
+  mono,
+  href,
+}: {
+  label: string
+  value: string
+  mono?: boolean
+  href?: string | null
+}) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="truncate text-sm font-medium">{value || "—"}</span>
+    <div className="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 px-4 py-3.5 sm:grid-cols-[9rem_1fr]">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="min-w-0">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className={`flex items-center gap-1 text-sm hover:underline ${mono ? "font-mono" : ""}`}
+          >
+            <span className="truncate">{value}</span>
+            <ExternalLink className="size-3.5 shrink-0" />
+          </a>
+        ) : (
+          <span className={`block truncate text-sm ${mono ? "font-mono" : ""}`}>
+            {value}
+          </span>
+        )}
+      </dd>
     </div>
   )
 }
@@ -68,6 +100,20 @@ export default function AgentDetailSection() {
     )
   }
 
+  const chainId = agent ? chainIdFromEnsDomain(agent.ensDomain) : ""
+  const imageUrl = agent
+    ? ipfsImageUrl(
+        agent.images?.default ?? Object.values(agent.images ?? {})[0]
+      )
+    : null
+  const tokenId = agent?.collectionTokenId ?? null
+  const openSeaUrl = agent
+    ? getOpenSeaUrl(chainId, agent.collectionAddress, tokenId)
+    : null
+  const raribleUrl = agent
+    ? getRaribleUrl(chainId, agent.collectionAddress, tokenId)
+    : null
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -105,11 +151,15 @@ export default function AgentDetailSection() {
 
       {loading ? (
         <Card>
-          <CardContent className="flex items-center gap-4">
-            <Skeleton className="size-16 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-64" />
+          <CardContent className="flex flex-col gap-6 sm:flex-row">
+            <Skeleton className="aspect-square w-full shrink-0 rounded-lg sm:w-64" />
+            <div className="flex flex-1 flex-col justify-center gap-4">
+              <Skeleton className="h-8 w-48" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -123,40 +173,109 @@ export default function AgentDetailSection() {
         <>
           <Card>
             <CardContent className="flex flex-col gap-6">
-              <div className="flex items-center gap-4">
-                <AgentAvatar agent={agent} className="size-16" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="truncate text-xl font-semibold">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
+                {imageUrl || openSeaUrl || raribleUrl ? (
+                  <div className="flex w-full shrink-0 flex-col gap-2 sm:w-64">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={agent.name}
+                        className="w-full rounded-lg border"
+                      />
+                    ) : (
+                      <div className="flex aspect-square w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                        <Bot className="size-1/3" />
+                      </div>
+                    )}
+                    {openSeaUrl || raribleUrl ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {openSeaUrl ? (
+                          <a
+                            href={openSeaUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={buttonVariants({
+                              variant: "outline",
+                              size: "sm",
+                              className: "w-full",
+                            })}
+                          >
+                            OpenSea
+                            <ExternalLink />
+                          </a>
+                        ) : null}
+                        {raribleUrl ? (
+                          <a
+                            href={raribleUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={buttonVariants({
+                              variant: "outline",
+                              size: "sm",
+                              className: "w-full",
+                            })}
+                          >
+                            Rarible
+                            <ExternalLink />
+                          </a>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div className="flex flex-1 flex-col justify-center gap-6">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                       {agent.name}
                     </h2>
-                    <Badge variant="secondary">
-                      {agent.attributes["role"]}
-                    </Badge>
+                    {agent.attributes?.["role"] ? (
+                      <Badge variant="secondary" className="capitalize">
+                        {agent.attributes["role"]}
+                      </Badge>
+                    ) : null}
                   </div>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {agent.ensDomain || "No ENS domain"}
-                  </p>
+                  <dl className="divide-y rounded-lg border">
+                    <Row
+                      label="Collection"
+                      value={agent.collectionAddress}
+                      mono
+                      href={getScannerAddressUrl(
+                        chainId,
+                        agent.collectionAddress
+                      )}
+                    />
+                    <Row
+                      label="Token id"
+                      value={tokenId != null ? `#${tokenId}` : "—"}
+                    />
+                    {agent.addresses?.["evm"] ? (
+                      <Row
+                        label="Agent wallet"
+                        value={agent.addresses["evm"]}
+                        mono
+                        href={getScannerAddressUrl(
+                          chainId,
+                          agent.addresses["evm"]
+                        )}
+                      />
+                    ) : null}
+                    {agent.owner ? (
+                      <Row
+                        label="Owner"
+                        value={agent.owner}
+                        mono
+                        href={getScannerAddressUrl(chainId, agent.owner)}
+                      />
+                    ) : null}
+                    {agent.ensDomain ? (
+                      <Row
+                        label="ENS domain"
+                        value={agent.ensDomain}
+                        href={getEnsAppUrl(chainId, agent.ensDomain)}
+                      />
+                    ) : null}
+                  </dl>
                 </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <AgentField
-                  label="Owner"
-                  value={truncateEthAddress(agent.owner)}
-                />
-                <AgentField
-                  label="Wallet"
-                  value={truncateEthAddress(agent.addresses?.["evm"])}
-                />
-                <AgentField
-                  label="Collection"
-                  value={truncateEthAddress(agent.collectionAddress)}
-                />
-                <AgentField
-                  label="Token ID"
-                  value={agent.collectionTokenId?.toString()}
-                />
               </div>
 
               {Object.keys(agent.attributes ?? {}).length > 0 ? (

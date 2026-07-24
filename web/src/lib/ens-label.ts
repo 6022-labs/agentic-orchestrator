@@ -13,6 +13,12 @@ export function isValidEnsLabel(value: string): boolean {
   return /^[a-z0-9-]+$/.test(value)
 }
 
+// chainIdFromEnsDomain extracts the chain id from an agent ENS domain, which is
+// built as <agent>.<collection>.<chainId>.6022.<ext>; "" when it doesn't match.
+export function chainIdFromEnsDomain(ensDomain: string): string {
+  return /(?:^|\.)(\d+)\.6022\./.exec(ensDomain)?.[1] ?? ""
+}
+
 export const ensLabelSchema = z
   .string()
   .refine(
