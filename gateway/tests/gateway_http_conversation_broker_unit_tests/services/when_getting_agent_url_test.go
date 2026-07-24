@@ -36,7 +36,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
 				JSON200: &clients.ResponsesAgentUrlResponse{
 					Url: lo.ToPtr("https://ada.example"),
@@ -50,7 +50,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentUrl("ada.experts.80002.protocol6022.eth")
+			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -63,7 +63,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
 				Body:         []byte("boom"),
 			}, nil).Times(1)
@@ -75,7 +75,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentUrl("ada.experts.80002.protocol6022.eth")
+			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

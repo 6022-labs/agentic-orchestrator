@@ -36,13 +36,13 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
 				JSON200: &clients.ResponsesRemoteAgentCardResponse{
 					Protocol:        lo.ToPtr("6022"),
 					ProtocolVersion: lo.ToPtr("1"),
 					Name:            lo.ToPtr("Ada"),
-					EnsDomain:       lo.ToPtr("ada.experts.80002.protocol6022.eth"),
+					EnsDomain:       lo.ToPtr("ada.experts.80002.6022.eth"),
 					Endpoints: &clients.ResponsesRemoteAgentCardEndpointsResponse{
 						Responses: lo.ToPtr("https://ada.example/responses"),
 					},
@@ -57,7 +57,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			suite := WhenGettingAgentCardBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentCard("ada.experts.80002.protocol6022.eth")
+			result, err := suite.sut.GetAgentCard("ada.experts.80002.6022.eth")
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -73,7 +73,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
 				Body:         []byte("boom"),
 			}, nil).Times(1)
@@ -85,7 +85,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			suite := WhenGettingAgentCardBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentCard("ada.experts.80002.protocol6022.eth")
+			result, err := suite.sut.GetAgentCard("ada.experts.80002.6022.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

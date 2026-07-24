@@ -204,7 +204,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			ID:                uuid.New(),
 			Name:              "Ada",
 			Role:              "expert",
-			EnsDomain:         "ada.experts.80002.protocol6022.eth",
+			EnsDomain:         "ada.experts.80002.6022.eth",
 			CollectionAddress: "0xabc",
 			CollectionTokenId: lo.ToPtr(uint64(1)),
 		}

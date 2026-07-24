@@ -130,7 +130,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 					Times(1),
 			)
 
-			url, err := suite.sut.ResolveUrl("agent.collection.80002.protocol6022.eth")
+			url, err := suite.sut.ResolveUrl("agent.collection.80002.6022.eth")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)

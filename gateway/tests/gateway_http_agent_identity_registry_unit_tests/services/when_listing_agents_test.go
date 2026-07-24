@@ -53,7 +53,7 @@ func TestWhenListingAgents(t *testing.T) {
 						Id:                lo.ToPtr(agentId.String()),
 						Name:              lo.ToPtr("Ada"),
 						Attributes:        lo.ToPtr(map[string]string{"role": "expert"}),
-						EnsDomain:         lo.ToPtr("ada.experts.80002.protocol6022.eth"),
+						EnsDomain:         lo.ToPtr("ada.experts.80002.6022.eth"),
 						CollectionAddress: lo.ToPtr("0xabc"),
 						CollectionTokenId: lo.ToPtr(7),
 					}},
@@ -84,7 +84,7 @@ func TestWhenListingAgents(t *testing.T) {
 					assert.Equal(t, agentId, agent.ID)
 					assert.Equal(t, "Ada", agent.Name)
 					assert.Equal(t, "expert", agent.Attributes["role"])
-					assert.Equal(t, "ada.experts.80002.protocol6022.eth", agent.EnsDomain)
+					assert.Equal(t, "ada.experts.80002.6022.eth", agent.EnsDomain)
 					assert.Equal(t, "0xabc", agent.CollectionAddress)
 					if assert.NotNil(t, agent.CollectionTokenId) {
 						assert.Equal(t, uint64(7), *agent.CollectionTokenId)

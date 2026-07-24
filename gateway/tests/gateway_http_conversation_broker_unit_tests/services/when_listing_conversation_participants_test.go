@@ -47,7 +47,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 					Role:              lo.ToPtr(clients.EnumsParticipantRole("expert")),
 					CollectionAddress: lo.ToPtr("0xabc"),
 					CollectionTokenId: lo.ToPtr(7),
-					EnsDomain:         lo.ToPtr("ada.experts.80002.protocol6022.eth"),
+					EnsDomain:         lo.ToPtr("ada.experts.80002.6022.eth"),
 				}},
 			}, nil).Times(1)
 

@@ -118,10 +118,10 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent("0xabc", uint64(1)).
-				Return(&responses.AgentResponse{EnsDomain: "ada.experts.80002.protocol6022.eth"}, nil).
+				Return(&responses.AgentResponse{EnsDomain: "ada.experts.80002.6022.eth"}, nil).
 				Times(1)
 			suite.mockConversationBrokerRequester.EXPECT().
-				GetAgentUrl("ada.experts.80002.protocol6022.eth").
+				GetAgentUrl("ada.experts.80002.6022.eth").
 				Return(&responses.AgentUrlResponse{Url: "https://ada.example"}, nil).
 				Times(1)
 		}
