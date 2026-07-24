@@ -6,6 +6,8 @@ import (
 )
 
 type AgentSearchParams struct {
+	// IsMinted filters on mint state: true = minted only, false = proposals only, nil = all.
+	IsMinted *bool
 }
 
 type AgentSearchParamsWithPagination struct {

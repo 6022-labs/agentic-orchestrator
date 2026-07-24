@@ -127,7 +127,9 @@ export default function AgentDetailSection() {
                     <h2 className="truncate text-xl font-semibold">
                       {agent.name}
                     </h2>
-                    <Badge variant="secondary">{agent.attributes["role"]}</Badge>
+                    <Badge variant="secondary">
+                      {agent.attributes["role"]}
+                    </Badge>
                   </div>
                   <p className="truncate text-sm text-muted-foreground">
                     {agent.ensDomain || "No ENS domain"}

@@ -156,6 +156,10 @@ paths:
         in: query
         name: sortBy
         type: string
+      - description: Filter on mint state (true = minted only, false = proposals only)
+        in: query
+        name: isMinted
+        type: boolean
       produces:
       - application/json
       responses:

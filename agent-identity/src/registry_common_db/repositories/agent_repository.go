@@ -47,7 +47,10 @@ func (r *AgentRepository) GetAll() ([]*models.Agent, error) {
 func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 	agents := []*models.Agent{}
 
-	db := r.client.GetDB().Model(&models.Agent{})
+	db := r.applySearchParams(
+		r.client.GetDB().Model(&models.Agent{}),
+		params.AgentSearchParams,
+	)
 
 	if params.ElementsPerPage != nil {
 		offset := 0
@@ -80,7 +83,7 @@ func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagina
 func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (uint, error) {
 	var count int64
 
-	db := r.client.GetDB().Model(&models.Agent{})
+	db := r.applySearchParams(r.client.GetDB().Model(&models.Agent{}), params)
 
 	tx := db.Count(&count)
 	if tx.Error != nil {
@@ -88,6 +91,18 @@ func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (ui
 	}
 
 	return uint(count), nil
+}
+
+// applySearchParams translates AgentSearchParams into query filters.
+func (r *AgentRepository) applySearchParams(db *gorm.DB, params repositories.AgentSearchParams) *gorm.DB {
+	if params.IsMinted != nil {
+		if *params.IsMinted {
+			db = db.Where("collection_token_id IS NOT NULL")
+		} else {
+			db = db.Where("collection_token_id IS NULL")
+		}
+	}
+	return db
 }
 
 func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {

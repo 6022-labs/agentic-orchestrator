@@ -59,6 +59,9 @@ type GetAgentsParams struct {
 
 	// SortBy Sort by field
 	SortBy *string `form:"sortBy,omitempty" json:"sortBy,omitempty"`
+
+	// IsMinted Filter on mint state (true = minted only, false = proposals only)
+	IsMinted *bool `form:"isMinted,omitempty" json:"isMinted,omitempty"`
 }
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
@@ -370,6 +373,22 @@ func NewGetAgentsRequest(server string, params *GetAgentsParams) (*http.Request,
 		if params.SortBy != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sortBy", runtime.ParamLocationQuery, *params.SortBy); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IsMinted != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "isMinted", runtime.ParamLocationQuery, *params.IsMinted); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

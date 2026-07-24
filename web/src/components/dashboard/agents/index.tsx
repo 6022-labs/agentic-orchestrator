@@ -47,7 +47,7 @@ export default function AgentsSection() {
     setLoading(true)
     try {
       const [agentsResponse, collectionsResponse] = await Promise.all([
-        listAgents({ page, elementsPerPage: ELEMENTS_PER_PAGE }),
+        listAgents({ page, elementsPerPage: ELEMENTS_PER_PAGE, isMinted: true }),
         listAgentCollections(),
       ])
       setAgents(agentsResponse.data.agents ?? [])
@@ -70,7 +70,6 @@ export default function AgentsSection() {
     )?.name ?? truncateEthAddress(address)
 
   const totalPages = Math.max(Math.ceil(totalElements / ELEMENTS_PER_PAGE), 1)
-
 
   return (
     <Card>
@@ -131,7 +130,9 @@ export default function AgentsSection() {
                     {agent.ensDomain || "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{agent.attributes["role"]}</Badge>
+                    <Badge variant="secondary">
+                      {agent.attributes["role"]}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {truncateEthAddress(agent.owner)}
@@ -141,7 +142,7 @@ export default function AgentsSection() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {agent.ensDomain && agent.collectionTokenId != null && (
+                      {agent.ensDomain && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -159,14 +160,12 @@ export default function AgentsSection() {
                           <ExternalLink className="size-3.5" />
                         </Button>
                       )}
-                      {agent.collectionTokenId != null && (
-                        <TransferAgentDialog
-                          collectionAddress={agent.collectionAddress}
-                          collectionTokenId={String(agent.collectionTokenId)}
-                          agentName={agent.name}
-                          onTransferred={() => void load()}
-                        />
-                      )}
+                      <TransferAgentDialog
+                        collectionAddress={agent.collectionAddress}
+                        collectionTokenId={String(agent.collectionTokenId)}
+                        agentName={agent.name}
+                        onTransferred={() => void load()}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

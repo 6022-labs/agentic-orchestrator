@@ -9,6 +9,7 @@ export type ListAgentsParams = {
   elementsPerPage?: number
   sortBy?: string
   sortDirection?: string
+  isMinted?: boolean
 }
 
 // GET /agents — paginated agent directory.

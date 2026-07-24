@@ -28,6 +28,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 		SortBy:          request.SortBy.ToDatabaseField(),
 		SortDirection:   request.SortDirection.ToDatabaseDirection(),
 		ElementsPerPage: request.ElementsPerPage,
+		IsMinted:        request.IsMinted,
 	})
 	if err != nil {
 		return nil, err

@@ -339,42 +339,32 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "name": "elementsPerPage",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "name",
-                            "owner",
-                            "createdAt",
-                            "collectionAddress"
-                        ],
+                        "type": "integer",
+                        "description": "Elements per page",
+                        "name": "elementsPerPage",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "x-enum-varnames": [
-                            "ListAgentSortByName",
-                            "ListAgentSortByOwner",
-                            "ListAgentSortByCreatedAt",
-                            "ListAgentSortByCollectionAddress"
-                        ],
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field",
                         "name": "sortBy",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "asc",
-                            "desc"
-                        ],
-                        "type": "string",
-                        "x-enum-varnames": [
-                            "SortDirectionAsc",
-                            "SortDirectionDesc"
-                        ],
-                        "name": "sortDirection",
+                        "type": "boolean",
+                        "description": "Filter on mint state (true = minted only, false = proposals only)",
+                        "name": "isMinted",
                         "in": "query"
                     }
                 ],
@@ -841,21 +831,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ListAgentSortBy": {
-            "type": "string",
-            "enum": [
-                "name",
-                "owner",
-                "createdAt",
-                "collectionAddress"
-            ],
-            "x-enum-varnames": [
-                "ListAgentSortByName",
-                "ListAgentSortByOwner",
-                "ListAgentSortByCreatedAt",
-                "ListAgentSortByCollectionAddress"
-            ]
-        },
         "requests.SaveAgentPromptTemplateRequest": {
             "type": "object",
             "properties": {
@@ -872,17 +847,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "requests.SortDirection": {
-            "type": "string",
-            "enum": [
-                "asc",
-                "desc"
-            ],
-            "x-enum-varnames": [
-                "SortDirectionAsc",
-                "SortDirectionDesc"
-            ]
         },
         "requests.VerifyAuthRequest": {
             "type": "object",

@@ -161,6 +161,12 @@ const docTemplate = `{
                         "description": "Sort by field",
                         "name": "sortBy",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter on mint state (true = minted only, false = proposals only)",
+                        "name": "isMinted",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -277,6 +277,14 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "description": "Filter on mint state (true = minted only, false = proposals only)",
+                        "in": "query",
+                        "name": "isMinted",
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ],
                 "responses": {

@@ -24,6 +24,7 @@ func (r *AgentRegistryRequester) ListAgents(request *interfaces.ListRegistryAgen
 	params := &clients.GetAgentsParams{
 		SortBy:        request.SortBy,
 		SortDirection: request.SortDirection,
+		IsMinted:      request.IsMinted,
 	}
 	if request.Page != nil {
 		params.Page = lo.ToPtr(int(*request.Page))

@@ -25,18 +25,6 @@ definitions:
       message:
         type: string
     type: object
-  requests.ListAgentSortBy:
-    enum:
-    - name
-    - owner
-    - createdAt
-    - collectionAddress
-    type: string
-    x-enum-varnames:
-    - ListAgentSortByName
-    - ListAgentSortByOwner
-    - ListAgentSortByCreatedAt
-    - ListAgentSortByCollectionAddress
   requests.SaveAgentPromptTemplateRequest:
     properties:
       agentCollectionAddress:
@@ -48,14 +36,6 @@ definitions:
       key:
         type: string
     type: object
-  requests.SortDirection:
-    enum:
-    - asc
-    - desc
-    type: string
-    x-enum-varnames:
-    - SortDirectionAsc
-    - SortDirectionDesc
   requests.VerifyAuthRequest:
     properties:
       address:
@@ -467,34 +447,26 @@ paths:
     get:
       description: Returns all agents synced from the chain
       parameters:
-      - in: query
-        name: elementsPerPage
-        type: integer
-      - in: query
+      - description: Page number
+        in: query
         name: page
         type: integer
-      - enum:
-        - name
-        - owner
-        - createdAt
-        - collectionAddress
+      - description: Elements per page
         in: query
-        name: sortBy
-        type: string
-        x-enum-varnames:
-        - ListAgentSortByName
-        - ListAgentSortByOwner
-        - ListAgentSortByCreatedAt
-        - ListAgentSortByCollectionAddress
-      - enum:
-        - asc
-        - desc
+        name: elementsPerPage
+        type: integer
+      - description: Sort direction (asc, desc)
         in: query
         name: sortDirection
         type: string
-        x-enum-varnames:
-        - SortDirectionAsc
-        - SortDirectionDesc
+      - description: Sort by field
+        in: query
+        name: sortBy
+        type: string
+      - description: Filter on mint state (true = minted only, false = proposals only)
+        in: query
+        name: isMinted
+        type: boolean
       produces:
       - application/json
       responses:

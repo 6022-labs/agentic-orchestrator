@@ -33,8 +33,10 @@ func NewListAgents(
 func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
 	request.Sanitize()
 
+	searchParams := repositories.AgentSearchParams{IsMinted: request.IsMinted}
+
 	agents, err := s.agentRepository.Search(repositories.AgentSearchParamsWithPagination{
-		AgentSearchParams: repositories.AgentSearchParams{},
+		AgentSearchParams: searchParams,
 		Page:              request.Page,
 		SortBy:            request.SortBy.ToDatabaseField(),
 		SortDirection:     request.SortDirection.ToDatabaseDirection(),
@@ -44,7 +46,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 		return nil, err
 	}
 
-	totalCount, err := s.agentRepository.SearchCount(repositories.AgentSearchParams{})
+	totalCount, err := s.agentRepository.SearchCount(searchParams)
 	if err != nil {
 		return nil, err
 	}

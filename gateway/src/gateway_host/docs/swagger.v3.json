@@ -773,6 +773,48 @@
         "/agents": {
             "get": {
                 "description": "Returns all agents synced from the chain",
+                "parameters": [
+                    {
+                        "description": "Page number",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Elements per page",
+                        "in": "query",
+                        "name": "elementsPerPage",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Sort direction (asc, desc)",
+                        "in": "query",
+                        "name": "sortDirection",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort by field",
+                        "in": "query",
+                        "name": "sortBy",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter on mint state (true = minted only, false = proposals only)",
+                        "in": "query",
+                        "name": "isMinted",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "content": {

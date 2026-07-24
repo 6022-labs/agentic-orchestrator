@@ -94,7 +94,11 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 // @Description  Returns all agents synced from the chain
 // @Tags         agent
 // @Produce      json
-// @Param        request query requests.ListAgentsRequest true "list agents request"
+// @Param        page query int false "Page number"
+// @Param        elementsPerPage query int false "Elements per page"
+// @Param        sortDirection query string false "Sort direction (asc, desc)"
+// @Param        sortBy query string false "Sort by field"
+// @Param        isMinted query bool false "Filter on mint state (true = minted only, false = proposals only)"
 // @Success      200 {object} responses.ListAgentsResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agents [get]

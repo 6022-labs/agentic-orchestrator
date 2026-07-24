@@ -122,4 +122,53 @@ func TestWhenSearchingAgents(t *testing.T) {
 			assert.Len(t, agents, 2)
 		})
 	})
+
+	t.Run("Given minted and proposal agents in the database", func(t *testing.T) {
+		t.Parallel()
+
+		saveMixedAgents := func(suite *WhenSearchingAgentsTestingSuite) {
+			for i := 0; i < 2; i++ {
+				suite.sut.Save(model_builders.NewAgentBuilder().Build())
+			}
+			suite.sut.Save(model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
+		}
+
+		t.Run("Given the filter selects minted agents", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("Should return only minted agents", func(t *testing.T) {
+				t.Parallel()
+				suite := WhenSearchingAgentsBeforeEach()
+				defer WhenSearchingAgentsAfterEach(suite)
+				saveMixedAgents(suite)
+
+				params := repositories.AgentSearchParamsWithPagination{
+					AgentSearchParams: repositories.AgentSearchParams{IsMinted: lo.ToPtr(true)},
+				}
+				agents, err := suite.sut.Search(params)
+
+				assert.Nil(t, err)
+				assert.Len(t, agents, 2)
+			})
+		})
+
+		t.Run("Given the filter selects proposal agents", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("Should return only proposal agents", func(t *testing.T) {
+				t.Parallel()
+				suite := WhenSearchingAgentsBeforeEach()
+				defer WhenSearchingAgentsAfterEach(suite)
+				saveMixedAgents(suite)
+
+				params := repositories.AgentSearchParamsWithPagination{
+					AgentSearchParams: repositories.AgentSearchParams{IsMinted: lo.ToPtr(false)},
+				}
+				agents, err := suite.sut.Search(params)
+
+				assert.Nil(t, err)
+				assert.Len(t, agents, 1)
+			})
+		})
+	})
 }

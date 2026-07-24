@@ -187,4 +187,77 @@ func TestWhenListingAgents(t *testing.T) {
 			assert.Equal(t, uint(10), response.ElementsPerPage)
 		})
 	})
+
+	t.Run("Given a minted filter is provided", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should forward it to the repository search and count", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenListingAgentsBeforeEach(t)
+
+			basics.mockAgentRepository.EXPECT().
+				Search(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
+					return []*models.Agent{}, nil
+				}).
+				Times(1)
+			basics.mockAgentRepository.EXPECT().
+				SearchCount(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParams) (uint, error) {
+					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
+					return uint(0), nil
+				}).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			req := &requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)}
+
+			_, err := basics.sut.List(req)
+
+			assert.Nil(t, err)
+		})
+	})
+
+	t.Run("Given sort parameters are provided", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should forward them to the repository search", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenListingAgentsBeforeEach(t)
+
+			basics.mockAgentRepository.EXPECT().
+				Search(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+					assert.Equal(t, lo.ToPtr("name"), params.SortBy)
+					assert.Equal(t, lo.ToPtr("desc"), params.SortDirection)
+					return []*models.Agent{}, nil
+				}).
+				Times(1)
+			basics.mockAgentRepository.EXPECT().
+				SearchCount(gomock.Any()).
+				Return(uint(0), nil).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			req := &requests.ListAgentsRequest{
+				PaginateRequest: requests.PaginateRequest{
+					SortDirection: lo.ToPtr(requests.SortDirectionDesc),
+				},
+				SortBy: lo.ToPtr(requests.ListAgentSortByName),
+			}
+
+			_, err := basics.sut.List(req)
+
+			assert.Nil(t, err)
+		})
+	})
 }

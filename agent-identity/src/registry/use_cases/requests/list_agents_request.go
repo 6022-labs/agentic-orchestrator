@@ -52,7 +52,8 @@ func (l ListAgentSortByList) Contains(sortBy ListAgentSortBy) bool {
 
 type ListAgentsRequest struct {
 	PaginateRequest
-	SortBy *ListAgentSortBy `query:"sortBy"`
+	SortBy   *ListAgentSortBy `query:"sortBy"`
+	IsMinted *bool            `query:"isMinted"`
 }
 
 func (r *ListAgentsRequest) Sanitize() {
