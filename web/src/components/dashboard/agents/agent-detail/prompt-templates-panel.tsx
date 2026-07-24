@@ -20,19 +20,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { extractErrorMessage } from "@/lib/api-errors"
-import { PROMPT_TEMPLATE_KEYS } from "@/models/prompt-template"
+import { getPromptTemplateKeysForRole } from "@/models/prompt-template"
 import {
   getPromptTemplate,
   savePromptTemplate,
 } from "@/queries/api/prompt-templates.queries"
-
-// Keys matching the agent's role come first so the relevant templates are on top.
-const orderedKeys = (role: string) =>
-  [...PROMPT_TEMPLATE_KEYS].sort((a, b) => {
-    const aMatches = a.startsWith(role) ? 0 : 1
-    const bMatches = b.startsWith(role) ? 0 : 1
-    return aMatches - bMatches
-  })
 
 export default function PromptTemplatesPanel({
   collectionAddress,
@@ -43,7 +35,7 @@ export default function PromptTemplatesPanel({
   collectionTokenId: string
   role: string
 }) {
-  const keys = React.useMemo(() => orderedKeys(role), [role])
+  const keys = React.useMemo(() => getPromptTemplateKeysForRole(role), [role])
   const [selectedKey, setSelectedKey] = React.useState<string>(keys[0])
   const [content, setContent] = React.useState("")
   const [loading, setLoading] = React.useState(true)

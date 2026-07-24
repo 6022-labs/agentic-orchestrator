@@ -79,6 +79,7 @@ func (c *PromptTemplatesController) Get(ctx *fiber.Ctx) error {
 // @Param request body requests.SaveAgentPromptTemplateRequest true "Save Agent Prompt Template Request"
 // @Success 200 {object} responses.AgentPromptTemplateResponse
 // @Failure 400 {object} errors.ValidationError
+// @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [post]
 func (c *PromptTemplatesController) Save(ctx *fiber.Ctx) error {
@@ -94,6 +95,9 @@ func (c *PromptTemplatesController) Save(ctx *fiber.Ctx) error {
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
 		}
 		c.logger.Error("internal error", zap.Error(err))
 		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

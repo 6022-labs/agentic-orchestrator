@@ -157,6 +157,16 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(collectionAddress 
 	if err != nil {
 		return nil, err
 	}
+	if rsp.StatusCode() == http.StatusBadRequest {
+		var validationErr errors.ValidationError
+		if json.Unmarshal(rsp.Body, &validationErr) == nil && validationErr.Message != "" {
+			return nil, &validationErr
+		}
+		return nil, errors.NewValidationError("request", string(rsp.Body))
+	}
+	if rsp.StatusCode() == http.StatusNotFound {
+		return nil, errors.NewNotFoundError("agent not found")
+	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
 	}

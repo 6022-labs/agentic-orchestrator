@@ -264,6 +264,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {

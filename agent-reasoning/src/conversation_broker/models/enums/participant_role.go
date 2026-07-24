@@ -24,6 +24,15 @@ func GetAllParticipantRoles() ParticipantRoleList {
 	}
 }
 
+// ParticipantRoleFromAttribute parses a free-form role attribute; unknown values fall back to expert.
+func ParticipantRoleFromAttribute(value string) ParticipantRole {
+	var role ParticipantRole
+	if err := role.Set(value); err != nil {
+		return ParticipantRoleExpert
+	}
+	return role
+}
+
 func (k ParticipantRole) String() string {
 	return string(k)
 }

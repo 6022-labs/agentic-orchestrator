@@ -32,6 +32,29 @@ func GetAllAgentPromptTemplateKeys() AgentPromptTemplateKeyList {
 	}
 }
 
+// AllowedPromptTemplateKeys returns the keys an agent with this role may
+// customize; human and zero roles fall back to expert.
+func (r ParticipantRole) AllowedPromptTemplateKeys() AgentPromptTemplateKeyList {
+	switch r {
+	case ParticipantRoleClone:
+		return AgentPromptTemplateKeyList{
+			AgentPromptTemplateKeyCloneSystem,
+			AgentPromptTemplateKeyCloneDefault,
+		}
+	case ParticipantRoleFacilitator:
+		return AgentPromptTemplateKeyList{
+			AgentPromptTemplateKeyFacilitatorSystem,
+			AgentPromptTemplateKeyFacilitatorDefault,
+			AgentPromptTemplateKeyFacilitatorConclude,
+		}
+	default:
+		return AgentPromptTemplateKeyList{
+			AgentPromptTemplateKeyExpertSystem,
+			AgentPromptTemplateKeyExpertDefault,
+		}
+	}
+}
+
 func (k AgentPromptTemplateKey) String() string {
 	return string(k)
 }

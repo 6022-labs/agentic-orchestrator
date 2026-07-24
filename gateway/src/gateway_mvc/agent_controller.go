@@ -222,6 +222,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c *fiber.Ctx) error {
 // @Param        request body requests.SaveAgentPromptTemplateRequest true "template content"
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [post]

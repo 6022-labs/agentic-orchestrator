@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_conversation_broker/services"
 	clients_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_http_conversation_broker_mocks/clients_mocks"
@@ -71,6 +72,55 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				assert.Equal(t, "clone-system", result.Key)
 				assert.Equal(t, "You are {{name}}", result.Content)
 			}
+		})
+	})
+
+	t.Run("Given the broker rejects the key for the agent role", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
+				Body:         []byte(`{"field":"key","message":"must be one of: expert-system, expert-default for agent role \"human\""}`),
+			}, nil).Times(1)
+		}
+
+		t.Run("Should return the broker validation error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+
+			assert.Nil(t, result)
+			validationErr := &errors.ValidationError{}
+			if assert.ErrorAs(t, err, &validationErr) {
+				assert.Equal(t, "key", validationErr.Field)
+			}
+		})
+	})
+
+	t.Run("Given the broker does not know the agent", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				Body:         []byte(`{"resource":"agent","id":"0xabc/7"}`),
+			}, nil).Times(1)
+		}
+
+		t.Run("Should return a not found error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+
+			assert.Nil(t, result)
+			assert.IsType(t, &errors.NotFoundError{}, err)
 		})
 	})
 
