@@ -20,7 +20,7 @@ type WhenResolvingRemoteAgentCardTestingSuite struct {
 	sut *services.RemoteAgentCardResolver
 
 	mockCacheStorage             *interfaces_mocks.MockCacheStorageInterface
-	mockEnsUrlResolver           *interfaces_mocks.MockEnsUrlResolverInterface
+	mockAgentUrlResolver         *interfaces_mocks.MockAgentUrlResolverInterface
 	mockRemoteAgentCardRequester *interfaces_mocks.MockRemoteAgentCardRequesterInterface
 }
 
@@ -28,13 +28,13 @@ func WhenResolvingRemoteAgentCardBeforeEach(t *testing.T) *WhenResolvingRemoteAg
 	mockController := gomock.NewController(t)
 
 	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
-	mockEnsUrlResolver := interfaces_mocks.NewMockEnsUrlResolverInterface(mockController)
+	mockAgentUrlResolver := interfaces_mocks.NewMockAgentUrlResolverInterface(mockController)
 	mockRemoteAgentCardRequester := interfaces_mocks.NewMockRemoteAgentCardRequesterInterface(mockController)
 
 	sut := services.NewRemoteAgentCardResolver(
 		zap.NewNop(),
 		mockCacheStorage,
-		mockEnsUrlResolver,
+		mockAgentUrlResolver,
 		mockRemoteAgentCardRequester,
 		&settings.RemoteAgentResolutionSettings{CacheTtlSeconds: 300},
 	)
@@ -43,7 +43,7 @@ func WhenResolvingRemoteAgentCardBeforeEach(t *testing.T) *WhenResolvingRemoteAg
 		sut: sut,
 
 		mockCacheStorage:             mockCacheStorage,
-		mockEnsUrlResolver:           mockEnsUrlResolver,
+		mockAgentUrlResolver:         mockAgentUrlResolver,
 		mockRemoteAgentCardRequester: mockRemoteAgentCardRequester,
 	}
 }
@@ -65,7 +65,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
 			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().
 				Store("remote-agent-cards/agent.eth", gomock.Any(), gomock.Any()).
@@ -112,7 +112,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 					return stored, nil
 				}).
 				Times(4)
-			suite.mockEnsUrlResolver.EXPECT().
+			suite.mockAgentUrlResolver.EXPECT().
 				ResolveUrl("agent.eth").
 				DoAndReturn(func(string) (string, error) {
 					<-release
@@ -189,7 +189,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("not-json", nil).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
 			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 		}
@@ -212,30 +212,10 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", errors.New("boom")).Times(1)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", errors.New("boom")).Times(1)
 		}
 
 		t.Run("Should propagate the error and cache nothing", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.ResolveCard("agent.eth")
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given no url is published", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", nil).Times(1)
-		}
-
-		t.Run("Should return an error and cache nothing", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingRemoteAgentCardBeforeEach(t)

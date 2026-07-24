@@ -36,7 +36,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentCardsEnsDomainWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetAgentCardsEnsDomainResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
 				JSON200: &clients.ResponsesRemoteAgentCardResponse{
 					Protocol:        lo.ToPtr("6022"),
@@ -73,7 +73,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentCardsEnsDomainWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetAgentCardsEnsDomainResponse{
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.protocol6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
 				HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
 				Body:         []byte("boom"),
 			}, nil).Times(1)

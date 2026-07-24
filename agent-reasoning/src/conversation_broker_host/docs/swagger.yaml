@@ -135,6 +135,11 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.AgentUrlResponse:
+    properties:
+      url:
+        type: string
+    type: object
   responses.BridgeResponse:
     properties:
       baseUrl:
@@ -246,34 +251,6 @@ info:
   title: Orchestrator Conversation Broker Host API
   version: "1.0"
 paths:
-  /agent-cards/{ensDomain}:
-    get:
-      description: Resolves the agent's runtime via ENS CCIP-Read and returns its
-        cached /.well-known/6022 card.
-      parameters:
-      - description: Agent ENS domain
-        in: path
-        name: ensDomain
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RemoteAgentCardResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.ValidationError'
-        "502":
-          description: Bad Gateway
-          schema:
-            type: string
-      summary: Get Agent Node Card
-      tags:
-      - Agent Cards
   /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key}:
     get:
       description: Returns the agent-scoped prompt template for the given key.
@@ -802,4 +779,60 @@ paths:
       summary: Register User Participant
       tags:
       - Participants
+  /remote-agents/{ensDomain}/card:
+    get:
+      description: Resolves the agent's runtime via ENS CCIP-Read and returns its
+        cached /.well-known/6022 card.
+      parameters:
+      - description: Agent ENS domain
+        in: path
+        name: ensDomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RemoteAgentCardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      summary: Get Agent Node Card
+      tags:
+      - Agent Cards
+  /remote-agents/{ensDomain}/url:
+    get:
+      description: Resolves the agent's node URL from its ENS url text record via
+        CCIP-Read.
+      parameters:
+      - description: Agent ENS domain
+        in: path
+        name: ensDomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      summary: Get Agent Node URL
+      tags:
+      - Agent Urls
 swagger: "2.0"

@@ -2,6 +2,7 @@ import axios from "axios"
 
 import type { Agent, ListAgentsResponse } from "@/models/agent"
 import type { AgentCard } from "@/models/agent-card"
+import type { AgentUrl } from "@/models/agent-url"
 
 export type ListAgentsParams = {
   page?: number
@@ -33,5 +34,16 @@ export const getAgentCard = async (
 ) => {
   return await axios.get<AgentCard>(
     `/agent/${collectionAddress}/${collectionTokenId}/card`
+  )
+}
+
+// GET /agent/{collectionAddress}/{collectionTokenId}/url — the node URL from
+// the agent's ENS url text record.
+export const getAgentUrl = async (
+  collectionAddress: string,
+  collectionTokenId: string
+) => {
+  return await axios.get<AgentUrl>(
+    `/agent/${collectionAddress}/${collectionTokenId}/url`
   )
 }

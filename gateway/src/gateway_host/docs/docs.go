@@ -273,6 +273,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/url": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the agent node's URL resolved from its ENS url text record",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Get agent node url",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collection address",
+                        "name": "agentCollectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "agentCollectionTokenId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentUrlResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/agents": {
             "get": {
                 "description": "Returns all agents synced from the chain",
@@ -971,8 +1024,13 @@ const docTemplate = `{
                 },
                 "proposalId": {
                     "type": "integer"
-                },
-                "role": {
+                }
+            }
+        },
+        "responses.AgentUrlResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }

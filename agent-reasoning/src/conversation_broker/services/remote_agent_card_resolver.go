@@ -15,12 +15,13 @@ import (
 
 const remoteAgentCardCachePathTemplate = "remote-agent-cards/%s"
 
-// RemoteAgentCardResolver composes ENS resolution + card fetch, caching the
-// card per ENS domain (TTL enforced by the store). Failures are never cached.
+// RemoteAgentCardResolver composes the cached url resolution + card fetch,
+// caching the card per ENS domain (TTL enforced by the store). Failures are
+// never cached.
 type RemoteAgentCardResolver struct {
 	logger                        *zap.Logger
 	cacheStorage                  interfaces.CacheStorageInterface
-	ensUrlResolver                interfaces.EnsUrlResolverInterface
+	agentUrlResolver              interfaces.AgentUrlResolverInterface
 	remoteAgentCardRequester      interfaces.RemoteAgentCardRequesterInterface
 	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings
 	resolutionLocks               sync.Map
@@ -29,14 +30,14 @@ type RemoteAgentCardResolver struct {
 func NewRemoteAgentCardResolver(
 	logger *zap.Logger,
 	cacheStorage interfaces.CacheStorageInterface,
-	ensUrlResolver interfaces.EnsUrlResolverInterface,
+	agentUrlResolver interfaces.AgentUrlResolverInterface,
 	remoteAgentCardRequester interfaces.RemoteAgentCardRequesterInterface,
 	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings,
 ) *RemoteAgentCardResolver {
 	return &RemoteAgentCardResolver{
 		logger:                        logger,
 		cacheStorage:                  cacheStorage,
-		ensUrlResolver:                ensUrlResolver,
+		agentUrlResolver:              agentUrlResolver,
 		remoteAgentCardRequester:      remoteAgentCardRequester,
 		remoteAgentResolutionSettings: remoteAgentResolutionSettings,
 	}
@@ -76,12 +77,9 @@ func (r *RemoteAgentCardResolver) readCachedCard(cachePath string) (*models.Remo
 }
 
 func (r *RemoteAgentCardResolver) resolveAndCacheCard(ensDomain string, cachePath string) (*models.RemoteAgentCard, error) {
-	agentUrl, err := r.ensUrlResolver.ResolveUrl(ensDomain)
+	agentUrl, err := r.agentUrlResolver.ResolveUrl(ensDomain)
 	if err != nil {
-		return nil, fmt.Errorf("failed to resolve url for %s: %w", ensDomain, err)
-	}
-	if agentUrl == "" {
-		return nil, fmt.Errorf("no url published for %s", ensDomain)
+		return nil, err
 	}
 
 	card, err := r.remoteAgentCardRequester.GetCard(agentUrl)

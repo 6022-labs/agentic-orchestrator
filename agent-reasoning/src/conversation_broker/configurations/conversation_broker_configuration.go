@@ -55,6 +55,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentUrlResolver,
+		dig.As(new(service_interfaces.AgentUrlResolverInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		prompts.NewConversationPromptBuilder,
 		dig.As(new(service_interfaces.ConversationPromptBuilderInterface)),
 	)
@@ -165,6 +173,11 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(use_cases.NewGetRemoteAgentCard, dig.As(new(use_cases.GetRemoteAgentCardInterface)))
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(use_cases.NewResolveAgentUrl, dig.As(new(use_cases.ResolveAgentUrlInterface)))
 	if err != nil {
 		panic(err)
 	}

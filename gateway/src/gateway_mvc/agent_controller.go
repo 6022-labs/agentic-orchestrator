@@ -13,6 +13,7 @@ const (
 	LIST_AGENTS_ENDPOINT    = "/agents"
 	GET_AGENT_ENDPOINT      = "/agent/:agentCollectionAddress/:agentCollectionTokenId"
 	GET_AGENT_CARD_ENDPOINT = "/agent/:agentCollectionAddress/:agentCollectionTokenId/card"
+	GET_AGENT_URL_ENDPOINT  = "/agent/:agentCollectionAddress/:agentCollectionTokenId/url"
 
 	GET_AGENT_PROMPT_TEMPLATE_ENDPOINT  = "/agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key"
 	SAVE_AGENT_PROMPT_TEMPLATE_ENDPOINT = "/agent/:agentCollectionAddress/:agentCollectionTokenId/prompt-template/:key"
@@ -23,6 +24,7 @@ type AgentController struct {
 	getAgent                use_cases.GetAgentInterface
 	listAgents              use_cases.ListAgentsInterface
 	getAgentCard            use_cases.GetAgentCardInterface
+	getAgentUrl             use_cases.GetAgentUrlInterface
 	getAgentPromptTemplate  use_cases.GetAgentPromptTemplateInterface
 	saveAgentPromptTemplate use_cases.SaveAgentPromptTemplateInterface
 }
@@ -32,6 +34,7 @@ func NewAgentController(
 	getAgent use_cases.GetAgentInterface,
 	listAgents use_cases.ListAgentsInterface,
 	getAgentCard use_cases.GetAgentCardInterface,
+	getAgentUrl use_cases.GetAgentUrlInterface,
 	getAgentPromptTemplate use_cases.GetAgentPromptTemplateInterface,
 	saveAgentPromptTemplate use_cases.SaveAgentPromptTemplateInterface,
 ) *AgentController {
@@ -40,6 +43,7 @@ func NewAgentController(
 		getAgent:                getAgent,
 		listAgents:              listAgents,
 		getAgentCard:            getAgentCard,
+		getAgentUrl:             getAgentUrl,
 		getAgentPromptTemplate:  getAgentPromptTemplate,
 		saveAgentPromptTemplate: saveAgentPromptTemplate,
 	}
@@ -47,6 +51,7 @@ func NewAgentController(
 
 func (controller *AgentController) InitAuthenticatedRoutes(app fiber.Router) {
 	app.Get(GET_AGENT_CARD_ENDPOINT, controller.GetAgentCard)
+	app.Get(GET_AGENT_URL_ENDPOINT, controller.GetAgentUrl)
 	app.Get(GET_AGENT_PROMPT_TEMPLATE_ENDPOINT, controller.GetAgentPromptTemplate)
 	app.Post(SAVE_AGENT_PROMPT_TEMPLATE_ENDPOINT, controller.SaveAgentPromptTemplate)
 }
@@ -140,6 +145,36 @@ func (controller *AgentController) GetAgentCard(c *fiber.Ctx) error {
 		}
 		controller.logger.Warn("Failed to get agent card", zap.Error(err))
 		return c.Status(fiber.StatusBadGateway).SendString("failed to reach agent node")
+	}
+
+	return c.JSON(response)
+}
+
+// GetAgentUrl godoc
+// @Summary      Get agent node url
+// @Description  Returns the agent node's URL resolved from its ENS url text record
+// @Tags         agent
+// @Produce      json
+// @Param        agentCollectionAddress path string true "collection address"
+// @Param        agentCollectionTokenId path string true "token id"
+// @Success      200 {object} responses.AgentUrlResponse
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      502 {string} string "Bad Gateway"
+// @Security     BearerAuth
+// @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/url [get]
+func (controller *AgentController) GetAgentUrl(c *fiber.Ctx) error {
+	request := new(requests.AgentByCollectionTokenIdRequest)
+	if err := c.ParamsParser(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	response, err := controller.getAgentUrl.Get(request)
+	if err != nil {
+		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
+			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
+		}
+		controller.logger.Warn("Failed to get agent url", zap.Error(err))
+		return c.Status(fiber.StatusBadGateway).SendString("failed to resolve agent url")
 	}
 
 	return c.JSON(response)

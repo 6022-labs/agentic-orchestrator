@@ -1,7 +1,7 @@
 import React from "react"
 import { toast } from "sonner"
 import { Link, useParams } from "react-router-dom"
-import { ArrowLeft, Bot } from "lucide-react"
+import { ArrowLeft, Bot, ExternalLink } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import AgentAvatar from "@/components/dashboard/agents/agent-avatar"
 import AgentCardPanel from "@/components/dashboard/agents/agent-detail/agent-card-panel"
 import PromptTemplatesPanel from "@/components/dashboard/agents/agent-detail/prompt-templates-panel"
 import TransferAgentDialog from "@/components/dashboard/agents/dialogs/transfer-agent-dialog"
+import { openAgentNode } from "@/lib/agent-node"
 import { extractErrorMessage } from "@/lib/api-errors"
 import { truncateEthAddress } from "@/lib/utils"
 import type { Agent } from "@/models/agent"
@@ -74,12 +75,27 @@ export default function AgentDetailSection() {
           </Link>
         </Button>
         {agent ? (
-          <TransferAgentDialog
-            collectionAddress={collectionAddress}
-            collectionTokenId={collectionTokenId}
-            agentName={agent.name}
-            onTransferred={() => void load()}
-          />
+          <div className="flex items-center gap-2">
+            {agent.ensDomain ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Open agent node"
+                aria-label="Open agent node"
+                onClick={() =>
+                  openAgentNode(collectionAddress, collectionTokenId)
+                }
+              >
+                <ExternalLink />
+              </Button>
+            ) : null}
+            <TransferAgentDialog
+              collectionAddress={collectionAddress}
+              collectionTokenId={collectionTokenId}
+              agentName={agent.name}
+              onTransferred={() => void load()}
+            />
+          </div>
         ) : null}
       </div>
 

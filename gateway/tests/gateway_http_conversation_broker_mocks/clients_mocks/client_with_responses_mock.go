@@ -102,26 +102,6 @@ func (mr *MockClientInterfaceMockRecorder) DeleteConversationsIdParticipantsPart
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteConversationsIdParticipantsParticipantId", reflect.TypeOf((*MockClientInterface)(nil).DeleteConversationsIdParticipantsParticipantId), varargs...)
 }
 
-// GetAgentCardsEnsDomain mocks base method.
-func (m *MockClientInterface) GetAgentCardsEnsDomain(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*http.Response, error) {
-	m.ctrl.T.Helper()
-	varargs := []any{ctx, ensDomain}
-	for _, a := range reqEditors {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetAgentCardsEnsDomain", varargs...)
-	ret0, _ := ret[0].(*http.Response)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAgentCardsEnsDomain indicates an expected call of GetAgentCardsEnsDomain.
-func (mr *MockClientInterfaceMockRecorder) GetAgentCardsEnsDomain(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, ensDomain}, reqEditors...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCardsEnsDomain", reflect.TypeOf((*MockClientInterface)(nil).GetAgentCardsEnsDomain), varargs...)
-}
-
 // GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey mocks base method.
 func (m *MockClientInterface) GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey(ctx context.Context, collectionAddress, collectionTokenId, key string, reqEditors ...clients.RequestEditorFn) (*http.Response, error) {
 	m.ctrl.T.Helper()
@@ -220,6 +200,46 @@ func (mr *MockClientInterfaceMockRecorder) GetConversationsIdParticipants(ctx, i
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, id}, reqEditors...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversationsIdParticipants", reflect.TypeOf((*MockClientInterface)(nil).GetConversationsIdParticipants), varargs...)
+}
+
+// GetRemoteAgentsEnsDomainCard mocks base method.
+func (m *MockClientInterface) GetRemoteAgentsEnsDomainCard(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, ensDomain}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetRemoteAgentsEnsDomainCard", varargs...)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteAgentsEnsDomainCard indicates an expected call of GetRemoteAgentsEnsDomainCard.
+func (mr *MockClientInterfaceMockRecorder) GetRemoteAgentsEnsDomainCard(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, ensDomain}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteAgentsEnsDomainCard", reflect.TypeOf((*MockClientInterface)(nil).GetRemoteAgentsEnsDomainCard), varargs...)
+}
+
+// GetRemoteAgentsEnsDomainUrl mocks base method.
+func (m *MockClientInterface) GetRemoteAgentsEnsDomainUrl(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, ensDomain}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetRemoteAgentsEnsDomainUrl", varargs...)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteAgentsEnsDomainUrl indicates an expected call of GetRemoteAgentsEnsDomainUrl.
+func (mr *MockClientInterfaceMockRecorder) GetRemoteAgentsEnsDomainUrl(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, ensDomain}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteAgentsEnsDomainUrl", reflect.TypeOf((*MockClientInterface)(nil).GetRemoteAgentsEnsDomainUrl), varargs...)
 }
 
 // PatchConversationsIdDescription mocks base method.
@@ -606,26 +626,6 @@ func (mr *MockClientWithResponsesInterfaceMockRecorder) DeleteConversationsIdPar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteConversationsIdParticipantsParticipantIdWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).DeleteConversationsIdParticipantsParticipantIdWithResponse), varargs...)
 }
 
-// GetAgentCardsEnsDomainWithResponse mocks base method.
-func (m *MockClientWithResponsesInterface) GetAgentCardsEnsDomainWithResponse(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*clients.GetAgentCardsEnsDomainResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []any{ctx, ensDomain}
-	for _, a := range reqEditors {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetAgentCardsEnsDomainWithResponse", varargs...)
-	ret0, _ := ret[0].(*clients.GetAgentCardsEnsDomainResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAgentCardsEnsDomainWithResponse indicates an expected call of GetAgentCardsEnsDomainWithResponse.
-func (mr *MockClientWithResponsesInterfaceMockRecorder) GetAgentCardsEnsDomainWithResponse(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, ensDomain}, reqEditors...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCardsEnsDomainWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).GetAgentCardsEnsDomainWithResponse), varargs...)
-}
-
 // GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse mocks base method.
 func (m *MockClientWithResponsesInterface) GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(ctx context.Context, collectionAddress, collectionTokenId, key string, reqEditors ...clients.RequestEditorFn) (*clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse, error) {
 	m.ctrl.T.Helper()
@@ -724,6 +724,46 @@ func (mr *MockClientWithResponsesInterfaceMockRecorder) GetConversationsWithResp
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, params}, reqEditors...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversationsWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).GetConversationsWithResponse), varargs...)
+}
+
+// GetRemoteAgentsEnsDomainCardWithResponse mocks base method.
+func (m *MockClientWithResponsesInterface) GetRemoteAgentsEnsDomainCardWithResponse(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*clients.GetRemoteAgentsEnsDomainCardResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, ensDomain}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetRemoteAgentsEnsDomainCardWithResponse", varargs...)
+	ret0, _ := ret[0].(*clients.GetRemoteAgentsEnsDomainCardResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteAgentsEnsDomainCardWithResponse indicates an expected call of GetRemoteAgentsEnsDomainCardWithResponse.
+func (mr *MockClientWithResponsesInterfaceMockRecorder) GetRemoteAgentsEnsDomainCardWithResponse(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, ensDomain}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteAgentsEnsDomainCardWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).GetRemoteAgentsEnsDomainCardWithResponse), varargs...)
+}
+
+// GetRemoteAgentsEnsDomainUrlWithResponse mocks base method.
+func (m *MockClientWithResponsesInterface) GetRemoteAgentsEnsDomainUrlWithResponse(ctx context.Context, ensDomain string, reqEditors ...clients.RequestEditorFn) (*clients.GetRemoteAgentsEnsDomainUrlResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, ensDomain}
+	for _, a := range reqEditors {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetRemoteAgentsEnsDomainUrlWithResponse", varargs...)
+	ret0, _ := ret[0].(*clients.GetRemoteAgentsEnsDomainUrlResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRemoteAgentsEnsDomainUrlWithResponse indicates an expected call of GetRemoteAgentsEnsDomainUrlWithResponse.
+func (mr *MockClientWithResponsesInterfaceMockRecorder) GetRemoteAgentsEnsDomainUrlWithResponse(ctx, ensDomain any, reqEditors ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, ensDomain}, reqEditors...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemoteAgentsEnsDomainUrlWithResponse", reflect.TypeOf((*MockClientWithResponsesInterface)(nil).GetRemoteAgentsEnsDomainUrlWithResponse), varargs...)
 }
 
 // PatchConversationsIdDescriptionWithBodyWithResponse mocks base method.

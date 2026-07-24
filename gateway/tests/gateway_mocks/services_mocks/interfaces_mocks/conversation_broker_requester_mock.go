@@ -85,6 +85,21 @@ func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentPromptTe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPromptTemplate", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentPromptTemplate), collectionAddress, collectionTokenId, key)
 }
 
+// GetAgentUrl mocks base method.
+func (m *MockConversationBrokerRequesterInterface) GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentUrl", ensDomain)
+	ret0, _ := ret[0].(*responses.AgentUrlResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentUrl indicates an expected call of GetAgentUrl.
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentUrl(ensDomain any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentUrl", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentUrl), ensDomain)
+}
+
 // GetConversation mocks base method.
 func (m *MockConversationBrokerRequesterInterface) GetConversation(conversationId uuid.UUID) (*responses.BrokerConversationResponse, error) {
 	m.ctrl.T.Helper()

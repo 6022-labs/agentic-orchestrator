@@ -1,7 +1,7 @@
 import React from "react"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
-import { Bot, ChevronLeft, ChevronRight } from "lucide-react"
+import { Bot, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,7 @@ import { extractErrorMessage } from "@/lib/api-errors"
 import { truncateEthAddress } from "@/lib/utils"
 import type { Agent } from "@/models/agent"
 import type { AgentCollection } from "@/models/agent-collection"
+import { openAgentNode } from "@/lib/agent-node"
 import { listAgents } from "@/queries/api/agents.queries"
 import { listAgentCollections } from "@/queries/api/collections.queries"
 
@@ -69,6 +70,7 @@ export default function AgentsSection() {
 
   const totalPages = Math.max(Math.ceil(totalElements / ELEMENTS_PER_PAGE), 1)
 
+
   return (
     <Card>
       <CardHeader>
@@ -106,6 +108,7 @@ export default function AgentsSection() {
                 <TableHead>Role</TableHead>
                 <TableHead>Owner</TableHead>
                 <TableHead>Collection</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,6 +137,26 @@ export default function AgentsSection() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {collectionName(agent.collectionAddress)}
+                  </TableCell>
+                  <TableCell>
+                    {agent.ensDomain && agent.collectionTokenId != null && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-6"
+                        title="Open agent node"
+                        aria-label="Open agent node"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          openAgentNode(
+                            agent.collectionAddress,
+                            String(agent.collectionTokenId)
+                          )
+                        }}
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

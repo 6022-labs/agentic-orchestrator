@@ -165,7 +165,7 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(collectionAddress 
 }
 
 func (r *ConversationBrokerRequester) GetAgentCard(ensDomain string) (*responses.AgentCardResponse, error) {
-	rsp, err := r.client.GetAgentCardsEnsDomainWithResponse(context.Background(), ensDomain)
+	rsp, err := r.client.GetRemoteAgentsEnsDomainCardWithResponse(context.Background(), ensDomain)
 	if err != nil {
 		return nil, err
 	}
@@ -174,4 +174,16 @@ func (r *ConversationBrokerRequester) GetAgentCard(ensDomain string) (*responses
 	}
 
 	return (*mappings.ExternalAgentCardResponse)(rsp.JSON200).ToUseCaseResponse(), nil
+}
+
+func (r *ConversationBrokerRequester) GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error) {
+	rsp, err := r.client.GetRemoteAgentsEnsDomainUrlWithResponse(context.Background(), ensDomain)
+	if err != nil {
+		return nil, err
+	}
+	if rsp.JSON200 == nil {
+		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
+	}
+
+	return (*mappings.ExternalAgentUrlResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }

@@ -127,6 +127,11 @@ type ResponsesAgentPromptTemplateResponse struct {
 	UpdatedAt         *string                      `json:"updatedAt,omitempty"`
 }
 
+// ResponsesAgentUrlResponse defines model for responses.AgentUrlResponse.
+type ResponsesAgentUrlResponse struct {
+	Url *string `json:"url,omitempty"`
+}
+
 // ResponsesBridgeResponse defines model for responses.BridgeResponse.
 type ResponsesBridgeResponse struct {
 	BaseUrl   *string          `json:"baseUrl,omitempty"`
@@ -365,9 +370,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetAgentCardsEnsDomain request
-	GetAgentCardsEnsDomain(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey request
 	GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey(ctx context.Context, collectionAddress string, collectionTokenId string, key string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -428,18 +430,12 @@ type ClientInterface interface {
 	PostParticipantsUsersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostParticipantsUsers(ctx context.Context, body PostParticipantsUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
 
-func (c *Client) GetAgentCardsEnsDomain(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAgentCardsEnsDomainRequest(c.Server, ensDomain)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
+	// GetRemoteAgentsEnsDomainCard request
+	GetRemoteAgentsEnsDomainCard(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRemoteAgentsEnsDomainUrl request
+	GetRemoteAgentsEnsDomainUrl(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey(ctx context.Context, collectionAddress string, collectionTokenId string, key string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -718,38 +714,28 @@ func (c *Client) PostParticipantsUsers(ctx context.Context, body PostParticipant
 	return c.Client.Do(req)
 }
 
-// NewGetAgentCardsEnsDomainRequest generates requests for GetAgentCardsEnsDomain
-func NewGetAgentCardsEnsDomainRequest(server string, ensDomain string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ensDomain", runtime.ParamLocationPath, ensDomain)
+func (c *Client) GetRemoteAgentsEnsDomainCard(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRemoteAgentsEnsDomainCardRequest(c.Server, ensDomain)
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
 
-	serverURL, err := url.Parse(server)
+func (c *Client) GetRemoteAgentsEnsDomainUrl(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRemoteAgentsEnsDomainUrlRequest(c.Server, ensDomain)
 	if err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/agent-cards/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
 // NewGetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyRequest generates requests for GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKey
@@ -1404,6 +1390,74 @@ func NewPostParticipantsUsersRequestWithBody(server string, contentType string, 
 	return req, nil
 }
 
+// NewGetRemoteAgentsEnsDomainCardRequest generates requests for GetRemoteAgentsEnsDomainCard
+func NewGetRemoteAgentsEnsDomainCardRequest(server string, ensDomain string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ensDomain", runtime.ParamLocationPath, ensDomain)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/remote-agents/%s/card", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRemoteAgentsEnsDomainUrlRequest generates requests for GetRemoteAgentsEnsDomainUrl
+func NewGetRemoteAgentsEnsDomainUrlRequest(server string, ensDomain string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ensDomain", runtime.ParamLocationPath, ensDomain)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/remote-agents/%s/url", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1447,9 +1501,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetAgentCardsEnsDomainWithResponse request
-	GetAgentCardsEnsDomainWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetAgentCardsEnsDomainResponse, error)
-
 	// GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse request
 	GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(ctx context.Context, collectionAddress string, collectionTokenId string, key string, reqEditors ...RequestEditorFn) (*GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse, error)
 
@@ -1510,30 +1561,12 @@ type ClientWithResponsesInterface interface {
 	PostParticipantsUsersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostParticipantsUsersResponse, error)
 
 	PostParticipantsUsersWithResponse(ctx context.Context, body PostParticipantsUsersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostParticipantsUsersResponse, error)
-}
 
-type GetAgentCardsEnsDomainResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ResponsesRemoteAgentCardResponse
-	JSON400      *ErrorsValidationError
-	JSON502      *string
-}
+	// GetRemoteAgentsEnsDomainCardWithResponse request
+	GetRemoteAgentsEnsDomainCardWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetRemoteAgentsEnsDomainCardResponse, error)
 
-// Status returns HTTPResponse.Status
-func (r GetAgentCardsEnsDomainResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetAgentCardsEnsDomainResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
+	// GetRemoteAgentsEnsDomainUrlWithResponse request
+	GetRemoteAgentsEnsDomainUrlWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetRemoteAgentsEnsDomainUrlResponse, error)
 }
 
 type GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse struct {
@@ -1907,13 +1940,52 @@ func (r PostParticipantsUsersResponse) StatusCode() int {
 	return 0
 }
 
-// GetAgentCardsEnsDomainWithResponse request returning *GetAgentCardsEnsDomainResponse
-func (c *ClientWithResponses) GetAgentCardsEnsDomainWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetAgentCardsEnsDomainResponse, error) {
-	rsp, err := c.GetAgentCardsEnsDomain(ctx, ensDomain, reqEditors...)
-	if err != nil {
-		return nil, err
+type GetRemoteAgentsEnsDomainCardResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResponsesRemoteAgentCardResponse
+	JSON400      *ErrorsValidationError
+	JSON502      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRemoteAgentsEnsDomainCardResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
 	}
-	return ParseGetAgentCardsEnsDomainResponse(rsp)
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRemoteAgentsEnsDomainCardResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRemoteAgentsEnsDomainUrlResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResponsesAgentUrlResponse
+	JSON400      *ErrorsValidationError
+	JSON502      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRemoteAgentsEnsDomainUrlResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRemoteAgentsEnsDomainUrlResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 // GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse request returning *GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse
@@ -2115,44 +2187,22 @@ func (c *ClientWithResponses) PostParticipantsUsersWithResponse(ctx context.Cont
 	return ParsePostParticipantsUsersResponse(rsp)
 }
 
-// ParseGetAgentCardsEnsDomainResponse parses an HTTP response from a GetAgentCardsEnsDomainWithResponse call
-func ParseGetAgentCardsEnsDomainResponse(rsp *http.Response) (*GetAgentCardsEnsDomainResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
+// GetRemoteAgentsEnsDomainCardWithResponse request returning *GetRemoteAgentsEnsDomainCardResponse
+func (c *ClientWithResponses) GetRemoteAgentsEnsDomainCardWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetRemoteAgentsEnsDomainCardResponse, error) {
+	rsp, err := c.GetRemoteAgentsEnsDomainCard(ctx, ensDomain, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
+	return ParseGetRemoteAgentsEnsDomainCardResponse(rsp)
+}
 
-	response := &GetAgentCardsEnsDomainResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
+// GetRemoteAgentsEnsDomainUrlWithResponse request returning *GetRemoteAgentsEnsDomainUrlResponse
+func (c *ClientWithResponses) GetRemoteAgentsEnsDomainUrlWithResponse(ctx context.Context, ensDomain string, reqEditors ...RequestEditorFn) (*GetRemoteAgentsEnsDomainUrlResponse, error) {
+	rsp, err := c.GetRemoteAgentsEnsDomainUrl(ctx, ensDomain, reqEditors...)
+	if err != nil {
+		return nil, err
 	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ResponsesRemoteAgentCardResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
-		var dest string
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON502 = &dest
-
-	}
-
-	return response, nil
+	return ParseGetRemoteAgentsEnsDomainUrlResponse(rsp)
 }
 
 // ParseGetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse parses an HTTP response from a GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse call
@@ -2826,6 +2876,86 @@ func ParsePostParticipantsUsersResponse(rsp *http.Response) (*PostParticipantsUs
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRemoteAgentsEnsDomainCardResponse parses an HTTP response from a GetRemoteAgentsEnsDomainCardWithResponse call
+func ParseGetRemoteAgentsEnsDomainCardResponse(rsp *http.Response) (*GetRemoteAgentsEnsDomainCardResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRemoteAgentsEnsDomainCardResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResponsesRemoteAgentCardResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRemoteAgentsEnsDomainUrlResponse parses an HTTP response from a GetRemoteAgentsEnsDomainUrlWithResponse call
+func ParseGetRemoteAgentsEnsDomainUrlResponse(rsp *http.Response) (*GetRemoteAgentsEnsDomainUrlResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRemoteAgentsEnsDomainUrlResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResponsesAgentUrlResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

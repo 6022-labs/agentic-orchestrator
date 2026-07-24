@@ -123,7 +123,10 @@ components:
           type: string
         proposalId:
           type: integer
-        role:
+      type: object
+    responses.AgentUrlResponse:
+      properties:
+        url:
           type: string
       type: object
     responses.BlockchainConfigResponse:
@@ -440,6 +443,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Save agent prompt template
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/url:
+    get:
+      description: Returns the agent node's URL resolved from its ENS url text record
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        schema:
+          type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.AgentUrlResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.NotFoundError'
+          description: Not Found
+        "502":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: Bad Gateway
+      security:
+      - BearerAuth: []
+      summary: Get agent node url
       tags:
       - agent
   /agents:

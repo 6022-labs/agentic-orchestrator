@@ -43,7 +43,7 @@ func AddConversationBrokerMvcConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		conversation_broker_mvc.NewAgentCardsController,
+		conversation_broker_mvc.NewRemoteAgentsController,
 		dig.Group("controllers"),
 		dig.As(new(conversation_broker_mvc.ControllerInterface)),
 	)

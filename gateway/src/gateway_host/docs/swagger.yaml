@@ -148,7 +148,10 @@ definitions:
         type: string
       proposalId:
         type: integer
-      role:
+    type: object
+  responses.AgentUrlResponse:
+    properties:
+      url:
         type: string
     type: object
   responses.BlockchainConfigResponse:
@@ -424,6 +427,40 @@ paths:
       security:
       - BearerAuth: []
       summary: Save agent prompt template
+      tags:
+      - agent
+  /agent/{agentCollectionAddress}/{agentCollectionTokenId}/url:
+    get:
+      description: Returns the agent node's URL resolved from its ENS url text record
+      parameters:
+      - description: collection address
+        in: path
+        name: agentCollectionAddress
+        required: true
+        type: string
+      - description: token id
+        in: path
+        name: agentCollectionTokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentUrlResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get agent node url
       tags:
       - agent
   /agents:

@@ -156,6 +156,14 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		use_cases.NewGetAgentUrl,
+		dig.As(new(use_cases.GetAgentUrlInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		use_cases.NewListConversations,
 		dig.As(new(use_cases.ListConversationsInterface)),
 	)

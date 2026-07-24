@@ -16,4 +16,5 @@ type ConversationBrokerRequesterInterface interface {
 	GetAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key string) (*responses.AgentPromptTemplateResponse, error)
 	SaveAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key, content string) (*responses.AgentPromptTemplateResponse, error)
 	GetAgentCard(ensDomain string) (*responses.AgentCardResponse, error)
+	GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error)
 }

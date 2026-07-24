@@ -15,47 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/agent-cards/{ensDomain}": {
-            "get": {
-                "description": "Resolves the agent's runtime via ENS CCIP-Read and returns its cached /.well-known/6022 card.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Agent Cards"
-                ],
-                "summary": "Get Agent Node Card",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Agent ENS domain",
-                        "name": "ensDomain",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RemoteAgentCardResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key}": {
             "get": {
                 "description": "Returns the agent-scoped prompt template for the given key.",
@@ -836,6 +795,88 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/remote-agents/{ensDomain}/card": {
+            "get": {
+                "description": "Resolves the agent's runtime via ENS CCIP-Read and returns its cached /.well-known/6022 card.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Agent Cards"
+                ],
+                "summary": "Get Agent Node Card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent ENS domain",
+                        "name": "ensDomain",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RemoteAgentCardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/remote-agents/{ensDomain}/url": {
+            "get": {
+                "description": "Resolves the agent's node URL from its ENS url text record via CCIP-Read.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Agent Urls"
+                ],
+                "summary": "Get Agent Node URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent ENS domain",
+                        "name": "ensDomain",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentUrlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1033,6 +1074,14 @@ const docTemplate = `{
                     "$ref": "#/definitions/enums.AgentPromptTemplateKey"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentUrlResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
