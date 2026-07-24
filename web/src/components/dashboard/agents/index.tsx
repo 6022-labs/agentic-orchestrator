@@ -29,14 +29,17 @@ import { extractErrorMessage } from "@/lib/api-errors"
 import { truncateEthAddress } from "@/lib/utils"
 import type { Agent } from "@/models/agent"
 import type { AgentCollection } from "@/models/agent-collection"
+import { canManageAgent } from "@/lib/agent-access"
 import { openAgentNode } from "@/lib/agent-node"
 import { listAgents } from "@/queries/api/agents.queries"
 import { listAgentCollections } from "@/queries/api/collections.queries"
+import { useWallet } from "@/contexts/wallet-provider-context"
 
 const ELEMENTS_PER_PAGE = 20
 
 export default function AgentsSection() {
   const navigate = useNavigate()
+  const { address } = useWallet()
   const [loading, setLoading] = React.useState(true)
   const [agents, setAgents] = React.useState<Agent[]>([])
   const [collections, setCollections] = React.useState<AgentCollection[]>([])
@@ -47,7 +50,11 @@ export default function AgentsSection() {
     setLoading(true)
     try {
       const [agentsResponse, collectionsResponse] = await Promise.all([
-        listAgents({ page, elementsPerPage: ELEMENTS_PER_PAGE, isMinted: true }),
+        listAgents({
+          page,
+          elementsPerPage: ELEMENTS_PER_PAGE,
+          isMinted: true,
+        }),
         listAgentCollections(),
       ])
       setAgents(agentsResponse.data.agents ?? [])
@@ -142,7 +149,7 @@ export default function AgentsSection() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {agent.ensDomain && (
+                      {canManageAgent(agent, address) && agent.ensDomain && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -160,12 +167,14 @@ export default function AgentsSection() {
                           <ExternalLink className="size-3.5" />
                         </Button>
                       )}
-                      <TransferAgentDialog
-                        collectionAddress={agent.collectionAddress}
-                        collectionTokenId={String(agent.collectionTokenId)}
-                        agentName={agent.name}
-                        onTransferred={() => void load()}
-                      />
+                      {canManageAgent(agent, address) && (
+                        <TransferAgentDialog
+                          collectionAddress={agent.collectionAddress}
+                          collectionTokenId={String(agent.collectionTokenId)}
+                          agentName={agent.name}
+                          onTransferred={() => void load()}
+                        />
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

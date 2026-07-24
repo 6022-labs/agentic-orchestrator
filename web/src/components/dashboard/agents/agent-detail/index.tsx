@@ -12,8 +12,10 @@ import AgentAvatar from "@/components/dashboard/agents/agent-avatar"
 import AgentCardPanel from "@/components/dashboard/agents/agent-detail/agent-card-panel"
 import PromptTemplatesPanel from "@/components/dashboard/agents/agent-detail/prompt-templates-panel"
 import TransferAgentDialog from "@/components/dashboard/agents/dialogs/transfer-agent-dialog"
+import { canManageAgent } from "@/lib/agent-access"
 import { openAgentNode } from "@/lib/agent-node"
 import { extractErrorMessage } from "@/lib/api-errors"
+import { useWallet } from "@/contexts/wallet-provider-context"
 import { truncateEthAddress } from "@/lib/utils"
 import type { Agent } from "@/models/agent"
 import { getAgent } from "@/queries/api/agents.queries"
@@ -33,6 +35,7 @@ export default function AgentDetailSection() {
     collectionTokenId: string
   }>()
 
+  const { address } = useWallet()
   const [loading, setLoading] = React.useState(true)
   const [agent, setAgent] = React.useState<Agent | null>(null)
 
@@ -74,7 +77,7 @@ export default function AgentDetailSection() {
             Back to agents
           </Link>
         </Button>
-        {agent ? (
+        {agent && canManageAgent(agent, address) ? (
           <div className="flex items-center gap-2">
             {agent.ensDomain ? (
               <Button
