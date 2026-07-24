@@ -5,6 +5,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,8 +14,12 @@ type WhenGettingBlockchainConfigTestingSuite struct {
 }
 
 func WhenGettingBlockchainConfigBeforeEach(blockchainConfigSettings *settings.BlockchainConfigSettings) *WhenGettingBlockchainConfigTestingSuite {
+	walletSettings := &settings.WalletSettings{
+		Address: common.HexToAddress("0x2222222222222222222222222222222222222222"),
+	}
+
 	return &WhenGettingBlockchainConfigTestingSuite{
-		sut: use_cases.NewGetBlockchainConfig(blockchainConfigSettings),
+		sut: use_cases.NewGetBlockchainConfig(blockchainConfigSettings, walletSettings),
 	}
 }
 
@@ -50,6 +55,17 @@ func TestWhenGettingBlockchainConfig(t *testing.T) {
 				assert.Equal(t, "0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16", chain.CollectionCreatorAddress)
 				assert.Equal(t, "https://amoy.polygonscan.com", chain.ScannerBaseUrl)
 			}
+		})
+
+		t.Run("Should expose the orchestrator wallet address", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite()
+
+			resp, err := suite.sut.Get()
+
+			assert.NoError(t, err)
+			assert.Equal(t, "0x2222222222222222222222222222222222222222", resp.OrchestratorAddress)
 		})
 	})
 

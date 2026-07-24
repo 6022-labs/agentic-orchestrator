@@ -140,6 +140,8 @@ definitions:
         additionalProperties:
           $ref: '#/definitions/responses.EvmChainConfig'
         type: object
+      orchestratorAddress:
+        type: string
     type: object
   responses.BrokerConversationResponse:
     properties:

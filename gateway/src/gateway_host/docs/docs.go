@@ -1013,6 +1013,9 @@ const docTemplate = `{
                     "additionalProperties": {
                         "$ref": "#/definitions/responses.EvmChainConfig"
                     }
+                },
+                "orchestratorAddress": {
+                    "type": "string"
                 }
             }
         },

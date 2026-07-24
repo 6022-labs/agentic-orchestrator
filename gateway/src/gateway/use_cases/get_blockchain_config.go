@@ -11,10 +11,17 @@ type GetBlockchainConfigInterface interface {
 
 type GetBlockchainConfig struct {
 	blockchainConfigSettings *settings.BlockchainConfigSettings
+	walletSettings           *settings.WalletSettings
 }
 
-func NewGetBlockchainConfig(blockchainConfigSettings *settings.BlockchainConfigSettings) *GetBlockchainConfig {
-	return &GetBlockchainConfig{blockchainConfigSettings: blockchainConfigSettings}
+func NewGetBlockchainConfig(
+	blockchainConfigSettings *settings.BlockchainConfigSettings,
+	walletSettings *settings.WalletSettings,
+) *GetBlockchainConfig {
+	return &GetBlockchainConfig{
+		blockchainConfigSettings: blockchainConfigSettings,
+		walletSettings:           walletSettings,
+	}
 }
 
 func (uc *GetBlockchainConfig) Get() (*responses.BlockchainConfigResponse, error) {
@@ -27,5 +34,8 @@ func (uc *GetBlockchainConfig) Get() (*responses.BlockchainConfigResponse, error
 		}
 	}
 
-	return &responses.BlockchainConfigResponse{EvmChains: evmChains}, nil
+	return &responses.BlockchainConfigResponse{
+		EvmChains:           evmChains,
+		OrchestratorAddress: uc.walletSettings.Address.Hex(),
+	}, nil
 }

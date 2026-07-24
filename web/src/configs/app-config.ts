@@ -10,6 +10,7 @@ export type EvmChainConfig = {
 // Config served by the gateway's GET /config at boot; evmChains keyed by chain id.
 export type AppConfig = {
   evmChains: Record<string, EvmChainConfig>
+  orchestratorAddress: string
 }
 
 let appConfig: AppConfig | null = null

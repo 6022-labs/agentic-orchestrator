@@ -10,5 +10,6 @@ type EvmChainConfig struct {
 // BlockchainConfigResponse is the public EVM chain config (keyed by chain id)
 // the console boots from.
 type BlockchainConfigResponse struct {
-	EvmChains map[string]EvmChainConfig `json:"evmChains"`
+	EvmChains           map[string]EvmChainConfig `json:"evmChains"`
+	OrchestratorAddress string                    `json:"orchestratorAddress"`
 }

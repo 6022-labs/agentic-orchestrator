@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom"
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { navTitleForPath } from "@/components/dashboard/nav-items"
+import OrchestratorAddressChip from "@/components/dashboard/orchestrator-address-chip"
 import ThemeToggle from "@/components/dashboard/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -23,7 +24,8 @@ export default function DashboardLayout() {
           <h1 className="text-base font-semibold">
             {navTitleForPath(location.pathname)}
           </h1>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <OrchestratorAddressChip />
             <ThemeToggle />
           </div>
         </header>
