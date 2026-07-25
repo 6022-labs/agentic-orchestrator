@@ -70,7 +70,7 @@ services:
 
   conversation-broker-host:
     build:
-      context: ./agent-reasoning
+      context: ./agent-swarm
       dockerfile: ./src/conversation_broker_host/Dockerfile
     container_name: conversation-broker-host
     ports:

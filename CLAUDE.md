@@ -6,7 +6,7 @@ The orchestrator: a single git repo and `go.work` multi-module workspace. These 
 | Module | Purpose |
 |---|---|
 | `agent-identity` | Identity domain (on-chain agent identity / NFT / ENS) |
-| `agent-reasoning` | Swarm domain (conversation broker, ENS discovery, remote-agent invocation) |
+| `agent-swarm` | Swarm domain (conversation broker, ENS discovery, remote-agent invocation) |
 | `gateway` | Auth + config gateway |
 | `channels-and-integrations/slack-bridge` | Slack channel bridge |
 

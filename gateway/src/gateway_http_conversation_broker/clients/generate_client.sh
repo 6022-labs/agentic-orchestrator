@@ -2,11 +2,11 @@
 set -eu
 
 # Regenerates the conversation broker HTTP client from conversation_broker_host's
-# OpenAPI v3 spec. Run agent-reasoning/src/conversation_broker_host/docs/generate_docs.sh
+# OpenAPI v3 spec. Run agent-swarm/src/conversation_broker_host/docs/generate_docs.sh
 # first if the API changed.
 
 CLIENTS_DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
-SPEC_PATH="${CLIENTS_DIR}/../../../../agent-reasoning/src/conversation_broker_host/docs/swagger.v3.yaml"
+SPEC_PATH="${CLIENTS_DIR}/../../../../agent-swarm/src/conversation_broker_host/docs/swagger.v3.yaml"
 OUTPUT_FILE="${CLIENTS_DIR}/oapi_client.gen.go"
 
 OAPI_CODEGEN_VERSION="v2.5.1"
