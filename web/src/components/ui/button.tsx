@@ -63,7 +63,7 @@ function Button({
         children
       ) : (
         <>
-          {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+          {loading && <Loader className="h-4 w-4 animate-spin" />}
           {children}
         </>
       )}

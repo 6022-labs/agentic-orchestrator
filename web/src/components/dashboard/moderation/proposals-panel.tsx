@@ -102,8 +102,9 @@ export default function ProposalsPanel<TProposal extends { id: number }>({
   ) => {
     if (!wallet) return
 
-    const actionKey = `${collectionAddress}/${proposal.id}`
-    setActingOn(actionKey)
+    setActingOn(
+      `${collectionAddress}/${proposal.id}:${isAccepted ? "accept" : "reject"}`
+    )
     try {
       if (isAccepted) {
         await accept(collectionAddress, proposal.id, wallet)
@@ -182,10 +183,11 @@ export default function ProposalsPanel<TProposal extends { id: number }>({
                         <div className="flex min-w-0 flex-1 flex-col gap-2">
                           {renderBody(proposal)}
                         </div>
-                        <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:justify-center">
+                        <div className="flex shrink-0 items-center justify-end gap-2 sm:flex-col sm:justify-center">
                           <Button
                             size="sm"
-                            loading={actingOn === actionKey}
+                            className="w-28"
+                            loading={actingOn === `${actionKey}:accept`}
                             disabled={actingOn !== null}
                             onClick={() =>
                               void act(collectionAddress, proposal, true)
@@ -204,6 +206,8 @@ export default function ProposalsPanel<TProposal extends { id: number }>({
                             <Button
                               variant="outline"
                               size="sm"
+                              className="w-28"
+                              loading={actingOn === `${actionKey}:reject`}
                               disabled={actingOn !== null}
                             >
                               Reject
