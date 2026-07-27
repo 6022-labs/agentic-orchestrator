@@ -123,11 +123,13 @@ export default function AgentsSection() {
                 <TableRow
                   key={agent.id}
                   className="cursor-pointer"
-                  onClick={() =>
+                  onClick={(event) => {
+                    if (!event.currentTarget.contains(event.target as Node))
+                      return
                     navigate(
                       `/dashboard/agents/${agent.collectionAddress}/${agent.collectionTokenId}`
                     )
-                  }
+                  }}
                 >
                   <TableCell>
                     <AgentAvatar agent={agent} className="size-8" />
