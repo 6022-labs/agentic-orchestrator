@@ -1,6 +1,6 @@
 import React from "react"
 import { toast } from "sonner"
-import { ArrowRightLeft } from "lucide-react"
+import { ArrowRightLeft, TriangleAlert } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -84,10 +84,25 @@ export default function TransferAgentDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex items-start gap-2 rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-500">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <span>
+            The new owner takes over this agent. This wallet can no longer manage
+            it here, and the agent's own node console — which only lets its NFT
+            owner sign in — will reject this wallet too. Only the new owner can
+            transfer it back.
+          </span>
+        </div>
+
         <TransferAgentForm onFormComplete={onFormComplete} />
 
         <DialogFooter>
-          <Button type="submit" form="transfer-agent-form" loading={saving}>
+          <Button
+            type="submit"
+            form="transfer-agent-form"
+            variant="destructive"
+            loading={saving}
+          >
             Transfer
           </Button>
         </DialogFooter>
