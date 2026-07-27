@@ -1,7 +1,7 @@
 import React from "react"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
-import { Bot, Layers, MessagesSquare } from "lucide-react"
+import { Bot, Hourglass, Layers, MessagesSquare } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -29,7 +29,8 @@ import { listAgentCollections } from "@/queries/api/collections.queries"
 import { listConversations } from "@/queries/api/conversations.queries"
 
 type OverviewStats = {
-  agentsCount: number
+  mintedAgentsCount: number
+  proposalsCount: number
   collectionsCount: number
   conversationsCount: number
   activeConversationsCount: number
@@ -77,16 +78,22 @@ export default function OverviewSection() {
   const load = React.useCallback(async () => {
     setLoading(true)
     try {
-      const [agentsResponse, collectionsResponse, conversationsResponse] =
-        await Promise.all([
-          listAgents({ page: 1, elementsPerPage: 1 }),
-          listAgentCollections(),
-          listConversations(1, 10),
-        ])
+      const [
+        mintedAgentsResponse,
+        proposalsResponse,
+        collectionsResponse,
+        conversationsResponse,
+      ] = await Promise.all([
+        listAgents({ page: 1, elementsPerPage: 1, isMinted: true }),
+        listAgents({ page: 1, elementsPerPage: 1, isMinted: false }),
+        listAgentCollections(),
+        listConversations(1, 10),
+      ])
 
       const conversations = conversationsResponse.data.conversations ?? []
       setStats({
-        agentsCount: agentsResponse.data.totalElements,
+        mintedAgentsCount: mintedAgentsResponse.data.totalElements,
+        proposalsCount: proposalsResponse.data.totalElements,
         collectionsCount: collectionsResponse.data.length,
         conversationsCount: conversationsResponse.data.totalElements,
         activeConversationsCount: conversations.filter(
@@ -107,12 +114,19 @@ export default function OverviewSection() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Agents"
-          value={stats?.agentsCount ?? 0}
-          description="Registered in the orchestrator"
+          value={stats?.mintedAgentsCount ?? 0}
+          description="Minted on-chain"
           icon={Bot}
+          loading={loading}
+        />
+        <StatCard
+          title="Proposals"
+          value={stats?.proposalsCount ?? 0}
+          description="Awaiting mint"
+          icon={Hourglass}
           loading={loading}
         />
         <StatCard
