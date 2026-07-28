@@ -21,7 +21,7 @@ type AgentCollectionsManagerEventSubscriptionProvider struct {
 	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
 }
 
-type newAgentCollectionsManagerEventSubscriptionProviderParams struct {
+type NewAgentCollectionsManagerEventSubscriptionProviderParams struct {
 	dig.In
 
 	Logger                          *zap.Logger
@@ -30,7 +30,7 @@ type newAgentCollectionsManagerEventSubscriptionProviderParams struct {
 }
 
 func NewAgentCollectionsManagerEventSubscriptionProvider(
-	params newAgentCollectionsManagerEventSubscriptionProviderParams,
+	params NewAgentCollectionsManagerEventSubscriptionProviderParams,
 ) *AgentCollectionsManagerEventSubscriptionProvider {
 	return &AgentCollectionsManagerEventSubscriptionProvider{
 		logger:                          params.Logger,

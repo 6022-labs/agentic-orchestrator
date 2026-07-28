@@ -21,14 +21,14 @@ type AgentCollectionRequester struct {
 	client *ethclient.Client
 }
 
-type newAgentCollectionRequesterParams struct {
+type NewAgentCollectionRequesterParams struct {
 	dig.In
 
 	Client *ethclient.Client `name:"http"`
 }
 
 func NewAgentCollectionRequester(
-	params newAgentCollectionRequesterParams,
+	params NewAgentCollectionRequesterParams,
 ) *AgentCollectionRequester {
 	return &AgentCollectionRequester{
 		client: params.Client,

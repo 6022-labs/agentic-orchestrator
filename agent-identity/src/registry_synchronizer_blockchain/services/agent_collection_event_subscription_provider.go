@@ -19,7 +19,7 @@ type AgentCollectionEventSubscriptionProvider struct {
 	client *ethclient.Client
 }
 
-type newAgentCollectionEventSubscriptionProviderParams struct {
+type NewAgentCollectionEventSubscriptionProviderParams struct {
 	dig.In
 
 	Logger *zap.Logger
@@ -27,7 +27,7 @@ type newAgentCollectionEventSubscriptionProviderParams struct {
 }
 
 func NewAgentCollectionEventSubscriptionProvider(
-	params newAgentCollectionEventSubscriptionProviderParams,
+	params NewAgentCollectionEventSubscriptionProviderParams,
 ) *AgentCollectionEventSubscriptionProvider {
 	return &AgentCollectionEventSubscriptionProvider{
 		logger: params.Logger,

@@ -12,5 +12,6 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 	stopPostgres()
 	stopRedis()
+	stopAnvil()
 	os.Exit(code)
 }
