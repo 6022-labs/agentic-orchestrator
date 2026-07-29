@@ -16,14 +16,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite struct {
+type WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,7 +44,7 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite{
+	return &WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -52,7 +52,7 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 	}
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite) {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

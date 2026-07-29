@@ -21,7 +21,7 @@ const (
 	resolvedAgentUrl  = "https://agent.example.com"
 )
 
-type WhenResolvingEnsUrlTestSuite struct {
+type WhenResolvingEnsUrlTestingSuite struct {
 	anvilAccountSettings container_builders.AnvilAccountSettings
 	client               *ethclient.Client
 	gateway              *fixtures.EnsGatewayStub
@@ -32,7 +32,7 @@ type WhenResolvingEnsUrlTestSuite struct {
 // WhenResolvingEnsUrlBeforeEach claims registeredDomain in the registry and points
 // it at a real offchain
 // resolver whose proofs the gateway stub signs.
-func WhenResolvingEnsUrlBeforeEach(t *testing.T, registeredDomain string) *WhenResolvingEnsUrlTestSuite {
+func WhenResolvingEnsUrlBeforeEach(t *testing.T, registeredDomain string) *WhenResolvingEnsUrlTestingSuite {
 	anvilAccountSettings := container_builders.CreateAnvilAccount()
 
 	client, err := ethclient.Dial(anvilAccountSettings.HttpUrl)
@@ -65,7 +65,7 @@ func WhenResolvingEnsUrlBeforeEach(t *testing.T, registeredDomain string) *WhenR
 	// The proof is bound to the resolver address, so it is only known post-deploy.
 	gateway.Target = stack.Resolver
 
-	return &WhenResolvingEnsUrlTestSuite{
+	return &WhenResolvingEnsUrlTestingSuite{
 		anvilAccountSettings: anvilAccountSettings,
 		client:               client,
 		gateway:              gateway,

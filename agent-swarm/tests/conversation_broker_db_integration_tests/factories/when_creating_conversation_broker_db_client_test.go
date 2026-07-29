@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenCreatingConversationBrokerDbClientTestSuite struct {
+type WhenCreatingConversationBrokerDbClientTestingSuite struct {
 	dbName string
 
 	migrationsSettings *settings.MigrationsSettings
@@ -18,7 +18,7 @@ type WhenCreatingConversationBrokerDbClientTestSuite struct {
 	sut                *factories.DatabaseClientFactory
 }
 
-func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversationBrokerDbClientTestSuite {
+func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversationBrokerDbClientTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	databaseSettings := &settings.DatabaseSettings{
@@ -34,7 +34,7 @@ func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversatio
 		databaseSettings,
 	)
 
-	return &WhenCreatingConversationBrokerDbClientTestSuite{
+	return &WhenCreatingConversationBrokerDbClientTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -43,7 +43,7 @@ func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversatio
 	}
 }
 
-func WhenCreatingConversationBrokerDbClientAfterEach(suite *WhenCreatingConversationBrokerDbClientTestSuite) {
+func WhenCreatingConversationBrokerDbClientAfterEach(suite *WhenCreatingConversationBrokerDbClientTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

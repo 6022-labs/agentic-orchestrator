@@ -16,14 +16,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenSavingEntityTestSuite struct {
+type WhenSavingEntityTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentRepository
 }
 
-func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
+func WhenSavingEntityBeforeEach() *WhenSavingEntityTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,7 +44,7 @@ func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenSavingEntityTestSuite{
+	return &WhenSavingEntityTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -52,7 +52,7 @@ func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
 	}
 }
 
-func WhenSavingEntityAfterEach(suite *WhenSavingEntityTestSuite) {
+func WhenSavingEntityAfterEach(suite *WhenSavingEntityTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

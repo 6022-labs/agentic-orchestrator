@@ -10,25 +10,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenReadingAndDeletingTestSuite struct {
+type WhenReadingAndDeletingTestingSuite struct {
 	redisClient *redis.Client
 	sut         *services.RedisStorage
 }
 
-func WhenReadingAndDeletingBeforeEach() *WhenReadingAndDeletingTestSuite {
+func WhenReadingAndDeletingBeforeEach() *WhenReadingAndDeletingTestingSuite {
 	redisClient := container_builders.GetRedisConnection()
 
 	sut := services.NewRedisStorage(
 		redisClient,
 	)
 
-	return &WhenReadingAndDeletingTestSuite{
+	return &WhenReadingAndDeletingTestingSuite{
 		redisClient: redisClient,
 		sut:         sut,
 	}
 }
 
-func WhenReadingAndDeletingAfterEach(suite *WhenReadingAndDeletingTestSuite) {
+func WhenReadingAndDeletingAfterEach(suite *WhenReadingAndDeletingTestingSuite) {
 	container_builders.CloseRedisConnection(suite.redisClient)
 }
 

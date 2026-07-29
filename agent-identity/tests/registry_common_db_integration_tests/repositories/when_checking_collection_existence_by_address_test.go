@@ -14,14 +14,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenCheckingCollectionExistenceByAddressTestSuite struct {
+type WhenCheckingCollectionExistenceByAddressTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentCollectionRepository
 }
 
-func WhenCheckingCollectionExistenceByAddressBeforeEach() *WhenCheckingCollectionExistenceByAddressTestSuite {
+func WhenCheckingCollectionExistenceByAddressBeforeEach() *WhenCheckingCollectionExistenceByAddressTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -42,14 +42,14 @@ func WhenCheckingCollectionExistenceByAddressBeforeEach() *WhenCheckingCollectio
 
 	sut := repositories.NewAgentCollectionRepository(dbClient)
 
-	return &WhenCheckingCollectionExistenceByAddressTestSuite{
+	return &WhenCheckingCollectionExistenceByAddressTestingSuite{
 		sut:      sut,
 		dbName:   dbName,
 		dbClient: dbClient,
 	}
 }
 
-func WhenCheckingCollectionExistenceByAddressAfterEach(suite *WhenCheckingCollectionExistenceByAddressTestSuite) {
+func WhenCheckingCollectionExistenceByAddressAfterEach(suite *WhenCheckingCollectionExistenceByAddressTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

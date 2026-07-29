@@ -14,20 +14,20 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type WhenListingAgentsTestSuite struct {
+type WhenListingAgentsTestingSuite struct {
 	sut *use_cases.ListAgents
 
 	agentRegistryRequesterMock *interfaces_mocks.MockAgentRegistryRequesterInterface
 }
 
-func WhenListingAgentsTestSuiteBeforeEach(t *testing.T) *WhenListingAgentsTestSuite {
+func WhenListingAgentsBeforeEach(t *testing.T) *WhenListingAgentsTestingSuite {
 	mockController := gomock.NewController(t)
 
 	agentRegistryRequesterMock := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
 
 	sut := use_cases.NewListAgents(agentRegistryRequesterMock)
 
-	return &WhenListingAgentsTestSuite{
+	return &WhenListingAgentsTestingSuite{
 		sut: sut,
 
 		agentRegistryRequesterMock: agentRegistryRequesterMock,
@@ -40,7 +40,7 @@ func TestWhenListingAgents(t *testing.T) {
 	t.Run("Given error happens while fetching agents from the registry", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) *requests.ListAgentsRequest {
+		initSuite := func(suite *WhenListingAgentsTestingSuite) *requests.ListAgentsRequest {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
 				ListAgents(gomock.Any()).
@@ -52,7 +52,7 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentsTestSuiteBeforeEach(t)
+			suite := WhenListingAgentsBeforeEach(t)
 			req := initSuite(suite)
 
 			_, err := suite.sut.List(req)
@@ -64,7 +64,7 @@ func TestWhenListingAgents(t *testing.T) {
 	t.Run("Given agents are fetched successfully", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) []*responses.AgentResponse {
+		initSuite := func(suite *WhenListingAgentsTestingSuite) []*responses.AgentResponse {
 			agents := []*responses.AgentResponse{
 				model_builders.NewAgentBuilder().Build(),
 				model_builders.NewAgentBuilder().Build(),
@@ -88,7 +88,7 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Run("Should return the paginated agents", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentsTestSuiteBeforeEach(t)
+			suite := WhenListingAgentsBeforeEach(t)
 			agents := initSuite(suite)
 
 			resp, err := suite.sut.List(&requests.ListAgentsRequest{})
@@ -102,7 +102,7 @@ func TestWhenListingAgents(t *testing.T) {
 	t.Run("Given a minted filter is provided", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) {
+		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
 				ListAgents(gomock.Any()).
@@ -115,7 +115,7 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Run("Should forward it to the registry", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentsTestSuiteBeforeEach(t)
+			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
 			_, err := suite.sut.List(&requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)})
@@ -127,7 +127,7 @@ func TestWhenListingAgents(t *testing.T) {
 	t.Run("Given sort parameters are provided", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) {
+		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
 				ListAgents(gomock.Any()).
@@ -141,7 +141,7 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Run("Should forward them to the registry", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentsTestSuiteBeforeEach(t)
+			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
 			_, err := suite.sut.List(&requests.ListAgentsRequest{

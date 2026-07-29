@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingAgentInformationTestSuite struct {
+type WhenGettingAgentInformationTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.AgentCollectionRequester
 }
 
-func WhenGettingAgentInformationBeforeEach(t *testing.T) *WhenGettingAgentInformationTestSuite {
+func WhenGettingAgentInformationBeforeEach(t *testing.T) *WhenGettingAgentInformationTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenGettingAgentInformationTestSuite{
+	return &WhenGettingAgentInformationTestingSuite{
 		fixture: fixture,
 		sut:     fixture.agentCollectionRequester(),
 	}

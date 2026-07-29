@@ -9,20 +9,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingCollectionCreatedEventsTestSuite struct {
+type WhenGettingCollectionCreatedEventsTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.AgentCollectionsManagerRequester
 }
 
-func WhenGettingCollectionCreatedEventsBeforeEach(t *testing.T) *WhenGettingCollectionCreatedEventsTestSuite {
+func WhenGettingCollectionCreatedEventsBeforeEach(t *testing.T) *WhenGettingCollectionCreatedEventsTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenGettingCollectionCreatedEventsTestSuite{
+	return &WhenGettingCollectionCreatedEventsTestingSuite{
 		fixture: fixture,
 		sut:     fixture.agentCollectionsManagerRequester(),
 	}
 }
 
-func (suite *WhenGettingCollectionCreatedEventsTestSuite) createCollection(name string) {
+func (suite *WhenGettingCollectionCreatedEventsTestingSuite) createCollection(name string) {
 	if _, err := fixtures.CreateCollection(
 		context.Background(),
 		suite.fixture.httpClient,

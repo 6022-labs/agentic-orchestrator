@@ -19,14 +19,14 @@ const (
 	mintedSubscriptionSettleWindow = 2 * time.Second
 )
 
-type WhenSubscribingToMintedEventsTestSuite struct {
+type WhenSubscribingToMintedEventsTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.AgentCollectionEventSubscriptionProvider
 }
 
-func WhenSubscribingToMintedEventsBeforeEach(t *testing.T) *WhenSubscribingToMintedEventsTestSuite {
+func WhenSubscribingToMintedEventsBeforeEach(t *testing.T) *WhenSubscribingToMintedEventsTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenSubscribingToMintedEventsTestSuite{
+	return &WhenSubscribingToMintedEventsTestingSuite{
 		fixture: fixture,
 		sut:     fixture.agentCollectionEventSubscriptionProvider(),
 	}

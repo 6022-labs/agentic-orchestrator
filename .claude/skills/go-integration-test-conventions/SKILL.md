@@ -16,7 +16,7 @@ Apply this workflow to keep integration tests consistent across repository packa
 2. Keep naming aligned with existing conventions:
    - file: `when_<behavior>_test.go`
    - top test function: `TestWhen<Behavior>`
-   - suite type: `When<Behavior>TestingSuite` or `When<Behavior>TestSuite`
+   - suite type: `When<Behavior>TestingSuite`
    - setup helpers: `When<Behavior>BeforeEach` and `When<Behavior>AfterEach`
 3. Use real infrastructure with shared helpers:
    - PostgreSQL DB: `container_builders.CreatePostgreSQLDatabase()` + `DestroyPostgreSQLDatabase`

@@ -20,20 +20,20 @@ const (
 	collectionCreatedSubscriptionSettleWindow = 2 * time.Second
 )
 
-type WhenSubscribingToCollectionCreatedEventsTestSuite struct {
+type WhenSubscribingToCollectionCreatedEventsTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.AgentCollectionsManagerEventSubscriptionProvider
 }
 
-func WhenSubscribingToCollectionCreatedEventsBeforeEach(t *testing.T) *WhenSubscribingToCollectionCreatedEventsTestSuite {
+func WhenSubscribingToCollectionCreatedEventsBeforeEach(t *testing.T) *WhenSubscribingToCollectionCreatedEventsTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenSubscribingToCollectionCreatedEventsTestSuite{
+	return &WhenSubscribingToCollectionCreatedEventsTestingSuite{
 		fixture: fixture,
 		sut:     fixture.agentCollectionsManagerEventSubscriptionProvider(),
 	}
 }
 
-func (suite *WhenSubscribingToCollectionCreatedEventsTestSuite) createCollection(name string) {
+func (suite *WhenSubscribingToCollectionCreatedEventsTestingSuite) createCollection(name string) {
 	if _, err := fixtures.CreateCollection(
 		context.Background(),
 		suite.fixture.httpClient,

@@ -15,14 +15,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenGettingAgentAddressByTypeAndAddressTestSuite struct {
+type WhenGettingAgentAddressByTypeAndAddressTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentAddressRepository
 }
 
-func WhenGettingAgentAddressByTypeAndAddressBeforeEach() *WhenGettingAgentAddressByTypeAndAddressTestSuite {
+func WhenGettingAgentAddressByTypeAndAddressBeforeEach() *WhenGettingAgentAddressByTypeAndAddressTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -43,7 +43,7 @@ func WhenGettingAgentAddressByTypeAndAddressBeforeEach() *WhenGettingAgentAddres
 
 	sut := repositories.NewAgentAddressRepository(dbClient)
 
-	return &WhenGettingAgentAddressByTypeAndAddressTestSuite{
+	return &WhenGettingAgentAddressByTypeAndAddressTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -51,7 +51,7 @@ func WhenGettingAgentAddressByTypeAndAddressBeforeEach() *WhenGettingAgentAddres
 	}
 }
 
-func WhenGettingAgentAddressByTypeAndAddressAfterEach(suite *WhenGettingAgentAddressByTypeAndAddressTestSuite) {
+func WhenGettingAgentAddressByTypeAndAddressAfterEach(suite *WhenGettingAgentAddressByTypeAndAddressTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

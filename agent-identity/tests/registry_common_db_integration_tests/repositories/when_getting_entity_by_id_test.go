@@ -15,13 +15,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingEntityByIdTestSuite struct {
+type WhenGettingEntityByIdTestingSuite struct {
 	dbName string
 
 	sut *repositories.AgentRepository
 }
 
-func WhenGettingEntityByIdBeforeEach() *WhenGettingEntityByIdTestSuite {
+func WhenGettingEntityByIdBeforeEach() *WhenGettingEntityByIdTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -42,13 +42,13 @@ func WhenGettingEntityByIdBeforeEach() *WhenGettingEntityByIdTestSuite {
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenGettingEntityByIdTestSuite{
+	return &WhenGettingEntityByIdTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 	}
 }
 
-func WhenGettingEntityByIdBeforeEachAfterEach(suite *WhenGettingEntityByIdTestSuite) {
+func WhenGettingEntityByIdBeforeEachAfterEach(suite *WhenGettingEntityByIdTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

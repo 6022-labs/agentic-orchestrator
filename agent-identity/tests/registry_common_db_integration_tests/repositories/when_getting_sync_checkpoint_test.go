@@ -15,14 +15,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingSyncCheckpointTestSuite struct {
+type WhenGettingSyncCheckpointTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.SyncCheckpointRepository
 }
 
-func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestSuite {
+func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -43,14 +43,14 @@ func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestSuite {
 
 	sut := repositories.NewSyncCheckpointRepository(dbClient)
 
-	return &WhenGettingSyncCheckpointTestSuite{
+	return &WhenGettingSyncCheckpointTestingSuite{
 		sut:      sut,
 		dbName:   dbName,
 		dbClient: dbClient,
 	}
 }
 
-func WhenGettingSyncCheckpointAfterEach(suite *WhenGettingSyncCheckpointTestSuite) {
+func WhenGettingSyncCheckpointAfterEach(suite *WhenGettingSyncCheckpointTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

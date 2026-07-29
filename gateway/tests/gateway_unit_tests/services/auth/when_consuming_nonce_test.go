@@ -15,16 +15,16 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type WhenConsumingNonceTestSuite struct {
+type WhenConsumingNonceTestingSuite struct {
 	sut              *auth.NonceStore
 	cacheStorageMock *interfaces_mocks.MockCacheStorageInterface
 }
 
-func WhenConsumingNonceBeforeEach(t *testing.T) *WhenConsumingNonceTestSuite {
+func WhenConsumingNonceBeforeEach(t *testing.T) *WhenConsumingNonceTestingSuite {
 	mockController := gomock.NewController(t)
 	cacheStorageMock := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 
-	return &WhenConsumingNonceTestSuite{
+	return &WhenConsumingNonceTestingSuite{
 		sut:              auth.NewNonceStore(cacheStorageMock, &settings.JwtSettings{NonceTtl: 300}),
 		cacheStorageMock: cacheStorageMock,
 	}
@@ -47,7 +47,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 		}
 		payload, _ := json.Marshal(stored)
 
-		initSuite := func() *WhenConsumingNonceTestSuite {
+		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
 			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return(string(payload), nil).Times(1)
 			return suite
@@ -72,7 +72,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 	t.Run("Given the wallet has no challenge or it was already used", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func() *WhenConsumingNonceTestSuite {
+		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
 			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return("", errors.New("redis: nil")).Times(1)
 			return suite
@@ -90,7 +90,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 	t.Run("Given the stored payload is corrupted", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func() *WhenConsumingNonceTestSuite {
+		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
 			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return("not-json", nil).Times(1)
 			return suite

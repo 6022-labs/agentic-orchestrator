@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingMintProposalTestSuite struct {
+type WhenGettingMintProposalTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.AgentCollectionRequester
 }
 
-func WhenGettingMintProposalBeforeEach(t *testing.T) *WhenGettingMintProposalTestSuite {
+func WhenGettingMintProposalBeforeEach(t *testing.T) *WhenGettingMintProposalTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenGettingMintProposalTestSuite{
+	return &WhenGettingMintProposalTestingSuite{
 		fixture: fixture,
 		sut:     fixture.agentCollectionRequester(),
 	}
 }
 
-func (suite *WhenGettingMintProposalTestSuite) createProposal(agentName string) {
+func (suite *WhenGettingMintProposalTestingSuite) createProposal(agentName string) {
 	if err := fixtures.CreateMintProposal(
 		context.Background(),
 		suite.fixture.httpClient,

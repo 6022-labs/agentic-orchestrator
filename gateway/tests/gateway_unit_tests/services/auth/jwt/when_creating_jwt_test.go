@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenCreatingJwtTestSuite struct {
+type WhenCreatingJwtTestingSuite struct {
 	sut *jwt.JwtManager
 }
 
-func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestSuite {
+func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestingSuite {
 	jwtSettings := &settings.JwtSettings{
 		LivingTime: 1,
 		Hash:       "test",
@@ -20,7 +20,7 @@ func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestSuite {
 
 	sut := jwt.NewJwtManager(jwtSettings)
 
-	return &WhenCreatingJwtTestSuite{
+	return &WhenCreatingJwtTestingSuite{
 		sut: sut,
 	}
 }

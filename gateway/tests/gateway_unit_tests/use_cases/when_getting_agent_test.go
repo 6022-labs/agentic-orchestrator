@@ -16,7 +16,7 @@ type WhenGettingAgentTestingSuite struct {
 	agentRegistryRequesterMock *interfaces_mocks.MockAgentRegistryRequesterInterface
 }
 
-func WhenGettingAgentTestingSuiteBeforeEach(t *testing.T) *WhenGettingAgentTestingSuite {
+func WhenGettingAgentBeforeEach(t *testing.T) *WhenGettingAgentTestingSuite {
 	mockController := gomock.NewController(t)
 
 	agentRegistryRequesterMock := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
@@ -42,7 +42,7 @@ func TestWhenGettingAgent(t *testing.T) {
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenGettingAgentTestingSuiteBeforeEach(t)
+			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
@@ -62,7 +62,7 @@ func TestWhenGettingAgent(t *testing.T) {
 
 		t.Run("Should return nil response and nil error", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenGettingAgentTestingSuiteBeforeEach(t)
+			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
@@ -84,7 +84,7 @@ func TestWhenGettingAgent(t *testing.T) {
 
 		t.Run("Should return the agent response", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenGettingAgentTestingSuiteBeforeEach(t)
+			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()

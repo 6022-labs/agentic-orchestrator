@@ -14,14 +14,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenSavingEntityTestSuite struct {
+type WhenSavingEntityTestingSuite struct {
 	dbName string
 
 	dbClient *slack_bridge_db.DatabaseClient
 	sut      *repositories.SlackChannelRepository
 }
 
-func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
+func WhenSavingEntityBeforeEach() *WhenSavingEntityTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -43,7 +43,7 @@ func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
 
 	sut := repositories.NewSlackChannelRepository(dbClient)
 
-	return &WhenSavingEntityTestSuite{
+	return &WhenSavingEntityTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -51,7 +51,7 @@ func WhenSavingEntityBeforeEach() *WhenSavingEntityTestSuite {
 	}
 }
 
-func WhenSavingEntityAfterEach(suite *WhenSavingEntityTestSuite) {
+func WhenSavingEntityAfterEach(suite *WhenSavingEntityTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

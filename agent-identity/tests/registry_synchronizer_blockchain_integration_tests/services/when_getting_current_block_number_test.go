@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingCurrentBlockNumberTestSuite struct {
+type WhenGettingCurrentBlockNumberTestingSuite struct {
 	fixture *chainFixture
 	sut     *services.BlockchainRequester
 }
 
-func WhenGettingCurrentBlockNumberBeforeEach(t *testing.T) *WhenGettingCurrentBlockNumberTestSuite {
+func WhenGettingCurrentBlockNumberBeforeEach(t *testing.T) *WhenGettingCurrentBlockNumberTestingSuite {
 	fixture := newChainFixture(t)
-	return &WhenGettingCurrentBlockNumberTestSuite{
+	return &WhenGettingCurrentBlockNumberTestingSuite{
 		fixture: fixture,
 		sut:     fixture.blockchainRequester(),
 	}

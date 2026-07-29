@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenCreatingOrchestratorSlackBridgeDbClientTestSuite struct {
+type WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite struct {
 	dbName string
 
 	databaseSettings *settings.DatabaseSettings
@@ -18,7 +18,7 @@ type WhenCreatingOrchestratorSlackBridgeDbClientTestSuite struct {
 	sut *factories.DatabaseClientFactory
 }
 
-func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrchestratorSlackBridgeDbClientTestSuite {
+func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	databaseSettings := &settings.DatabaseSettings{
@@ -34,14 +34,14 @@ func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrches
 		databaseSettings,
 	)
 
-	return &WhenCreatingOrchestratorSlackBridgeDbClientTestSuite{
+	return &WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite{
 		sut:              sut,
 		dbName:           dbName,
 		databaseSettings: databaseSettings,
 	}
 }
 
-func WhenCreatingOrchestratorSlackBridgeDbClientAfterEach(suite *WhenCreatingOrchestratorSlackBridgeDbClientTestSuite) {
+func WhenCreatingOrchestratorSlackBridgeDbClientAfterEach(suite *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

@@ -16,18 +16,18 @@ import (
 
 const recoverSignerAddress = "0xd389d997Df5654b87914492E1e0C6861bfe835DE"
 
-type WhenRecoveringSignerTestSuite struct {
+type WhenRecoveringSignerTestingSuite struct {
 	sut *services.SignatureVerifier
 
 	mockEcdsaSigner *interfaces_mocks.MockECDSASignerInterface
 }
 
-func WhenRecoveringSignerBeforeEach(t *testing.T) *WhenRecoveringSignerTestSuite {
+func WhenRecoveringSignerBeforeEach(t *testing.T) *WhenRecoveringSignerTestingSuite {
 	mockController := gomock.NewController(t)
 
 	mockEcdsaSigner := interfaces_mocks.NewMockECDSASignerInterface(mockController)
 
-	return &WhenRecoveringSignerTestSuite{
+	return &WhenRecoveringSignerTestingSuite{
 		sut:             services.NewSignatureVerifier(mockEcdsaSigner),
 		mockEcdsaSigner: mockEcdsaSigner,
 	}
