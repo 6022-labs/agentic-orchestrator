@@ -23,20 +23,6 @@ const logAndRethrow = (error: unknown) => {
   throw error
 }
 
-// Mirrors the contract gate: minimum authorized-token balance OR locked collateral.
-export const canCreateCollection = async (
-  address: string,
-  walletProvider: Eip1193Provider
-): Promise<boolean> => {
-  const provider = new BrowserProvider(walletProvider)
-  const contract = new ethers.Contract(
-    getPrimaryEvmChainConfig().collectionCreatorAddress,
-    AgentCollectionCreatorABI,
-    provider
-  )
-  return await contract.canCreateCollection(address)
-}
-
 // Creates the collection (clone + init + manager registration in one tx) and
 // returns the new collection address parsed from the manager's
 // CollectionCreated log, or null if the log can't be decoded.
