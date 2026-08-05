@@ -83,6 +83,20 @@ func (mr *MockBlockEventsQueueInterfaceMockRecorder) AddAgentCollectionV1AgentAt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCollectionV1AgentAttributeUpdatedEvents", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).AddAgentCollectionV1AgentAttributeUpdatedEvents), blockNumber, events)
 }
 
+// AddAgentCollectionV1AgentImageRemovedEvents mocks base method.
+func (m *MockBlockEventsQueueInterface) AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAgentCollectionV1AgentImageRemovedEvents", blockNumber, events)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddAgentCollectionV1AgentImageRemovedEvents indicates an expected call of AddAgentCollectionV1AgentImageRemovedEvents.
+func (mr *MockBlockEventsQueueInterfaceMockRecorder) AddAgentCollectionV1AgentImageRemovedEvents(blockNumber, events any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgentCollectionV1AgentImageRemovedEvents", reflect.TypeOf((*MockBlockEventsQueueInterface)(nil).AddAgentCollectionV1AgentImageRemovedEvents), blockNumber, events)
+}
+
 // AddAgentCollectionV1AgentImageUpdatedEvents mocks base method.
 func (m *MockBlockEventsQueueInterface) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error {
 	m.ctrl.T.Helper()

@@ -90,6 +90,22 @@ func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) Sta
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentAttributeUpdatedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentAttributeUpdatedSubscription), addresses)
 }
 
+// StartAgentImageRemovedSubscription mocks base method.
+func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentImageRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartAgentImageRemovedSubscription", addresses)
+	ret0, _ := ret[0].(<-chan *abi.AgentCollectionV1AgentImageRemoved)
+	ret1, _ := ret[1].(ethereum.Subscription)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// StartAgentImageRemovedSubscription indicates an expected call of StartAgentImageRemovedSubscription.
+func (mr *MockAgentCollectionEventSubscriptionProviderInterfaceMockRecorder) StartAgentImageRemovedSubscription(addresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartAgentImageRemovedSubscription", reflect.TypeOf((*MockAgentCollectionEventSubscriptionProviderInterface)(nil).StartAgentImageRemovedSubscription), addresses)
+}
+
 // StartAgentImageUpdatedSubscription mocks base method.
 func (m *MockAgentCollectionEventSubscriptionProviderInterface) StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()

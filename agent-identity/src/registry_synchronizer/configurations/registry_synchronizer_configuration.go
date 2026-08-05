@@ -104,6 +104,14 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentImageRemovedEventHandler,
+		dig.As(new(interfaces.AgentImageRemovedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewMintProposalCreatedEventHandler,
 		dig.As(new(interfaces.MintProposalCreatedEventHandlerInterface)),
 	)

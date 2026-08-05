@@ -263,9 +263,14 @@ export const AgentCollectionsManagerABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "string",
+        "name": "addressType",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "value",
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -278,7 +283,7 @@ export const AgentCollectionsManagerABI = [
         "type": "uint256"
       }
     ],
-    "name": "findAgentByWallet",
+    "name": "findAgentByAddress",
     "outputs": [
       {
         "internalType": "address",
@@ -446,14 +451,29 @@ export const AgentCollectionsManagerABI = [
         "internalType": "address",
         "name": "account",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
       }
     ],
     "name": "moderatorOf",
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "",
+        "name": "moderatorCollections",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "next",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

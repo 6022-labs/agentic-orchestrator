@@ -37,6 +37,11 @@ func AddRegistrySynchronizerListenersConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = addAgentCollectionAgentImageRemovedListenerConfiguration(container)
+	if err != nil {
+		panic(err)
+	}
+
 	err = addAgentCollectionMintProposalCreatedListenerConfiguration(container)
 	if err != nil {
 		panic(err)
@@ -275,6 +280,45 @@ func addAgentCollectionAgentImageUpdatedListenerConfiguration(container *dig.Con
 	}
 
 	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentImageUpdatedListener) interfaces.CollectionEventSubscriberInterface {
+		return l
+	},
+		dig.Group("collection_event_subscribers"),
+		dig.As(new(interfaces.CollectionEventSubscriberInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addAgentCollectionAgentImageRemovedListenerConfiguration(container *dig.Container) error {
+	err := container.Provide(registry_synchronizer_listeners.NewAgentCollectionAgentImageRemovedListener)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentImageRemovedListener) registry_synchronizer_listeners.EventListenerInterface {
+		return l
+	},
+		dig.Group("event_listeners"),
+		dig.As(new(registry_synchronizer_listeners.EventListenerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentImageRemovedListener) interfaces.OnBlockProcessedHandlerInterface {
+		return l
+	},
+		dig.Group("on_block_processed_handlers"),
+		dig.As(new(interfaces.OnBlockProcessedHandlerInterface)),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = container.Provide(func(l *registry_synchronizer_listeners.AgentCollectionAgentImageRemovedListener) interfaces.CollectionEventSubscriberInterface {
 		return l
 	},
 		dig.Group("collection_event_subscribers"),

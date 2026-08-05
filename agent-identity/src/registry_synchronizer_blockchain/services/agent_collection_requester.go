@@ -219,6 +219,32 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(fr
 	return allEvents, nil
 }
 
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentImageRemoved
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentImageRemoved(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
+	}
+
+	return allEvents, nil
+}
+
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentAttributeUpdated
 

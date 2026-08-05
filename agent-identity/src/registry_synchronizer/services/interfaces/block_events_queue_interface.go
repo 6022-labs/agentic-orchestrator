@@ -8,6 +8,7 @@ type QueueItem struct {
 	AgentCollectionV1TransferEvents              []*abi.AgentCollectionV1Transfer
 	AgentCollectionV1AgentAddressAddedEvents     []*abi.AgentCollectionV1AgentAddressAdded
 	AgentCollectionV1AgentImageUpdatedEvents     []*abi.AgentCollectionV1AgentImageUpdated
+	AgentCollectionV1AgentImageRemovedEvents     []*abi.AgentCollectionV1AgentImageRemoved
 	AgentCollectionV1AgentAddressRemovedEvents   []*abi.AgentCollectionV1AgentAddressRemoved
 	AgentCollectionV1MintProposalCreatedEvents   []*abi.AgentCollectionV1MintProposalCreated
 	AgentCollectionV1MintProposalRemovedEvents   []*abi.AgentCollectionV1MintProposalRemoved
@@ -21,6 +22,7 @@ type BlockEventsQueueInterface interface {
 	AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error
 	AddAgentCollectionV1AgentAddressAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressAdded) error
 	AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error
+	AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error
 	AddAgentCollectionV1AgentAddressRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressRemoved) error
 	AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error
 	AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error

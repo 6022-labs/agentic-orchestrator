@@ -79,6 +79,17 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumb
 	return nil
 }
 
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry := s.ensureEntry(blockNumber)
+	entry.data.AgentCollectionV1AgentImageRemovedEvents = append(entry.data.AgentCollectionV1AgentImageRemovedEvents, events...)
+	s.trackPendingBlock(blockNumber, entry)
+
+	return nil
+}
+
 func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -23,6 +23,7 @@ type WhenProcessingBlockEventsTestingSuite struct {
 	mintedEventHandlerMock                *interfaces_mocks.MockMintedEventHandlerInterface
 	transferEventHandlerMock              *interfaces_mocks.MockTransferEventHandlerInterface
 	agentImageUpdatedEventHandlerMock     *interfaces_mocks.MockAgentImageUpdatedEventHandlerInterface
+	agentImageRemovedEventHandlerMock     *interfaces_mocks.MockAgentImageRemovedEventHandlerInterface
 	mintProposalCreatedEventHandlerMock   *interfaces_mocks.MockMintProposalCreatedEventHandlerInterface
 	mintProposalRemovedEventHandlerMock   *interfaces_mocks.MockMintProposalRemovedEventHandlerInterface
 	agentAttributeUpdatedEventHandlerMock *interfaces_mocks.MockAgentAttributeUpdatedEventHandlerInterface
@@ -38,6 +39,7 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	mintedEventHandlerMock := interfaces_mocks.NewMockMintedEventHandlerInterface(mockController)
 	transferEventHandlerMock := interfaces_mocks.NewMockTransferEventHandlerInterface(mockController)
 	agentImageUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentImageUpdatedEventHandlerInterface(mockController)
+	agentImageRemovedEventHandlerMock := interfaces_mocks.NewMockAgentImageRemovedEventHandlerInterface(mockController)
 	mintProposalCreatedEventHandlerMock := interfaces_mocks.NewMockMintProposalCreatedEventHandlerInterface(mockController)
 	mintProposalRemovedEventHandlerMock := interfaces_mocks.NewMockMintProposalRemovedEventHandlerInterface(mockController)
 	agentAttributeUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentAttributeUpdatedEventHandlerInterface(mockController)
@@ -50,6 +52,7 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 			AgentCollectionV1MintedHandler:                 mintedEventHandlerMock,
 			AgentCollectionV1TransferHandler:               transferEventHandlerMock,
 			AgentCollectionV1AgentImageUpdatedHandler:      agentImageUpdatedEventHandlerMock,
+			AgentCollectionV1AgentImageRemovedHandler:      agentImageRemovedEventHandlerMock,
 			AgentCollectionV1MintProposalCreatedHandler:    mintProposalCreatedEventHandlerMock,
 			AgentCollectionV1MintProposalRemovedHandler:    mintProposalRemovedEventHandlerMock,
 			AgentCollectionV1AgentAttributeUpdatedHandler:  agentAttributeUpdatedEventHandlerMock,
@@ -62,6 +65,7 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 		mintedEventHandlerMock:                mintedEventHandlerMock,
 		transferEventHandlerMock:              transferEventHandlerMock,
 		agentImageUpdatedEventHandlerMock:     agentImageUpdatedEventHandlerMock,
+		agentImageRemovedEventHandlerMock:     agentImageRemovedEventHandlerMock,
 		mintProposalCreatedEventHandlerMock:   mintProposalCreatedEventHandlerMock,
 		mintProposalRemovedEventHandlerMock:   mintProposalRemovedEventHandlerMock,
 		agentAttributeUpdatedEventHandlerMock: agentAttributeUpdatedEventHandlerMock,
@@ -150,6 +154,86 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "block 77: failed to process block events")
+		})
+	})
+
+	t.Run("Given the block carries agent image events", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenProcessingBlockEventsTestingSuite) *service_interfaces.QueueItem {
+			imageUpdated := &abi.AgentCollectionV1AgentImageUpdated{TokenId: big.NewInt(1), Raw: types.Log{}}
+			imageRemoved := &abi.AgentCollectionV1AgentImageRemoved{TokenId: big.NewInt(1), Raw: types.Log{}}
+
+			item := &service_interfaces.QueueItem{
+				AgentCollectionV1AgentImageUpdatedEvents: []*abi.AgentCollectionV1AgentImageUpdated{imageUpdated},
+				AgentCollectionV1AgentImageRemovedEvents: []*abi.AgentCollectionV1AgentImageRemoved{imageRemoved},
+			}
+
+			suite.agentImageUpdatedEventHandlerMock.
+				EXPECT().
+				Handle(imageUpdated).
+				Return(nil).
+				Times(1)
+			suite.agentImageRemovedEventHandlerMock.
+				EXPECT().
+				Handle(imageRemoved).
+				Return(nil).
+				Times(1)
+			suite.syncCheckpointRepositoryMock.
+				EXPECT().
+				Get().
+				Return(nil, nil)
+			suite.syncCheckpointRepositoryMock.
+				EXPECT().
+				Save(gomock.Any()).
+				DoAndReturn(func(entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
+					return entity, nil
+				})
+
+			return item
+		}
+
+		t.Run("Should dispatch them to their handlers", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingBlockEventsBeforeEach(t)
+			item := initSuite(suite)
+
+			err := suite.sut.ProcessBlock(context.Background(), 51, item)
+
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given an agent image removed handler fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenProcessingBlockEventsTestingSuite) *service_interfaces.QueueItem {
+			imageRemoved := &abi.AgentCollectionV1AgentImageRemoved{TokenId: big.NewInt(2), Raw: types.Log{}}
+
+			item := &service_interfaces.QueueItem{
+				AgentCollectionV1AgentImageRemovedEvents: []*abi.AgentCollectionV1AgentImageRemoved{imageRemoved},
+			}
+
+			suite.agentImageRemovedEventHandlerMock.
+				EXPECT().
+				Handle(imageRemoved).
+				Return(assert.AnError).
+				Times(3)
+
+			return item
+		}
+
+		t.Run("Should fail after max retry attempts", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingBlockEventsBeforeEach(t)
+			item := initSuite(suite)
+
+			err := suite.sut.ProcessBlock(context.Background(), 52, item)
+
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "failed to sync agent image removed events")
 		})
 	})
 }

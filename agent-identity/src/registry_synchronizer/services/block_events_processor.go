@@ -30,6 +30,7 @@ type BlockEventsProcessor struct {
 	agentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
 	agentCollectionV1TransferHandler              interfaces.TransferEventHandlerInterface
 	agentCollectionV1AgentImageUpdatedHandler     interfaces.AgentImageUpdatedEventHandlerInterface
+	agentCollectionV1AgentImageRemovedHandler     interfaces.AgentImageRemovedEventHandlerInterface
 	agentCollectionV1AgentAddressAddedHandler     interfaces.AgentAddressAddedEventHandlerInterface
 	agentCollectionV1AgentAddressRemovedHandler   interfaces.AgentAddressRemovedEventHandlerInterface
 	agentCollectionV1MintProposalCreatedHandler   interfaces.MintProposalCreatedEventHandlerInterface
@@ -51,6 +52,7 @@ type NewBlockEventsProcessorParams struct {
 	AgentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
 	AgentCollectionV1TransferHandler              interfaces.TransferEventHandlerInterface
 	AgentCollectionV1AgentImageUpdatedHandler     interfaces.AgentImageUpdatedEventHandlerInterface
+	AgentCollectionV1AgentImageRemovedHandler     interfaces.AgentImageRemovedEventHandlerInterface
 	AgentCollectionV1AgentAddressAddedHandler     interfaces.AgentAddressAddedEventHandlerInterface
 	AgentCollectionV1AgentAddressRemovedHandler   interfaces.AgentAddressRemovedEventHandlerInterface
 	AgentCollectionV1MintProposalCreatedHandler   interfaces.MintProposalCreatedEventHandlerInterface
@@ -73,6 +75,7 @@ func NewBlockEventsProcessor(
 		agentCollectionV1MintedHandler:                params.AgentCollectionV1MintedHandler,
 		agentCollectionV1TransferHandler:              params.AgentCollectionV1TransferHandler,
 		agentCollectionV1AgentImageUpdatedHandler:     params.AgentCollectionV1AgentImageUpdatedHandler,
+		agentCollectionV1AgentImageRemovedHandler:     params.AgentCollectionV1AgentImageRemovedHandler,
 		agentCollectionV1AgentAddressAddedHandler:     params.AgentCollectionV1AgentAddressAddedHandler,
 		agentCollectionV1AgentAddressRemovedHandler:   params.AgentCollectionV1AgentAddressRemovedHandler,
 		agentCollectionV1MintProposalCreatedHandler:   params.AgentCollectionV1MintProposalCreatedHandler,
@@ -92,6 +95,7 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		zap.Int("agentCollectionV1TransferEventsCount", len(item.AgentCollectionV1TransferEvents)),
 		zap.Int("agentCollectionV1AgentAddressAddedEventsCount", len(item.AgentCollectionV1AgentAddressAddedEvents)),
 		zap.Int("agentCollectionV1AgentImageUpdatedEventsCount", len(item.AgentCollectionV1AgentImageUpdatedEvents)),
+		zap.Int("agentCollectionV1AgentImageRemovedEventsCount", len(item.AgentCollectionV1AgentImageRemovedEvents)),
 		zap.Int("agentCollectionV1AgentAddressRemovedEventsCount", len(item.AgentCollectionV1AgentAddressRemovedEvents)),
 		zap.Int("agentCollectionV1MintProposalCreatedEventsCount", len(item.AgentCollectionV1MintProposalCreatedEvents)),
 		zap.Int("agentCollectionV1MintProposalRemovedEventsCount", len(item.AgentCollectionV1MintProposalRemovedEvents)),
@@ -120,6 +124,10 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 
 		if err := p.syncAgentCollectionV1AgentImageUpdatedEvents(item.AgentCollectionV1AgentImageUpdatedEvents); err != nil {
 			return fmt.Errorf("failed to sync agent image updated events at block %d: %w", blockNumber, err)
+		}
+
+		if err := p.syncAgentCollectionV1AgentImageRemovedEvents(item.AgentCollectionV1AgentImageRemovedEvents); err != nil {
+			return fmt.Errorf("failed to sync agent image removed events at block %d: %w", blockNumber, err)
 		}
 
 		if err := p.syncAgentCollectionV1MintProposalCreatedEvents(item.AgentCollectionV1MintProposalCreatedEvents); err != nil {
@@ -221,6 +229,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1TransferEvents(events []*abi
 func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageUpdatedEvents(events []*abi.AgentCollectionV1AgentImageUpdated) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentImageUpdatedHandler.Handle(event); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageRemovedEvents(events []*abi.AgentCollectionV1AgentImageRemoved) error {
+	for _, event := range events {
+		if err := p.agentCollectionV1AgentImageRemovedHandler.Handle(event); err != nil {
 			return err
 		}
 	}

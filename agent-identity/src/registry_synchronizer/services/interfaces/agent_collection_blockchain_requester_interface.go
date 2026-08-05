@@ -15,6 +15,7 @@ type AgentCollectionBlockchainRequesterInterface interface {
 	GetAgentCollectionV1MintedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1Minted, error)
 	GetAgentCollectionV1TransferEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1Transfer, error)
 	GetAgentCollectionV1AgentImageUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentImageUpdated, error)
+	GetAgentCollectionV1AgentImageRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentImageRemoved, error)
 	GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAttributeUpdated, error)
 	GetAgentCollectionV1AgentAddressAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAddressAdded, error)
 	GetAgentCollectionV1AgentAddressRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAddressRemoved, error)

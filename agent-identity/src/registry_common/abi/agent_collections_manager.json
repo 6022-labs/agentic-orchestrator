@@ -451,14 +451,29 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
       }
     ],
     "name": "moderatorOf",
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "",
+        "name": "moderatorCollections",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "next",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

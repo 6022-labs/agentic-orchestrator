@@ -190,6 +190,11 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
+				GetAgentCollectionV1AgentImageRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			suite.mockAgentCollectionBlockchainRequester.EXPECT().
 				GetAgentCollectionV1AgentAttributeUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)

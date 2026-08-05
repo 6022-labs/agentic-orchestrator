@@ -134,6 +134,9 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err = basics.sut.AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber, []*abi.AgentCollectionV1AgentImageUpdated{{}})
 			assert.Nil(t, err)
 
+			err = basics.sut.AddAgentCollectionV1AgentImageRemovedEvents(blockNumber, []*abi.AgentCollectionV1AgentImageRemoved{{}})
+			assert.Nil(t, err)
+
 			err = basics.sut.AddAgentCollectionV1MintProposalCreatedEvents(blockNumber, []*abi.AgentCollectionV1MintProposalCreated{{}})
 			assert.Nil(t, err)
 
@@ -155,6 +158,7 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			assert.Len(t, item.AgentCollectionV1MintedEvents, 1)
 			assert.Len(t, item.AgentCollectionV1TransferEvents, 1)
 			assert.Len(t, item.AgentCollectionV1AgentImageUpdatedEvents, 1)
+			assert.Len(t, item.AgentCollectionV1AgentImageRemovedEvents, 1)
 			assert.Len(t, item.AgentCollectionV1MintProposalCreatedEvents, 1)
 			assert.Len(t, item.AgentCollectionV1MintProposalRemovedEvents, 1)
 			assert.Len(t, item.AgentCollectionV1AgentAttributeUpdatedEvents, 1)

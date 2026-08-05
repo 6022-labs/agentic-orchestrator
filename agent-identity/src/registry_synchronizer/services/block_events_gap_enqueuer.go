@@ -105,6 +105,11 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		return fmt.Errorf("failed to get agent collection v1 agent image updated events: %w", err)
 	}
 
+	imageRemovedEvents, err := b.getAgentCollectionV1AgentImageRemoved(minimumBlockToStartFrom, *toBlock, agentCollectionRelatedAddresses)
+	if err != nil {
+		return fmt.Errorf("failed to get agent collection v1 agent image removed events: %w", err)
+	}
+
 	attributeUpdatedEvents, err := b.getAgentCollectionV1AgentAttributeUpdated(minimumBlockToStartFrom, *toBlock, agentCollectionRelatedAddresses)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collection v1 agent attribute updated events: %w", err)
@@ -146,6 +151,10 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		return item.Raw.BlockNumber
 	})
 
+	imageRemovedEventsByBlock := lo.GroupBy(imageRemovedEvents, func(item *abi.AgentCollectionV1AgentImageRemoved) uint64 {
+		return item.Raw.BlockNumber
+	})
+
 	attributeUpdatedEventsByBlock := lo.GroupBy(attributeUpdatedEvents, func(item *abi.AgentCollectionV1AgentAttributeUpdated) uint64 {
 		return item.Raw.BlockNumber
 	})
@@ -172,6 +181,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 		mintedEventsForBlock := mintedEventsByBlock[blockNumber]
 		transferEventsForBlock := transferEventsByBlock[blockNumber]
 		imageUpdatedEventsForBlock := imageUpdatedEventsByBlock[blockNumber]
+		imageRemovedEventsForBlock := imageRemovedEventsByBlock[blockNumber]
 		attributeUpdatedEventsForBlock := attributeUpdatedEventsByBlock[blockNumber]
 		walletAddedEventsForBlock := walletAddedEventsByBlock[blockNumber]
 		walletRemovedEventsForBlock := walletRemovedEventsByBlock[blockNumber]
@@ -182,6 +192,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 			len(mintedEventsForBlock) == 0 &&
 			len(transferEventsForBlock) == 0 &&
 			len(imageUpdatedEventsForBlock) == 0 &&
+			len(imageRemovedEventsForBlock) == 0 &&
 			len(attributeUpdatedEventsForBlock) == 0 &&
 			len(walletAddedEventsForBlock) == 0 &&
 			len(walletRemovedEventsForBlock) == 0 &&
@@ -204,6 +215,10 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap() error {
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber, imageUpdatedEventsForBlock); err != nil {
 			return fmt.Errorf("failed to enqueue agent collection v1 agent image updated events for block %d: %w", blockNumber, err)
+		}
+
+		if err = b.blockEventsQueue.AddAgentCollectionV1AgentImageRemovedEvents(blockNumber, imageRemovedEventsForBlock); err != nil {
+			return fmt.Errorf("failed to enqueue agent collection v1 agent image removed events for block %d: %w", blockNumber, err)
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber, attributeUpdatedEventsForBlock); err != nil {
@@ -288,6 +303,21 @@ func (s *BlockEventsGapEnqueuer) getAgentCollectionV1AgentImageUpdated(from, to 
 	}
 
 	s.logger.Debug("Fetched agent collection v1 agent image updated events",
+		zap.Int("eventsCount", len(events)),
+	)
+
+	return events, nil
+}
+
+func (s *BlockEventsGapEnqueuer) getAgentCollectionV1AgentImageRemoved(from, to uint64, collectionAddresses []common.Address) ([]*abi.AgentCollectionV1AgentImageRemoved, error) {
+	s.logger.Debug("Starting to get agent collection v1 agent image removed events")
+
+	events, err := s.agentCollectionBlockchainRequester.GetAgentCollectionV1AgentImageRemovedEvent(from, to, collectionAddresses)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent collection v1 agent image removed events: %w", err)
+	}
+
+	s.logger.Debug("Fetched agent collection v1 agent image removed events",
 		zap.Int("eventsCount", len(events)),
 	)
 
