@@ -27,7 +27,7 @@ func NewDecentralizedDomainNameBuilder(
 
 func (b *DecentralizedDomainNameBuilder) BuildDomainName(agentName, collectionName string) string {
 	domainName := fmt.Sprintf(
-		"%s.%s.%d.protocol6022.%s",
+		"%s.%s.%d.6022.%s",
 		agentName,
 		collectionName,
 		b.blockchainSettings.ChainId,

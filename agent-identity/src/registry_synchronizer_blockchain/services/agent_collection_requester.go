@@ -21,14 +21,14 @@ type AgentCollectionRequester struct {
 	client *ethclient.Client
 }
 
-type newAgentCollectionRequesterParams struct {
+type NewAgentCollectionRequesterParams struct {
 	dig.In
 
 	Client *ethclient.Client `name:"http"`
 }
 
 func NewAgentCollectionRequester(
-	params newAgentCollectionRequesterParams,
+	params NewAgentCollectionRequesterParams,
 ) *AgentCollectionRequester {
 	return &AgentCollectionRequester{
 		client: params.Client,
@@ -47,31 +47,6 @@ func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Addres
 	}
 
 	return &owner, nil
-}
-
-func (a *AgentCollectionRequester) GetAgentPreviousSigners(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error) {
-	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
-	if err != nil {
-		return nil, err
-	}
-
-	iter, err := agentCollection.FilterAgentSignerUpdated(&bind.FilterOpts{
-		Start:   1,
-		End:     nil,
-		Context: context.Background(),
-	}, []*big.Int{&collectionTokenId})
-	if err != nil {
-		return nil, err
-	}
-
-	var signers []common.Address
-
-	for iter.Next() {
-		event := iter.Event
-		signers = append(signers, event.NewSigner)
-	}
-
-	return signers, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentInformation(collectionAddress common.Address, collectionTokenId big.Int) (*registry_abi.AgentInformation, error) {
@@ -179,7 +154,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(from, to uint
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -244,8 +219,8 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(fr
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentSignerUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentSignerUpdated, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentSignerUpdated
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentImageRemoved
 
 	for _, address := range fromAddresses {
 		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
@@ -253,11 +228,11 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentSignerUpdatedEvent(f
 			return nil, err
 		}
 
-		iter, err := agentCollection.FilterAgentSignerUpdated(&bind.FilterOpts{
+		iter, err := agentCollection.FilterAgentImageRemoved(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil)
+		}, nil, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -309,7 +284,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -335,7 +310,59 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 			Start:   from,
 			End:     &to,
 			Context: context.Background(),
-		}, nil, nil)
+		}, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
+	}
+
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentAddressAdded
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentAddressAdded(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for iter.Next() {
+			allEvents = append(allEvents, iter.Event)
+		}
+	}
+
+	return allEvents, nil
+}
+
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
+	var allEvents []*registry_abi.AgentCollectionV1AgentAddressRemoved
+
+	for _, address := range fromAddresses {
+		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
+		if err != nil {
+			return nil, err
+		}
+
+		iter, err := agentCollection.FilterAgentAddressRemoved(&bind.FilterOpts{
+			Start:   from,
+			End:     &to,
+			Context: context.Background(),
+		}, nil)
 		if err != nil {
 			return nil, err
 		}

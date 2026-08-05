@@ -16,14 +16,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenGettingAllAgentsTestSuite struct {
+type WhenGettingAllAgentsTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestSuite {
+func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,7 +44,7 @@ func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestSuite {
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenGettingAllAgentsTestSuite{
+	return &WhenGettingAllAgentsTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -52,7 +52,7 @@ func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestSuite {
 	}
 }
 
-func WhenGettingAllAgentsAfterEach(suite *WhenGettingAllAgentsTestSuite) {
+func WhenGettingAllAgentsAfterEach(suite *WhenGettingAllAgentsTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -111,16 +111,17 @@ func TestWhenGettingAllAgents(t *testing.T) {
 	t.Run("Given no entity in persistence", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAllAgentsBeforeEach()
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			nonExistentID := uuid.New()
-			_, err := suite.sut.GetById(nonExistentID)
+			fetchedAgent, err := suite.sut.GetById(nonExistentID)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
+			assert.Nil(t, fetchedAgent)
 		})
 	})
 }

@@ -3,56 +3,44 @@ package use_cases_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
-	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
-type WhenListingAgentsTestSuite struct {
-	agentRegistryRequesterMock      *interfaces_mocks.MockAgentRegistryRequesterInterface
-	llmConnectionRequesterMock      *interfaces_mocks.MockLLMConnectionRequesterInterface
-	databaseConnectionRequesterMock *interfaces_mocks.MockDatabaseConnectionRequesterInterface
-
+type WhenListingAgentsTestingSuite struct {
 	sut *use_cases.ListAgents
+
+	agentRegistryRequesterMock *interfaces_mocks.MockAgentRegistryRequesterInterface
 }
 
-func WhenListingAgentsTestSuiteBeforeEach(t *testing.T) *WhenListingAgentsTestSuite {
-	// Create mocks
-	mockController := gomock.NewController(t, gomock.WithOverridableExpectations())
+func WhenListingAgentsBeforeEach(t *testing.T) *WhenListingAgentsTestingSuite {
+	mockController := gomock.NewController(t)
 
 	agentRegistryRequesterMock := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
-	llmConnectionRequesterMock := interfaces_mocks.NewMockLLMConnectionRequesterInterface(mockController)
-	databaseConnectionRequesterMock := interfaces_mocks.NewMockDatabaseConnectionRequesterInterface(mockController)
 
-	sut := use_cases.NewListAgents(
-		agentRegistryRequesterMock,
-		llmConnectionRequesterMock,
-		databaseConnectionRequesterMock,
-	)
+	sut := use_cases.NewListAgents(agentRegistryRequesterMock)
 
-	return &WhenListingAgentsTestSuite{
+	return &WhenListingAgentsTestingSuite{
 		sut: sut,
 
-		agentRegistryRequesterMock:      agentRegistryRequesterMock,
-		llmConnectionRequesterMock:      llmConnectionRequesterMock,
-		databaseConnectionRequesterMock: databaseConnectionRequesterMock,
+		agentRegistryRequesterMock: agentRegistryRequesterMock,
 	}
 }
 
 func TestWhenListingAgents(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given error happens while fetching agents from the database", func(t *testing.T) {
+	t.Run("Given error happens while fetching agents from the registry", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) *requests.ListAgentsRequest {
+		initSuite := func(suite *WhenListingAgentsTestingSuite) *requests.ListAgentsRequest {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
 				ListAgents(gomock.Any()).
@@ -64,12 +52,11 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
-			basics := WhenListingAgentsTestSuiteBeforeEach(t)
-			req := initSuite(basics)
+			suite := WhenListingAgentsBeforeEach(t)
+			req := initSuite(suite)
 
-			_, err := basics.sut.List(req)
+			_, err := suite.sut.List(req)
 
-			assert.NotNil(t, err)
 			assert.Equal(t, assert.AnError, err)
 		})
 	})
@@ -77,30 +64,10 @@ func TestWhenListingAgents(t *testing.T) {
 	t.Run("Given agents are fetched successfully", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) []*responses.AgentResponse {
-			agents := []*responses.AgentResponse{}
-			registryAgents := []*responses.AgentResponse{}
-
-			for i := 0; i < 2; i++ {
-				agent := model_builders.NewAgentBuilder().Build()
-				agents = append(agents, agent)
-				registryAgents = append(registryAgents, &responses.AgentResponse{
-					ID:                agent.ID,
-					Name:              agent.Name,
-					Role:              agent.Role,
-					Owner:             agent.Owner,
-					Creator:           agent.Creator,
-					Images:            agent.Images,
-					CloneOf:           agent.CloneOf,
-					Attributes:        agent.Attributes,
-					EnsDomain:         agent.EnsDomain,
-					IsInternal:        agent.IsInternal,
-					WalletAddress:     agent.WalletAddress,
-					ProposalId:        agent.ProposalId,
-					CollectionTokenId: agent.CollectionTokenId,
-					CollectionAddress: agent.CollectionAddress,
-				})
-
+		initSuite := func(suite *WhenListingAgentsTestingSuite) []*responses.AgentResponse {
+			agents := []*responses.AgentResponse{
+				model_builders.NewAgentBuilder().Build(),
+				model_builders.NewAgentBuilder().Build(),
 			}
 
 			suite.agentRegistryRequesterMock.
@@ -110,136 +77,81 @@ func TestWhenListingAgents(t *testing.T) {
 					PaginateResponse: responses.PaginateResponse{
 						Page:            1,
 						ElementsPerPage: 10,
-						TotalElements:   uint(len(registryAgents)),
+						TotalElements:   uint(len(agents)),
 					},
-					Agents: registryAgents,
+					Agents: agents,
 				}, nil)
-
-			llmStatus := "llm-ok"
-			llmConnectionStatus := interfaces.LLMConnectionStatus{
-				Status:      &llmStatus,
-				IsCompleted: true,
-			}
-			dbStatus := "db-ok"
-			dbConnectionStatus := interfaces.DatabaseConnectionStatus{
-				Status:      &dbStatus,
-				IsCompleted: true,
-			}
-
-			suite.llmConnectionRequesterMock.
-				EXPECT().
-				GetSetupStatus(gomock.Any()).
-				Return(&llmConnectionStatus, nil).
-				AnyTimes()
-			suite.databaseConnectionRequesterMock.
-				EXPECT().
-				GetSetupStatus(gomock.Any()).
-				Return(&dbConnectionStatus, nil).
-				AnyTimes()
 
 			return agents
 		}
 
-		t.Run("Should return existing agents", func(t *testing.T) {
+		t.Run("Should return the paginated agents", func(t *testing.T) {
 			t.Parallel()
 
-			basics := WhenListingAgentsTestSuiteBeforeEach(t)
-			existingAgents := initSuite(basics)
+			suite := WhenListingAgentsBeforeEach(t)
+			agents := initSuite(suite)
 
-			page := uint(1)
-			elementsPerPage := uint(10)
-			req := &requests.ListAgentsRequest{
-				PaginateRequest: requests.PaginateRequest{
-					Page:            &page,
-					ElementsPerPage: &elementsPerPage,
-				},
-			}
-
-			response, err := basics.sut.List(req)
+			resp, err := suite.sut.List(&requests.ListAgentsRequest{})
 
 			assert.Nil(t, err)
-			assert.Len(t, response.Agents, len(existingAgents))
-			assert.Equal(t, page, response.Page)
-			assert.Equal(t, elementsPerPage, response.ElementsPerPage)
-			assert.Equal(t, uint(len(existingAgents)), response.TotalElements)
-
-			expectedByID := make(map[uuid.UUID]*responses.AgentResponse, len(existingAgents))
-			for _, existingAgent := range existingAgents {
-				expectedByID[existingAgent.ID] = existingAgent
-			}
-
-			for _, fetchedAgent := range response.Agents {
-				existingAgent := expectedByID[fetchedAgent.ID]
-				if assert.NotNil(t, existingAgent) {
-					assert.Equal(t, existingAgent.Name, fetchedAgent.Name)
-					assert.Equal(t, existingAgent.Owner, fetchedAgent.Owner)
-					assert.Equal(t, existingAgent.WalletAddress, fetchedAgent.WalletAddress)
-					assert.NotNil(t, fetchedAgent.LLMSetupStatus)
-					assert.Equal(t, "llm-ok", *fetchedAgent.LLMSetupStatus)
-					assert.NotNil(t, fetchedAgent.DatabaseSetupStatus)
-					assert.Equal(t, "db-ok", *fetchedAgent.DatabaseSetupStatus)
-				}
-			}
+			assert.Len(t, resp.Agents, len(agents))
+			assert.Equal(t, uint(len(agents)), resp.TotalElements)
 		})
 	})
 
-	t.Run("Given setup status retrieval fails", func(t *testing.T) {
+	t.Run("Given a minted filter is provided", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentsTestSuite) *requests.ListAgentsRequest {
-			agent := model_builders.NewAgentBuilder().WithRole(enums.AgentRoleExpert).Build()
+		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
 				ListAgents(gomock.Any()).
-				Return(&responses.ListAgentsResponse{
-					PaginateResponse: responses.PaginateResponse{
-						Page:            1,
-						ElementsPerPage: 10,
-						TotalElements:   1,
-					},
-					Agents: []*responses.AgentResponse{
-						{
-							ID:                agent.ID,
-							Name:              agent.Name,
-							Role:              agent.Role,
-							Owner:             agent.Owner,
-							Creator:           agent.Creator,
-							Images:            agent.Images,
-							CloneOf:           agent.CloneOf,
-							Attributes:        agent.Attributes,
-							EnsDomain:         agent.EnsDomain,
-							IsInternal:        agent.IsInternal,
-							WalletAddress:     agent.WalletAddress,
-							ProposalId:        agent.ProposalId,
-							CollectionTokenId: agent.CollectionTokenId,
-							CollectionAddress: agent.CollectionAddress,
-						},
-					},
-				}, nil)
-
-			suite.llmConnectionRequesterMock.
-				EXPECT().
-				GetSetupStatus(agent.ID).
-				Return(nil, assert.AnError)
-			suite.databaseConnectionRequesterMock.
-				EXPECT().
-				GetSetupStatus(agent.ID).
-				Return(nil, nil).
-				AnyTimes()
-
-			return &requests.ListAgentsRequest{}
+				DoAndReturn(func(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+					assert.Equal(t, lo.ToPtr(true), request.IsMinted)
+					return &responses.ListAgentsResponse{}, nil
+				})
 		}
 
-		t.Run("Should return an error", func(t *testing.T) {
+		t.Run("Should forward it to the registry", func(t *testing.T) {
 			t.Parallel()
 
-			basics := WhenListingAgentsTestSuiteBeforeEach(t)
-			req := initSuite(basics)
+			suite := WhenListingAgentsBeforeEach(t)
+			initSuite(suite)
 
-			_, err := basics.sut.List(req)
+			_, err := suite.sut.List(&requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)})
 
-			assert.NotNil(t, err)
-			assert.Equal(t, assert.AnError, err)
+			assert.Nil(t, err)
+		})
+	})
+
+	t.Run("Given sort parameters are provided", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenListingAgentsTestingSuite) {
+			suite.agentRegistryRequesterMock.
+				EXPECT().
+				ListAgents(gomock.Any()).
+				DoAndReturn(func(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+					assert.Equal(t, lo.ToPtr("name"), request.SortBy)
+					assert.Equal(t, lo.ToPtr("desc"), request.SortDirection)
+					return &responses.ListAgentsResponse{}, nil
+				})
+		}
+
+		t.Run("Should forward them to the registry", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenListingAgentsBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.List(&requests.ListAgentsRequest{
+				PaginateRequest: requests.PaginateRequest{
+					SortDirection: lo.ToPtr(requests.SortDirectionDesc),
+				},
+				SortBy: lo.ToPtr(requests.ListAgentSortByName),
+			})
+
+			assert.Nil(t, err)
 		})
 	})
 }

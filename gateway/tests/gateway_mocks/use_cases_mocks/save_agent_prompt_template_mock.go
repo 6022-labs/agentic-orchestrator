@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
+	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,11 +42,12 @@ func (m *MockSaveAgentPromptTemplateInterface) EXPECT() *MockSaveAgentPromptTemp
 }
 
 // Save mocks base method.
-func (m *MockSaveAgentPromptTemplateInterface) Save(request *requests.SaveAgentPromptTemplateRequest) error {
+func (m *MockSaveAgentPromptTemplateInterface) Save(request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", request)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.

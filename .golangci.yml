@@ -1,0 +1,16 @@
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - ineffassign
+    - unused
+    - misspell
+
+issues:
+  exclude-dirs:
+    - tests/.*_mocks
+    - src/.*_host/docs
+    - .*/abi

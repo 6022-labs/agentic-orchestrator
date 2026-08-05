@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenCreatingOrchestratorDbClientTestSuite struct {
+type WhenCreatingOrchestratorDbClientTestingSuite struct {
 	dbName string
 
 	migrationsSettings           *settings.MigrationsSettings
@@ -18,7 +18,7 @@ type WhenCreatingOrchestratorDbClientTestSuite struct {
 	sut                          *factories.DatabaseClientFactory
 }
 
-func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbClientTestSuite {
+func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbClientTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	databaseSettings := &settings.DatabaseSettings{
@@ -34,7 +34,7 @@ func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbCli
 		migrationsSettings,
 	)
 
-	return &WhenCreatingOrchestratorDbClientTestSuite{
+	return &WhenCreatingOrchestratorDbClientTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -43,7 +43,7 @@ func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbCli
 	}
 }
 
-func WhenCreatingOrchestratorDbClientAfterEach(suite *WhenCreatingOrchestratorDbClientTestSuite) {
+func WhenCreatingOrchestratorDbClientAfterEach(suite *WhenCreatingOrchestratorDbClientTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

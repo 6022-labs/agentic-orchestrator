@@ -72,14 +72,6 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewAgentSignerUpdatedEventHandler,
-		dig.As(new(interfaces.AgentSignerUpdatedEventHandlerInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		services.NewAgentAttributeUpdatedEventHandler,
 		dig.As(new(interfaces.AgentAttributeUpdatedEventHandlerInterface)),
 	)
@@ -88,8 +80,32 @@ func AddRegistrySynchronizerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentAddressAddedEventHandler,
+		dig.As(new(interfaces.AgentAddressAddedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewAgentAddressRemovedEventHandler,
+		dig.As(new(interfaces.AgentAddressRemovedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewAgentImageUpdatedEventHandler,
 		dig.As(new(interfaces.AgentImageUpdatedEventHandlerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewAgentImageRemovedEventHandler,
+		dig.As(new(interfaces.AgentImageRemovedEventHandlerInterface)),
 	)
 	if err != nil {
 		panic(err)

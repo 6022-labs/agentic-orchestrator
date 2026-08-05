@@ -1,8 +1,6 @@
 package configurations
 
 import (
-	"net/http"
-
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	http_registry_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
 	http_registry_services "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/services"
@@ -17,8 +15,9 @@ func AddGatewayHttpAgentIdentityRegistryConfiguration(container *dig.Container) 
 	}
 
 	err = container.Provide(
-		http_registry_clients.NewAgentIdentityRegistryClient,
-		dig.As(new(http_registry_clients.AgentIdentityRegistryClientInterface)),
+		func(settings *http_registry_settings.AgentIdentityRegistrySettings) (http_registry_clients.ClientWithResponsesInterface, error) {
+			return http_registry_clients.NewClientWithResponses(settings.BaseUrl)
+		},
 	)
 	if err != nil {
 		panic(err)
@@ -28,13 +27,6 @@ func AddGatewayHttpAgentIdentityRegistryConfiguration(container *dig.Container) 
 		http_registry_services.NewAgentRegistryRequester,
 		dig.As(new(interfaces.AgentRegistryRequesterInterface)),
 	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(func() *http.Client {
-		return http.DefaultClient
-	}, dig.Name("agent-identity-registry-http-client"))
 	if err != nil {
 		panic(err)
 	}

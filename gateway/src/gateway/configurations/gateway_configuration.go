@@ -2,6 +2,7 @@ package configurations
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/jwt"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/signature"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -18,6 +19,21 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(settings.NewRateLimitSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewBlockchainConfigSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewSiweSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewWalletSettings)
 	if err != nil {
 		panic(err)
 	}
@@ -40,31 +56,46 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		services.NewSignedMessageValidator,
-		dig.As(new(interfaces.SignedMessageValidatorInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	// Auth
-	err = container.Provide(
-		jwt.NewNonceGenerator,
-		dig.As(new(interfaces.NonceGeneratorInterface)),
+		services.NewSignatureVerifier,
+		dig.As(new(interfaces.SignatureVerifierInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		jwt.NewSIWEDetailsExtractor,
-		dig.As(new(interfaces.SIWEDetailsExtractorInterface)),
+		services.NewSiweMessageBuilder,
+		dig.As(new(interfaces.SiweMessageBuilderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		auth.NewNonceStore,
+		dig.As(new(interfaces.NonceStoreInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	// Use cases
+	err = container.Provide(
+		use_cases.NewGetAuthChallenge,
+		dig.As(new(use_cases.GetAuthChallengeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewVerifyAuth,
+		dig.As(new(use_cases.VerifyAuthInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(
 		use_cases.NewGetAgent,
 		dig.As(new(use_cases.GetAgentInterface)),
@@ -90,16 +121,16 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewCreateAgentFirstStep,
-		dig.As(new(use_cases.CreateAgentFirstStepInterface)),
+		use_cases.NewVerifyWalletForBridge,
+		dig.As(new(use_cases.VerifyWalletForBridgeInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewCreateAgentSecondStep,
-		dig.As(new(use_cases.CreateAgentSecondStepInterface)),
+		use_cases.NewGetBlockchainConfig,
+		dig.As(new(use_cases.GetBlockchainConfigInterface)),
 	)
 	if err != nil {
 		panic(err)
@@ -114,22 +145,6 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewInitializeJwtAuthentication,
-		dig.As(new(use_cases.InitializeJwtAuthenticationInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewFinishJwtAuthentication,
-		dig.As(new(use_cases.FinishJwtAuthenticationInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
 		use_cases.NewSaveAgentPromptTemplate,
 		dig.As(new(use_cases.SaveAgentPromptTemplateInterface)),
 	)
@@ -138,96 +153,56 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewAddMessageToAgentContext,
-		dig.As(new(use_cases.AddMessageToAgentContextInterface)),
+		use_cases.NewGetAgentCard,
+		dig.As(new(use_cases.GetAgentCardInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewCreateAgentContext,
-		dig.As(new(use_cases.CreateAgentContextInterface)),
+		use_cases.NewGetAgentUrl,
+		dig.As(new(use_cases.GetAgentUrlInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewListAgentContextKeys,
-		dig.As(new(use_cases.ListAgentContextKeysInterface)),
+		use_cases.NewListConversations,
+		dig.As(new(use_cases.ListConversationsInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewSetupAgentLLMSettings,
-		dig.As(new(use_cases.SetupAgentLLMSettingsInterface)),
+		use_cases.NewGetConversation,
+		dig.As(new(use_cases.GetConversationInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewSetupAgentDatabaseSettingsFirstStep,
-		dig.As(new(use_cases.SetupAgentDatabaseSettingsFirstStepInterface)),
+		use_cases.NewGetConversationMessages,
+		dig.As(new(use_cases.GetConversationMessagesInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewSetupAgentDatabaseSettingsSecondStep,
-		dig.As(new(use_cases.SetupAgentDatabaseSettingsSecondStepInterface)),
+		use_cases.NewListConversationParticipants,
+		dig.As(new(use_cases.ListConversationParticipantsInterface)),
 	)
 	if err != nil {
 		panic(err)
 	}
 
 	err = container.Provide(
-		use_cases.NewGetAgentLLMSettings,
-		dig.As(new(use_cases.GetAgentLLMSettingsInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewIsInternalAgent,
-		dig.As(new(use_cases.IsInternalAgentInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewCreateAgentMCPConnection,
-		dig.As(new(use_cases.CreateAgentMCPConnectionInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewRemoveAgentMCPConnection,
-		dig.As(new(use_cases.RemoveAgentMCPConnectionInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewListAgentMCPConnections,
-		dig.As(new(use_cases.ListAgentMCPConnectionsInterface)),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		use_cases.NewVerifyWalletForBridge,
-		dig.As(new(use_cases.VerifyWalletForBridgeInterface)),
+		use_cases.NewForceConcludeConversation,
+		dig.As(new(use_cases.ForceConcludeConversationInterface)),
 	)
 	if err != nil {
 		panic(err)

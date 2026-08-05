@@ -11,14 +11,14 @@ type BlockchainRequester struct {
 	client *ethclient.Client
 }
 
-type newBlockchainRequesterParams struct {
+type NewBlockchainRequesterParams struct {
 	dig.In
 
 	Client *ethclient.Client `name:"http"`
 }
 
 func NewBlockchainRequester(
-	params newBlockchainRequesterParams,
+	params NewBlockchainRequesterParams,
 ) *BlockchainRequester {
 	return &BlockchainRequester{
 		client: params.Client,

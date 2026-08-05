@@ -11,36 +11,56 @@ import (
 )
 
 func TestWhenLoadingDecentralizedDomainNameProviderSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured domain extension", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"decentralized_domain_name_provider.domain_extension": "eth",
 		}, "."), nil)
 
-		settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "eth", settings.DomainExtension)
+			settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "eth", settings.DomainExtension)
+		})
 	})
 
-	t.Run("Loads settings with default domain extension when empty", func(t *testing.T) {
+	t.Run("Given an empty domain extension", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"decentralized_domain_name_provider.domain_extension": "",
 		}, "."), nil)
 
-		settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+		t.Run("Should fall back to the default extension", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "eth", settings.DomainExtension)
+			settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "eth", settings.DomainExtension)
+		})
 	})
 
-	t.Run("Loads settings with default domain extension when not set", func(t *testing.T) {
+	t.Run("Given no configuration", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
 
-		settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+		t.Run("Should fall back to the default extension", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "eth", settings.DomainExtension)
+			settings := domain_settings.NewDecentralizedDomainNameProviderSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "eth", settings.DomainExtension)
+		})
 	})
 }

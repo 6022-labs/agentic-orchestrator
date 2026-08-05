@@ -1,7 +1,6 @@
 package command_handlers
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
@@ -9,7 +8,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type PairSlackUserToHumanAgentInterface interface {
@@ -61,7 +59,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		request.HumanAgentCollectionAddress,
 		request.HumanAgentCollectionTokenId,
 	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to check if human agent is already paired: %w", err)
 	}
 	if alreadyPairedUserForAgent != nil {

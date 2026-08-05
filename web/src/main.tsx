@@ -1,30 +1,40 @@
-import "./index.css";
-import App from "./App.tsx";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner.tsx";
-import { initAxiosDefaults } from "./configs/axios.ts";
-import { AuthProvider } from "./contexts/auth-context.tsx";
-import { WalletProvider } from "./contexts/wallet-provider-context.tsx";
-import { UserModeratorProvider } from "./contexts/user-moderator-context.tsx";
-import { AgentCollectionsProvider } from "./contexts/agent-collections-context.tsx";
+import "./index.css"
+import App from "./App.tsx"
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { BrowserRouter } from "react-router-dom"
+import { ThemeProvider } from "next-themes"
+import { TooltipProvider } from "@/components/ui/tooltip.tsx"
+import { Toaster } from "@/components/ui/sonner.tsx"
+import ConfigGate from "@/components/config-gate.tsx"
+import { initAxiosDefaults } from "@/configs/axios.ts"
+import { AuthProvider } from "@/contexts/auth-context.tsx"
+import { WalletProvider } from "@/contexts/wallet-provider-context.tsx"
 
-initAxiosDefaults();
+initAxiosDefaults()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <WalletProvider>
-          <AgentCollectionsProvider>
-            <UserModeratorProvider>
-              <Toaster />
-              <App />
-            </UserModeratorProvider>
-          </AgentCollectionsProvider>
-        </WalletProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      enableColorScheme
+      disableTransitionOnChange
+      storageKey="agentic-theme"
+    >
+      <TooltipProvider>
+        <ConfigGate>
+          <BrowserRouter>
+            <AuthProvider>
+              <WalletProvider>
+                <Toaster />
+                <App />
+              </WalletProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </ConfigGate>
+      </TooltipProvider>
+    </ThemeProvider>
   </StrictMode>
-);
+)

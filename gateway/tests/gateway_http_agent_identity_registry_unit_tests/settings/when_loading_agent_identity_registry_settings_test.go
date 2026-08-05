@@ -11,39 +11,59 @@ import (
 )
 
 func TestWhenLoadingAgentIdentityRegistrySettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured base url", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"agent_identity_registry.base_url": "https://registry.example.com",
 		}, "."), nil)
 
-		settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+		})
 	})
 
-	t.Run("Trims trailing slash from base URL", func(t *testing.T) {
+	t.Run("Given a base url with a trailing slash", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"agent_identity_registry.base_url": "https://registry.example.com/",
 		}, "."), nil)
 
-		settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+		t.Run("Should trim it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+		})
 	})
 
-	t.Run("Trims whitespace from base URL", func(t *testing.T) {
+	t.Run("Given a base url with surrounding whitespace", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"agent_identity_registry.base_url": "  https://registry.example.com/  ",
 		}, "."), nil)
 
-		settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+		t.Run("Should trim it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
+		})
 	})
 }

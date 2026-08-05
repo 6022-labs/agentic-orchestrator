@@ -3,13 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-)
-
-const (
-	AgentPrivateKeyVaultPathTemplate = "agent/%s/private_key"
 )
 
 // Agent holds the schema definition for the Agent entity.
@@ -20,18 +15,14 @@ type Agent struct {
 	CollectionAddress string  `json:"collectionAddress"`
 	ProposalId        *uint64 `gorm:"type:numeric" json:"proposalId"`
 
-	Name          string          `gorm:"not null" json:"name"`
-	CloneOf       *uint64         `gorm:"type:numeric" json:"cloneOf"`
-	EnsDomain     string          `gorm:"not null" json:"ensDomain"`
-	Role          enums.AgentRole `gorm:"type:text;not null" json:"role"`
-	Creator       string          `gorm:"not null" json:"creator"`
-	WalletAddress string          `gorm:"not null" json:"walletAddress"`
-	Owner         *string         `json:"owner"`
+	Name      string  `gorm:"not null" json:"name"`
+	CloneOf   *uint64 `gorm:"type:numeric" json:"cloneOf"`
+	EnsDomain string  `gorm:"not null" json:"ensDomain"`
+	Creator   string  `gorm:"not null" json:"creator"`
+	Owner     *string `json:"owner"`
 
 	Images     map[string]string `gorm:"type:jsonb;serializer:json" json:"images"`
 	Attributes map[string]string `gorm:"type:jsonb;serializer:json" json:"attributes"`
-
-	IsInternal bool `gorm:"type:boolean;not null" json:"isInternal"`
 
 	UpdatedAt time.Time  `gorm:"type:timestamp;not null" json:"updatedAt"`
 	CreatedAt time.Time  `gorm:"type:timestamp;not null" json:"createdAt"`

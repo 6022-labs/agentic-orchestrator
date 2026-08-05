@@ -16,14 +16,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite struct {
+type WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,7 +44,7 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite{
+	return &WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -52,7 +52,7 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 	}
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestSuite) {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -87,16 +87,14 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 			assert.Equal(t, createdEntity.Images, fetchedEntity.Images)
 			assert.Equal(t, createdEntity.Creator, fetchedEntity.Creator)
 			assert.Equal(t, createdEntity.EnsDomain, fetchedEntity.EnsDomain)
-			assert.Equal(t, createdEntity.IsInternal, fetchedEntity.IsInternal)
 			assert.Equal(t, createdEntity.Attributes, fetchedEntity.Attributes)
-			assert.Equal(t, createdEntity.WalletAddress, fetchedEntity.WalletAddress)
 		})
 	})
 
 	t.Run("Given entity does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach()
 			defer WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite)
 
@@ -114,7 +112,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				nonExistantCollectionTokenId,
 			)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})

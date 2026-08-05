@@ -3,7 +3,6 @@ package configurations
 import (
 	registry_common_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/configurations"
 	registry_common_db_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/configurations"
-	registry_common_vault_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_vault/configurations"
 	registry_synchronizer_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/configurations"
 	registry_synchronizer_blockchain_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/configurations"
 	registry_synchronizer_listeners_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/configurations"
@@ -21,7 +20,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 
 	registry_common_configurations.AddRegistryCommonConfiguration(container)
 	registry_common_db_configurations.AddRegistryCommonDbConfiguration(container)
-	registry_common_vault_configurations.AddRegistryCommonVaultConfiguration(container)
 	registry_synchronizer_configurations.AddRegistrySynchronizerConfiguration(container)
 	registry_synchronizer_listeners_configurations.AddRegistrySynchronizerListenersConfiguration(container)
 	registry_synchronizer_blockchain_configurations.AddRegistrySynchronizerBlockchainConfiguration(container)

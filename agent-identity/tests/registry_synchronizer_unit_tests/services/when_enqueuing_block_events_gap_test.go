@@ -7,12 +7,11 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	synchronizer_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
-	synchronizer_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	synchronizer_repositories_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/repositories_mocks"
+	synchronizer_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenEnqueuingBlockEventsGapTestingSuite struct {
@@ -20,12 +19,12 @@ type WhenEnqueuingBlockEventsGapTestingSuite struct {
 
 	syncSettings *synchronizer_settings.SyncSettings
 
-	mockBlockEventsQueue                          *synchronizer_interfaces_mocks.MockBlockEventsQueueInterface
-	mockBlockchainRequester                       *synchronizer_interfaces_mocks.MockBlockchainRequesterInterface
-	mockAgentCollectionBlockchainRequester        *synchronizer_interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
+	mockBlockEventsQueue                           *synchronizer_interfaces_mocks.MockBlockEventsQueueInterface
+	mockBlockchainRequester                        *synchronizer_interfaces_mocks.MockBlockchainRequesterInterface
+	mockAgentCollectionBlockchainRequester         *synchronizer_interfaces_mocks.MockAgentCollectionBlockchainRequesterInterface
 	mockAgentCollectionsManagerBlockchainRequester *synchronizer_interfaces_mocks.MockAgentCollectionsManagerBlockchainRequesterInterface
-	mockAgentCollectionRepository                 *repositories_mocks.MockAgentCollectionRepositoryInterface
-	mockSyncCheckpointRepository                  *synchronizer_repositories_mocks.MockSyncCheckpointRepositoryInterface
+	mockAgentCollectionRepository                  *repositories_mocks.MockAgentCollectionRepositoryInterface
+	mockSyncCheckpointRepository                   *synchronizer_repositories_mocks.MockSyncCheckpointRepositoryInterface
 }
 
 func WhenEnqueuingBlockEventsGapBeforeEach(t *testing.T) *WhenEnqueuingBlockEventsGapTestingSuite {
@@ -55,12 +54,12 @@ func WhenEnqueuingBlockEventsGapBeforeEach(t *testing.T) *WhenEnqueuingBlockEven
 		sut:          sut,
 		syncSettings: syncSettings,
 
-		mockBlockEventsQueue:                          mockBlockEventsQueue,
-		mockBlockchainRequester:                       mockBlockchainRequester,
-		mockAgentCollectionBlockchainRequester:        mockAgentCollectionBlockchainRequester,
+		mockBlockEventsQueue:                           mockBlockEventsQueue,
+		mockBlockchainRequester:                        mockBlockchainRequester,
+		mockAgentCollectionBlockchainRequester:         mockAgentCollectionBlockchainRequester,
 		mockAgentCollectionsManagerBlockchainRequester: mockAgentCollectionsManagerBlockchainRequester,
-		mockAgentCollectionRepository:                 mockAgentCollectionRepository,
-		mockSyncCheckpointRepository:                  mockSyncCheckpointRepository,
+		mockAgentCollectionRepository:                  mockAgentCollectionRepository,
+		mockSyncCheckpointRepository:                   mockSyncCheckpointRepository,
 	}
 }
 
@@ -129,7 +128,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 
 			suite.mockSyncCheckpointRepository.EXPECT().
 				Get().
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().
@@ -162,7 +161,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 
 			suite.mockSyncCheckpointRepository.EXPECT().
 				Get().
-				Return(nil, gorm.ErrRecordNotFound).
+				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().
@@ -191,12 +190,22 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentSignerUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentImageRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
 				GetAgentCollectionV1AgentAttributeUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			suite.mockAgentCollectionBlockchainRequester.EXPECT().
+				GetAgentCollectionV1AgentAddressAddedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			suite.mockAgentCollectionBlockchainRequester.EXPECT().
+				GetAgentCollectionV1AgentAddressRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 

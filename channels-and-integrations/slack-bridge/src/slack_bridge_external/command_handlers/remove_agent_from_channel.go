@@ -1,7 +1,6 @@
 package command_handlers
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -11,7 +10,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type RemoveAgentFromChannelInterface interface {
@@ -47,7 +45,7 @@ func NewRemoveAgentFromChannel(
 
 func (h *RemoveAgentFromChannel) Remove(request *requests.RemoveAgentFromChannelRequest) error {
 	slackChannel, err := h.slackChannelRepository.GetById(request.ChannelID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get channel with ID %s: %w", request.ChannelID, err)
 	}
 	if slackChannel != nil {
@@ -69,7 +67,7 @@ func (h *RemoveAgentFromChannel) Remove(request *requests.RemoveAgentFromChannel
 		request.CollectionAddress,
 		request.CollectionTokenId,
 	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get agent with collection address %s and token ID %d: %w",
 			request.CollectionAddress,
 			request.CollectionTokenId,

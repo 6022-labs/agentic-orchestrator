@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -16,24 +17,24 @@ import (
 type WhenVerifyingWalletForBridgeTestingSuite struct {
 	sut *use_cases.VerifyWalletForBridge
 
-	mockSignedMessageValidator  interfaces_mocks.MockSignedMessageValidatorInterface
+	mockSignatureVerifier       interfaces_mocks.MockSignatureVerifierInterface
 	mockPlatformBridgeRequester interfaces_mocks.MockPlatformBridgeRequesterInterface
 }
 
 func WhenVerifyingWalletForBridgeBeforeEach(t *testing.T) *WhenVerifyingWalletForBridgeTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockSignedMessageValidator := interfaces_mocks.NewMockSignedMessageValidatorInterface(mockController)
+	mockSignatureVerifier := interfaces_mocks.NewMockSignatureVerifierInterface(mockController)
 	mockPlatformBridgeRequester := interfaces_mocks.NewMockPlatformBridgeRequesterInterface(mockController)
 
 	sut := use_cases.NewVerifyWalletForBridge(
-		mockSignedMessageValidator,
+		mockSignatureVerifier,
 		mockPlatformBridgeRequester,
 	)
 
 	return &WhenVerifyingWalletForBridgeTestingSuite{
 		sut:                         sut,
-		mockSignedMessageValidator:  *mockSignedMessageValidator,
+		mockSignatureVerifier:       *mockSignatureVerifier,
 		mockPlatformBridgeRequester: *mockPlatformBridgeRequester,
 	}
 }
@@ -45,7 +46,7 @@ func generateValidVerifyWalletForBridgeRequest() *requests.VerifyWalletForBridge
 
 	return &requests.VerifyWalletForBridgeRequest{
 		AuthenticatedWallet: authenticatedWallet,
-		Platform:            enums.AgentContextMessagePlatformSlack,
+		Platform:            enums.BridgePlatformSlack,
 		Challenge:           challenge,
 		Signature:           signature,
 	}
@@ -63,7 +64,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
 
 			request := generateValidVerifyWalletForBridgeRequest()
-			request.Platform = enums.AgentContextMessagePlatformNone
+			request.Platform = enums.BridgePlatform("none")
 
 			err := suite.sut.Verify(request)
 			assert.NotNil(t, err)
@@ -98,10 +99,10 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
-			suite.mockSignedMessageValidator.
+			suite.mockSignatureVerifier.
 				EXPECT().
-				Validate(request.Challenge, request.Signature, request.AuthenticatedWallet.Hex()).
-				Return(false)
+				Recover(request.Challenge, request.Signature).
+				Return(common.HexToAddress("0x1111111111111111111111111111111111111111"), nil)
 		}
 
 		t.Run("Should return error", func(t *testing.T) {
@@ -120,10 +121,10 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
-			suite.mockSignedMessageValidator.
+			suite.mockSignatureVerifier.
 				EXPECT().
-				Validate(request.Challenge, request.Signature, request.AuthenticatedWallet.Hex()).
-				Return(true)
+				Recover(request.Challenge, request.Signature).
+				Return(request.AuthenticatedWallet, nil)
 
 			suite.mockPlatformBridgeRequester.
 				EXPECT().
@@ -147,10 +148,10 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
-			suite.mockSignedMessageValidator.
+			suite.mockSignatureVerifier.
 				EXPECT().
-				Validate(request.Challenge, request.Signature, request.AuthenticatedWallet.Hex()).
-				Return(true)
+				Recover(request.Challenge, request.Signature).
+				Return(request.AuthenticatedWallet, nil)
 
 			suite.mockPlatformBridgeRequester.
 				EXPECT().

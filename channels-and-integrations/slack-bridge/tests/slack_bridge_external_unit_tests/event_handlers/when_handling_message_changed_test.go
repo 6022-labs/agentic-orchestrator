@@ -6,20 +6,19 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingMessageChangedTestingSuite struct {
 	sut *event_handlers.MessageChangedHandler
 
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenHandlingMessageChangedBeforeEach(t *testing.T) *WhenHandlingMessageChangedTestingSuite {
@@ -31,9 +30,9 @@ func WhenHandlingMessageChangedBeforeEach(t *testing.T) *WhenHandlingMessageChan
 	sut := event_handlers.NewMessageChangedHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
 
 	return &WhenHandlingMessageChangedTestingSuite{
-		sut:                                 sut,
+		sut:                             sut,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockBrokerRequester:                    mockBrokerRequester,
+		mockBrokerRequester:             mockBrokerRequester,
 	}
 }
 
@@ -93,7 +92,7 @@ func TestWhenHandlingMessageChanged(t *testing.T) {
 		initSuite := func(suite *WhenHandlingMessageChangedTestingSuite, channel, ts string) {
 			suite.mockSlackConversationRepository.EXPECT().
 				GetBySlackIds(channel, ts).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 		}
 
 		t.Run("Should be a no-op", func(t *testing.T) {

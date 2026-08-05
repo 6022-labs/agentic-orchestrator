@@ -1,68 +1,112 @@
-import { toast } from "sonner";
-import TransferAgentForm from "../forms/transfer-agent-form";
-import { useWallet } from "@/contexts/wallet-provider-context";
-import { transferFrom } from "@/queries/contracts/agent-collection";
-import { useAgentDashboard } from "../contexts/agent-dashboard-context";
-import { useTransferAgentDialogContext } from "../contexts/transfer-agent-dialog-context";
-import { TransferAgentFormSchemaType } from "../forms/transfer-agent-form/transfer-agent-form-schema";
+import React from "react"
+import { toast } from "sonner"
+import { ArrowRightLeft, TriangleAlert } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogTitle,
-  DialogHeader,
   DialogContent,
   DialogDescription,
-} from "@/components/ui/dialog";
-import type { FormCompletionResult } from "@/models/api/validation-error";
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import TransferAgentForm from "@/components/dashboard/agents/forms/transfer-agent-form"
+import type { TransferAgentFormSchemaType } from "@/components/dashboard/agents/forms/transfer-agent-form/transfer-agent-form-schema"
+import { useWallet } from "@/contexts/wallet-provider-context"
+import type { FormCompletionResult } from "@/models/api/validation-error"
+import { transferFrom } from "@/queries/contracts/agent-collection"
+import { extractErrorMessage } from "@/lib/api-errors"
 
-export default function TransferAgentDialog() {
-  const { agent, isOpen, setAgent, setIsOpen } =
-    useTransferAgentDialogContext();
-  const { fetchInternalAgents, fetchExternalAgents } = useAgentDashboard();
+type Props = {
+  collectionAddress: string
+  collectionTokenId: string
+  agentName?: string
+  onTransferred: () => Promise<void> | void
+}
 
-  const { wallet } = useWallet();
+export default function TransferAgentDialog({
+  collectionAddress,
+  collectionTokenId,
+  agentName,
+  onTransferred,
+}: Props) {
+  const { wallet } = useWallet()
 
-  const transferAgent = async (
+  const [open, setOpen] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
+
+  const onFormComplete = async (
     values: TransferAgentFormSchemaType
   ): Promise<FormCompletionResult<keyof TransferAgentFormSchemaType>> => {
-    try {
-      await transferFrom(
-        agent!.collectionAddress,
-        agent!.collectionTokenId!,
-        values.address,
-        wallet!
-      );
-
-      toast.success("Agent transferred successfully");
-      fetchInternalAgents();
-      fetchExternalAgents();
-      return {};
-    } catch (error) {
-      console.error("Error transferring agent:", error);
-      toast.error("Failed to transfer agent");
-      return {};
+    if (!wallet) {
+      toast.error("Connect a wallet first")
+      return {}
     }
-  };
+
+    setSaving(true)
+    try {
+      await transferFrom(collectionAddress, collectionTokenId, values.to, wallet)
+      toast.success("Agent transferred")
+      setOpen(false)
+      await onTransferred()
+      return {}
+    } catch (error) {
+      toast.error(extractErrorMessage(error, "Failed to transfer the agent"))
+      return {}
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(isOpen) => {
-        setIsOpen(isOpen);
-
-        if (!isOpen) {
-          setAgent(undefined);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-6"
+          title="Transfer agent"
+          aria-label="Transfer agent"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <ArrowRightLeft className="size-3.5" />
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Transfer agent</DialogTitle>
           <DialogDescription>
-            You don't known how to transfer agents? See our documentation.
+            {agentName ? `Transfers "${agentName}"` : "Transfers this agent"} to
+            another wallet. The transaction is signed by the current owner.
           </DialogDescription>
         </DialogHeader>
-        <TransferAgentForm onFormComplete={transferAgent} />
+
+        <div className="flex items-start gap-2 rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-500">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <span>
+            The new owner takes over this agent. This wallet can no longer manage
+            it here, and the agent's own node console — which only lets its NFT
+            owner sign in — will reject this wallet too. Only the new owner can
+            transfer it back.
+          </span>
+        </div>
+
+        <TransferAgentForm onFormComplete={onFormComplete} />
+
+        <DialogFooter>
+          <Button
+            type="submit"
+            form="transfer-agent-form"
+            variant="destructive"
+            loading={saving}
+          >
+            Transfer
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

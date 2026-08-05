@@ -11,19 +11,45 @@ import (
 )
 
 func TestWhenLoadingRedisSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given configured values", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"redis.host":     "localhost:6379",
 			"redis.password": "secret",
 			"redis.db":       int64(2),
 		}, "."), nil)
 
-		settings := redis_settings.NewRedisSettings(zap.NewNop(), k)
+		t.Run("Should load them", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "localhost:6379", settings.Host)
-		assert.Equal(t, "secret", settings.Password)
-		assert.Equal(t, int64(2), settings.DB)
+			settings := redis_settings.NewRedisSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "localhost:6379", settings.Host)
+			assert.Equal(t, "secret", settings.Password)
+			assert.Equal(t, int64(2), settings.DB)
+		})
+	})
+
+	t.Run("Given a negative db index", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"redis.host": "localhost:6379",
+			"redis.db":   int64(-1),
+		}, "."), nil)
+
+		t.Run("Should fall back to db 0", func(t *testing.T) {
+			t.Parallel()
+
+			settings := redis_settings.NewRedisSettings(zap.NewNop(), k)
+
+			assert.Equal(t, int64(0), settings.DB)
+		})
 	})
 }

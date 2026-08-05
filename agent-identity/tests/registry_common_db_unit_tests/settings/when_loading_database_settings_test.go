@@ -11,15 +11,40 @@ import (
 )
 
 func TestWhenLoadingDatabaseSettings(t *testing.T) {
-	t.Run("Loads settings", func(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a configured url", func(t *testing.T) {
+		t.Parallel()
+
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]interface{}{
+		_ = k.Load(confmap.Provider(map[string]any{
 			"database.url": "postgres://user:pass@localhost:5432/db",
 		}, "."), nil)
 
-		settings := db_settings.NewDatabaseSettings(zap.NewNop(), k)
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
 
-		assert.NotNil(t, settings)
-		assert.Equal(t, "postgres://user:pass@localhost:5432/db", settings.Url)
+			settings := db_settings.NewDatabaseSettings(zap.NewNop(), k)
+
+			assert.NotNil(t, settings)
+			assert.Equal(t, "postgres://user:pass@localhost:5432/db", settings.Url)
+		})
+	})
+
+	t.Run("Given a url with surrounding whitespace", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"database.url": "  postgres://user:pass@localhost:5432/db  ",
+		}, "."), nil)
+
+		t.Run("Should trim it", func(t *testing.T) {
+			t.Parallel()
+
+			settings := db_settings.NewDatabaseSettings(zap.NewNop(), k)
+
+			assert.Equal(t, "postgres://user:pass@localhost:5432/db", settings.Url)
+		})
 	})
 }

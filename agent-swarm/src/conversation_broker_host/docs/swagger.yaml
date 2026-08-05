@@ -1,0 +1,842 @@
+basePath: /
+definitions:
+  enums.AgentPromptTemplateKey:
+    enum:
+    - clone-system
+    - clone-default
+    - facilitator-system
+    - facilitator-default
+    - facilitator-conclude
+    - expert-system
+    - expert-default
+    type: string
+    x-enum-varnames:
+    - AgentPromptTemplateKeyCloneSystem
+    - AgentPromptTemplateKeyCloneDefault
+    - AgentPromptTemplateKeyFacilitatorSystem
+    - AgentPromptTemplateKeyFacilitatorDefault
+    - AgentPromptTemplateKeyFacilitatorConclude
+    - AgentPromptTemplateKeyExpertSystem
+    - AgentPromptTemplateKeyExpertDefault
+  enums.BridgeKind:
+    enum:
+    - slack
+    type: string
+    x-enum-varnames:
+    - BridgeKindSlack
+  enums.ConversationStatus:
+    enum:
+    - active
+    - concluded
+    type: string
+    x-enum-varnames:
+    - ConversationStatusActive
+    - ConversationStatusConcluded
+  enums.ParticipantRole:
+    enum:
+    - clone
+    - human
+    - expert
+    - facilitator
+    type: string
+    x-enum-varnames:
+    - ParticipantRoleClone
+    - ParticipantRoleHuman
+    - ParticipantRoleExpert
+    - ParticipantRoleFacilitator
+  errors.NotFoundError:
+    properties:
+      id:
+        type: string
+      resource:
+        type: string
+    type: object
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  requests.ConversationParticipantRequest:
+    properties:
+      participantId:
+        type: string
+    type: object
+  requests.IngestMessageRequest:
+    properties:
+      content:
+        type: string
+      participantId:
+        type: string
+    type: object
+  requests.RegisterAgentRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: string
+    type: object
+  requests.RegisterBridgeRequest:
+    properties:
+      baseUrl:
+        type: string
+      id:
+        type: string
+      kind:
+        $ref: '#/definitions/enums.BridgeKind'
+    type: object
+  requests.RegisterConversationRequest:
+    properties:
+      bridgeId:
+        type: string
+      description:
+        type: string
+      participantIds:
+        items:
+          type: string
+        type: array
+    type: object
+  requests.RegisterUserRequest:
+    properties:
+      displayName:
+        type: string
+    type: object
+  requests.SaveAgentPromptTemplateRequest:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: string
+      content:
+        type: string
+      key:
+        type: string
+    type: object
+  requests.UpdateConversationDescriptionRequest:
+    properties:
+      description:
+        type: string
+    type: object
+  responses.AgentPromptTemplateResponse:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      key:
+        $ref: '#/definitions/enums.AgentPromptTemplateKey'
+      updatedAt:
+        type: string
+    type: object
+  responses.AgentUrlResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  responses.BridgeResponse:
+    properties:
+      baseUrl:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      kind:
+        $ref: '#/definitions/enums.BridgeKind'
+      updatedAt:
+        type: string
+    type: object
+  responses.ConversationMessageResponse:
+    properties:
+      content:
+        type: string
+      conversationId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      participantId:
+        type: string
+    type: object
+  responses.ConversationResponse:
+    properties:
+      bridgeId:
+        type: string
+      concludedAt:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/enums.ConversationStatus'
+      unconcludedAt:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.ListConversationsResponse:
+    properties:
+      conversations:
+        items:
+          $ref: '#/definitions/responses.ConversationResponse'
+        type: array
+      elementsPerPage:
+        type: integer
+      page:
+        type: integer
+      totalElements:
+        type: integer
+    type: object
+  responses.ParticipantResponse:
+    properties:
+      collectionAddress:
+        type: string
+      collectionTokenId:
+        type: integer
+      createdAt:
+        type: string
+      displayName:
+        type: string
+      ensDomain:
+        type: string
+      id:
+        type: string
+      isProcessing:
+        type: boolean
+      lastProcessedAt:
+        type: string
+      role:
+        $ref: '#/definitions/enums.ParticipantRole'
+      updatedAt:
+        type: string
+    type: object
+  responses.RemoteAgentCardEndpointsResponse:
+    properties:
+      chatCompletions:
+        type: string
+      responses:
+        type: string
+    type: object
+  responses.RemoteAgentCardResponse:
+    properties:
+      endpoints:
+        $ref: '#/definitions/responses.RemoteAgentCardEndpointsResponse'
+      ensDomain:
+        type: string
+      name:
+        type: string
+      paymentMethods:
+        items:
+          type: string
+        type: array
+      protocol:
+        type: string
+      protocolVersion:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Bridge-agnostic conversation broker for the agent reasoning domain.
+  title: Orchestrator Conversation Broker Host API
+  version: "1.0"
+paths:
+  /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key}:
+    get:
+      description: Returns the agent-scoped prompt template for the given key.
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      - description: Agent collection token id
+        in: path
+        name: collectionTokenId
+        required: true
+        type: string
+      - description: Prompt template key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentPromptTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Agent Prompt Template
+      tags:
+      - Prompt Templates
+    post:
+      consumes:
+      - application/json
+      description: Creates or overwrites the agent-scoped prompt template for the
+        given key.
+      parameters:
+      - description: Agent collection address
+        in: path
+        name: collectionAddress
+        required: true
+        type: string
+      - description: Agent collection token id
+        in: path
+        name: collectionTokenId
+        required: true
+        type: string
+      - description: Prompt template key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Save Agent Prompt Template Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SaveAgentPromptTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentPromptTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Save Agent Prompt Template
+      tags:
+      - Prompt Templates
+  /bridges:
+    post:
+      consumes:
+      - application/json
+      description: Upserts a bridge instance. When the caller supplies `id` and the
+        row already exists the broker returns 200 with the existing row; when the
+        row does not exist (whether or not an id was provided) the broker returns
+        201 with the new row.
+      parameters:
+      - description: Register Bridge Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterBridgeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BridgeResponse'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.BridgeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Bridge
+      tags:
+      - Bridges
+  /conversations:
+    get:
+      description: Returns conversations sorted by most recently updated, paginated.
+      parameters:
+      - description: Page (1-based)
+        in: query
+        name: page
+        type: integer
+      - description: Elements per page (max 100)
+        in: query
+        name: elementsPerPage
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ListConversationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List Conversations
+      tags:
+      - Conversations
+    post:
+      consumes:
+      - application/json
+      description: Creates a conversation attached to a bridge. Optionally attaches
+        participants in the same call.
+      parameters:
+      - description: Register Conversation Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ConversationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Conversation
+      tags:
+      - Conversations
+  /conversations/{id}:
+    get:
+      description: Returns a conversation by id.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ConversationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/description:
+    patch:
+      consumes:
+      - application/json
+      description: Overwrites the description of an existing conversation. Use null
+        to clear it.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Conversation Description Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateConversationDescriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update Conversation Description
+      tags:
+      - Conversations
+  /conversations/{id}/force-conclude:
+    post:
+      description: Marks the conversation as concluded immediately, bypassing the
+        swarm timers.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Force Conclude Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/messages:
+    get:
+      description: Returns every message of the conversation in chronological order.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.ConversationMessageResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Conversation Messages
+      tags:
+      - Conversations
+    post:
+      consumes:
+      - application/json
+      description: Persists a message authored by a participant in the conversation.
+        Broker assigns the timestamp.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ingest Message Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.IngestMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ConversationMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Ingest Message
+      tags:
+      - Conversations
+  /conversations/{id}/participants:
+    get:
+      description: Returns every participant attached to the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.ParticipantResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: List Conversation Participants
+      tags:
+      - Conversations
+    post:
+      consumes:
+      - application/json
+      description: Adds a participant (agent or user) to the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Attach Participant Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ConversationParticipantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Attach Participant to Conversation
+      tags:
+      - Conversations
+  /conversations/{id}/participants/{participantId}:
+    delete:
+      description: Removes a participant from the conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Participant ID
+        in: path
+        name: participantId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Detach Participant from Conversation
+      tags:
+      - Conversations
+  /participants/agents:
+    post:
+      consumes:
+      - application/json
+      description: Upserts an agent participant by NFT identity. Returns 200 if the
+        agent was already known, 201 if newly created. Broker fetches role + ENS from
+        the agent-identity registry on first registration.
+      parameters:
+      - description: Register Agent Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterAgentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ParticipantResponse'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ParticipantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register Agent Participant
+      tags:
+      - Participants
+  /participants/users:
+    post:
+      consumes:
+      - application/json
+      description: Creates a user participant identified only by display name. No
+        dedup — bridges must cache the returned id locally to avoid duplicates.
+      parameters:
+      - description: Register User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ParticipantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register User Participant
+      tags:
+      - Participants
+  /remote-agents/{ensDomain}/card:
+    get:
+      description: Resolves the agent's runtime via ENS CCIP-Read and returns its
+        cached /.well-known/6022 card.
+      parameters:
+      - description: Agent ENS domain
+        in: path
+        name: ensDomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RemoteAgentCardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      summary: Get Agent Node Card
+      tags:
+      - Agent Cards
+  /remote-agents/{ensDomain}/url:
+    get:
+      description: Resolves the agent's node URL from its ENS url text record via
+        CCIP-Read.
+      parameters:
+      - description: Agent ENS domain
+        in: path
+        name: ensDomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AgentUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
+        "502":
+          description: Bad Gateway
+          schema:
+            type: string
+      summary: Get Agent Node URL
+      tags:
+      - Agent Urls
+swagger: "2.0"

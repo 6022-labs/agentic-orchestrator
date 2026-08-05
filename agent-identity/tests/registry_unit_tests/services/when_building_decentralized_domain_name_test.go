@@ -46,7 +46,7 @@ func TestWhenBuildingDecentralizedDomainName(t *testing.T) {
 
 			result := basics.sut.BuildDomainName(agentName, collectionName)
 
-			expected := fmt.Sprintf("%s.%s.%d.protocol6022.%s",
+			expected := fmt.Sprintf("%s.%s.%d.6022.%s",
 				agentName,
 				collectionName,
 				basics.blockchainSettings.ChainId,
@@ -69,7 +69,7 @@ func TestWhenBuildingDecentralizedDomainName(t *testing.T) {
 
 			result := sut.BuildDomainName("agent", "collection")
 
-			assert.Equal(t, "agent.collection.137.protocol6022.eth", result)
+			assert.Equal(t, "agent.collection.137.6022.eth", result)
 		})
 	})
 
@@ -86,7 +86,7 @@ func TestWhenBuildingDecentralizedDomainName(t *testing.T) {
 
 			result := sut.BuildDomainName("agent", "collection")
 
-			assert.Equal(t, "agent.collection.1.protocol6022.crypto", result)
+			assert.Equal(t, "agent.collection.1.6022.crypto", result)
 		})
 	})
 }

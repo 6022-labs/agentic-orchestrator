@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingAgentImageUpdatedEventTestingSuite struct {
@@ -92,7 +91,7 @@ func TestWhenHandlingAgentImageUpdatedEvent(t *testing.T) {
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(5)).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 
 			return event
 		}

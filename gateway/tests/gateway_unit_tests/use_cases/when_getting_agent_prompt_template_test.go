@@ -1,13 +1,13 @@
 package use_cases_test
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
-	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
-	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/model_builders"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -16,40 +16,28 @@ import (
 type WhenGettingAgentPromptTemplateTestingSuite struct {
 	sut *use_cases.GetAgentPromptTemplate
 
-	mockAgentRegistryRequester       *interfaces_mocks.MockAgentRegistryRequesterInterface
-	mockAgentPromptTemplateRequester *interfaces_mocks.MockAgentPromptTemplateRequesterInterface
+	mockConversationBrokerRequester *interfaces_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenGettingAgentPromptTemplateBeforeEach(t *testing.T) *WhenGettingAgentPromptTemplateTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockAgentRegistryRequester := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
-	mockAgentPromptTemplateRequester := interfaces_mocks.NewMockAgentPromptTemplateRequesterInterface(mockController)
+	mockConversationBrokerRequester := interfaces_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
-	sut := use_cases.NewGetAgentPromptTemplate(
-		mockAgentRegistryRequester,
-		mockAgentPromptTemplateRequester,
-	)
+	sut := use_cases.NewGetAgentPromptTemplate(mockConversationBrokerRequester)
 
 	return &WhenGettingAgentPromptTemplateTestingSuite{
 		sut: sut,
 
-		mockAgentRegistryRequester:       mockAgentRegistryRequester,
-		mockAgentPromptTemplateRequester: mockAgentPromptTemplateRequester,
+		mockConversationBrokerRequester: mockConversationBrokerRequester,
 	}
 }
 
 func generateValidGetAgentPromptTemplateRequest() *requests.GetAgentPromptTemplateRequest {
-	authenticatedWallet := common_tests.RandomEthAddress()
-	collectionAddress := common_tests.RandomEthAddress().Hex()
-
 	return &requests.GetAgentPromptTemplateRequest{
-		AgentByCollectionTokenIdRequest: requests.AgentByCollectionTokenIdRequest{
-			AgentCollectionAddress: collectionAddress,
-			AgentCollectionTokenId: 1,
-			AuthenticatedWallet:    &authenticatedWallet,
-		},
-		Key: enums.AgentPromptTemplateKeyCloneDefault,
+		AgentCollectionAddress: "0xabc",
+		AgentCollectionTokenId: "1",
+		Key:                    "clone-system",
 	}
 }
 
@@ -59,255 +47,61 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 	t.Run("Given request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Because key is invalid", func(t *testing.T) {
+		t.Run("Because token id is not a number", func(t *testing.T) {
 			t.Parallel()
 
-			sut := WhenGettingAgentPromptTemplateBeforeEach(t)
-			request := generateValidGetAgentPromptTemplateRequest()
-			request.Key = enums.AgentPromptTemplateKey("invalid_key")
-
-			_, err := sut.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given agent repository returns error", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(nil, assert.AnError)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
+			request := generateValidGetAgentPromptTemplateRequest()
+			request.AgentCollectionTokenId = "abc"
 
 			_, err := suite.sut.Get(request)
 
-			assert.Error(t, err)
+			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
 	})
 
-	t.Run("Given agent is not found", func(t *testing.T) {
+	t.Run("Given the broker returns the template", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(nil, nil)
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockConversationBrokerRequester.EXPECT().
+				GetAgentPromptTemplate("0xabc", uint64(1), "clone-system").
+				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: "tpl"}, nil).
+				Times(1)
 		}
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return the template", func(t *testing.T) {
 			t.Parallel()
 
-			request := generateValidGetAgentPromptTemplateRequest()
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
+			initSuite(suite)
 
-			_, err := suite.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given agent is not internal", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			owner := request.AuthenticatedWallet.Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(owner).
-				WithIsInternal(false).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
-
-			_, err := suite.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given caller is not the owner of the agent", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			otherOwner := common_tests.RandomEthAddress().Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(otherOwner).
-				WithIsInternal(true).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
-
-			_, err := suite.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given agent is human", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			owner := request.AuthenticatedWallet.Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(owner).
-				WithIsInternal(false).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
-
-			_, err := suite.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given agent prompt template requester returns error", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			owner := request.AuthenticatedWallet.Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(owner).
-				WithIsInternal(true).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-
-			suite.mockAgentPromptTemplateRequester.EXPECT().
-				GetAgentPromptTemplateByAgentIdAndKey(agent.ID, request.Key).
-				Return(nil, assert.AnError)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
-
-			_, err := suite.sut.Get(request)
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given agent prompt template requester returns empty template", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			owner := request.AuthenticatedWallet.Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(owner).
-				WithIsInternal(true).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-
-			suite.mockAgentPromptTemplateRequester.EXPECT().
-				GetAgentPromptTemplateByAgentIdAndKey(agent.ID, request.Key).
-				Return(nil, nil)
-		}
-
-		t.Run("Should return empty template", func(t *testing.T) {
-			t.Parallel()
-
-			request := generateValidGetAgentPromptTemplateRequest()
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
-
-			template, err := suite.sut.Get(request)
+			response, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
 
 			assert.NoError(t, err)
-			assert.Nil(t, template)
+			assert.Equal(t, "tpl", response.Content)
 		})
 	})
 
-	t.Run("Given agent prompt template requester returns template", func(t *testing.T) {
+	t.Run("Given the broker fails", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite, request *requests.GetAgentPromptTemplateRequest) {
-			owner := request.AuthenticatedWallet.Hex()
-			agent := model_builders.NewAgentBuilder().
-				WithCollectionAddress(request.AgentCollectionAddress).
-				WithCollectionTokenId(&request.AgentCollectionTokenId).
-				WithOwner(owner).
-				WithIsInternal(true).
-				Build()
-
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId).
-				Return(agent, nil)
-
-			template := "template"
-			suite.mockAgentPromptTemplateRequester.EXPECT().
-				GetAgentPromptTemplateByAgentIdAndKey(agent.ID, request.Key).
-				Return(&template, nil)
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockConversationBrokerRequester.EXPECT().
+				GetAgentPromptTemplate(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("boom")).
+				Times(1)
 		}
 
-		t.Run("Should return template", func(t *testing.T) {
+		t.Run("Should propagate the error", func(t *testing.T) {
 			t.Parallel()
 
-			request := generateValidGetAgentPromptTemplateRequest()
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite, request)
+			initSuite(suite)
 
-			template, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
 
-			assert.NoError(t, err)
-			assert.Equal(t, "template", *template)
+			assert.Error(t, err)
 		})
 	})
 }

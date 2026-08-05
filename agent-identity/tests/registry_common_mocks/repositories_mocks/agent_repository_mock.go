@@ -118,21 +118,6 @@ func (mr *MockAgentRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetById), id)
 }
 
-// GetByWalletAddress mocks base method.
-func (m *MockAgentRepositoryInterface) GetByWalletAddress(walletAddress string) (*models.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByWalletAddress", walletAddress)
-	ret0, _ := ret[0].(*models.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByWalletAddress indicates an expected call of GetByWalletAddress.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByWalletAddress(walletAddress any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByWalletAddress", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByWalletAddress), walletAddress)
-}
-
 // GetMintedByEnsDomain mocks base method.
 func (m *MockAgentRepositoryInterface) GetMintedByEnsDomain(ensDomain string) (*models.Agent, error) {
 	m.ctrl.T.Helper()
@@ -161,21 +146,6 @@ func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressAndProp
 func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressAndProposalId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressAndProposalId), collectionAddress, proposalId)
-}
-
-// GetNotYetMintedByCollectionAddressAndWalletAddress mocks base method.
-func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress, walletAddress string) (*models.Agent, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNotYetMintedByCollectionAddressAndWalletAddress", collectionAddress, walletAddress)
-	ret0, _ := ret[0].(*models.Agent)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNotYetMintedByCollectionAddressAndWalletAddress indicates an expected call of GetNotYetMintedByCollectionAddressAndWalletAddress.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress, walletAddress any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressAndWalletAddress", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressAndWalletAddress), collectionAddress, walletAddress)
 }
 
 // Remove mocks base method.

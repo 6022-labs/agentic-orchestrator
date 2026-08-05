@@ -1,19 +1,32 @@
 package requests
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 )
 
 type GetAgentPromptTemplateRequest struct {
-	AgentByCollectionTokenIdRequest
-	Key enums.AgentPromptTemplateKey `json:"key" params:"key"`
+	AgentCollectionAddress string `params:"agentCollectionAddress"`
+	AgentCollectionTokenId string `params:"agentCollectionTokenId"`
+	Key                    string `params:"key"`
 }
 
 func (r *GetAgentPromptTemplateRequest) Validate() error {
-	if !enums.GetAllAgentPromptTemplateKeys().Contains(r.Key) {
-		return errors.NewValidationError("key", "key is invalid, must be one of: "+enums.GetAllAgentPromptTemplateKeys().String())
+	if strings.TrimSpace(r.AgentCollectionAddress) == "" {
+		return errors.NewValidationError("agentCollectionAddress", "must not be empty")
 	}
+	if _, err := strconv.ParseUint(r.AgentCollectionTokenId, 10, 64); err != nil {
+		return errors.NewValidationError("agentCollectionTokenId", "must be a valid unsigned integer")
+	}
+	if strings.TrimSpace(r.Key) == "" {
+		return errors.NewValidationError("key", "must not be empty")
+	}
+	return nil
+}
 
-	return r.EnsureAuthenticatedWallet()
+func (r *GetAgentPromptTemplateRequest) ParsedCollectionTokenId() uint64 {
+	v, _ := strconv.ParseUint(r.AgentCollectionTokenId, 10, 64)
+	return v
 }

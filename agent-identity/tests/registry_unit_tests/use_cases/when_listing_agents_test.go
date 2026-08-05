@@ -18,19 +18,22 @@ import (
 type WhenListingAgentsTestingSuite struct {
 	sut *use_cases.ListAgents
 
-	mockAgentRepository *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentRepository        *repositories_mocks.MockAgentRepositoryInterface
+	mockAgentAddressRepository *repositories_mocks.MockAgentAddressRepositoryInterface
 }
 
 func WhenListingAgentsBeforeEach(t *testing.T) *WhenListingAgentsTestingSuite {
 	mockController := gomock.NewController(t, gomock.WithOverridableExpectations())
 
 	mockAgentRepository := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
+	mockAgentAddressRepository := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 
-	sut := use_cases.NewListAgents(mockAgentRepository)
+	sut := use_cases.NewListAgents(mockAgentRepository, mockAgentAddressRepository)
 
 	return &WhenListingAgentsTestingSuite{
-		sut:                 sut,
-		mockAgentRepository: mockAgentRepository,
+		sut:                        sut,
+		mockAgentRepository:        mockAgentRepository,
+		mockAgentAddressRepository: mockAgentAddressRepository,
 	}
 }
 
@@ -109,6 +112,13 @@ func TestWhenListingAgents(t *testing.T) {
 				Return(uint(len(agents)), nil).
 				Times(1)
 
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return([]*models.AgentAddress{
+					model_builders.NewAgentAddressBuilder().WithAgentId(agents[0].ID).WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").Build(),
+				}, nil).
+				Times(1)
+
 			page := uint(1)
 			elementsPerPage := uint(10)
 			req := &requests.ListAgentsRequest{
@@ -137,47 +147,8 @@ func TestWhenListingAgents(t *testing.T) {
 				if assert.NotNil(t, existingAgent) {
 					assert.Equal(t, existingAgent.Name, fetchedAgent.Name)
 					assert.Equal(t, existingAgent.Owner, fetchedAgent.Owner)
-					assert.Equal(t, existingAgent.WalletAddress, fetchedAgent.WalletAddress)
 				}
 			}
-		})
-	})
-
-	t.Run("Given isInternal filter is provided", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should pass isInternal to search params", func(t *testing.T) {
-			t.Parallel()
-			basics := WhenListingAgentsBeforeEach(t)
-
-			isInternal := true
-
-			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
-					assert.NotNil(t, params.IsInternal)
-					assert.True(t, *params.IsInternal)
-					return []*models.Agent{}, nil
-				}).
-				Times(1)
-			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParams) (uint, error) {
-					assert.NotNil(t, params.IsInternal)
-					assert.True(t, *params.IsInternal)
-					return uint(0), nil
-				}).
-				Times(1)
-
-			req := &requests.ListAgentsRequest{
-				IsInternal: &isInternal,
-			}
-
-			response, err := basics.sut.List(req)
-
-			assert.Nil(t, err)
-			assert.NotNil(t, response)
-			assert.Empty(t, response.Agents)
 		})
 	})
 
@@ -201,6 +172,11 @@ func TestWhenListingAgents(t *testing.T) {
 				Return(uint(0), nil).
 				Times(1)
 
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
 			req := &requests.ListAgentsRequest{}
 
 			response, err := basics.sut.List(req)
@@ -209,6 +185,79 @@ func TestWhenListingAgents(t *testing.T) {
 			assert.NotNil(t, response)
 			assert.Equal(t, uint(1), response.Page)
 			assert.Equal(t, uint(10), response.ElementsPerPage)
+		})
+	})
+
+	t.Run("Given a minted filter is provided", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should forward it to the repository search and count", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenListingAgentsBeforeEach(t)
+
+			basics.mockAgentRepository.EXPECT().
+				Search(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
+					return []*models.Agent{}, nil
+				}).
+				Times(1)
+			basics.mockAgentRepository.EXPECT().
+				SearchCount(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParams) (uint, error) {
+					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
+					return uint(0), nil
+				}).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			req := &requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)}
+
+			_, err := basics.sut.List(req)
+
+			assert.Nil(t, err)
+		})
+	})
+
+	t.Run("Given sort parameters are provided", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should forward them to the repository search", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenListingAgentsBeforeEach(t)
+
+			basics.mockAgentRepository.EXPECT().
+				Search(gomock.Any()).
+				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+					assert.Equal(t, lo.ToPtr("name"), params.SortBy)
+					assert.Equal(t, lo.ToPtr("desc"), params.SortDirection)
+					return []*models.Agent{}, nil
+				}).
+				Times(1)
+			basics.mockAgentRepository.EXPECT().
+				SearchCount(gomock.Any()).
+				Return(uint(0), nil).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentIds(gomock.Any()).
+				Return(nil, nil).
+				Times(1)
+
+			req := &requests.ListAgentsRequest{
+				PaginateRequest: requests.PaginateRequest{
+					SortDirection: lo.ToPtr(requests.SortDirectionDesc),
+				},
+				SortBy: lo.ToPtr(requests.ListAgentSortByName),
+			}
+
+			_, err := basics.sut.List(req)
+
+			assert.Nil(t, err)
 		})
 	})
 }

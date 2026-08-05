@@ -79,12 +79,12 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumb
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentSignerUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentSignerUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentSignerUpdatedEvents = append(entry.data.AgentCollectionV1AgentSignerUpdatedEvents, events...)
+	entry.data.AgentCollectionV1AgentImageRemovedEvents = append(entry.data.AgentCollectionV1AgentImageRemovedEvents, events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
@@ -118,6 +118,28 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(block
 
 	entry := s.ensureEntry(blockNumber)
 	entry.data.AgentCollectionV1AgentAttributeUpdatedEvents = append(entry.data.AgentCollectionV1AgentAttributeUpdatedEvents, events...)
+	s.trackPendingBlock(blockNumber, entry)
+
+	return nil
+}
+
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressAdded) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry := s.ensureEntry(blockNumber)
+	entry.data.AgentCollectionV1AgentAddressAddedEvents = append(entry.data.AgentCollectionV1AgentAddressAddedEvents, events...)
+	s.trackPendingBlock(blockNumber, entry)
+
+	return nil
+}
+
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressRemoved) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	entry := s.ensureEntry(blockNumber)
+	entry.data.AgentCollectionV1AgentAddressRemovedEvents = append(entry.data.AgentCollectionV1AgentAddressRemovedEvents, events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil

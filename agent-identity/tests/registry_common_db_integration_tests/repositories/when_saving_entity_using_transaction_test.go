@@ -16,14 +16,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenSavingEntityUsingTransactionTestSuite struct {
+type WhenSavingEntityUsingTransactionTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.AgentRepository
 }
 
-func WhenSavingEntityUsingTransactionBeforeEach() *WhenSavingEntityUsingTransactionTestSuite {
+func WhenSavingEntityUsingTransactionBeforeEach() *WhenSavingEntityUsingTransactionTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,7 +44,7 @@ func WhenSavingEntityUsingTransactionBeforeEach() *WhenSavingEntityUsingTransact
 
 	sut := repositories.NewAgentRepository(dbClient)
 
-	return &WhenSavingEntityUsingTransactionTestSuite{
+	return &WhenSavingEntityUsingTransactionTestingSuite{
 		sut:    sut,
 		dbName: dbName,
 
@@ -52,7 +52,7 @@ func WhenSavingEntityUsingTransactionBeforeEach() *WhenSavingEntityUsingTransact
 	}
 }
 
-func WhenSavingEntityUsingTransactionAfterEach(suite *WhenSavingEntityUsingTransactionTestSuite) {
+func WhenSavingEntityUsingTransactionAfterEach(suite *WhenSavingEntityUsingTransactionTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -146,12 +146,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 
 			databaseTransaction.Commit()
 
-			suite.dbClient.GetDB().First(&entityToCreate, createdEntity.ID)
+			entityToCreate, _ = suite.sut.GetById(createdEntity.ID)
 
 			assert.Equal(t, entityToCreate.ID, entityToUpdate.ID)
 			assert.Equal(t, entityToCreate.Name, entityToUpdate.Name)
 			assert.Equal(t, entityToCreate.Owner, entityToUpdate.Owner)
-			assert.Equal(t, entityToCreate.WalletAddress, entityToUpdate.WalletAddress)
 			assert.Equal(t, entityToCreate.CollectionTokenId, entityToUpdate.CollectionTokenId)
 
 			assert.NotNil(t, entityToCreate.CreatedAt)

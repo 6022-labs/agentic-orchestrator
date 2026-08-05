@@ -78,4 +78,22 @@ func AddGatewayMvcConfiguration(container *dig.Container) {
 	if err != nil {
 		panic(err)
 	}
+
+	err = container.Provide(
+		orchestrator_gateway_mvc.NewConversationController,
+		dig.Group("controllers"),
+		dig.As(new(orchestrator_gateway_mvc.ControllerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		orchestrator_gateway_mvc.NewConfigController,
+		dig.Group("controllers"),
+		dig.As(new(orchestrator_gateway_mvc.ControllerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
+	"gorm.io/gorm"
 )
 
 type SlackUserRepository struct {
@@ -23,6 +26,9 @@ func (r *SlackUserRepository) GetById(id string) (*models.SlackUser, error) {
 		Where("id = ?", id).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +57,9 @@ func (r *SlackUserRepository) GetByPairedHumanAgent(collectionAddress string, co
 		Where("paired_human_agent_collection_address = ? AND paired_human_agent_collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

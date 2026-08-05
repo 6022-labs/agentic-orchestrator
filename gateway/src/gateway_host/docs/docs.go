@@ -44,162 +44,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/agent/create/first-step": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Upload agent image and create agent metadata",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Start agent creation",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "only for clone agents",
-                        "name": "cloneOfAgentId",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "collectionAddress",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "mission",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "name",
-                        "in": "formData"
-                    },
-                    {
-                        "enum": [
-                            "clone",
-                            "human",
-                            "expert",
-                            "facilitator"
-                        ],
-                        "type": "string",
-                        "x-enum-varnames": [
-                            "AgentRoleClone",
-                            "AgentRoleHuman",
-                            "AgentRoleExpert",
-                            "AgentRoleFacilitator"
-                        ],
-                        "name": "role",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "only for human agents",
-                        "name": "walletAddress",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "agent image",
-                        "name": "image",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.AgentResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/create/second-step": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Completes the agent creation process",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Finish agent creation",
-                "parameters": [
-                    {
-                        "description": "agent id",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AgentByIdRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.CreateAgentSecondStepResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/agent/{agentCollectionAddress}/{agentCollectionTokenId}": {
             "get": {
                 "description": "Retrieves details of a specific agent",
@@ -242,413 +86,21 @@ const docTemplate = `{
                 }
             }
         },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/context": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new context for an agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Create agent context",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "context",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateAgentContextRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/context/{contextKey}/message": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Appends a message to a specific agent context",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Add message to agent context",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "context key",
-                        "name": "contextKey",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "message",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AddMessageToAgentContextRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/contexts/keys": {
+        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/card": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all context keys for an agent",
+                "description": "Returns the live /.well-known/6022 card of the agent's node",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "agent"
                 ],
-                "summary": "List agent context keys",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "name": "elementsPerPage",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "key"
-                        ],
-                        "type": "string",
-                        "x-enum-varnames": [
-                            "ListAgentContextKeysSortByKey"
-                        ],
-                        "name": "sortBy",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "asc",
-                            "desc"
-                        ],
-                        "type": "string",
-                        "x-enum-varnames": [
-                            "SortDirectionAsc",
-                            "SortDirectionDesc"
-                        ],
-                        "name": "sortDirection",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/database/settings/first-step": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Configures database credentials for the agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Setup agent database first step",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "settings",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SetupAgentDatabaseSettingsFirstStepRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.SetupAgentDatabaseSettingsFirstStepResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/database/settings/second-step": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Applies database settings to the agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Finalize agent database setup",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "agent",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AgentByCollectionTokenIdRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/is-internal": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns true if the agent is managed internally",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Check if agent is internal",
+                "summary": "Get agent node card",
                 "parameters": [
                     {
                         "type": "string",
@@ -669,335 +121,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.IsInternalAgentResponse"
+                            "$ref": "#/definitions/responses.AgentCardResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/llm/settings": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieves the LLM configuration for an agent",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Get agent LLM settings",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.GetAgentLLMSettingsResponse"
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Sets up the LLM parameters for the agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Configure agent LLM settings",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "settings",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SetupAgentLLMSettingsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connection": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new MCP connection for an agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Create agent MCP connection",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connection/{mcpConnectionId}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Removes a specific MCP connection for an agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "Remove agent MCP connection",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "mcp connection id",
-                        "name": "mcpConnectionId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/mcp/connections": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieves the MCP connections for a specific agent",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "agent"
-                ],
-                "summary": "List agent MCP connections",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "collection address",
-                        "name": "agentCollectionAddress",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "token id",
-                        "name": "agentCollectionTokenId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/responses.MCPConnectionResponse"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "type": "string"
                         }
@@ -1012,7 +146,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves a specific prompt template for an agent",
                 "produces": [
                     "application/json"
                 ],
@@ -1047,7 +180,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
                         }
                     },
                     "400": {
@@ -1056,10 +189,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
                     "500": {
@@ -1076,7 +209,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Stores a prompt template for a given agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -1110,7 +242,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "template",
+                        "description": "template content",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1123,7 +255,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/responses.AgentPromptTemplateResponse"
                         }
                     },
                     "400": {
@@ -1132,10 +264,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
                     "500": {
@@ -1147,9 +279,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/agent/{agentCollectionAddress}/{agentCollectionTokenId}/url": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the agent node's URL resolved from its ENS url text record",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agent"
+                ],
+                "summary": "Get agent node url",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "collection address",
+                        "name": "agentCollectionAddress",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "token id",
+                        "name": "agentCollectionTokenId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AgentUrlResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/agents": {
             "get": {
-                "description": "Returns all agents managed by the orchestrator",
+                "description": "Returns all agents synced from the chain",
                 "produces": [
                     "application/json"
                 ],
@@ -1160,49 +345,32 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "name": "elementsPerPage",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "name": "isInternal",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "name",
-                            "owner",
-                            "createdAt",
-                            "walletAddress",
-                            "collectionAddress"
-                        ],
+                        "type": "integer",
+                        "description": "Elements per page",
+                        "name": "elementsPerPage",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "x-enum-varnames": [
-                            "ListAgentSortByName",
-                            "ListAgentSortByOwner",
-                            "ListAgentSortByCreatedAt",
-                            "ListAgentSortByWalletAddress",
-                            "ListAgentSortByCollectionAddress"
-                        ],
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field",
                         "name": "sortBy",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "asc",
-                            "desc"
-                        ],
-                        "type": "string",
-                        "x-enum-varnames": [
-                            "SortDirectionAsc",
-                            "SortDirectionDesc"
-                        ],
-                        "name": "sortDirection",
+                        "type": "boolean",
+                        "description": "Filter on mint state (true = minted only, false = proposals only)",
+                        "name": "isMinted",
                         "in": "query"
                     }
                 ],
@@ -1222,35 +390,37 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/jwt/finish": {
-            "post": {
-                "description": "Verifies the signed nonce and returns a JWT token",
-                "consumes": [
-                    "application/json"
-                ],
+        "/auth/challenge": {
+            "get": {
+                "description": "Returns a single-use EIP-4361 message + expiry the wallet must sign verbatim",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "authentication"
                 ],
-                "summary": "Complete JWT authentication",
+                "summary": "Get authentication challenge",
                 "parameters": [
                     {
-                        "description": "authentication request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.FinishJwtAuthenticationRequest"
-                        }
+                        "type": "string",
+                        "description": "wallet address the message is issued for",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "chain id of the connected wallet",
+                        "name": "chainId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.FinishJwtAuthenticationResponse"
+                            "$ref": "#/definitions/responses.GetAuthChallengeResponse"
                         }
                     },
                     "400": {
@@ -1268,9 +438,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/jwt/init": {
+        "/auth/verify": {
             "post": {
-                "description": "Initializes the JWT authentication flow by returning a nonce",
+                "description": "Verifies the signed EIP-4361 message for the nonce and returns a JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -1280,15 +450,15 @@ const docTemplate = `{
                 "tags": [
                     "authentication"
                 ],
-                "summary": "Start JWT authentication",
+                "summary": "Verify signed challenge",
                 "parameters": [
                     {
-                        "description": "authentication request",
+                        "description": "verify request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.InitializeJwtAuthenticationRequest"
+                            "$ref": "#/definitions/requests.VerifyAuthRequest"
                         }
                     }
                 ],
@@ -1296,13 +466,248 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.InitializeJwtAuthenticationResponse"
+                            "$ref": "#/definitions/responses.VerifyAuthResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "challenge_not_found | signature_mismatch",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/config": {
+            "get": {
+                "description": "The EVM chain config (keyed by chain id) the console boots from",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Public chain config",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BlockchainConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "List conversations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elements per page",
+                        "name": "elementsPerPage",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ListBrokerConversationsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Get conversation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BrokerConversationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/force-conclude": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Force conclude a conversation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "Get conversation messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.BrokerMessageResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/conversations/{id}/participants": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "conversation"
+                ],
+                "summary": "List conversation participants",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.BrokerParticipantResponse"
+                            }
                         }
                     },
                     "500": {
@@ -1393,108 +798,33 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "enums.AgentContextMessagePlatform": {
+        "enums.BridgePlatform": {
             "type": "string",
             "enum": [
-                "none",
                 "slack"
             ],
             "x-enum-varnames": [
-                "AgentContextMessagePlatformNone",
-                "AgentContextMessagePlatformSlack"
+                "BridgePlatformSlack"
             ]
         },
-        "enums.AgentContextMessageRole": {
-            "type": "string",
-            "enum": [
-                "user",
-                "system",
-                "assistant"
-            ],
-            "x-enum-varnames": [
-                "AgentContextMessageRoleUser",
-                "AgentContextMessageRoleSystem",
-                "AgentContextMessageRoleAssistant"
-            ]
+        "errors.NotFoundError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
         },
-        "enums.AgentPromptTemplateKey": {
-            "type": "string",
-            "enum": [
-                "clone-system",
-                "clone-default",
-                "facilitator-system",
-                "facilitator-default",
-                "facilitator-conclude",
-                "expert-system",
-                "expert-context-found",
-                "expert-context-not-found"
-            ],
-            "x-enum-varnames": [
-                "AgentPromptTemplateKeyCloneSystem",
-                "AgentPromptTemplateKeyCloneDefault",
-                "AgentPromptTemplateKeyFacilitatorSystem",
-                "AgentPromptTemplateKeyFacilitatorDefault",
-                "AgentPromptTemplateKeyFacilitatorConclude",
-                "AgentPromptTemplateKeyExpertSystem",
-                "AgentPromptTemplateKeyExpertContextFound",
-                "AgentPromptTemplateKeyExpertContextNotFound"
-            ]
-        },
-        "enums.AgentRole": {
-            "type": "string",
-            "enum": [
-                "clone",
-                "human",
-                "expert",
-                "facilitator"
-            ],
-            "x-enum-varnames": [
-                "AgentRoleClone",
-                "AgentRoleHuman",
-                "AgentRoleExpert",
-                "AgentRoleFacilitator"
-            ]
-        },
-        "enums.DatabaseConnectionDriver": {
-            "type": "string",
-            "enum": [
-                "mysql",
-                "mariadb",
-                "postgres",
-                "sqlserver"
-            ],
-            "x-enum-varnames": [
-                "DatabaseConnectionDriverMySQL",
-                "DatabaseConnectionDriverMariaDB",
-                "DatabaseConnectionDriverPostgres",
-                "DatabaseConnectionDriverSQLServer"
-            ]
-        },
-        "enums.LLMConnectionPlatform": {
-            "type": "string",
-            "enum": [
-                "x",
-                "mistral",
-                "open-ai",
-                "libert-ai",
-                "ollama",
-                "deepseek",
-                "anthropic",
-                "amazon-bedrock"
-            ],
-            "x-enum-comments": {
-                "LLMConnectionPlatformX": "Twitter"
-            },
-            "x-enum-varnames": [
-                "LLMConnectionPlatformX",
-                "LLMConnectionPlatformMistral",
-                "LLMConnectionPlatformOpenAI",
-                "LLMConnectionPlatformLibertAI",
-                "LLMConnectionPlatformOllama",
-                "LLMConnectionPlatformDeepseek",
-                "LLMConnectionPlatformAnthropic",
-                "LLMConnectionPlatformAmazonBedrock"
-            ]
+        "errors.UnauthorizedError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         },
         "errors.ValidationError": {
             "type": "object",
@@ -1507,136 +837,33 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.AddMessageToAgentContextRequest": {
+        "requests.SaveAgentPromptTemplateRequest": {
             "type": "object",
             "properties": {
-                "message": {
+                "agentCollectionAddress": {
                     "type": "string"
                 },
-                "role": {
-                    "$ref": "#/definitions/enums.AgentContextMessageRole"
-                }
-            }
-        },
-        "requests.AgentByCollectionTokenIdRequest": {
-            "type": "object"
-        },
-        "requests.AgentByIdRequest": {
-            "type": "object",
-            "properties": {
-                "agentId": {
+                "agentCollectionTokenId": {
                     "type": "string"
-                }
-            }
-        },
-        "requests.CreateAgentContextRequest": {
-            "type": "object",
-            "properties": {
+                },
+                "content": {
+                    "type": "string"
+                },
                 "key": {
                     "type": "string"
                 }
             }
         },
-        "requests.FinishJwtAuthenticationRequest": {
+        "requests.VerifyAuthRequest": {
             "type": "object",
             "properties": {
-                "message": {
+                "address": {
                     "type": "string"
                 },
                 "signature": {
                     "type": "string"
                 }
             }
-        },
-        "requests.InitializeJwtAuthenticationRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.ListAgentContextKeysSortBy": {
-            "type": "string",
-            "enum": [
-                "key"
-            ],
-            "x-enum-varnames": [
-                "ListAgentContextKeysSortByKey"
-            ]
-        },
-        "requests.ListAgentSortBy": {
-            "type": "string",
-            "enum": [
-                "name",
-                "owner",
-                "createdAt",
-                "walletAddress",
-                "collectionAddress"
-            ],
-            "x-enum-varnames": [
-                "ListAgentSortByName",
-                "ListAgentSortByOwner",
-                "ListAgentSortByCreatedAt",
-                "ListAgentSortByWalletAddress",
-                "ListAgentSortByCollectionAddress"
-            ]
-        },
-        "requests.SaveAgentPromptTemplateRequest": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "key": {
-                    "$ref": "#/definitions/enums.AgentPromptTemplateKey"
-                }
-            }
-        },
-        "requests.SetupAgentDatabaseSettingsFirstStepRequest": {
-            "type": "object",
-            "properties": {
-                "driver": {
-                    "$ref": "#/definitions/enums.DatabaseConnectionDriver"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                }
-            }
-        },
-        "requests.SetupAgentLLMSettingsRequest": {
-            "type": "object",
-            "properties": {
-                "amazonPlatformRegion": {
-                    "type": "string"
-                },
-                "apiKey": {
-                    "type": "string"
-                },
-                "baseUrl": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "platform": {
-                    "$ref": "#/definitions/enums.LLMConnectionPlatform"
-                }
-            }
-        },
-        "requests.SortDirection": {
-            "type": "string",
-            "enum": [
-                "asc",
-                "desc"
-            ],
-            "x-enum-varnames": [
-                "SortDirectionAsc",
-                "SortDirectionDesc"
-            ]
         },
         "requests.VerifyWalletForBridgeRequest": {
             "type": "object",
@@ -1645,9 +872,46 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "platform": {
-                    "$ref": "#/definitions/enums.AgentContextMessagePlatform"
+                    "$ref": "#/definitions/enums.BridgePlatform"
                 },
                 "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentCardEndpointsResponse": {
+            "type": "object",
+            "properties": {
+                "chatCompletions": {
+                    "type": "string"
+                },
+                "responses": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AgentCardResponse": {
+            "type": "object",
+            "properties": {
+                "endpoints": {
+                    "$ref": "#/definitions/responses.AgentCardEndpointsResponse"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "protocolVersion": {
                     "type": "string"
                 }
             }
@@ -1666,9 +930,32 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.AgentPromptTemplateResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.AgentResponse": {
             "type": "object",
             "properties": {
+                "addresses": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "attributes": {
                     "type": "object",
                     "additionalProperties": {
@@ -1687,9 +974,6 @@ const docTemplate = `{
                 "creator": {
                     "type": "string"
                 },
-                "databaseSetupStatus": {
-                    "type": "string"
-                },
                 "ensDomain": {
                     "type": "string"
                 },
@@ -1702,15 +986,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "isInternal": {
-                    "type": "boolean"
-                },
-                "isSetupCompleted": {
-                    "type": "boolean"
-                },
-                "llmSetupStatus": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
@@ -1719,64 +994,122 @@ const docTemplate = `{
                 },
                 "proposalId": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.AgentUrlResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BlockchainConfigResponse": {
+            "type": "object",
+            "properties": {
+                "evmChains": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.EvmChainConfig"
+                    }
+                },
+                "orchestratorAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BrokerConversationResponse": {
+            "type": "object",
+            "properties": {
+                "bridgeId": {
+                    "type": "string"
+                },
+                "concludedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BrokerMessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "conversationId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "participantId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.BrokerParticipantResponse": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "ensDomain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/enums.AgentRole"
-                },
-                "walletAddress": {
                     "type": "string"
                 }
             }
         },
-        "responses.CreateAgentSecondStepResponse": {
+        "responses.EvmChainConfig": {
             "type": "object",
             "properties": {
-                "nonce": {
+                "collectionCreatorAddress": {
                     "type": "string"
                 },
-                "signature": {
+                "collectionsManagerAddress": {
                     "type": "string"
                 },
-                "signer": {
+                "scannerBaseUrl": {
                     "type": "string"
                 }
             }
         },
-        "responses.FinishJwtAuthenticationResponse": {
+        "responses.GetAuthChallengeResponse": {
             "type": "object",
             "properties": {
-                "jwt": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.GetAgentLLMSettingsResponse": {
-            "type": "object",
-            "properties": {
-                "baseUrl": {
+                "expiresAt": {
                     "type": "string"
                 },
-                "model": {
+                "message": {
                     "type": "string"
-                },
-                "platform": {
-                    "$ref": "#/definitions/enums.LLMConnectionPlatform"
-                }
-            }
-        },
-        "responses.InitializeJwtAuthenticationResponse": {
-            "type": "object",
-            "properties": {
-                "nonce": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.IsInternalAgentResponse": {
-            "type": "object",
-            "properties": {
-                "isInternalAgent": {
-                    "type": "boolean"
                 }
             }
         },
@@ -1800,33 +1133,33 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MCPConnectionResponse": {
+        "responses.ListBrokerConversationsResponse": {
             "type": "object",
             "properties": {
-                "agentId": {
-                    "type": "string"
+                "conversations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.BrokerConversationResponse"
+                    }
                 },
-                "id": {
-                    "type": "string"
+                "elementsPerPage": {
+                    "type": "integer"
                 },
-                "name": {
-                    "type": "string"
+                "page": {
+                    "type": "integer"
                 },
-                "url": {
-                    "type": "string"
+                "totalElements": {
+                    "type": "integer"
                 }
             }
         },
-        "responses.SetupAgentDatabaseSettingsFirstStepResponse": {
+        "responses.VerifyAuthResponse": {
             "type": "object",
             "properties": {
-                "databaseName": {
+                "expiresAt": {
                     "type": "string"
                 },
-                "databasePassword": {
-                    "type": "string"
-                },
-                "databaseUsername": {
+                "token": {
                     "type": "string"
                 }
             }

@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenGettingMintedAgentsByEnsTestingSuite struct {
@@ -86,9 +85,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 			assert.Equal(t, createdEntity.Images, fetchedEntity.Images)
 			assert.Equal(t, createdEntity.Creator, fetchedEntity.Creator)
 			assert.Equal(t, createdEntity.EnsDomain, fetchedEntity.EnsDomain)
-			assert.Equal(t, createdEntity.IsInternal, fetchedEntity.IsInternal)
 			assert.Equal(t, createdEntity.Attributes, fetchedEntity.Attributes)
-			assert.Equal(t, createdEntity.WalletAddress, fetchedEntity.WalletAddress)
 		})
 	})
 
@@ -112,7 +109,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 
 			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(createdEntity.EnsDomain)
 
-			assert.Equal(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})
@@ -128,7 +125,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 
 			fetchedEntity, err := suite.sut.GetMintedByEnsDomain("nonexistent.ens")
 
-			assert.Equal(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
 		})
 	})

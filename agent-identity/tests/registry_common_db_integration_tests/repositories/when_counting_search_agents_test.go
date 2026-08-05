@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -65,7 +66,7 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 			suite := WhenCountingSearchAgentsBeforeEach()
 			defer WhenCountingSearchAgentsAfterEach(suite)
 
-			params := repositories.AgentSearchParams{IsInternal: nil}
+			params := repositories.AgentSearchParams{}
 			count, err := suite.sut.SearchCount(params)
 
 			assert.Nil(t, err)
@@ -83,17 +84,58 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 3; i++ {
-				agent := model_builders.NewAgentBuilder().WithIsInternal(true).Build()
+				agent := model_builders.NewAgentBuilder().Build()
 				suite.sut.Save(agent)
 			}
-			agent := model_builders.NewAgentBuilder().WithIsInternal(false).Build()
-			suite.sut.Save(agent)
 
-			params := repositories.AgentSearchParams{IsInternal: ptrBool(true)}
+			params := repositories.AgentSearchParams{}
 			count, err := suite.sut.SearchCount(params)
 
 			assert.Nil(t, err)
 			assert.Equal(t, uint(3), count)
+		})
+	})
+
+	t.Run("Given minted and proposal agents in the database", func(t *testing.T) {
+		t.Parallel()
+
+		saveMixedAgents := func(suite *WhenCountingSearchAgentsTestingSuite) {
+			for i := 0; i < 2; i++ {
+				suite.sut.Save(model_builders.NewAgentBuilder().Build())
+			}
+			suite.sut.Save(model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
+		}
+
+		t.Run("Given the filter selects minted agents", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("Should count only minted agents", func(t *testing.T) {
+				t.Parallel()
+				suite := WhenCountingSearchAgentsBeforeEach()
+				defer WhenCountingSearchAgentsAfterEach(suite)
+				saveMixedAgents(suite)
+
+				count, err := suite.sut.SearchCount(repositories.AgentSearchParams{IsMinted: lo.ToPtr(true)})
+
+				assert.Nil(t, err)
+				assert.Equal(t, uint(2), count)
+			})
+		})
+
+		t.Run("Given the filter selects proposal agents", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("Should count only proposal agents", func(t *testing.T) {
+				t.Parallel()
+				suite := WhenCountingSearchAgentsBeforeEach()
+				defer WhenCountingSearchAgentsAfterEach(suite)
+				saveMixedAgents(suite)
+
+				count, err := suite.sut.SearchCount(repositories.AgentSearchParams{IsMinted: lo.ToPtr(false)})
+
+				assert.Nil(t, err)
+				assert.Equal(t, uint(1), count)
+			})
 		})
 	})
 }

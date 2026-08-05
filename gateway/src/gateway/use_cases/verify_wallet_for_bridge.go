@@ -13,16 +13,16 @@ type VerifyWalletForBridgeInterface interface {
 }
 
 type VerifyWalletForBridge struct {
-	signedMessageValidator  interfaces.SignedMessageValidatorInterface
+	signatureVerifier       interfaces.SignatureVerifierInterface
 	platformBridgeRequester interfaces.PlatformBridgeRequesterInterface
 }
 
 func NewVerifyWalletForBridge(
-	signedMessageValidator interfaces.SignedMessageValidatorInterface,
+	signatureVerifier interfaces.SignatureVerifierInterface,
 	platformBridgeRequester interfaces.PlatformBridgeRequesterInterface,
 ) *VerifyWalletForBridge {
 	return &VerifyWalletForBridge{
-		signedMessageValidator:  signedMessageValidator,
+		signatureVerifier:       signatureVerifier,
 		platformBridgeRequester: platformBridgeRequester,
 	}
 }
@@ -32,11 +32,12 @@ func (uc *VerifyWalletForBridge) Verify(request *requests.VerifyWalletForBridgeR
 		return err
 	}
 
-	if !uc.signedMessageValidator.Validate(request.Challenge, request.Signature, request.AuthenticatedWallet.Hex()) {
+	recovered, err := uc.signatureVerifier.Recover(request.Challenge, request.Signature)
+	if err != nil || recovered != request.AuthenticatedWallet {
 		return errors.NewValidationError("signature", "invalid signature")
 	}
 
-	err := uc.platformBridgeRequester.SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex())
+	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex())
 	if err != nil {
 		return fmt.Errorf("failed to set wallet ownership to user: %w", err)
 	}

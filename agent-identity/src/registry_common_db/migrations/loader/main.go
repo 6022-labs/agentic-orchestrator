@@ -16,6 +16,7 @@ func main() {
 		SkipDefaultTransaction: false,
 	})).Load(
 		&common_models.Agent{},
+		&common_models.AgentAddress{},
 		&common_models.AgentCollection{},
 
 		&synchronizer_models.SyncCheckpoint{},

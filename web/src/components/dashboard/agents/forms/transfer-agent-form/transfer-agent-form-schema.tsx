@@ -1,17 +1,11 @@
-import { ethers } from "ethers";
-import { z } from "zod";
+import { z } from "zod"
 
-export type TransferAgentFormSchemaType = {
-  address: string;
-};
+const addressRegex = /^0x[0-9a-fA-F]{40}$/
 
-export const createTransferAgentFormSchema = () => {
-  return z.object({
-    address: z
-      .string()
-      .nonempty("Address is required")
-      .refine((value) => {
-        return ethers.isAddress(value) || value === "";
-      }, "Invalid address format"),
-  });
-};
+export const transferAgentFormSchema = z.object({
+  to: z.string().regex(addressRegex, "Must be a 0x-prefixed address"),
+})
+
+export type TransferAgentFormSchemaType = z.infer<
+  typeof transferAgentFormSchema
+>

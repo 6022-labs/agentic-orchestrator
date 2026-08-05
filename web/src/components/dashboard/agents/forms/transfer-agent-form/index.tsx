@@ -1,100 +1,66 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  TransferAgentFormSchemaType,
-  createTransferAgentFormSchema,
-} from "./transfer-agent-form-schema";
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+
 import {
   Form,
-  FormItem,
-  FormLabel,
-  FormField,
-  FormMessage,
   FormControl,
   FormDescription,
-} from "@/components/ui/form";
-import type { FormCompletionResult } from "@/models/api/validation-error";
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import type { FormCompletionResult } from "@/models/api/validation-error"
+import {
+  transferAgentFormSchema,
+  type TransferAgentFormSchemaType,
+} from "./transfer-agent-form-schema"
 
-type TransferAgentFormProps = {
+type Props = {
   onFormComplete: (
     values: TransferAgentFormSchemaType
-  ) => Promise<FormCompletionResult<keyof TransferAgentFormSchemaType>>;
-};
+  ) => Promise<FormCompletionResult<keyof TransferAgentFormSchemaType>>
+}
 
-export default function TransferAgentForm(
-  props: Readonly<TransferAgentFormProps>
-) {
-  const transferAgentFormSchema = createTransferAgentFormSchema();
-
+export default function TransferAgentForm({ onFormComplete }: Props) {
   const form = useForm<TransferAgentFormSchemaType>({
     resolver: zodResolver(transferAgentFormSchema),
-  });
+    defaultValues: { to: "" },
+  })
 
-  const [buttonLoading, setButtonLoading] = React.useState(false);
+  const onSubmit = async (values: TransferAgentFormSchemaType) => {
+    const { error } = await onFormComplete(values)
+
+    if (error) {
+      form.setError(error.field, { type: "server", message: error.message })
+    }
+  }
 
   return (
     <Form {...form}>
-      <form className="h-fit">
-        <div className="space-y-4 px-1">
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Receiver</FormLabel>
-                <FormControl>
-                  <Input placeholder="0x..." {...field} />
-                </FormControl>
-                <FormDescription>Address of the receiver.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex w-full justify-end gap-x-2">
-            <Button
-              type="button"
-              loading={buttonLoading}
-              disabled={buttonLoading}
-              onClick={async () => {
-                setButtonLoading(true);
-
-                try {
-                  const addressIsValidPromise = form.trigger("address");
-
-                  const errors = await Promise.all([addressIsValidPromise]);
-
-                  if (errors.some((error) => error === false)) {
-                    return;
-                  }
-
-                  const submission = await props.onFormComplete(
-                    form.getValues()
-                  );
-
-                  if (submission?.error) {
-                    form.setError(
-                      submission.error
-                        .field as keyof TransferAgentFormSchemaType,
-                      {
-                        type: "server",
-                        message: submission.error.message,
-                      }
-                    );
-                    return;
-                  }
-                } finally {
-                  setButtonLoading(false);
-                }
-              }}
-            >
-              Transfer
-            </Button>
-          </div>
-        </div>
+      <form
+        id="transfer-agent-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <FormField
+          control={form.control}
+          name="to"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Recipient</FormLabel>
+              <FormControl>
+                <Input placeholder="0x…" {...field} />
+              </FormControl>
+              <FormDescription>
+                The wallet that becomes the agent's owner.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </form>
     </Form>
-  );
+  )
 }

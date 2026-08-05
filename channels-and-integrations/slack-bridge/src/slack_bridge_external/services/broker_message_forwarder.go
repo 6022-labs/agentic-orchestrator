@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -9,10 +8,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
-	broker_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_conversation_broker/settings"
+	broker_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_swarm_conversation_broker/settings"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 // BrokerMessageForwarder translates a Slack message into the broker: dedup,
@@ -92,14 +90,11 @@ func (f *BrokerMessageForwarder) Forward(
 }
 
 func (f *BrokerMessageForwarder) alreadyForwarded(channelId, messageTs string) (bool, error) {
-	_, err := f.slackMessageRepository.GetBySlackIds(channelId, messageTs)
-	if err == nil {
-		return true, nil
+	message, err := f.slackMessageRepository.GetBySlackIds(channelId, messageTs)
+	if err != nil {
+		return false, fmt.Errorf("failed to lookup slack message mapping: %w", err)
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	return false, fmt.Errorf("failed to lookup slack message mapping: %w", err)
+	return message != nil, nil
 }
 
 func (f *BrokerMessageForwarder) resolveAuthorParticipant(
@@ -128,7 +123,7 @@ func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
 	authorParticipantId uuid.UUID,
 ) (*uuid.UUID, error) {
 	conversation, err := f.slackConversationRepository.GetBySlackIds(slackChannel.Id, parentMessageTs)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, fmt.Errorf("failed to lookup slack conversation mapping: %w", err)
 	}
 	if conversation != nil {

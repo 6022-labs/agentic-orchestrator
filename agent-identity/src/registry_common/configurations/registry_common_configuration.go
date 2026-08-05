@@ -14,16 +14,6 @@ func AddRegistryCommonConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(settings.NewAgentCollectionSettings)
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(settings.NewOrchestratorSettings)
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(settings.NewDecentralizedDomainNameProviderSettings)
 	if err != nil {
 		panic(err)

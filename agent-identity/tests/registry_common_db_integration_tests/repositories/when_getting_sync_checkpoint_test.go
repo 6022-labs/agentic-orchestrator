@@ -11,19 +11,18 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingSyncCheckpointTestSuite struct {
+type WhenGettingSyncCheckpointTestingSuite struct {
 	dbName string
 
 	dbClient db_clients.DatabaseClientInterface
 	sut      *repositories.SyncCheckpointRepository
 }
 
-func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestSuite {
+func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -44,14 +43,14 @@ func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestSuite {
 
 	sut := repositories.NewSyncCheckpointRepository(dbClient)
 
-	return &WhenGettingSyncCheckpointTestSuite{
+	return &WhenGettingSyncCheckpointTestingSuite{
 		sut:      sut,
 		dbName:   dbName,
 		dbClient: dbClient,
 	}
 }
 
-func WhenGettingSyncCheckpointAfterEach(suite *WhenGettingSyncCheckpointTestSuite) {
+func WhenGettingSyncCheckpointAfterEach(suite *WhenGettingSyncCheckpointTestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -80,16 +79,16 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 	t.Run("Given sync checkpoint does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return record not found error", func(t *testing.T) {
+		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingSyncCheckpointBeforeEach()
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
-			_, err := suite.sut.Get()
+			checkpoint, err := suite.sut.Get()
 
-			assert.NotNil(t, err)
-			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+			assert.Nil(t, err)
+			assert.Nil(t, checkpoint)
 		})
 	})
 }

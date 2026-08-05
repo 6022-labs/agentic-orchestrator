@@ -102,7 +102,7 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndProposalId(t *testing
 				nonExistingProposalId,
 			)
 
-			assert.NotNil(t, err)
+			assert.Nil(t, err)
 			assert.Nil(t, fetchedAgent)
 		})
 	})

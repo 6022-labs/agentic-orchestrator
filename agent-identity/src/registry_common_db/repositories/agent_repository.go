@@ -1,10 +1,13 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type AgentRepository struct {
@@ -44,11 +47,10 @@ func (r *AgentRepository) GetAll() ([]*models.Agent, error) {
 func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 	agents := []*models.Agent{}
 
-	db := r.client.GetDB().Model(&models.Agent{})
-
-	if params.IsInternal != nil {
-		db = db.Where("is_internal = ?", *params.IsInternal)
-	}
+	db := r.applySearchParams(
+		r.client.GetDB().Model(&models.Agent{}),
+		params.AgentSearchParams,
+	)
 
 	if params.ElementsPerPage != nil {
 		offset := 0
@@ -81,11 +83,7 @@ func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagina
 func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (uint, error) {
 	var count int64
 
-	db := r.client.GetDB().Model(&models.Agent{})
-
-	if params.IsInternal != nil {
-		db = db.Where("is_internal = ?", *params.IsInternal)
-	}
+	db := r.applySearchParams(r.client.GetDB().Model(&models.Agent{}), params)
 
 	tx := db.Count(&count)
 	if tx.Error != nil {
@@ -95,10 +93,24 @@ func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (ui
 	return uint(count), nil
 }
 
+// applySearchParams translates AgentSearchParams into query filters.
+func (r *AgentRepository) applySearchParams(db *gorm.DB, params repositories.AgentSearchParams) *gorm.DB {
+	if params.IsMinted != nil {
+		if *params.IsMinted {
+			db = db.Where("collection_token_id IS NOT NULL")
+		} else {
+			db = db.Where("collection_token_id IS NULL")
+		}
+	}
+	return db
+}
+
 func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	entity := new(models.Agent)
 	tx := r.client.GetDB().First(entity, id)
-
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -106,21 +118,13 @@ func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	return entity, nil
 }
 
-func (r *AgentRepository) GetByWalletAddress(walletAddress string) (*models.Agent, error) {
-	agent := &models.Agent{}
-
-	tx := r.client.GetDB().Where("wallet_address ILIKE ?", walletAddress).First(agent)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return agent, nil
-}
-
 func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
 	agent := &models.Agent{}
 
 	tx := r.client.GetDB().Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -132,6 +136,9 @@ func (r *AgentRepository) GetMintedByEnsDomain(ensDomain string) (*models.Agent,
 	agent := &models.Agent{}
 
 	tx := r.client.GetDB().Where("ens_domain = ? AND collection_token_id IS NOT NULL", ensDomain).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -150,21 +157,6 @@ func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent,
 	return agents, nil
 }
 
-func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndWalletAddress(collectionAddress string, walletAddress string) (*models.Agent, error) {
-	agent := &models.Agent{}
-
-	tx := r.client.GetDB().Where(
-		"collection_token_id IS NULL AND collection_address = ? AND wallet_address = ?",
-		collectionAddress,
-		walletAddress,
-	).First(agent)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return agent, nil
-}
-
 func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error) {
 	agent := &models.Agent{}
 
@@ -173,6 +165,9 @@ func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collec
 		collectionAddress,
 		proposalId,
 	).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

@@ -4,23 +4,19 @@ import (
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 )
 
 type SaveAgentPromptTemplateRequest struct {
-	AgentByCollectionTokenIdRequest
-	Key     enums.AgentPromptTemplateKey `json:"key" params:"key"`
-	Content string                       `json:"content"`
+	GetAgentPromptTemplateRequest
+	Content string `json:"content"`
 }
 
 func (r *SaveAgentPromptTemplateRequest) Validate() error {
-	if len(strings.TrimSpace(r.Content)) == 0 {
-		return errors.NewValidationError("content", "content is required")
+	if err := r.GetAgentPromptTemplateRequest.Validate(); err != nil {
+		return err
 	}
-
-	if !enums.GetAllAgentPromptTemplateKeys().Contains(r.Key) {
-		return errors.NewValidationError("key", "key is invalid, must be one of: "+enums.GetAllAgentPromptTemplateKeys().String())
+	if strings.TrimSpace(r.Content) == "" {
+		return errors.NewValidationError("content", "must not be empty")
 	}
-
-	return r.EnsureAuthenticatedWallet()
+	return nil
 }

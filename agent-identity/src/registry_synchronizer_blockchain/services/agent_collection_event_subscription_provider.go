@@ -19,7 +19,7 @@ type AgentCollectionEventSubscriptionProvider struct {
 	client *ethclient.Client
 }
 
-type newAgentCollectionEventSubscriptionProviderParams struct {
+type NewAgentCollectionEventSubscriptionProviderParams struct {
 	dig.In
 
 	Logger *zap.Logger
@@ -27,7 +27,7 @@ type newAgentCollectionEventSubscriptionProviderParams struct {
 }
 
 func NewAgentCollectionEventSubscriptionProvider(
-	params newAgentCollectionEventSubscriptionProviderParams,
+	params NewAgentCollectionEventSubscriptionProviderParams,
 ) *AgentCollectionEventSubscriptionProvider {
 	return &AgentCollectionEventSubscriptionProvider{
 		logger: params.Logger,
@@ -92,63 +92,6 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSub
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentSignerUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentSignerUpdated, ethereum.Subscription, error) {
-	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	eventDef, ok := abiSpec.Events["AgentSignerUpdated"]
-	if !ok {
-		return nil, nil, fmt.Errorf("event AgentSignerUpdated not found in AgentCollectionV1 ABI")
-	}
-
-	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
-	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	logs := make(chan *abi.AgentCollectionV1AgentSignerUpdated, 64)
-
-	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
-		defer close(logs)
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-subscriptionLogs:
-				parsedEvent, parseErr := filterer.ParseAgentSignerUpdated(log)
-				if parseErr != nil {
-					return fmt.Errorf("failed to parse AgentSignerUpdated log: %w", parseErr)
-				}
-				select {
-				case logs <- parsedEvent:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	})
-
-	s.logger.Debug(
-		"Subscribed to AgentCollection AgentSignerUpdated events",
-	)
-
-	return logs, wrappedSub, nil
-}
-
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
@@ -201,6 +144,63 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscri
 
 	s.logger.Debug(
 		"Subscribed to AgentCollection AgentImageUpdated events",
+	)
+
+	return logs, wrappedSub, nil
+}
+
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error) {
+	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventDef, ok := abiSpec.Events["AgentImageRemoved"]
+	if !ok {
+		return nil, nil, fmt.Errorf("event AgentImageRemoved not found in AgentCollectionV1 ABI")
+	}
+
+	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
+	subscriptionLogs := make(chan types.Log)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentImageRemoved, 64)
+
+	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
+		defer close(logs)
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-subscriptionLogs:
+				parsedEvent, parseErr := filterer.ParseAgentImageRemoved(log)
+				if parseErr != nil {
+					return fmt.Errorf("failed to parse AgentImageRemoved log: %w", parseErr)
+				}
+				select {
+				case logs <- parsedEvent:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	})
+
+	s.logger.Debug(
+		"Subscribed to AgentCollection AgentImageRemoved events",
 	)
 
 	return logs, wrappedSub, nil
@@ -315,6 +315,120 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 
 	s.logger.Debug(
 		"Subscribed to AgentCollection MintProposalRemoved events",
+	)
+
+	return logs, wrappedSub, nil
+}
+
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error) {
+	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventDef, ok := abiSpec.Events["AgentAddressAdded"]
+	if !ok {
+		return nil, nil, fmt.Errorf("event AgentAddressAdded not found in AgentCollectionV1 ABI")
+	}
+
+	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
+	subscriptionLogs := make(chan types.Log)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentAddressAdded, 64)
+
+	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
+		defer close(logs)
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-subscriptionLogs:
+				parsedEvent, parseErr := filterer.ParseAgentAddressAdded(log)
+				if parseErr != nil {
+					return fmt.Errorf("failed to parse AgentAddressAdded log: %w", parseErr)
+				}
+				select {
+				case logs <- parsedEvent:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	})
+
+	s.logger.Debug(
+		"Subscribed to AgentCollection AgentAddressAdded events",
+	)
+
+	return logs, wrappedSub, nil
+}
+
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error) {
+	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	eventDef, ok := abiSpec.Events["AgentAddressRemoved"]
+	if !ok {
+		return nil, nil, fmt.Errorf("event AgentAddressRemoved not found in AgentCollectionV1 ABI")
+	}
+
+	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
+	subscriptionLogs := make(chan types.Log)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	filterer, err := abi.NewAgentCollectionV1Filterer(common.Address{}, s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logs := make(chan *abi.AgentCollectionV1AgentAddressRemoved, 64)
+
+	wrappedSub := event.NewSubscription(func(quit <-chan struct{}) error {
+		defer close(logs)
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-subscriptionLogs:
+				parsedEvent, parseErr := filterer.ParseAgentAddressRemoved(log)
+				if parseErr != nil {
+					return fmt.Errorf("failed to parse AgentAddressRemoved log: %w", parseErr)
+				}
+				select {
+				case logs <- parsedEvent:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	})
+
+	s.logger.Debug(
+		"Subscribed to AgentCollection AgentAddressRemoved events",
 	)
 
 	return logs, wrappedSub, nil

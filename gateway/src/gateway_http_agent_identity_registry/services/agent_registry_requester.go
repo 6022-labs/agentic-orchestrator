@@ -1,214 +1,81 @@
 package services
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/models"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/mappings"
+	"github.com/samber/lo"
 )
 
 type AgentRegistryRequester struct {
-	client clients.AgentIdentityRegistryClientInterface
+	client clients.ClientWithResponsesInterface
 }
 
-func NewAgentRegistryRequester(client clients.AgentIdentityRegistryClientInterface) *AgentRegistryRequester {
+func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *AgentRegistryRequester {
 	return &AgentRegistryRequester{client: client}
 }
 
 func (r *AgentRegistryRequester) ListAgents(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
-	extResponse, err := r.client.ListAgents(&models.ExternalListAgentsRequest{
-		Page:            request.Page,
-		ElementsPerPage: request.ElementsPerPage,
-		SortBy:          request.SortBy,
-		SortDirection:   request.SortDirection,
-		IsInternal:      request.IsInternal,
-	})
+	params := &clients.GetAgentsParams{
+		SortBy:        request.SortBy,
+		SortDirection: request.SortDirection,
+		IsMinted:      request.IsMinted,
+	}
+	if request.Page != nil {
+		params.Page = lo.ToPtr(int(*request.Page))
+	}
+	if request.ElementsPerPage != nil {
+		params.ElementsPerPage = lo.ToPtr(int(*request.ElementsPerPage))
+	}
+
+	rsp, err := r.client.GetAgentsWithResponse(context.Background(), params)
 	if err != nil {
 		return nil, err
 	}
-
-	agents := make([]*responses.AgentResponse, len(extResponse.Agents))
-	for i, a := range extResponse.Agents {
-		agents[i] = &responses.AgentResponse{
-			ID:                  a.ID,
-			Name:                a.Name,
-			Role:                a.Role,
-			Owner:               a.Owner,
-			Creator:             a.Creator,
-			Images:              a.Images,
-			CloneOf:             a.CloneOf,
-			Attributes:          a.Attributes,
-			EnsDomain:           a.EnsDomain,
-			IsInternal:          a.IsInternal,
-			WalletAddress:       a.WalletAddress,
-			LLMSetupStatus:      a.LLMSetupStatus,
-			DatabaseSetupStatus: a.DatabaseSetupStatus,
-			IsSetupCompleted:    a.IsSetupCompleted,
-			ProposalId:          a.ProposalId,
-			CollectionTokenId:   a.CollectionTokenId,
-			CollectionAddress:   a.CollectionAddress,
-		}
+	if rsp.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
 	}
 
-	return &responses.ListAgentsResponse{
-		PaginateResponse: responses.PaginateResponse{
-			Page:            extResponse.Page,
-			ElementsPerPage: extResponse.ElementsPerPage,
-			TotalElements:   extResponse.TotalElements,
-		},
-		Agents: agents,
-	}, nil
+	return (*mappings.ExternalListAgentsResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
 func (r *AgentRegistryRequester) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.AgentResponse, error) {
-	extResponse, err := r.client.GetAgent(agentCollectionAddress, agentCollectionTokenId)
+	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
+		context.Background(),
+		agentCollectionAddress,
+		int(agentCollectionTokenId),
+	)
 	if err != nil {
 		return nil, err
 	}
-	if extResponse == nil {
+	if rsp.StatusCode() == http.StatusNotFound {
 		return nil, nil
 	}
+	if rsp.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
+	}
 
-	return &responses.AgentResponse{
-		ID:                  extResponse.ID,
-		Name:                extResponse.Name,
-		Role:                extResponse.Role,
-		Owner:               extResponse.Owner,
-		Creator:             extResponse.Creator,
-		Images:              extResponse.Images,
-		CloneOf:             extResponse.CloneOf,
-		Attributes:          extResponse.Attributes,
-		EnsDomain:           extResponse.EnsDomain,
-		IsInternal:          extResponse.IsInternal,
-		WalletAddress:       extResponse.WalletAddress,
-		LLMSetupStatus:      extResponse.LLMSetupStatus,
-		DatabaseSetupStatus: extResponse.DatabaseSetupStatus,
-		IsSetupCompleted:    extResponse.IsSetupCompleted,
-		ProposalId:          extResponse.ProposalId,
-		CollectionTokenId:   extResponse.CollectionTokenId,
-		CollectionAddress:   extResponse.CollectionAddress,
-	}, nil
+	return (*mappings.ExternalAgentResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
 func (r *AgentRegistryRequester) ListAgentCollections() ([]*responses.AgentCollectionResponse, error) {
-	extResponse, err := r.client.ListAgentCollections()
+	rsp, err := r.client.GetAgentCollectionsWithResponse(context.Background())
 	if err != nil {
 		return nil, err
 	}
-
-	out := make([]*responses.AgentCollectionResponse, len(extResponse))
-	for i, c := range extResponse {
-		out[i] = &responses.AgentCollectionResponse{
-			Address: c.Address,
-			Name:    c.Name,
-			Symbol:  c.Symbol,
-		}
+	if rsp.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
 	}
 
-	return out, nil
-}
-
-func (r *AgentRegistryRequester) IsInternalAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.IsInternalAgentResponse, error) {
-	extResponse, err := r.client.IsInternalAgent(agentCollectionAddress, agentCollectionTokenId)
-	if err != nil {
-		return nil, err
+	collections := make([]*responses.AgentCollectionResponse, len(*rsp.JSON200))
+	for i := range *rsp.JSON200 {
+		external := mappings.ExternalAgentCollectionResponse((*rsp.JSON200)[i])
+		collections[i] = external.ToUseCaseResponse()
 	}
-
-	return &responses.IsInternalAgentResponse{IsInternalAgent: extResponse.IsInternalAgent}, nil
-}
-
-func (r *AgentRegistryRequester) CreateAgentFirstStep(request *interfaces.CreateRegistryAgentFirstStepRequest) (*responses.AgentResponse, error) {
-	extResponse, err := r.client.CreateAgentFirstStep(&models.ExternalCreateAgentFirstStepRequest{
-		AuthenticatedWallet: request.AuthenticatedWallet.Hex(),
-		CollectionAddress:   request.CollectionAddress,
-		Name:                request.Name,
-		Role:                request.Role,
-		WalletAddress:       request.WalletAddress,
-		Mission:             request.Mission,
-		CloneOfAgentId:      request.CloneOfAgentId,
-		Image:               request.Image,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &responses.AgentResponse{
-		ID:                  extResponse.ID,
-		Name:                extResponse.Name,
-		Role:                extResponse.Role,
-		Owner:               extResponse.Owner,
-		Creator:             extResponse.Creator,
-		Images:              extResponse.Images,
-		CloneOf:             extResponse.CloneOf,
-		Attributes:          extResponse.Attributes,
-		EnsDomain:           extResponse.EnsDomain,
-		IsInternal:          extResponse.IsInternal,
-		WalletAddress:       extResponse.WalletAddress,
-		LLMSetupStatus:      extResponse.LLMSetupStatus,
-		DatabaseSetupStatus: extResponse.DatabaseSetupStatus,
-		IsSetupCompleted:    extResponse.IsSetupCompleted,
-		ProposalId:          extResponse.ProposalId,
-		CollectionTokenId:   extResponse.CollectionTokenId,
-		CollectionAddress:   extResponse.CollectionAddress,
-	}, nil
-}
-
-func (r *AgentRegistryRequester) CreateAgentSecondStep(request *interfaces.CreateRegistryAgentSecondStepRequest) (*responses.CreateAgentSecondStepResponse, error) {
-	extResponse, err := r.client.CreateAgentSecondStep(&models.ExternalCreateAgentSecondStepRequest{
-		AuthenticatedWallet: request.AuthenticatedWallet.Hex(),
-		AgentId:             request.AgentId,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &responses.CreateAgentSecondStepResponse{
-		Nonce:     extResponse.Nonce,
-		Signer:    extResponse.Signer,
-		Signature: extResponse.Signature,
-	}, nil
-}
-
-func (r *AgentRegistryRequester) GetMintedAgentByEnsDomain(ensDomain string) (*responses.AgentResponse, error) {
-	extResponse, err := r.client.GetMintedAgentByEnsDomain(ensDomain)
-	if err != nil {
-		return nil, err
-	}
-	if extResponse == nil {
-		return nil, nil
-	}
-
-	return &responses.AgentResponse{
-		ID:                  extResponse.ID,
-		Name:                extResponse.Name,
-		Role:                extResponse.Role,
-		Owner:               extResponse.Owner,
-		Creator:             extResponse.Creator,
-		Images:              extResponse.Images,
-		CloneOf:             extResponse.CloneOf,
-		Attributes:          extResponse.Attributes,
-		EnsDomain:           extResponse.EnsDomain,
-		IsInternal:          extResponse.IsInternal,
-		WalletAddress:       extResponse.WalletAddress,
-		LLMSetupStatus:      extResponse.LLMSetupStatus,
-		DatabaseSetupStatus: extResponse.DatabaseSetupStatus,
-		IsSetupCompleted:    extResponse.IsSetupCompleted,
-		ProposalId:          extResponse.ProposalId,
-		CollectionTokenId:   extResponse.CollectionTokenId,
-		CollectionAddress:   extResponse.CollectionAddress,
-	}, nil
-}
-
-func (r *AgentRegistryRequester) GetAgentsByEnsDomains(ensDomains []string) ([]*responses.AgentResponse, error) {
-	result := make([]*responses.AgentResponse, 0, len(ensDomains))
-	for _, ensDomain := range ensDomains {
-		agent, err := r.GetMintedAgentByEnsDomain(ensDomain)
-		if err != nil {
-			return nil, err
-		}
-		if agent != nil {
-			result = append(result, agent)
-		}
-	}
-	return result, nil
+	return collections, nil
 }

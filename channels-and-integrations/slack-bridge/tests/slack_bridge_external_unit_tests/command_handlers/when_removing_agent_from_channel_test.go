@@ -9,24 +9,23 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenRemovingAgentFromChannelTestingSuite struct {
 	sut *command_handlers.RemoveAgentFromChannel
 
-	mockSlackAgentRepository            *repositories_mocks.MockSlackAgentRepositoryInterface
-	mockSlackChannelSynchronizer        *interfaces_mocks.MockSlackChannelSynchronizerInterface
-	mockSlackChannelRepository          *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackAgentRepository        *repositories_mocks.MockSlackAgentRepositoryInterface
+	mockSlackChannelSynchronizer    *interfaces_mocks.MockSlackChannelSynchronizerInterface
+	mockSlackChannelRepository      *repositories_mocks.MockSlackChannelRepositoryInterface
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFromChannelTestingSuite {
@@ -48,12 +47,12 @@ func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFrom
 	)
 
 	return &WhenRemovingAgentFromChannelTestingSuite{
-		sut:                                 sut,
-		mockSlackAgentRepository:            mockSlackAgentRepository,
-		mockSlackChannelSynchronizer:        mockSlackChannelSynchronizer,
-		mockSlackChannelRepository:          mockSlackChannelRepository,
+		sut:                             sut,
+		mockSlackAgentRepository:        mockSlackAgentRepository,
+		mockSlackChannelSynchronizer:    mockSlackChannelSynchronizer,
+		mockSlackChannelRepository:      mockSlackChannelRepository,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockBrokerRequester:                    mockBrokerRequester,
+		mockBrokerRequester:             mockBrokerRequester,
 	}
 }
 
@@ -237,10 +236,50 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite.mockSlackAgentRepository.
 				EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 		}
 
 		t.Run("Should not return error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRemovingAgentFromChannelBeforeEach(t)
+
+			request := &requests.RemoveAgentFromChannelRequest{
+				ChannelID:         "chan",
+				CollectionTokenId: 123,
+				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+			}
+
+			initSuite(suite, request)
+
+			err := suite.sut.Remove(request)
+
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given the channel is not in the database", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockSlackChannelRepository.
+				EXPECT().
+				GetById(request.ChannelID).
+				Return(nil, nil)
+
+			slackChannel := model_builders.NewSlackChannelBuilder().Build()
+			suite.mockSlackChannelSynchronizer.
+				EXPECT().
+				Sync(request.ChannelID).
+				Return(slackChannel, nil)
+
+			suite.mockSlackAgentRepository.
+				EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				Return(nil, nil)
+		}
+
+		t.Run("Should proceed with the sync and not return error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)

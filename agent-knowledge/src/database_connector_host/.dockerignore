@@ -1,7 +1,0 @@
-.github
-.vscode
-.git
-.gitignore
-.env
-.env.example
-*.png

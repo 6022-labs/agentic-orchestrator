@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -10,7 +9,6 @@ import (
 	external_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/settings"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 const CHANNEL_SYNC_CACHE_KEY_TEMPLATE = "slack_channel_sync:%s"
@@ -41,7 +39,7 @@ func NewSlackChannelSynchronizerCached(
 
 func (s *SlackChannelSynchronizerCached) Sync(channelId string) (*models.SlackChannel, error) {
 	inDatabaseChannel, err := s.slackChannelRepository.GetById(channelId)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return nil, fmt.Errorf("error getting channel %s from database: %w", channelId, err)
 	}
 

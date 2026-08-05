@@ -2,134 +2,54 @@ services:
   gateway-host:
     build:
       context: ./gateway
-      dockerfile: ./src/orchestrator_gateway_host/Dockerfile
+      dockerfile: ./src/gateway_host/Dockerfile
     container_name: gateway-host
     ports:
       - "5000:5000"
     environment:
-      - API_PORT=5000
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - REDIS_HOST=redis:6379
-      - REDIS_DB=0
-      - REDIS_PASSWORD=
-      - JWT_HASH=dev-secret
-      - JWT_LIVING_TIME=86400
-      - CHAIN_ID=80002
-      - PUBLIC_KEY=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - TOKEN_6022_SMART_CONTRACT_ADDRESS=0x26adaf578361953e8F1aC86D3e4Ca153493af5cB
-      - AGENTIC_AI_AGENT_COLLECTION_SMART_CONTRACT_ADDRESS=0xB895417AcC1E84cC544e2BA9AB2b4493569B6F62
-      - AGENT_COLLECTION_SIGNING_DOMAIN=AgenticAIAgentCollection
-      - RPC_NODE_WS_URL=ws://evm-node:8545
-      - RPC_NODE_HTTP_URL=http://evm-node:8545
-      - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - AGENT_COMPUTE_BASE_URL=http://agent-compute-host:5000
-      - AGENT_DATABASE_CONNECTOR_BASE_URL=http://agent-database-connector-host:5000
-      - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
-      - IPFS_NODE_HTTP_URL=http://kubo:5001
-      - SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
+      - HOST__API_PORT=5000
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - JWT__HASH=dev-secret
+      - JWT__LIVING_TIME=86400
+      - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
+      - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
+      - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTIONS_MANAGER_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
+      - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTION_CREATOR_ADDRESS=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
+      - PLATFORM_BRIDGES__SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
     networks:
       orchestrator-network:
     depends_on:
-      db:
-        condition: service_healthy
-      vault:
-        condition: service_started
       redis:
         condition: service_started
-      evm-node:
+      registry-host:
         condition: service_started
-      kubo:
-        condition: service_started
-      agent-compute-host:
-        condition: service_started
-      agent-database-connector-host:
+      conversation-broker-host:
         condition: service_started
       slack-bridge-internal-host:
         condition: service_started
-      registry-host:
-        condition: service_started
 
-  sc-watcher-host:
+  registry-synchronizer-host:
     build:
-      context: ./gateway
-      dockerfile: ./src/orchestrator_sc_sync_host/Dockerfile
-    container_name: sc-sync-host
-    ports:
-      - "3001:3000"
+      context: ./agent-identity
+      dockerfile: ./src/registry_synchronizer_host/Dockerfile
+    container_name: registry-synchronizer-host
     environment:
-      - USE_API=true
-      - USE_LISTENERS=true
-      - API_PORT=3000
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - CHAIN_ID=80002
-      - AGENT_COLLECTION_SIGNING_DOMAIN=AgentCollection
-      - AGENT_COLLECTIONS_MANAGER_SMART_CONTRACT_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
-      - PUBLIC_KEY=0x39019dbffbebd8766afbd091c2857d40659b1b52
-      - RPC_NODE_WS_URL=ws://evm-node:8545
-      - RPC_NODE_HTTP_URL=http://evm-node:8545
-      - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - BLOCKCHAIN__CHAIN_ID=80002
+      - AGENT_COLLECTIONS_MANAGER__SMART_CONTRACT_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
+      - DECENTRALIZED_DOMAIN_NAME_PROVIDER__DOMAIN_EXTENSION=eth
+      - RPC_NODE__WS_URL=ws://evm-node:8545
+      - RPC_NODE__HTTP_URL=http://evm-node:8545
+      - SYNC__START_BLOCK=1
+      - SYNC__BLOCK_FINALIZATION_DELAY=2s
     networks:
       orchestrator-network:
     depends_on:
       db:
         condition: service_healthy
       evm-node:
-        condition: service_started
-      vault:
-        condition: service_started
-
-  agent-compute-host:
-    build:
-      context: ./agent-reasoning
-      dockerfile: ./src/agent_compute_host/Dockerfile
-    container_name: agent-compute-host
-    ports:
-      - "5002:5000"
-    environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=5000
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - AGENT_KNOWLEDGE_BASE_URL=http://agent-database-connector-host:5000
-      - AGENT_IDENTITY_REGISTRY_BASE_URL=http://registry-host:5000
-    networks:
-      orchestrator-network:
-    depends_on:
-      db:
-        condition: service_healthy
-      vault:
-        condition: service_started
-      agent-database-connector-host:
-        condition: service_started
-      registry-host:
-        condition: service_started
-
-  agent-database-connector-host:
-    build:
-      context: ./agent-knowledge
-      dockerfile: ./src/database_connector_host/Dockerfile
-    container_name: agent-database-connector-host
-    ports:
-      - "5003:5000"
-    environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=5000
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-    networks:
-      orchestrator-network:
-    depends_on:
-      db:
-        condition: service_healthy
-      vault:
         condition: service_started
 
   registry-host:
@@ -140,24 +60,40 @@ services:
     ports:
       - "5005:5000"
     environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=5000
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - CHAIN_ID=80002
-      - RPC_NODE_WS_URL=ws://evm-node:8545
-      - RPC_NODE_HTTP_URL=http://evm-node:8545
-      - ENS_RPC_NODE_HTTP_URL=http://evm-node:8545
-      - IPFS_NODE_HTTP_URL=http://kubo:5001
+      - HOST__API_PORT=5000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
     networks:
       orchestrator-network:
     depends_on:
       db:
         condition: service_healthy
-      vault:
+
+  conversation-broker-host:
+    build:
+      context: ./agent-swarm
+      dockerfile: ./src/conversation_broker_host/Dockerfile
+    container_name: conversation-broker-host
+    ports:
+      - "5004:3000"
+    environment:
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
+      - ENS_RESOLVER__RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+      - REMOTE_AGENT__REQUEST_TIMEOUT_SECONDS=120
+      - REMOTE_AGENT_RESOLUTION__CACHE_TTL_SECONDS=300
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - WALLET__PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+    networks:
+      orchestrator-network:
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_started
-      evm-node:
+      registry-host:
         condition: service_started
 
   slack-bridge-internal-host:
@@ -168,22 +104,18 @@ services:
     ports:
       - "5101:3000"
     environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=3000
-      - REDIS_HOST=redis:6379
-      - REDIS_DB=0
-      - REDIS_PASSWORD=
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - PUBLIC_KEY=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - SLACK_API_BASE_URL=https://slack.com
-      - SLACK_CLIENT_SECRET=change-me
-      - SLACK_SIGNING_SECRET=change-me
-      - SLACK_BOT_TOKEN=xoxb-change-me
-      - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
-      - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
-      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - SLACK__APP_ID=change-me
+      - SLACK__CLIENT_SECRET=change-me
+      - SLACK__SIGNING_SECRET=change-me
+      - SLACK__BOT_TOKEN=xoxb-change-me
+      - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
+      - CONVERSATION_BROKER__CALLBACK_URL=http://slack-bridge-internal-host:3000
+      - CONVERSATION_BROKER__BRIDGE_ID=1b2c3d4e-5555-4666-8777-888899990000
     networks:
       orchestrator-network:
     depends_on:
@@ -191,9 +123,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-      vault:
-        condition: service_started
-      agent-compute-host:
+      conversation-broker-host:
         condition: service_started
 
   slack-bridge-external-host:
@@ -204,23 +134,20 @@ services:
     ports:
       - "5102:3000"
     environment:
-      - DATABASE_URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
-      - API_PORT=3000
-      - REDIS_HOST=redis:6379
-      - REDIS_DB=0
-      - REDIS_PASSWORD=
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt
-      - VAULT_KV_V1_MOUNT_PATH=secret
-      - PUBLIC_KEY=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - SLACK_API_BASE_URL=https://slack.com
-      - SLACK_CLIENT_SECRET=change-me
-      - SLACK_SIGNING_SECRET=change-me
-      - SLACK_BOT_TOKEN=xoxb-change-me
-      - SLACK_ICON_PROVIDER_URL_TEMPLATE=https://ipfs.io/ipfs/%s
-      - ORCHESTRATOR_API_BASE_URL=http://gateway-host:5000
-      - ORCHESTRATOR_AGENT_COMPUTE_API_BASE_URL=http://agent-compute-host:5000
-      - ORCHESTRATOR_FRONT_BASE_URL=http://web-ui:3000
+      - HOST__API_PORT=3000
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - REDIS__HOST=redis:6379
+      - REDIS__DB=0
+      - REDIS__PASSWORD=
+      - SLACK__APP_ID=change-me
+      - SLACK__CLIENT_SECRET=change-me
+      - SLACK__SIGNING_SECRET=change-me
+      - SLACK__BOT_TOKEN=xoxb-change-me
+      - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
+      - VERIFY_WALLET_OWNERSHIP__ORCHESTRATOR_FRONT_BASE_URL=http://localhost:3000
+      - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
+      - CONVERSATION_BROKER__CALLBACK_URL=http://slack-bridge-internal-host:3000
+      - CONVERSATION_BROKER__BRIDGE_ID=1b2c3d4e-5555-4666-8777-888899990000
     networks:
       orchestrator-network:
     depends_on:
@@ -228,24 +155,15 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-      vault:
-        condition: service_started
 
   web-ui:
     build:
-      context: ./ui
+      context: ./web
       dockerfile: ./Dockerfile
       args:
         VITE_APP_KIT_PROJECT_ID: ""
         VITE_ENVIRONMENT: local
-        VITE_ORCHESTRATOR_GATEWAY_API_BASE_URL: http://gateway-host:5000
-        VITE_SCANNER_BASE_URL: https://polygonscan.com
-        VITE_OPENSEA_VIEW_URL_TEMPLATE: https://opensea.io/item/matic/{collection}/{tokenId}
-        VITE_RARIBLE_VIEW_URL_TEMPLATE: https://rarible.com/token/polygon/{collection}:{tokenId}
-        VITE_IPFS_GATEWAY: http://kubo:8080/ipfs/
-        VITE_AGENT_COLLECTION_CREATOR_ADDRESS: 0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-        VITE_AGENT_COLLECTIONS_MANAGER_ADDRESS: 0x39DD75a025145770a8b8278Cc8BA705116443Ea7
-        VITE_CHAIN_ID: "80002"
+        VITE_IPFS_GATEWAY: https://ipfs.io/ipfs/
     container_name: web-ui
     ports:
       - "3000:80"
@@ -292,25 +210,6 @@ services:
     volumes:
       - ./pgadmin-servers.json:/pgadmin4/servers.json
 
-  vault:
-    image: hashicorp/vault:1.21
-    container_name: vault
-    ports:
-      - "8200:8200"
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: "wBGKZCJjfIGqIKB3HMmvcQVt"
-    volumes:
-      - vault-data:/vault/file
-    networks:
-      orchestrator-network:
-    command: >
-      /bin/sh -c "
-      vault server -dev -dev-listen-address=0.0.0.0:8200 -dev-root-token-id=wBGKZCJjfIGqIKB3HMmvcQVt &
-      sleep 5 &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets disable secret &&
-      VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=wBGKZCJjfIGqIKB3HMmvcQVt vault secrets enable -version=1 -path=secret kv &&
-      wait"
-
   redis:
     image: "redis:8-alpine"
     container_name: redis
@@ -333,22 +232,10 @@ services:
     networks:
       orchestrator-network:
 
-  kubo:
-    image: ipfs/kubo:v0.40.1
-    container_name: kubo
-    ports:
-      - "4001:4001"
-      - "5001:5001"
-      - "8080:8080"
-      - "9090:9090"
-    networks:
-      orchestrator-network:
-
 networks:
   orchestrator-network:
     name: orchestrator-network
 
 volumes:
   db-data:
-  vault-data:
   evm-node-data:

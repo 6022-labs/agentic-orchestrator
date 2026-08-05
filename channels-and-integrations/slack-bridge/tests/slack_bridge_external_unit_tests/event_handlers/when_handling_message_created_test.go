@@ -240,6 +240,45 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				assert.Error(t, err)
 			})
 		})
+
+		t.Run("And agent is not found in persistence", func(t *testing.T) {
+			t.Parallel()
+
+			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
+				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+
+				suite.mockSlackAgentRepository.EXPECT().
+					GetByCollectionAddressAndCollectionTokenId(collectionAddr, collectionTokenId).
+					Return(nil, nil)
+			}
+
+			t.Run("Should return an error", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenHandlingMessageCreatedBeforeEach(t)
+				request := &requests.MessageCreatedRequest{
+					Event: requests.MessageCreatedEvent{
+						AppId:   &suite.slackSettings.AppId,
+						Ts:      "1234567890.123456",
+						Channel: "C1234567890",
+						Text:    "Agent message",
+						Metadata: &requests.MessageCreatedMetadata{
+							EventType: event_handlers.AGENT_MESSAGE_CREATED_METADATA_EVENT_TYPE,
+							EventPayload: map[string]any{
+								"collection_token_address": collectionAddr,
+								"collection_token_id":      float64(collectionTokenId),
+							},
+						},
+					},
+				}
+				initSuite(suite, request)
+
+				err := suite.sut.Handle(request)
+				assert.Error(t, err)
+			})
+		})
 	})
 
 	t.Run("Given message sent from a slack user", func(t *testing.T) {
@@ -296,6 +335,49 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 			}
 
 			t.Run("Should return the error", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenHandlingMessageCreatedBeforeEach(t)
+				userId := "U123"
+				request := &requests.MessageCreatedRequest{
+					Event: requests.MessageCreatedEvent{
+						User:    &userId,
+						Ts:      "1234567890.123456",
+						Channel: "C1234567890",
+						Text:    "Hello",
+					},
+				}
+				initSuite(suite, request)
+
+				err := suite.sut.Handle(request)
+				assert.Error(t, err)
+			})
+		})
+
+		t.Run("And the paired human agent is not found in persistence", func(t *testing.T) {
+			t.Parallel()
+
+			pairedAddr := "0x0000000000000000000000000000000000000002"
+			pairedTokenId := uint64(9)
+
+			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
+				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+
+				slackUser := model_builders.NewSlackUserBuilder().
+					WithId(*request.Event.User).
+					WithPairedHumanAgentCollectionAddress(&pairedAddr).
+					WithPairedHumanAgentCollectionTokenId(&pairedTokenId).
+					Build()
+				suite.mockSlackUserSynchronizerCached.EXPECT().Sync(*request.Event.User).Return(slackUser, nil)
+
+				suite.mockSlackAgentRepository.EXPECT().
+					GetByCollectionAddressAndCollectionTokenId(pairedAddr, pairedTokenId).
+					Return(nil, nil)
+			}
+
+			t.Run("Should return an error", func(t *testing.T) {
 				t.Parallel()
 
 				suite := WhenHandlingMessageCreatedBeforeEach(t)

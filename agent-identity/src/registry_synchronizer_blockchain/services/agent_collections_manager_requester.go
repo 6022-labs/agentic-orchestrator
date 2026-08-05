@@ -15,7 +15,7 @@ type AgentCollectionsManagerRequester struct {
 	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings
 }
 
-type newAgentCollectionsManagerRequesterParams struct {
+type NewAgentCollectionsManagerRequesterParams struct {
 	dig.In
 
 	Client                          *ethclient.Client `name:"http"`
@@ -23,7 +23,7 @@ type newAgentCollectionsManagerRequesterParams struct {
 }
 
 func NewAgentCollectionsManagerRequester(
-	params newAgentCollectionsManagerRequesterParams,
+	params NewAgentCollectionsManagerRequesterParams,
 ) *AgentCollectionsManagerRequester {
 	return &AgentCollectionsManagerRequester{
 		client:                          params.Client,

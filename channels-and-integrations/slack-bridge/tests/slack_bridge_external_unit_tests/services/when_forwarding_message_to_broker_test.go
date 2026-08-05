@@ -6,15 +6,14 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
-	broker_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_conversation_broker/settings"
+	broker_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_swarm_conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenForwardingMessageToBrokerTestingSuite struct {
@@ -88,7 +87,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerMsgId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
 			suite.mockSlackConversationRepository.EXPECT().
 				GetBySlackIds(channelId, threadTs).
 				Return(&models.SlackConversation{
@@ -132,10 +131,10 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerMsgId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channel *models.SlackChannel, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channel.Id, msgTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channel.Id, msgTs).Return(nil, nil)
 
 			// No existing conversation → register with channel agents + author.
-			suite.mockSlackConversationRepository.EXPECT().GetBySlackIds(channel.Id, threadTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackConversationRepository.EXPECT().GetBySlackIds(channel.Id, threadTs).Return(nil, nil)
 			suite.mockBrokerRequester.EXPECT().
 				RegisterConversation(gomock.Any(), gomock.Any(), gomock.Any()).
 				DoAndReturn(func(bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
@@ -176,7 +175,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
 		}
 
 		t.Run("Should return an error — SlackUserSynchronizer must populate the id upstream", func(t *testing.T) {
@@ -197,7 +196,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
 		}
 
 		t.Run("Should return an error — SlackAgentSynchronizer must populate the id upstream", func(t *testing.T) {
@@ -221,7 +220,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerConvId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, gorm.ErrRecordNotFound)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
 			suite.mockSlackConversationRepository.EXPECT().
 				GetBySlackIds(channelId, threadTs).
 				Return(&models.SlackConversation{BrokerConversationID: brokerConvId}, nil)

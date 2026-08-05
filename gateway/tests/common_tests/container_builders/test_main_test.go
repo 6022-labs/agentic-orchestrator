@@ -10,10 +10,6 @@ import (
 // should manage stopping its own container lifecycle.
 func TestMain(m *testing.M) {
 	code := m.Run()
-	stopMySQL()
-	stopPostgres()
 	stopRedis()
-	stopSQLServer()
-	stopVault()
 	os.Exit(code)
 }

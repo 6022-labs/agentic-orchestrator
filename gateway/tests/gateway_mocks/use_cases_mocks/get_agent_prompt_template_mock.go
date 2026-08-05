@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
+	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +42,10 @@ func (m *MockGetAgentPromptTemplateInterface) EXPECT() *MockGetAgentPromptTempla
 }
 
 // Get mocks base method.
-func (m *MockGetAgentPromptTemplateInterface) Get(request *requests.GetAgentPromptTemplateRequest) (*string, error) {
+func (m *MockGetAgentPromptTemplateInterface) Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", request)
-	ret0, _ := ret[0].(*string)
+	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

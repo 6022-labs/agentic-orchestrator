@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingMintProposalRemovedEventTestingSuite struct {
@@ -50,7 +49,6 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 	newEvent := func(collectionAddress common.Address, proposalID uint64) *abi.AgentCollectionV1MintProposalRemoved {
 		return &abi.AgentCollectionV1MintProposalRemoved{
 			Owner:      common_tests.RandomEthAddress(),
-			Signer:     common_tests.RandomEthAddress(),
 			ProposalId: new(big.Int).SetUint64(proposalID),
 			Raw: types.Log{
 				Address: collectionAddress,
@@ -92,7 +90,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress.Hex(), uint64(2)).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 			return event
 		}
 

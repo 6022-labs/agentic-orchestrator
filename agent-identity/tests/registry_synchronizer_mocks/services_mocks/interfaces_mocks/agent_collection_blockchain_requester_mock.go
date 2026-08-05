@@ -42,6 +42,36 @@ func (m *MockAgentCollectionBlockchainRequesterInterface) EXPECT() *MockAgentCol
 	return m.recorder
 }
 
+// GetAgentCollectionV1AgentAddressAddedEvent mocks base method.
+func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentAddressAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAddressAdded, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentCollectionV1AgentAddressAddedEvent", from, to, fromAddresses)
+	ret0, _ := ret[0].([]*abi.AgentCollectionV1AgentAddressAdded)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentCollectionV1AgentAddressAddedEvent indicates an expected call of GetAgentCollectionV1AgentAddressAddedEvent.
+func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionV1AgentAddressAddedEvent(from, to, fromAddresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentAddressAddedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentAddressAddedEvent), from, to, fromAddresses)
+}
+
+// GetAgentCollectionV1AgentAddressRemovedEvent mocks base method.
+func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentAddressRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAddressRemoved, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentCollectionV1AgentAddressRemovedEvent", from, to, fromAddresses)
+	ret0, _ := ret[0].([]*abi.AgentCollectionV1AgentAddressRemoved)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentCollectionV1AgentAddressRemovedEvent indicates an expected call of GetAgentCollectionV1AgentAddressRemovedEvent.
+func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionV1AgentAddressRemovedEvent(from, to, fromAddresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentAddressRemovedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentAddressRemovedEvent), from, to, fromAddresses)
+}
+
 // GetAgentCollectionV1AgentAttributeUpdatedEvent mocks base method.
 func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentAttributeUpdated, error) {
 	m.ctrl.T.Helper()
@@ -57,6 +87,21 @@ func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentC
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentAttributeUpdatedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentAttributeUpdatedEvent), from, to, fromAddresses)
 }
 
+// GetAgentCollectionV1AgentImageRemovedEvent mocks base method.
+func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentImageRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentImageRemoved, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentCollectionV1AgentImageRemovedEvent", from, to, fromAddresses)
+	ret0, _ := ret[0].([]*abi.AgentCollectionV1AgentImageRemoved)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentCollectionV1AgentImageRemovedEvent indicates an expected call of GetAgentCollectionV1AgentImageRemovedEvent.
+func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionV1AgentImageRemovedEvent(from, to, fromAddresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentImageRemovedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentImageRemovedEvent), from, to, fromAddresses)
+}
+
 // GetAgentCollectionV1AgentImageUpdatedEvent mocks base method.
 func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentImageUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentImageUpdated, error) {
 	m.ctrl.T.Helper()
@@ -70,21 +115,6 @@ func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1Ag
 func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionV1AgentImageUpdatedEvent(from, to, fromAddresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentImageUpdatedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentImageUpdatedEvent), from, to, fromAddresses)
-}
-
-// GetAgentCollectionV1AgentSignerUpdatedEvent mocks base method.
-func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentCollectionV1AgentSignerUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*abi.AgentCollectionV1AgentSignerUpdated, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentCollectionV1AgentSignerUpdatedEvent", from, to, fromAddresses)
-	ret0, _ := ret[0].([]*abi.AgentCollectionV1AgentSignerUpdated)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAgentCollectionV1AgentSignerUpdatedEvent indicates an expected call of GetAgentCollectionV1AgentSignerUpdatedEvent.
-func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionV1AgentSignerUpdatedEvent(from, to, fromAddresses any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionV1AgentSignerUpdatedEvent", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentCollectionV1AgentSignerUpdatedEvent), from, to, fromAddresses)
 }
 
 // GetAgentCollectionV1MintProposalCreatedEvent mocks base method.
@@ -175,21 +205,6 @@ func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentOwner(collecti
 func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentOwner(collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentOwner", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentOwner), collectionAddress, collectionTokenId)
-}
-
-// GetAgentPreviousSigners mocks base method.
-func (m *MockAgentCollectionBlockchainRequesterInterface) GetAgentPreviousSigners(collectionAddress common.Address, collectionTokenId big.Int) ([]common.Address, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentPreviousSigners", collectionAddress, collectionTokenId)
-	ret0, _ := ret[0].([]common.Address)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAgentPreviousSigners indicates an expected call of GetAgentPreviousSigners.
-func (mr *MockAgentCollectionBlockchainRequesterInterfaceMockRecorder) GetAgentPreviousSigners(collectionAddress, collectionTokenId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPreviousSigners", reflect.TypeOf((*MockAgentCollectionBlockchainRequesterInterface)(nil).GetAgentPreviousSigners), collectionAddress, collectionTokenId)
 }
 
 // GetMintProposal mocks base method.

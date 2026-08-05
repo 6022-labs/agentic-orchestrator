@@ -7,7 +7,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
-	"gorm.io/gorm"
 )
 
 // ErrConversationLinkNotFound is returned when no slack conversation link
@@ -24,8 +23,8 @@ type PostBrokerCompletionToSlackInterface interface {
 
 type PostBrokerCompletionToSlack struct {
 	slackConversationRepository repositories.SlackConversationRepositoryInterface
-	slackAgentRepository            repositories.SlackAgentRepositoryInterface
-	slackThreadRequester            interfaces.SlackThreadRequesterInterface
+	slackAgentRepository        repositories.SlackAgentRepositoryInterface
+	slackThreadRequester        interfaces.SlackThreadRequesterInterface
 }
 
 func NewPostBrokerCompletionToSlack(
@@ -35,8 +34,8 @@ func NewPostBrokerCompletionToSlack(
 ) *PostBrokerCompletionToSlack {
 	return &PostBrokerCompletionToSlack{
 		slackConversationRepository: slackConversationRepository,
-		slackAgentRepository:            slackAgentRepository,
-		slackThreadRequester:            slackThreadRequester,
+		slackAgentRepository:        slackAgentRepository,
+		slackThreadRequester:        slackThreadRequester,
 	}
 }
 
@@ -46,19 +45,19 @@ func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompleti
 	}
 
 	link, err := uc.slackConversationRepository.GetByBrokerConversationId(request.ConversationId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrConversationLinkNotFound
-	}
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack conversation link: %w", err)
 	}
+	if link == nil {
+		return ErrConversationLinkNotFound
+	}
 
 	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrSlackAgentNotFound
-	}
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack agent: %w", err)
+	}
+	if slackAgent == nil {
+		return ErrSlackAgentNotFound
 	}
 
 	if err := uc.slackThreadRequester.PushCompletionToThread(request.Content, slackAgent, link.SlackChannelId, link.SlackThreadTs); err != nil {

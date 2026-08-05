@@ -1,13 +1,11 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type AgentAttributeUpdatedEventHandler struct {
@@ -35,7 +33,7 @@ func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollect
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get agent by collection %s and id %s: %w", event.Raw.Address.Hex(), event.TokenId.String(), err)
 	}
 	if agent == nil {

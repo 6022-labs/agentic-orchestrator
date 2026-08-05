@@ -1,14 +1,12 @@
 package event_handlers
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type MessageChangedHandlerInterface interface {
@@ -43,11 +41,11 @@ func (h *MessageChangedHandler) Handle(request *requests.MessageChangedRequest) 
 	}
 
 	conversation, err := h.slackConversationRepository.GetBySlackIds(request.Event.Channel, messageTs)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil
-	}
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack conversation: %w", err)
+	}
+	if conversation == nil {
+		return nil
 	}
 
 	if err := h.conversationBrokerRequester.ForceConcludeConversation(conversation.BrokerConversationID); err != nil {

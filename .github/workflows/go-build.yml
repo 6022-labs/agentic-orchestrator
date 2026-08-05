@@ -12,6 +12,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - agent-identity
+          - agent-swarm
+          - channels-and-integrations/slack-bridge
+          - gateway
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -20,30 +29,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.26.2"
-          cache-dependency-path: |
-            agent-identity/go.sum
-            agent-knowledge/go.sum
-            agent-reasoning/go.sum
-            channels-and-integrations/slack-bridge/go.sum
-            gateway/go.sum
+          cache-dependency-path: ${{ matrix.module }}/go.sum
 
-      - name: Build all modules
-        shell: bash
-        run: |
-          set -e
-          for module in \
-            agent-identity \
-            agent-knowledge \
-            agent-reasoning \
-            channels-and-integrations/slack-bridge \
-            gateway; do
-            echo "::group::Building $module"
-            pushd "$module" >/dev/null
-            targets=(./src/...)
-            if [ -d tools ]; then
-              targets+=(./tools/...)
-            fi
-            go build "${targets[@]}"
-            popd >/dev/null
-            echo "::endgroup::"
-          done
+      - name: Build
+        working-directory: ${{ matrix.module }}
+        run: go build ./...

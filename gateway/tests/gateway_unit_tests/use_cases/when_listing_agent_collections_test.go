@@ -11,13 +11,13 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type WhenListingAgentCollectionsTestSuite struct {
+type WhenListingAgentCollectionsTestingSuite struct {
 	agentRegistryRequesterMock *interfaces_mocks.MockAgentRegistryRequesterInterface
 
 	sut *use_cases.ListAgentCollections
 }
 
-func WhenListingAgentCollectionsTestSuiteBeforeEach(t *testing.T) *WhenListingAgentCollectionsTestSuite {
+func WhenListingAgentCollectionsBeforeEach(t *testing.T) *WhenListingAgentCollectionsTestingSuite {
 	// Create mocks
 	mockController := gomock.NewController(t, gomock.WithOverridableExpectations())
 
@@ -27,7 +27,7 @@ func WhenListingAgentCollectionsTestSuiteBeforeEach(t *testing.T) *WhenListingAg
 		agentRegistryRequesterMock,
 	)
 
-	return &WhenListingAgentCollectionsTestSuite{
+	return &WhenListingAgentCollectionsTestingSuite{
 		sut: sut,
 
 		agentRegistryRequesterMock: agentRegistryRequesterMock,
@@ -40,14 +40,14 @@ func TestWhenListingAgentCollections(t *testing.T) {
 	t.Run("Given error happens while fetching collections from the database", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentCollectionsTestSuite) {
+		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) {
 			suite.agentRegistryRequesterMock.EXPECT().ListAgentCollections().Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
 			t.Parallel()
 
-			basics := WhenListingAgentCollectionsTestSuiteBeforeEach(t)
+			basics := WhenListingAgentCollectionsBeforeEach(t)
 			initSuite(basics)
 
 			_, err := basics.sut.List()
@@ -60,7 +60,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 	t.Run("Given collections are fetched successfully", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenListingAgentCollectionsTestSuite) []*responses.AgentCollectionResponse {
+		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) []*responses.AgentCollectionResponse {
 			collections := []*responses.AgentCollectionResponse{}
 
 			for i := 0; i < 2; i++ {
@@ -80,7 +80,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 		t.Run("Should return existing collections", func(t *testing.T) {
 			t.Parallel()
 
-			basics := WhenListingAgentCollectionsTestSuiteBeforeEach(t)
+			basics := WhenListingAgentCollectionsBeforeEach(t)
 			existingCollections := initSuite(basics)
 
 			fetchedCollections, err := basics.sut.List()

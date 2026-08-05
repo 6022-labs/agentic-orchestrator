@@ -1,9 +1,12 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SlackConversationRepository struct {
@@ -22,6 +25,9 @@ func (r *SlackConversationRepository) GetBySlackIds(slackChannelId, slackThreadT
 		Where("slack_channel_id = ? AND slack_thread_ts = ?", slackChannelId, slackThreadTs).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +40,9 @@ func (r *SlackConversationRepository) GetByBrokerConversationId(brokerConversati
 		Where("broker_conversation_id = ?", brokerConversationId).
 		First(&entity).
 		Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenCreatingJwtTestSuite struct {
+type WhenCreatingJwtTestingSuite struct {
 	sut *jwt.JwtManager
 }
 
-func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestSuite {
+func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestingSuite {
 	jwtSettings := &settings.JwtSettings{
 		LivingTime: 1,
 		Hash:       "test",
@@ -20,7 +20,7 @@ func WhenCreatingJwtBeforeEach() *WhenCreatingJwtTestSuite {
 
 	sut := jwt.NewJwtManager(jwtSettings)
 
-	return &WhenCreatingJwtTestSuite{
+	return &WhenCreatingJwtTestingSuite{
 		sut: sut,
 	}
 }
@@ -33,11 +33,11 @@ func TestWhenCreatingJwt(t *testing.T) {
 
 		suite := WhenCreatingJwtBeforeEach()
 		address := "0x4bca9E17a8326d283d1fC68A725B46b42c2D9146"
-		chainId := uint64(1)
 
-		token, err := suite.sut.CreateJwtToken(address, chainId)
+		token, expiresAt, err := suite.sut.CreateJwtToken(address)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, token)
+		assert.False(t, expiresAt.IsZero())
 	})
 }

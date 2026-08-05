@@ -25,23 +25,30 @@ func (e *ECDSASigner) Sign(data []byte, privateKey *ecdsa.PrivateKey) ([]byte, e
 }
 
 func (e *ECDSASigner) RecoverPublicKey(data []byte, signature []byte) (*string, error) {
-	hash := e.hashMessage(data)
-
-	// Ensure signature is the correct length
-	if len(signature) != 65 {
-		return nil, fmt.Errorf("invalid signature length")
-	}
-
-	// Recover public key
-	pubKey, err := crypto.SigToPub(hash, signature)
+	address, err := e.RecoverAddress(e.hashMessage(data), signature)
 	if err != nil {
 		return nil, err
 	}
-
-	// Compute Ethereum address from public key
-	address := crypto.PubkeyToAddress(*pubKey).Hex()
-
 	return &address, nil
+}
+
+func (e *ECDSASigner) RecoverAddress(hash []byte, signature []byte) (string, error) {
+	if len(signature) != 65 {
+		return "", fmt.Errorf("invalid signature length")
+	}
+
+	sig := make([]byte, 65)
+	copy(sig, signature)
+	if sig[64] == 27 || sig[64] == 28 {
+		sig[64] -= 27
+	}
+
+	pubKey, err := crypto.SigToPub(hash, sig)
+	if err != nil {
+		return "", err
+	}
+
+	return crypto.PubkeyToAddress(*pubKey).Hex(), nil
 }
 
 func (e *ECDSASigner) hashMessage(message []byte) []byte {

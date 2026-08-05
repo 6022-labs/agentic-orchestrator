@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type WhenHandlingTransferEventTestingSuite struct {
@@ -64,7 +63,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(1)).
-				Return(nil, gorm.ErrRecordNotFound)
+				Return(nil, nil)
 
 			return event
 		}

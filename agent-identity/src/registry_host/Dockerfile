@@ -24,10 +24,6 @@ COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/migrations/*.sql /migrations/
 ENV MIGRATIONS__FOLDER_PATH=/migrations
 
-# Agent image watermark, generated in-process by the registry (no Chrome).
-COPY --from=builder /usr/local/go/src/github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_host/images/nft_mark.png /images/nft_mark.png
-ENV IMAGE_GENERATION__IMAGE_MARK_PATH=/images/nft_mark.png
-
 EXPOSE 8000
 
 # Run the compiled binary at container start.

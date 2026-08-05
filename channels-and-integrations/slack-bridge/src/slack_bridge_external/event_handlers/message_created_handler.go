@@ -1,7 +1,6 @@
 package event_handlers
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -15,7 +14,6 @@ import (
 	external_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 const (
@@ -164,7 +162,7 @@ func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRe
 		*collectionTokenAddress,
 		*collectionTokenId,
 	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get agent with metadata %s and %d : %w", *collectionTokenAddress, *collectionTokenId, err)
 	}
 	if agent == nil {
@@ -193,7 +191,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(request *requests.Message
 		*slackUser.PairedHumanAgentCollectionAddress,
 		*slackUser.PairedHumanAgentCollectionTokenId,
 	)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		return fmt.Errorf("failed to get paired human agent: %w", err)
 	}
 	if pairedHumanAgent == nil {

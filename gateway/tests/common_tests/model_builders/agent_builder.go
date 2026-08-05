@@ -3,7 +3,6 @@ package model_builders
 import (
 	"fmt"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,11 +13,9 @@ import (
 type AgentBuilder struct {
 	id                uuid.UUID
 	name              string
-	role              enums.AgentRole
 	owner             *string
 	creator           string
-	walletAddress     string
-	isInternal        bool
+	addresses         map[string]string
 	images            map[string]string
 	attributes        map[string]string
 	ensDomain         string
@@ -31,7 +28,6 @@ func NewAgentBuilder() *AgentBuilder {
 	id := uuid.New()
 	name := faker.Name()
 	ensDomain := fmt.Sprintf("%s.6022.eth", name)
-	role := enums.AgentRoleExpert
 
 	ids, _ := faker.RandomInt(1, 100, 2)
 	collectionTokenId := uint64(ids[0])
@@ -42,18 +38,16 @@ func NewAgentBuilder() *AgentBuilder {
 	creator := owner
 
 	return &AgentBuilder{
-		id:                id,
-		name:              name,
-		role:              role,
-		owner:             &owner,
-		creator:           creator,
-		ensDomain:         ensDomain,
-		isInternal:        false,
+		id:        id,
+		name:      name,
+		owner:     &owner,
+		creator:   creator,
+		ensDomain: ensDomain,
 		images: map[string]string{
 			"default": "QmTzQ1Z5b7g8d9f8e6c3b2a1c4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
 		},
-		attributes:        map[string]string{},
-		walletAddress:     common_tests.RandomEthAddress().Hex(),
+		attributes:        map[string]string{"role": "expert"},
+		addresses:         map[string]string{"evm": common_tests.RandomEthAddress().Hex()},
 		proposalId:        &proposalId,
 		collectionTokenId: &collectionTokenId,
 		collectionAddress: common_tests.RandomEthAddress().Hex(),
@@ -75,11 +69,6 @@ func (b *AgentBuilder) WithEnsDomain(ensDomain string) *AgentBuilder {
 	return b
 }
 
-func (b *AgentBuilder) WithRole(role enums.AgentRole) *AgentBuilder {
-	b.role = role
-	return b
-}
-
 func (b *AgentBuilder) WithOwner(owner string) *AgentBuilder {
 	b.owner = &owner
 	return b
@@ -87,11 +76,6 @@ func (b *AgentBuilder) WithOwner(owner string) *AgentBuilder {
 
 func (b *AgentBuilder) WithCreator(creator string) *AgentBuilder {
 	b.creator = creator
-	return b
-}
-
-func (b *AgentBuilder) WithIsInternal(isInternal bool) *AgentBuilder {
-	b.isInternal = isInternal
 	return b
 }
 
@@ -120,8 +104,8 @@ func (b *AgentBuilder) WithCollectionAddress(collectionAddress string) *AgentBui
 	return b
 }
 
-func (b *AgentBuilder) WithWalletAddress(walletAddress string) *AgentBuilder {
-	b.walletAddress = walletAddress
+func (b *AgentBuilder) WithAddresses(addresses map[string]string) *AgentBuilder {
+	b.addresses = addresses
 	return b
 }
 
@@ -129,15 +113,13 @@ func (b *AgentBuilder) Build() *responses.AgentResponse {
 	return &responses.AgentResponse{
 		ID:                b.id,
 		Name:              b.name,
-		Role:              b.role,
 		Owner:             b.owner,
 		Images:            b.images,
 		Creator:           b.creator,
 		EnsDomain:         b.ensDomain,
-		IsInternal:        b.isInternal,
 		ProposalId:        b.proposalId,
 		Attributes:        b.attributes,
-		WalletAddress:     b.walletAddress,
+		Addresses:         b.addresses,
 		CollectionTokenId: b.collectionTokenId,
 		CollectionAddress: b.collectionAddress,
 	}

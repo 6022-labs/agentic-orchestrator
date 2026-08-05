@@ -102,12 +102,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type When<Behavior>TestSuite struct {
+type When<Behavior>TestingSuite struct {
 	redisClient *redis.Client
 	sut         *services.<RedisStorageType>
 }
 
-func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestSuite {
+func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestingSuite {
 	redisClient := container_builders.GetRedisConnection()
 
 	mockController := gomock.NewController(t)
@@ -117,13 +117,13 @@ func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestSuite {
 
 	sut := services.New<RedisStorageType>(redisClient, cacheMetricsMock)
 
-	return &When<Behavior>TestSuite{
+	return &When<Behavior>TestingSuite{
 		redisClient: redisClient,
 		sut:         sut,
 	}
 }
 
-func When<Behavior>AfterEach(suite *When<Behavior>TestSuite) {
+func When<Behavior>AfterEach(suite *When<Behavior>TestingSuite) {
 	container_builders.CloseRedisConnection(suite.redisClient)
 }
 
@@ -160,12 +160,12 @@ import (
 	"go.uber.org/zap"
 )
 
-type When<Behavior>TestSuite struct {
+type When<Behavior>TestingSuite struct {
 	dbName string
 	sut    *factories.<FactoryType>
 }
 
-func When<Behavior>BeforeEach() *When<Behavior>TestSuite {
+func When<Behavior>BeforeEach() *When<Behavior>TestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	sut := factories.New<FactoryType>(
@@ -173,13 +173,13 @@ func When<Behavior>BeforeEach() *When<Behavior>TestSuite {
 		<settings using connectionString>,
 	)
 
-	return &When<Behavior>TestSuite{
+	return &When<Behavior>TestingSuite{
 		dbName: dbName,
 		sut:    sut,
 	}
 }
 
-func When<Behavior>AfterEach(suite *When<Behavior>TestSuite) {
+func When<Behavior>AfterEach(suite *When<Behavior>TestingSuite) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

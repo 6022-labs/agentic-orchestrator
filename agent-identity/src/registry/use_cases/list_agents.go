@@ -5,7 +5,10 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/responses"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
 
 type ListAgentsInterface interface {
@@ -13,18 +16,27 @@ type ListAgentsInterface interface {
 }
 
 type ListAgents struct {
-	agentRepository repositories.AgentRepositoryInterface
+	agentRepository        repositories.AgentRepositoryInterface
+	agentAddressRepository repositories.AgentAddressRepositoryInterface
 }
 
-func NewListAgents(agentRepository repositories.AgentRepositoryInterface) *ListAgents {
-	return &ListAgents{agentRepository: agentRepository}
+func NewListAgents(
+	agentRepository repositories.AgentRepositoryInterface,
+	agentAddressRepository repositories.AgentAddressRepositoryInterface,
+) *ListAgents {
+	return &ListAgents{
+		agentRepository:        agentRepository,
+		agentAddressRepository: agentAddressRepository,
+	}
 }
 
 func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
 	request.Sanitize()
 
+	searchParams := repositories.AgentSearchParams{IsMinted: request.IsMinted}
+
 	agents, err := s.agentRepository.Search(repositories.AgentSearchParamsWithPagination{
-		AgentSearchParams: repositories.AgentSearchParams{IsInternal: request.IsInternal},
+		AgentSearchParams: searchParams,
 		Page:              request.Page,
 		SortBy:            request.SortBy.ToDatabaseField(),
 		SortDirection:     request.SortDirection.ToDatabaseDirection(),
@@ -34,14 +46,25 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 		return nil, err
 	}
 
-	totalCount, err := s.agentRepository.SearchCount(repositories.AgentSearchParams{IsInternal: request.IsInternal})
+	totalCount, err := s.agentRepository.SearchCount(searchParams)
 	if err != nil {
 		return nil, err
 	}
 
+	agentIds := lo.Map(agents, func(agent *models.Agent, _ int) uuid.UUID {
+		return agent.ID
+	})
+	agentAddresses, err := s.agentAddressRepository.GetAllByAgentIds(agentIds)
+	if err != nil {
+		return nil, err
+	}
+	addressesByAgentId := lo.GroupBy(agentAddresses, func(agentAddress *models.AgentAddress) uuid.UUID {
+		return agentAddress.AgentId
+	})
+
 	agentsResponse := make([]*responses.AgentResponse, len(agents))
 	for i, agent := range agents {
-		agentsResponse[i] = responses.AgentResponseFromModel(agent)
+		agentsResponse[i] = responses.AgentResponseFromModel(agent, addressesByAgentId[agent.ID])
 	}
 
 	sort.Slice(agentsResponse, func(i, j int) bool {

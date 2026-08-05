@@ -1,61 +1,31 @@
 package use_cases
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
 
 type GetAgentPromptTemplateInterface interface {
-	Get(request *requests.GetAgentPromptTemplateRequest) (*string, error)
+	Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error)
 }
 
 type GetAgentPromptTemplate struct {
-	agentRegistryRequester       interfaces.AgentRegistryRequesterInterface
-	agentPromptTemplateRequester interfaces.AgentPromptTemplateRequesterInterface
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewGetAgentPromptTemplate(
-	agentRegistryRequester interfaces.AgentRegistryRequesterInterface,
-	agentPromptTemplateRequester interfaces.AgentPromptTemplateRequesterInterface,
-) *GetAgentPromptTemplate {
-	return &GetAgentPromptTemplate{
-		agentRegistryRequester:       agentRegistryRequester,
-		agentPromptTemplateRequester: agentPromptTemplateRequester,
-	}
+func NewGetAgentPromptTemplate(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *GetAgentPromptTemplate {
+	return &GetAgentPromptTemplate{conversationBrokerRequester: conversationBrokerRequester}
 }
 
-func (g *GetAgentPromptTemplate) Get(request *requests.GetAgentPromptTemplateRequest) (*string, error) {
-	err := request.Validate()
-	if err != nil {
+func (uc *GetAgentPromptTemplate) Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	agent, err := g.agentRegistryRequester.GetAgent(
+	return uc.conversationBrokerRequester.GetAgentPromptTemplate(
 		request.AgentCollectionAddress,
-		request.AgentCollectionTokenId,
+		request.ParsedCollectionTokenId(),
+		request.Key,
 	)
-	if err != nil {
-		return nil, err
-	}
-	if agent == nil {
-		return nil, errors.NewValidationError("agentCollectionTokenId", "agent not found")
-	}
-	if !agent.IsInternal {
-		return nil, errors.NewValidationError("agentCollectionTokenId", "Agent is not internal")
-	}
-	if *agent.Owner != request.AuthenticatedWallet.Hex() {
-		return nil, errors.NewValidationError("agentCollectionTokenId", "You are not the owner of this agent")
-	}
-	if agent.Role == enums.AgentRoleHuman {
-		return nil, errors.NewValidationError("agentCollectionTokenId", "Agent is human, cannot have prompt templates")
-	}
-
-	promptTemplate, err := g.agentPromptTemplateRequester.GetAgentPromptTemplateByAgentIdAndKey(agent.ID, request.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	return promptTemplate, nil
 }
