@@ -69,10 +69,14 @@ func TestWhenLoadingBlockchainConfigSettings(t *testing.T) {
 			settings := gateway_settings.NewBlockchainConfigSettings(zap.NewNop(), k)
 
 			assert.NotNil(t, settings)
-			if assert.Len(t, settings.EvmChains, 1) {
+			if assert.Len(t, settings.EvmChains, 2) {
 				assert.NotEmpty(t, settings.EvmChains["80002"].CollectionsManagerAddress)
 				assert.NotEmpty(t, settings.EvmChains["80002"].CollectionCreatorAddress)
 				assert.Equal(t, "https://amoy.polygonscan.com", settings.EvmChains["80002"].ScannerBaseUrl)
+
+				assert.NotEmpty(t, settings.EvmChains["137"].CollectionsManagerAddress)
+				assert.NotEmpty(t, settings.EvmChains["137"].CollectionCreatorAddress)
+				assert.Equal(t, "https://polygonscan.com", settings.EvmChains["137"].ScannerBaseUrl)
 			}
 		})
 	})

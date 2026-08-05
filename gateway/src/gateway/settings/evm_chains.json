@@ -4,8 +4,8 @@
     {
       "chainId": 137,
       "name": "polygon-mainnet",
-      "collectionsManagerAddress": "0xA39dC43bCAf07C142FF230cC73A8229347287958",
-      "collectionCreatorAddress": "",
+      "collectionsManagerAddress": "0xb0dc8a83c700A9BBcc53cA1a2C6993a63129d2F6",
+      "collectionCreatorAddress": "0x6919B4A31b27cf5Be422a88F3259f5C7B9470BEa",
       "scannerBaseUrl": "https://polygonscan.com"
     },
     {
