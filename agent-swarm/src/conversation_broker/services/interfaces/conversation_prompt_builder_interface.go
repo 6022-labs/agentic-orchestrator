@@ -1,6 +1,9 @@
 package interfaces
 
-import "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
+import (
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
+)
 
 // ConversationPromptBuilderInterface prepares the inference turn for an agent:
 // role-templated instructions plus the conversation window as input messages.
@@ -10,6 +13,7 @@ type ConversationPromptBuilderInterface interface {
 	BuildInput(
 		platform string,
 		agent *models.Participant,
+		role *enums.ParticipantRole,
 		conversation *models.Conversation,
 		messages []*models.ConversationMessage,
 		participants []*models.Participant,
@@ -18,6 +22,7 @@ type ConversationPromptBuilderInterface interface {
 		turn *models.RemoteAgentInput,
 		completions []string,
 		agent *models.Participant,
+		role *enums.ParticipantRole,
 		conversation *models.Conversation,
 		messages []*models.ConversationMessage,
 		participants []*models.Participant,

@@ -63,7 +63,7 @@ func (r *ParticipantRepository) GetNextAgentToProcess(
 ) (*models.Participant, error) {
 	var entity models.Participant
 	err := r.client.GetDB().
-		Where("role IS NOT NULL").
+		Where("collection_address IS NOT NULL AND collection_token_id IS NOT NULL").
 		Where("is_processing = ?", false).
 		Where(fmt.Sprintf(
 			"last_processed_at IS NULL OR last_processed_at < NOW() - INTERVAL '%d seconds'",

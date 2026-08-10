@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -17,22 +18,22 @@ type WhenBuildingConversationPromptsTestingSuite struct {
 	sut *prompts.ConversationPromptBuilder
 
 	mockAgentPromptTemplateRepository *repositories_mocks.MockAgentPromptTemplateRepositoryInterface
-	mockAgentRegistryRequester        *interfaces_mocks.MockAgentRegistryRequesterInterface
+	mockRegistryAgentResolver         *interfaces_mocks.MockRegistryAgentResolverInterface
 }
 
 func WhenBuildingConversationPromptsBeforeEach(t *testing.T) *WhenBuildingConversationPromptsTestingSuite {
 	mockController := gomock.NewController(t)
 
 	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(mockController)
-	mockAgentRegistryRequester := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
+	mockRegistryAgentResolver := interfaces_mocks.NewMockRegistryAgentResolverInterface(mockController)
 
-	sut := prompts.NewConversationPromptBuilder(mockAgentPromptTemplateRepository, mockAgentRegistryRequester)
+	sut := prompts.NewConversationPromptBuilder(mockAgentPromptTemplateRepository, mockRegistryAgentResolver)
 
 	return &WhenBuildingConversationPromptsTestingSuite{
 		sut: sut,
 
 		mockAgentPromptTemplateRepository: mockAgentPromptTemplateRepository,
-		mockAgentRegistryRequester:        mockAgentRegistryRequester,
+		mockRegistryAgentResolver:         mockRegistryAgentResolver,
 	}
 }
 
@@ -69,8 +70,8 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				Return(model_builders.NewAgentPromptTemplateBuilder().WithContent("REPLY TO {{.LatestRequest.Content}}").Build(), nil).
 				Times(1)
 			// ChannelMembers + Latest/Initial authors resolve through the registry.
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain(gomock.Any()).
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain(gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -81,7 +82,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput("slack", agent, conversation, messages, participants)
+			turn, err := suite.sut.BuildInput("slack", agent, lo.ToPtr(enums.ParticipantRoleClone), conversation, messages, participants)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "SYSTEM "+*conversation.Description, turn.Instructions)
@@ -115,8 +116,8 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain(gomock.Any()).
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain(gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -127,7 +128,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput("web", agent, conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
+			turn, err := suite.sut.BuildInput("web", agent, lo.ToPtr(enums.ParticipantRoleClone), conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
 
 			assert.NoError(t, err)
 			assert.NotEmpty(t, turn.Instructions)
@@ -138,7 +139,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 	t.Run("Given a facilitator conclude turn", func(t *testing.T) {
 		t.Parallel()
 
-		agent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleFacilitator).Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		message := model_builders.NewConversationMessageBuilder().
 			WithConversationID(conversation.ID).
@@ -158,8 +159,8 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyFacilitatorConclude).
 				Return(nil, nil).
 				Times(1)
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain(gomock.Any()).
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain(gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -170,7 +171,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			concludeTurn, err := suite.sut.BuildConcludeInput(baseTurn, []string{"first completion"}, agent, conversation, messages, participants)
+			concludeTurn, err := suite.sut.BuildConcludeInput(baseTurn, []string{"first completion"}, agent, lo.ToPtr(enums.ParticipantRoleFacilitator), conversation, messages, participants)
 
 			assert.NoError(t, err)
 			assert.Equal(t, baseTurn.Instructions, concludeTurn.Instructions)
@@ -185,7 +186,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 	t.Run("Given the agent has the human role", func(t *testing.T) {
 		t.Parallel()
 
-		agent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleHuman).Build()
+		agent := model_builders.NewAgentParticipantBuilder().Build()
 		conversation := model_builders.NewConversationBuilder().Build()
 		message := model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()
 
@@ -194,7 +195,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 
-			_, err := suite.sut.BuildInput("web", agent, conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
+			_, err := suite.sut.BuildInput("web", agent, lo.ToPtr(enums.ParticipantRoleHuman), conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
 
 			assert.Error(t, err)
 		})

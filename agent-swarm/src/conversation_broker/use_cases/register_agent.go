@@ -55,10 +55,7 @@ func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*resp
 		return nil, false, cb_errors.NewNotFoundError("agent", request.CollectionAddress+"/"+request.CollectionTokenId)
 	}
 
-	participant, err := registryAgent.ToParticipant()
-	if err != nil {
-		return nil, false, err
-	}
+	participant := registryAgent.ToParticipant()
 
 	saved, err := uc.participantRepository.Save(participant)
 	if err != nil {

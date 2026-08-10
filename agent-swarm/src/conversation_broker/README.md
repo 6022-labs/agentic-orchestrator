@@ -16,7 +16,7 @@ Daemon → resolve ENS (CCIP-Read) → /.well-known/6022 → agent node /respons
       → broker persists the message
 ```
 
-The processor is stateless regarding message persistence: it invokes the remote agent node, callbacks, and optionally concludes. The bridge owns the write path. Node discovery (ENS `url` text record → 6022 card → dialect endpoint) is cached per ENS domain (`remote_agent_resolution.cache_ttl_seconds`, default 300s). Nodes answering HTTP 402 (x402 payment required) are skipped for now — the orchestrator only talks to free agents.
+The processor is stateless regarding message persistence: it invokes the remote agent node, callbacks, and optionally concludes. The bridge owns the write path. Node discovery (ENS `url` text record → 6022 card → dialect endpoint) is cached per ENS domain (`remote_agent_resolution.cache_ttl_seconds`, default 300s). The registry's agent projection — roles and addresses — is cached separately (`registry_agent_resolution.cache_ttl_seconds`, default 120s) under both the collection and ENS lookup keys, so one fetch warms both paths. Nodes answering HTTP 402 (x402 payment required) are skipped for now — the orchestrator only talks to free agents.
 
 **Why this pattern:**
 

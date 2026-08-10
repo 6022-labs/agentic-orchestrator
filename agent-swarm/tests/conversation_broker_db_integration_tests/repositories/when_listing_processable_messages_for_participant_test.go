@@ -92,9 +92,8 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, agent, _, allMessages := suite.seed("agent.eth")
-			agent.Role = lo.ToPtr(enums.ParticipantRoleFacilitator)
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, lo.ToPtr(enums.ParticipantRoleFacilitator), conv.ID)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, len(allMessages))
@@ -111,9 +110,8 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, agent, _, _ := suite.seed("agent.eth")
-			agent.Role = lo.ToPtr(enums.ParticipantRoleClone)
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, lo.ToPtr(enums.ParticipantRoleClone), conv.ID)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 1)
@@ -131,10 +129,9 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, _, human, _ := suite.seed("someone.eth")
-			human.Role = lo.ToPtr(enums.ParticipantRoleHuman)
 			human.EnsDomain = lo.ToPtr("human.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(human, conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(human, lo.ToPtr(enums.ParticipantRoleHuman), conv.ID)
 
 			assert.NoError(t, err)
 			// Human authored all 3 messages in seed; mention substring is "someone.eth", not human's ens.

@@ -927,21 +927,6 @@ const docTemplate = `{
                 "ConversationStatusConcluded"
             ]
         },
-        "enums.ParticipantRole": {
-            "type": "string",
-            "enum": [
-                "clone",
-                "human",
-                "expert",
-                "facilitator"
-            ],
-            "x-enum-varnames": [
-                "ParticipantRoleClone",
-                "ParticipantRoleHuman",
-                "ParticipantRoleExpert",
-                "ParticipantRoleFacilitator"
-            ]
-        },
         "errors.NotFoundError": {
             "type": "object",
             "properties": {
@@ -1207,9 +1192,6 @@ const docTemplate = `{
                 },
                 "lastProcessedAt": {
                     "type": "string"
-                },
-                "role": {
-                    "$ref": "#/definitions/enums.ParticipantRole"
                 },
                 "updatedAt": {
                     "type": "string"

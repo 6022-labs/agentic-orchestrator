@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -13,7 +12,7 @@ import (
 // only).
 //
 // Invariant (enforced at the app layer):
-//   - Agent: CollectionAddress, CollectionTokenId, Role all non-nil.
+//   - Agent: CollectionAddress and CollectionTokenId non-nil.
 //   - User: DisplayName non-nil; on-chain identity fields all nil.
 //
 // For agents, ID equals the agent-identity service's UUID. For users, the
@@ -21,10 +20,9 @@ import (
 type Participant struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
-	CollectionAddress *string                `gorm:"type:text;uniqueIndex:idx_participants_collection" json:"collectionAddress,omitempty"`
-	CollectionTokenId *uint64                `gorm:"type:numeric;uniqueIndex:idx_participants_collection" json:"collectionTokenId,omitempty"`
-	EnsDomain         *string                `gorm:"type:text" json:"ensDomain,omitempty"`
-	Role              *enums.ParticipantRole `gorm:"type:text" json:"role,omitempty"`
+	CollectionAddress *string `gorm:"type:text;uniqueIndex:idx_participants_collection" json:"collectionAddress,omitempty"`
+	CollectionTokenId *uint64 `gorm:"type:numeric;uniqueIndex:idx_participants_collection" json:"collectionTokenId,omitempty"`
+	EnsDomain         *string `gorm:"type:text" json:"ensDomain,omitempty"`
 
 	DisplayName *string `gorm:"type:text" json:"displayName,omitempty"`
 
@@ -33,6 +31,11 @@ type Participant struct {
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`
+}
+
+// IsAgent reports whether the participant has an on-chain identity rather than being a user.
+func (entity *Participant) IsAgent() bool {
+	return entity.CollectionAddress != nil && entity.CollectionTokenId != nil
 }
 
 func (entity *Participant) BeforeCreate(tx *gorm.DB) (err error) {

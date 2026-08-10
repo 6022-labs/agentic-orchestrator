@@ -13,34 +13,35 @@ import (
 
 type ConversationPromptBuilder struct {
 	promptTemplateProvider *promptTemplateProvider
-	agentRegistryRequester interfaces.AgentRegistryRequesterInterface
+	registryAgentResolver  interfaces.RegistryAgentResolverInterface
 }
 
 func NewConversationPromptBuilder(
 	agentPromptTemplateRepository repositories.AgentPromptTemplateRepositoryInterface,
-	agentRegistryRequester interfaces.AgentRegistryRequesterInterface,
+	registryAgentResolver interfaces.RegistryAgentResolverInterface,
 ) *ConversationPromptBuilder {
 	return &ConversationPromptBuilder{
 		promptTemplateProvider: &promptTemplateProvider{agentPromptTemplateRepository: agentPromptTemplateRepository},
-		agentRegistryRequester: agentRegistryRequester,
+		registryAgentResolver:  registryAgentResolver,
 	}
 }
 
 func (b *ConversationPromptBuilder) BuildInput(
 	platform string,
 	agent *models.Participant,
+	role *enums.ParticipantRole,
 	conversation *models.Conversation,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
 ) (*models.RemoteAgentInput, error) {
-	if agent.Role == nil {
+	if role == nil {
 		return nil, fmt.Errorf("participant %s has no role", agent.ID)
 	}
 	if len(messages) == 0 {
 		return nil, fmt.Errorf("no messages to build a turn from")
 	}
 
-	systemKey, defaultKey, err := b.templateKeysForRole(*agent.Role)
+	systemKey, defaultKey, err := b.templateKeysForRole(*role)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +86,7 @@ func (b *ConversationPromptBuilder) BuildConcludeInput(
 	turn *models.RemoteAgentInput,
 	completions []string,
 	agent *models.Participant,
+	role *enums.ParticipantRole,
 	conversation *models.Conversation,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
@@ -163,7 +165,7 @@ func (b *ConversationPromptBuilder) buildParameters(
 	initialMessage := messages[0]
 	latestMessage := messages[len(messages)-1]
 
-	return NewPromptParametersBuilder(b.agentRegistryRequester).
+	return NewPromptParametersBuilder(b.registryAgentResolver).
 		WithParam([]string{"ChannelMembers"}, channelMembers, lo.ToPtr(PromptParameterTypePotentialAgentArray)).
 		WithParam([]string{"ChannelDescription"}, description, nil).
 		WithParam([]string{"ConversationId"}, conversation.ID.String(), nil).

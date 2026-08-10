@@ -29,6 +29,7 @@ type ConversationProcessor struct {
 	remoteAgentCardResolver         interfaces.RemoteAgentCardResolverInterface
 	remoteAgentCompletionsRequester interfaces.RemoteAgentCompletionsRequesterInterface
 	conversationPromptBuilder       interfaces.ConversationPromptBuilderInterface
+	participantRoleResolver         interfaces.ParticipantRoleResolverInterface
 	bridgeRepository                repositories.BridgeRepositoryInterface
 	conversationRepository          repositories.ConversationRepositoryInterface
 	conversationMessageRepository   repositories.ConversationMessageRepositoryInterface
@@ -48,6 +49,7 @@ func NewConversationProcessor(
 	remoteAgentCardResolver interfaces.RemoteAgentCardResolverInterface,
 	remoteAgentCompletionsRequester interfaces.RemoteAgentCompletionsRequesterInterface,
 	conversationPromptBuilder interfaces.ConversationPromptBuilderInterface,
+	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 	bridgeRepository repositories.BridgeRepositoryInterface,
 	conversationRepository repositories.ConversationRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
@@ -62,6 +64,7 @@ func NewConversationProcessor(
 		remoteAgentCardResolver:         remoteAgentCardResolver,
 		remoteAgentCompletionsRequester: remoteAgentCompletionsRequester,
 		conversationPromptBuilder:       conversationPromptBuilder,
+		participantRoleResolver:         participantRoleResolver,
 		bridgeRepository:                bridgeRepository,
 		conversationRepository:          conversationRepository,
 		conversationMessageRepository:   conversationMessageRepository,
@@ -81,7 +84,12 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return nil
 	}
 
-	if participant.Role != nil && *participant.Role == enums.ParticipantRoleHuman {
+	role, err := p.participantRoleResolver.Resolve(participant)
+	if err != nil {
+		return fmt.Errorf("failed to resolve participant role: %w", err)
+	}
+
+	if role != nil && *role == enums.ParticipantRoleHuman {
 		// Humans have no runtime to invoke.
 		return nil
 	}
@@ -98,7 +106,7 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return nil
 	}
 
-	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(participant, conversation.ID)
+	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(participant, role, conversation.ID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch processable messages: %w", err)
 	}
@@ -121,7 +129,7 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return fmt.Errorf("failed to resolve remote agent card: %w", err)
 	}
 
-	turn, err := p.conversationPromptBuilder.BuildInput(string(bridge.Kind), participant, conversation, messages, participants)
+	turn, err := p.conversationPromptBuilder.BuildInput(string(bridge.Kind), participant, role, conversation, messages, participants)
 	if err != nil {
 		return fmt.Errorf("failed to build turn: %w", err)
 	}
@@ -142,9 +150,9 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 	completions = p.demojizeAll(completions)
 
 	isFinal := false
-	if participant.Role != nil && *participant.Role == enums.ParticipantRoleFacilitator {
+	if role != nil && *role == enums.ParticipantRoleFacilitator {
 		completions, isFinal, err = p.concludeByFacilitatorIfNeeded(
-			participant, conversation, card, turn, completions, messages, participants,
+			participant, conversation, card, turn, completions, role, messages, participants,
 		)
 		if err != nil {
 			return err
@@ -167,6 +175,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 	card *models.RemoteAgentCard,
 	turn *models.RemoteAgentInput,
 	completions []string,
+	role *enums.ParticipantRole,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
 ) ([]string, bool, error) {
@@ -176,7 +185,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 		return completions, false, nil
 	}
 
-	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(turn, completions, participant, conversation, messages, participants)
+	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(turn, completions, participant, role, conversation, messages, participants)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to build conclude turn: %w", err)
 	}
@@ -297,9 +306,6 @@ func (p *ConversationProcessor) processingLogFields(participant *models.Particip
 		zap.String("conversationId", conversation.ID.String()),
 		zap.String("bridgeId", conversation.BridgeID.String()),
 		zap.String("participantId", participant.ID.String()),
-	}
-	if participant.Role != nil {
-		fields = append(fields, zap.String("participantRole", string(*participant.Role)))
 	}
 	if participant.EnsDomain != nil {
 		fields = append(fields, zap.String("participantEnsDomain", *participant.EnsDomain))

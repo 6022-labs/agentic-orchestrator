@@ -24,6 +24,13 @@ func GetAllParticipantRoles() ParticipantRoleList {
 	}
 }
 
+const roleAttribute = "role"
+
+// ParticipantRoleFromAttributes reads the role attribute; absent or unknown values fall back to expert.
+func ParticipantRoleFromAttributes(attributes map[string]string) ParticipantRole {
+	return ParticipantRoleFromAttribute(attributes[roleAttribute])
+}
+
 // ParticipantRoleFromAttribute parses a free-form role attribute; unknown values fall back to expert.
 func ParticipantRoleFromAttribute(value string) ParticipantRole {
 	var role ParticipantRole

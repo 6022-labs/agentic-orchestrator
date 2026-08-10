@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
+	enums "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -87,18 +88,18 @@ func (mr *MockConversationRepositoryInterfaceMockRecorder) List(page, elementsPe
 }
 
 // ListProcessableForParticipant mocks base method.
-func (m *MockConversationRepositoryInterface) ListProcessableForParticipant(participant *models.Participant, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error) {
+func (m *MockConversationRepositoryInterface) ListProcessableForParticipant(participant *models.Participant, role *enums.ParticipantRole, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListProcessableForParticipant", participant, facilitatorTickIntervalSeconds)
+	ret := m.ctrl.Call(m, "ListProcessableForParticipant", participant, role, facilitatorTickIntervalSeconds)
 	ret0, _ := ret[0].([]*models.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListProcessableForParticipant indicates an expected call of ListProcessableForParticipant.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) ListProcessableForParticipant(participant, facilitatorTickIntervalSeconds any) *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) ListProcessableForParticipant(participant, role, facilitatorTickIntervalSeconds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipant", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).ListProcessableForParticipant), participant, facilitatorTickIntervalSeconds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipant", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).ListProcessableForParticipant), participant, role, facilitatorTickIntervalSeconds)
 }
 
 // Save mocks base method.

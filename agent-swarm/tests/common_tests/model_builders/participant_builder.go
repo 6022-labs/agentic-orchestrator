@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 )
@@ -16,7 +15,6 @@ type ParticipantBuilder struct {
 	collectionAddress *string
 	collectionTokenId *uint64
 	ensDomain         *string
-	role              *enums.ParticipantRole
 	displayName       *string
 	isProcessing      bool
 	lastProcessedAt   *time.Time
@@ -24,19 +22,16 @@ type ParticipantBuilder struct {
 	updatedAt         time.Time
 }
 
-// NewAgentParticipantBuilder builds an agent participant with role=clone by default.
 func NewAgentParticipantBuilder() *ParticipantBuilder {
 	collectionAddress := fmt.Sprintf("0x%040x", rand.Uint64())
 	collectionTokenId := rand.Uint64()
 	ensDomain := faker.Word() + ".eth"
-	role := enums.ParticipantRoleClone
 
 	return &ParticipantBuilder{
 		id:                uuid.New(),
 		collectionAddress: &collectionAddress,
 		collectionTokenId: &collectionTokenId,
 		ensDomain:         &ensDomain,
-		role:              &role,
 		createdAt:         time.Now(),
 		updatedAt:         time.Now(),
 	}
@@ -55,11 +50,6 @@ func NewUserParticipantBuilder() *ParticipantBuilder {
 
 func (b *ParticipantBuilder) WithID(id uuid.UUID) *ParticipantBuilder {
 	b.id = id
-	return b
-}
-
-func (b *ParticipantBuilder) WithRole(role enums.ParticipantRole) *ParticipantBuilder {
-	b.role = &role
 	return b
 }
 
@@ -84,7 +74,6 @@ func (b *ParticipantBuilder) Build() *models.Participant {
 		CollectionAddress: b.collectionAddress,
 		CollectionTokenId: b.collectionTokenId,
 		EnsDomain:         b.ensDomain,
-		Role:              b.role,
 		DisplayName:       b.displayName,
 		IsProcessing:      b.isProcessing,
 		LastProcessedAt:   b.lastProcessedAt,

@@ -32,18 +32,6 @@ components:
       x-enum-varnames:
       - ConversationStatusActive
       - ConversationStatusConcluded
-    enums.ParticipantRole:
-      enum:
-      - clone
-      - human
-      - expert
-      - facilitator
-      type: string
-      x-enum-varnames:
-      - ParticipantRoleClone
-      - ParticipantRoleHuman
-      - ParticipantRoleExpert
-      - ParticipantRoleFacilitator
     errors.NotFoundError:
       properties:
         id:
@@ -212,8 +200,6 @@ components:
           type: boolean
         lastProcessedAt:
           type: string
-        role:
-          $ref: '#/components/schemas/enums.ParticipantRole'
         updatedAt:
           type: string
       type: object

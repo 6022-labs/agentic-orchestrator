@@ -5,11 +5,13 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -18,9 +20,10 @@ import (
 type WhenProcessingNextParticipantTestingSuite struct {
 	sut *services.ConversationProcessorDaemon
 
-	mockConversationProcessor  *interfaces_mocks.MockConversationProcessorInterface
-	mockParticipantRepository  *repositories_mocks.MockParticipantRepositoryInterface
-	mockConversationRepository *repositories_mocks.MockConversationRepositoryInterface
+	mockConversationProcessor   *interfaces_mocks.MockConversationProcessorInterface
+	mockParticipantRepository   *repositories_mocks.MockParticipantRepositoryInterface
+	mockConversationRepository  *repositories_mocks.MockConversationRepositoryInterface
+	mockParticipantRoleResolver *interfaces_mocks.MockParticipantRoleResolverInterface
 }
 
 func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextParticipantTestingSuite {
@@ -29,6 +32,7 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 	mockConversationProcessor := interfaces_mocks.NewMockConversationProcessorInterface(mockController)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
+	mockParticipantRoleResolver := interfaces_mocks.NewMockParticipantRoleResolverInterface(mockController)
 
 	processingSettings := &settings.ProcessingSettings{
 		ParticipantProcessingInterval:               20,
@@ -43,6 +47,7 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 		mockConversationProcessor,
 		mockParticipantRepository,
 		mockConversationRepository,
+		mockParticipantRoleResolver,
 	)
 
 	return &WhenProcessingNextParticipantTestingSuite{
@@ -51,7 +56,10 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 		mockConversationProcessor:  mockConversationProcessor,
 		mockParticipantRepository:  mockParticipantRepository,
 		mockConversationRepository: mockConversationRepository,
+
+		mockParticipantRoleResolver: mockParticipantRoleResolver,
 	}
+
 }
 
 func TestWhenProcessingNextParticipant(t *testing.T) {
@@ -84,6 +92,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 		participant := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().
 				GetNextAgentToProcess(gomock.Any()).
 				Return(participant, nil).
@@ -96,7 +105,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				}).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, uint64(30)).
+				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
@@ -128,10 +137,11 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 		conv2 := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetNextAgentToProcess(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, uint64(30)).
+				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv1, conv2}, nil).
 				Times(1)
 			suite.mockConversationProcessor.EXPECT().ProcessConversation(participant, conv1).Return(nil).Times(1)
@@ -157,10 +167,11 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 		conv := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetNextAgentToProcess(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, uint64(30)).
+				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv}, nil).
 				Times(1)
 			suite.mockConversationProcessor.EXPECT().ProcessConversation(participant, conv).Return(errors.New("boom")).Times(1)

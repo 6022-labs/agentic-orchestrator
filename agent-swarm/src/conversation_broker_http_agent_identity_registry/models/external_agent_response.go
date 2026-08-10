@@ -10,11 +10,10 @@ import (
 type ExternalAgentResponse struct {
 	ID                uuid.UUID         `json:"id"`
 	Name              string            `json:"name"`
-	Role              string            `json:"role"`
 	Owner             *string           `json:"owner"`
 	EnsDomain         string            `json:"ensDomain"`
-	WalletAddress     string            `json:"walletAddress"`
 	Attributes        map[string]string `json:"attributes"`
+	Addresses         map[string]string `json:"addresses"`
 	CollectionAddress string            `json:"collectionAddress"`
 	CollectionTokenId *uint64           `json:"collectionTokenId"`
 }
@@ -26,10 +25,9 @@ func (response *ExternalAgentResponse) ToRegistryAgent() *models.RegistryAgent {
 	return &models.RegistryAgent{
 		ID:                response.ID,
 		Name:              response.Name,
-		Role:              response.Role,
 		Owner:             response.Owner,
 		EnsDomain:         response.EnsDomain,
-		WalletAddress:     response.WalletAddress,
+		Addresses:         response.Addresses,
 		Attributes:        response.Attributes,
 		CollectionAddress: response.CollectionAddress,
 		CollectionTokenId: response.CollectionTokenId,

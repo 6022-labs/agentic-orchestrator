@@ -32,15 +32,17 @@ func (r *ConversationMessageRepository) ListByConversationId(conversationId uuid
 
 func (r *ConversationMessageRepository) ListProcessableForParticipantAndConversation(
 	participant *models.Participant,
+	role *enums.ParticipantRole,
 	conversationId uuid.UUID,
 ) ([]*models.ConversationMessage, error) {
 	query := r.client.GetDB().Model(&models.ConversationMessage{}).
 		Where("conversation_id = ?", conversationId)
 
-	if participant.Role != nil {
+	// A nil role is a user, whose messages are not filtered.
+	if role != nil {
 		ensMention := "%" + *participant.EnsDomain + "%"
 
-		switch *participant.Role {
+		switch *role {
 		case enums.ParticipantRoleClone, enums.ParticipantRoleExpert:
 			query = query.Where("content ILIKE ?", ensMention)
 		case enums.ParticipantRoleHuman:

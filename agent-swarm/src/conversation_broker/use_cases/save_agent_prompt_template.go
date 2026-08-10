@@ -3,9 +3,10 @@ package use_cases
 import (
 	"fmt"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
+
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -44,11 +45,11 @@ func (uc *SaveAgentPromptTemplate) Save(request *requests.SaveAgentPromptTemplat
 		return nil, cb_errors.NewNotFoundError("agent", request.CollectionAddress+"/"+request.CollectionTokenId)
 	}
 
-	allowed := enums.ParticipantRoleFromAttribute(agent.Role).AllowedPromptTemplateKeys()
+	allowed := enums.ParticipantRoleFromAttributes(agent.Attributes).AllowedPromptTemplateKeys()
 	if !allowed.Contains(request.ParsedKey()) {
 		return nil, cb_errors.NewValidationError(
 			"key",
-			fmt.Sprintf("must be one of: %s for agent role %q", allowed.String(), agent.Role),
+			fmt.Sprintf("must be one of: %s for agent role %q", allowed.String(), agent.Attributes["role"]),
 		)
 	}
 

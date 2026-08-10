@@ -93,7 +93,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 					assert.Equal(t, request.DisplayName, *p.DisplayName)
 					assert.Nil(t, p.CollectionAddress)
 					assert.Nil(t, p.CollectionTokenId)
-					assert.Nil(t, p.Role)
+					assert.False(t, p.IsAgent())
 					return p, nil
 				}).
 				Times(1)

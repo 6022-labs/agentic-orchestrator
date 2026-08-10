@@ -13,14 +13,14 @@ import (
 // ".type"-suffixed directives (agent / potential_agent lookups) through the
 // registry port.
 type PromptParametersBuilder struct {
-	agentRegistryRequester interfaces.AgentRegistryRequesterInterface
-	params                 map[string]any
+	registryAgentResolver interfaces.RegistryAgentResolverInterface
+	params                map[string]any
 }
 
-func NewPromptParametersBuilder(agentRegistryRequester interfaces.AgentRegistryRequesterInterface) *PromptParametersBuilder {
+func NewPromptParametersBuilder(registryAgentResolver interfaces.RegistryAgentResolverInterface) *PromptParametersBuilder {
 	return &PromptParametersBuilder{
-		agentRegistryRequester: agentRegistryRequester,
-		params:                 map[string]any{},
+		registryAgentResolver: registryAgentResolver,
+		params:                map[string]any{},
 	}
 }
 
@@ -138,7 +138,7 @@ func (b *PromptParametersBuilder) resolveAgentParameter(target map[string]any, b
 		return fmt.Errorf("expected string value for agent, got %T", value)
 	}
 
-	agent, err := b.agentRegistryRequester.GetMintedAgentByEnsDomain(strVal)
+	agent, err := b.registryAgentResolver.ResolveByEnsDomain(strVal)
 	if err != nil {
 		return fmt.Errorf("failed to get agent by ENS domain: %w", err)
 	}
@@ -161,7 +161,7 @@ func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]a
 
 	agentParameters := make([]*agentPromptParameter, len(strVals))
 	for i, ensDomain := range strVals {
-		agent, err := b.agentRegistryRequester.GetMintedAgentByEnsDomain(ensDomain)
+		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ensDomain)
 		if err != nil {
 			return fmt.Errorf("failed to get agents by ENS domains: %w", err)
 		}
@@ -182,7 +182,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(target map[stri
 		return fmt.Errorf("expected string value for potential agent, got %T", value)
 	}
 
-	agent, err := b.agentRegistryRequester.GetMintedAgentByEnsDomain(strVal)
+	agent, err := b.registryAgentResolver.ResolveByEnsDomain(strVal)
 	if err != nil {
 		return fmt.Errorf("failed to get potential agent by ENS domain: %w", err)
 	}
@@ -202,7 +202,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(target map
 
 	agentMap := make(map[string]*models.RegistryAgent, len(strVals))
 	for _, ensDomain := range strVals {
-		agent, err := b.agentRegistryRequester.GetMintedAgentByEnsDomain(ensDomain)
+		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ensDomain)
 		if err != nil {
 			return fmt.Errorf("failed to get potential agents by ENS domains: %w", err)
 		}
@@ -249,12 +249,11 @@ func (b *PromptParametersBuilder) newAgentPromptParameter(agent *models.Registry
 		owner = *agent.Owner
 	}
 	return &agentPromptParameter{
-		Name:          agent.Name,
-		Role:          agent.Role,
-		Owner:         owner,
-		EnsDomain:     agent.EnsDomain,
-		Attributes:    agent.Attributes,
-		WalletAddress: agent.WalletAddress,
+		Name:       agent.Name,
+		Owner:      owner,
+		EnsDomain:  agent.EnsDomain,
+		Attributes: agent.Attributes,
+		Addresses:  agent.Addresses,
 	}
 }
 

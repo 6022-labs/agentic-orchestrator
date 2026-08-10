@@ -15,6 +15,11 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewRegistryAgentResolutionSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(settings.NewRemoteAgentResolutionSettings)
 	if err != nil {
 		panic(err)
@@ -57,6 +62,22 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	err = container.Provide(
 		services.NewAgentUrlResolver,
 		dig.As(new(service_interfaces.AgentUrlResolverInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewRegistryAgentResolver,
+		dig.As(new(service_interfaces.RegistryAgentResolverInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewParticipantRoleResolver,
+		dig.As(new(service_interfaces.ParticipantRoleResolverInterface)),
 	)
 	if err != nil {
 		panic(err)

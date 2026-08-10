@@ -65,6 +65,7 @@ func (r *ConversationRepository) Count() (uint, error) {
 
 func (r *ConversationRepository) ListProcessableForParticipant(
 	participant *models.Participant,
+	role *enums.ParticipantRole,
 	facilitatorTickIntervalSeconds uint64,
 ) ([]*models.Conversation, error) {
 	query := r.client.GetDB().Model(&models.Conversation{}).
@@ -72,13 +73,14 @@ func (r *ConversationRepository) ListProcessableForParticipant(
 		Where("conversation_participants.participant_id = ?", participant.ID).
 		Where("conversations.status = ?", enums.ConversationStatusActive)
 
-	if participant.Role != nil {
+	// A nil role is a user, who has no role-specific wake rule.
+	if role != nil {
 		ensMention := ""
 		if participant.EnsDomain != nil {
 			ensMention = "%" + *participant.EnsDomain + "%"
 		}
 
-		switch *participant.Role {
+		switch *role {
 		case enums.ParticipantRoleFacilitator:
 			// Wake only when the facilitator's own last message is older than
 			// the tick interval (or they never posted).

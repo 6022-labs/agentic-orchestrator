@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/responses"
 )
@@ -20,17 +21,20 @@ type IngestMessage struct {
 	conversationRepository        repositories.ConversationRepositoryInterface
 	participantRepository         repositories.ParticipantRepositoryInterface
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface
+	participantRoleResolver       interfaces.ParticipantRoleResolverInterface
 }
 
 func NewIngestMessage(
 	conversationRepository repositories.ConversationRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
+	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *IngestMessage {
 	return &IngestMessage{
 		conversationRepository:        conversationRepository,
 		participantRepository:         participantRepository,
 		conversationMessageRepository: conversationMessageRepository,
+		participantRoleResolver:       participantRoleResolver,
 	}
 }
 
@@ -55,8 +59,13 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*respon
 		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 
+	humanAuthored, err := uc.isHumanAuthored(participant)
+	if err != nil {
+		return nil, err
+	}
+
 	// Reopen the conversation when a human posts
-	if conversation.Status == enums.ConversationStatusConcluded && uc.isHumanAuthored(participant) {
+	if conversation.Status == enums.ConversationStatusConcluded && humanAuthored {
 		now := time.Now()
 		conversation.Status = enums.ConversationStatusActive
 		conversation.UnconcludedAt = &now
@@ -78,6 +87,11 @@ func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*respon
 	return responses.ConversationMessageResponseFromModel(saved), nil
 }
 
-func (uc *IngestMessage) isHumanAuthored(participant *models.Participant) bool {
-	return participant.Role == nil || *participant.Role == enums.ParticipantRoleHuman
+// isHumanAuthored covers plain users and the agent NFTs a person holds themselves.
+func (uc *IngestMessage) isHumanAuthored(participant *models.Participant) (bool, error) {
+	role, err := uc.participantRoleResolver.Resolve(participant)
+	if err != nil {
+		return false, err
+	}
+	return role == nil || *role == enums.ParticipantRoleHuman, nil
 }

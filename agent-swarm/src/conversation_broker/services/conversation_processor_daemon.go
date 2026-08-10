@@ -25,6 +25,8 @@ type ConversationProcessorDaemon struct {
 	conversationProcessor  interfaces.ConversationProcessorInterface
 	participantRepository  repositories.ParticipantRepositoryInterface
 	conversationRepository repositories.ConversationRepositoryInterface
+
+	participantRoleResolver interfaces.ParticipantRoleResolverInterface
 }
 
 func NewConversationProcessorDaemon(
@@ -33,6 +35,7 @@ func NewConversationProcessorDaemon(
 	conversationProcessor interfaces.ConversationProcessorInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
 	conversationRepository repositories.ConversationRepositoryInterface,
+	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *ConversationProcessorDaemon {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -42,6 +45,8 @@ func NewConversationProcessorDaemon(
 		conversationProcessor:  conversationProcessor,
 		participantRepository:  participantRepository,
 		conversationRepository: conversationRepository,
+
+		participantRoleResolver: participantRoleResolver,
 
 		ctx:    ctx,
 		cancel: cancel,
@@ -123,7 +128,15 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 		}
 	}()
 
-	conversations, err := d.conversationRepository.ListProcessableForParticipant(participant, d.processingSettings.FacilitatorTickInterval)
+	role, err := d.participantRoleResolver.Resolve(participant)
+	if err != nil {
+		d.logger.Error("Failed to resolve participant role",
+			d.participantLogFields(participant, zap.Error(err))...,
+		)
+		return
+	}
+
+	conversations, err := d.conversationRepository.ListProcessableForParticipant(participant, role, d.processingSettings.FacilitatorTickInterval)
 	if err != nil {
 		d.logger.Error("Failed to fetch processable conversations for participant",
 			d.participantLogFields(participant, zap.Error(err))...,
@@ -190,9 +203,6 @@ func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(participant 
 
 func (d *ConversationProcessorDaemon) participantLogFields(participant *models.Participant, extra ...zap.Field) []zap.Field {
 	fields := []zap.Field{zap.String("participantId", participant.ID.String())}
-	if participant.Role != nil {
-		fields = append(fields, zap.String("participantRole", string(*participant.Role)))
-	}
 	if participant.EnsDomain != nil {
 		fields = append(fields, zap.String("participantEnsDomain", *participant.EnsDomain))
 	}

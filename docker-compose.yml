@@ -82,6 +82,7 @@ services:
       - ENS_RESOLVER__RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
       - REMOTE_AGENT__REQUEST_TIMEOUT_SECONDS=120
       - REMOTE_AGENT_RESOLUTION__CACHE_TTL_SECONDS=300
+      - REGISTRY_AGENT_RESOLUTION__CACHE_TTL_SECONDS=120
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
       - REDIS__PASSWORD=

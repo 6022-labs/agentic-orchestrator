@@ -32,18 +32,6 @@ definitions:
     x-enum-varnames:
     - ConversationStatusActive
     - ConversationStatusConcluded
-  enums.ParticipantRole:
-    enum:
-    - clone
-    - human
-    - expert
-    - facilitator
-    type: string
-    x-enum-varnames:
-    - ParticipantRoleClone
-    - ParticipantRoleHuman
-    - ParticipantRoleExpert
-    - ParticipantRoleFacilitator
   errors.NotFoundError:
     properties:
       id:
@@ -216,8 +204,6 @@ definitions:
         type: boolean
       lastProcessedAt:
         type: string
-      role:
-        $ref: '#/definitions/enums.ParticipantRole'
       updatedAt:
         type: string
     type: object

@@ -11,8 +11,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
-	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -200,20 +198,15 @@ func TestWhenRegisteringAgent(t *testing.T) {
 	t.Run("Given the agent does not exist yet and the registry returns an agent", func(t *testing.T) {
 		t.Parallel()
 
-		fromRegistry := &models.RegistryAgent{
-			ID:                uuid.New(),
-			Name:              "Ada",
-			Role:              "expert",
-			EnsDomain:         "ada.experts.80002.6022.eth",
-			CollectionAddress: "0xabc",
-			CollectionTokenId: lo.ToPtr(uint64(1)),
-		}
+		fromRegistry := model_builders.NewRegistryAgentBuilder().
+			WithName("Ada").
+			WithRole("expert").
+			WithEnsDomain("ada.experts.80002.6022.eth").
+			WithCollection("0xabc", 1).
+			Build()
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest, registryAgent *models.RegistryAgent) *models.Participant {
-			expected, err := registryAgent.ToParticipant()
-			if err != nil {
-				t.Fatalf("failed to map registry agent: %v", err)
-			}
+			expected := registryAgent.ToParticipant()
 
 			suite.mockParticipantRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).

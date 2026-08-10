@@ -10,7 +10,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -18,6 +20,7 @@ import (
 type WhenIngestingMessageTestingSuite struct {
 	sut *use_cases.IngestMessage
 
+	mockParticipantRoleResolver       *interfaces_mocks.MockParticipantRoleResolverInterface
 	mockConversationRepository        *repositories_mocks.MockConversationRepositoryInterface
 	mockParticipantRepository         *repositories_mocks.MockParticipantRepositoryInterface
 	mockConversationMessageRepository *repositories_mocks.MockConversationMessageRepositoryInterface
@@ -30,19 +33,24 @@ func WhenIngestingMessageBeforeEach(t *testing.T) *WhenIngestingMessageTestingSu
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(mockController)
 
+	mockParticipantRoleResolver := interfaces_mocks.NewMockParticipantRoleResolverInterface(mockController)
+
 	sut := use_cases.NewIngestMessage(
 		mockConversationRepository,
 		mockParticipantRepository,
 		mockConversationMessageRepository,
+		mockParticipantRoleResolver,
 	)
 
 	return &WhenIngestingMessageTestingSuite{
 		sut: sut,
 
+		mockParticipantRoleResolver:       mockParticipantRoleResolver,
 		mockConversationRepository:        mockConversationRepository,
 		mockParticipantRepository:         mockParticipantRepository,
 		mockConversationMessageRepository: mockConversationMessageRepository,
 	}
+
 }
 
 func generateValidIngestMessageRequest() *requests.IngestMessageRequest {
@@ -147,6 +155,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 		userParticipant := model_builders.NewUserParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any()).Return(nil, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetById(userParticipant.ID).Return(userParticipant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
@@ -185,9 +194,10 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.Status = enums.ConversationStatusConcluded
-		humanAgent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleHuman).Build()
+		humanAgent := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any()).Return(lo.ToPtr(enums.ParticipantRoleHuman), nil).Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetById(humanAgent.ID).Return(humanAgent, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
@@ -226,9 +236,10 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		conversation := model_builders.NewConversationBuilder().Build()
 		conversation.Status = enums.ConversationStatusConcluded
-		aiAgent := model_builders.NewAgentParticipantBuilder().WithRole(enums.ParticipantRoleClone).Build()
+		aiAgent := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any()).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetById(aiAgent.ID).Return(aiAgent, nil).Times(1)
 			// No Save on the conversation repository — AI agents must not reopen.
@@ -262,6 +273,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 		participant := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any()).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().GetById(participant.ID).Return(participant, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().

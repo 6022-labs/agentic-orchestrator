@@ -185,7 +185,7 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			tokenId := uint64(1)
 			suite.registryAgent = &registry_models.ExternalAgentResponse{
 				ID:                agentId,
-				Role:              "clone",
+				Attributes:        map[string]string{"role": "clone"},
 				EnsDomain:         "demo.eth",
 				CollectionAddress: "0xabc",
 				CollectionTokenId: &tokenId,

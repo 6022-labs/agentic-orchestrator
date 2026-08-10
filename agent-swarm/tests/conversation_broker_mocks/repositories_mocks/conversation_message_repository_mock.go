@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
+	enums "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -57,18 +58,18 @@ func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListByConversa
 }
 
 // ListProcessableForParticipantAndConversation mocks base method.
-func (m *MockConversationMessageRepositoryInterface) ListProcessableForParticipantAndConversation(participant *models.Participant, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
+func (m *MockConversationMessageRepositoryInterface) ListProcessableForParticipantAndConversation(participant *models.Participant, role *enums.ParticipantRole, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListProcessableForParticipantAndConversation", participant, conversationId)
+	ret := m.ctrl.Call(m, "ListProcessableForParticipantAndConversation", participant, role, conversationId)
 	ret0, _ := ret[0].([]*models.ConversationMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListProcessableForParticipantAndConversation indicates an expected call of ListProcessableForParticipantAndConversation.
-func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListProcessableForParticipantAndConversation(participant, conversationId any) *gomock.Call {
+func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListProcessableForParticipantAndConversation(participant, role, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipantAndConversation", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListProcessableForParticipantAndConversation), participant, conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipantAndConversation", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListProcessableForParticipantAndConversation), participant, role, conversationId)
 }
 
 // Save mocks base method.

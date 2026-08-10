@@ -46,7 +46,6 @@ CREATE TABLE "public"."participants" (
   "collection_address" text NULL,
   "collection_token_id" numeric NULL,
   "ens_domain" text NULL,
-  "role" text NULL,
   "display_name" text NULL,
   "is_processing" boolean NOT NULL DEFAULT false,
   "last_processed_at" timestamptz NULL,
