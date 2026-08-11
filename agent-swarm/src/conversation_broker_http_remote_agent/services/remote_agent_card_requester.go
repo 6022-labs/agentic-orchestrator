@@ -13,11 +13,15 @@ func NewRemoteAgentCardRequester(client clients.RemoteAgentClientInterface) *Rem
 	return &RemoteAgentCardRequester{client: client}
 }
 
-func (r *RemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, error) {
-	external, err := r.client.GetWellKnownCard(agentUrl)
+func (r *RemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
+	external, raw, err := r.client.GetWellKnownCard(agentUrl)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return external.ToModel(), nil
+	card, err := external.ToModel(raw)
+	if err != nil {
+		return nil, nil, err
+	}
+	return card, raw, nil
 }

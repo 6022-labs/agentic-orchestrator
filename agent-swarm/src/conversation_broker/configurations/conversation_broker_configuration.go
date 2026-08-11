@@ -84,6 +84,14 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentCardSignatureVerifier,
+		dig.As(new(service_interfaces.AgentCardSignatureVerifierInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		prompts.NewConversationPromptBuilder,
 		dig.As(new(service_interfaces.ConversationPromptBuilderInterface)),
 	)

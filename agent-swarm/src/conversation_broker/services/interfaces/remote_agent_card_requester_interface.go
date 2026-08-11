@@ -4,5 +4,6 @@ import "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_b
 
 // RemoteAgentCardRequesterInterface fetches a node's /.well-known/6022 card.
 type RemoteAgentCardRequesterInterface interface {
-	GetCard(agentUrl string) (*models.RemoteAgentCard, error)
+	// GetCard also returns the body verbatim — signature verification runs over those bytes.
+	GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error)
 }

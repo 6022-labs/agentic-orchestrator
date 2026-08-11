@@ -69,10 +69,11 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			card, err := suite.sut.GetWellKnownCard(suite.server.URL + "/")
+			card, raw, err := suite.sut.GetWellKnownCard(suite.server.URL + "/")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "/.well-known/6022", capturedPath)
+			assert.Equal(t, `{"protocol":"6022","protocolVersion":"0.1","name":"claudine","endpoints":{"responses":"https://node.example/api/responses"},"paymentMethods":["x402"]}`, string(raw))
 			assert.Equal(t, "claudine", card.Name)
 			assert.Equal(t, "https://node.example/api/responses", card.Endpoints.Responses)
 			assert.Equal(t, []string{"x402"}, card.PaymentMethods)
@@ -95,7 +96,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.GetWellKnownCard(suite.server.URL)
+			_, _, err := suite.sut.GetWellKnownCard(suite.server.URL)
 
 			assert.Error(t, err)
 		})

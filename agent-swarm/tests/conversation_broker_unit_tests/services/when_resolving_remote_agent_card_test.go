@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,9 +20,11 @@ import (
 type WhenResolvingRemoteAgentCardTestingSuite struct {
 	sut *services.RemoteAgentCardResolver
 
-	mockCacheStorage             *interfaces_mocks.MockCacheStorageInterface
-	mockAgentUrlResolver         *interfaces_mocks.MockAgentUrlResolverInterface
-	mockRemoteAgentCardRequester *interfaces_mocks.MockRemoteAgentCardRequesterInterface
+	mockCacheStorage               *interfaces_mocks.MockCacheStorageInterface
+	mockAgentUrlResolver           *interfaces_mocks.MockAgentUrlResolverInterface
+	mockRegistryAgentResolver      *interfaces_mocks.MockRegistryAgentResolverInterface
+	mockRemoteAgentCardRequester   *interfaces_mocks.MockRemoteAgentCardRequesterInterface
+	mockAgentCardSignatureVerifier *interfaces_mocks.MockAgentCardSignatureVerifierInterface
 }
 
 func WhenResolvingRemoteAgentCardBeforeEach(t *testing.T) *WhenResolvingRemoteAgentCardTestingSuite {
@@ -29,22 +32,28 @@ func WhenResolvingRemoteAgentCardBeforeEach(t *testing.T) *WhenResolvingRemoteAg
 
 	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 	mockAgentUrlResolver := interfaces_mocks.NewMockAgentUrlResolverInterface(mockController)
+	mockRegistryAgentResolver := interfaces_mocks.NewMockRegistryAgentResolverInterface(mockController)
 	mockRemoteAgentCardRequester := interfaces_mocks.NewMockRemoteAgentCardRequesterInterface(mockController)
+	mockAgentCardSignatureVerifier := interfaces_mocks.NewMockAgentCardSignatureVerifierInterface(mockController)
 
 	sut := services.NewRemoteAgentCardResolver(
 		zap.NewNop(),
 		mockCacheStorage,
 		mockAgentUrlResolver,
+		mockRegistryAgentResolver,
 		mockRemoteAgentCardRequester,
+		mockAgentCardSignatureVerifier,
 		&settings.RemoteAgentResolutionSettings{CacheTtlSeconds: 300},
 	)
 
 	return &WhenResolvingRemoteAgentCardTestingSuite{
 		sut: sut,
 
-		mockCacheStorage:             mockCacheStorage,
-		mockAgentUrlResolver:         mockAgentUrlResolver,
-		mockRemoteAgentCardRequester: mockRemoteAgentCardRequester,
+		mockCacheStorage:               mockCacheStorage,
+		mockAgentUrlResolver:           mockAgentUrlResolver,
+		mockRegistryAgentResolver:      mockRegistryAgentResolver,
+		mockRemoteAgentCardRequester:   mockRemoteAgentCardRequester,
+		mockAgentCardSignatureVerifier: mockAgentCardSignatureVerifier,
 	}
 }
 
@@ -57,6 +66,16 @@ func cardWithResponses() *models.RemoteAgentCard {
 	}
 }
 
+// rawCardBody is what the node served; verification runs over these bytes, not the parsed struct.
+const rawCardBody = `{"protocol":"6022","endpoints":{"responses":"https://node.example/api/responses"}}`
+
+// signedCard is a node that made an integrity claim; cardWithResponses is one that made none.
+func signedCard() *models.RemoteAgentCard {
+	card := cardWithResponses()
+	card.Signatures = []models.AgentCardSignature{{Protected: "protected", Signature: "signature"}}
+	return card
+}
+
 func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 	t.Parallel()
 
@@ -66,7 +85,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().
 				Store("remote-agent-cards/agent.eth", gomock.Any(), gomock.Any()).
 				DoAndReturn(func(key, value string, ttl *time.Duration) error {
@@ -119,7 +138,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 					return "https://node.example", nil
 				}).
 				Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().
 				Store(gomock.Any(), gomock.Any(), gomock.Any()).
 				DoAndReturn(func(key, value string, ttl *time.Duration) error {
@@ -190,7 +209,7 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("not-json", nil).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 		}
 
@@ -204,6 +223,111 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, "6022", card.Protocol)
+		})
+	})
+
+	t.Run("Given the card carries no signature", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		}
+
+		t.Run("Should accept it without resolving a signer at all", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			initSuite(suite)
+			// Integrity is the node's responsibility; making no claim costs no registry read.
+			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain(gomock.Any()).Times(0)
+			suite.mockAgentCardSignatureVerifier.EXPECT().Verify(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			card, err := suite.sut.ResolveCard("agent.eth")
+
+			assert.NoError(t, err)
+			assert.Equal(t, "6022", card.Protocol)
+		})
+	})
+
+	t.Run("Given the card carries a signature that verifies", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(model_builders.NewRegistryAgentBuilder().WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").Build(), nil).Times(1)
+			suite.mockAgentCardSignatureVerifier.EXPECT().
+				Verify([]byte(rawCardBody), signedCard().Signatures, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
+				Return(nil).
+				Times(1)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		}
+
+		t.Run("Should verify against the registry signer and cache the card", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			initSuite(suite)
+
+			card, err := suite.sut.ResolveCard("agent.eth")
+
+			assert.NoError(t, err)
+			assert.Equal(t, "6022", card.Protocol)
+		})
+	})
+
+	t.Run("Given the card carries a signature that does not verify", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(model_builders.NewRegistryAgentBuilder().WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").Build(), nil).Times(1)
+			suite.mockAgentCardSignatureVerifier.EXPECT().
+				Verify(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(errors.New("signer mismatch")).
+				Times(1)
+		}
+
+		t.Run("Should fail and cache nothing", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			initSuite(suite)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			card, err := suite.sut.ResolveCard("agent.eth")
+
+			assert.Error(t, err)
+			assert.Nil(t, card)
+		})
+	})
+
+	t.Run("Given a signed card whose signer cannot be resolved", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
+			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(nil, errors.New("registry down")).Times(1)
+		}
+
+		t.Run("Should fail", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			initSuite(suite)
+			suite.mockAgentCardSignatureVerifier.EXPECT().Verify(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			_, err := suite.sut.ResolveCard("agent.eth")
+
+			assert.Error(t, err)
 		})
 	})
 

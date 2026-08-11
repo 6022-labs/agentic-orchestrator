@@ -19,11 +19,15 @@ const (
 	WELL_KNOWN_6022_PATH  = "/.well-known/6022"
 	PaymentRequiredHeader = "PAYMENT-REQUIRED"
 	wellKnown6022Protocol = "6022"
+
+	// Bounds what a hostile node can make us buffer and canonicalize.
+	maxWellKnownCardBytes = 1 << 20
 )
 
 // RemoteAgentClientInterface is pure transport
 type RemoteAgentClientInterface interface {
-	GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, error)
+	// GetWellKnownCard also returns the body verbatim — signature verification runs over those bytes.
+	GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error)
 	CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error)
 	CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error)
 }
@@ -50,30 +54,37 @@ func NewRemoteAgentClient(params NewRemoteAgentClientParams) *RemoteAgentClient 
 	}
 }
 
-func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, error) {
+func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error) {
 	url := strings.TrimRight(agentUrl, "/") + WELL_KNOWN_6022_PATH
 
 	httpResponse, err := client.wellKnownHttpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("HTTP request failed: %w", err)
+		return nil, nil, fmt.Errorf("HTTP request failed: %w", err)
 	}
 	defer httpResponse.Body.Close()
 
+	body, err := io.ReadAll(io.LimitReader(httpResponse.Body, maxWellKnownCardBytes+1))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to read 6022 card: %w", err)
+	}
+	if len(body) > maxWellKnownCardBytes {
+		return nil, nil, fmt.Errorf("6022 card exceeds %d bytes", maxWellKnownCardBytes)
+	}
+
 	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(body))
+		return nil, nil, fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(body))
 	}
 
 	var card models.ExternalWellKnownAgent6022
-	if err := json.NewDecoder(httpResponse.Body).Decode(&card); err != nil {
-		return nil, fmt.Errorf("failed to decode 6022 card: %w", err)
+	if err := json.Unmarshal(body, &card); err != nil {
+		return nil, nil, fmt.Errorf("failed to decode 6022 card: %w", err)
 	}
 
 	if card.Protocol != wellKnown6022Protocol {
-		return nil, fmt.Errorf("unexpected protocol %q in 6022 card", card.Protocol)
+		return nil, nil, fmt.Errorf("unexpected protocol %q in 6022 card", card.Protocol)
 	}
 
-	return &card, nil
+	return &card, body, nil
 }
 
 func (client *RemoteAgentClient) CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error) {

@@ -41,12 +41,13 @@ func (m *MockRemoteAgentCardRequesterInterface) EXPECT() *MockRemoteAgentCardReq
 }
 
 // GetCard mocks base method.
-func (m *MockRemoteAgentCardRequesterInterface) GetCard(agentUrl string) (*models.RemoteAgentCard, error) {
+func (m *MockRemoteAgentCardRequesterInterface) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCard", agentUrl)
 	ret0, _ := ret[0].(*models.RemoteAgentCard)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]byte)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetCard indicates an expected call of GetCard.

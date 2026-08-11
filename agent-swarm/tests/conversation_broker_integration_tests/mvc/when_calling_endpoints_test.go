@@ -49,8 +49,8 @@ func (s *stubEnsUrlResolver) ResolveUrl(ensDomain string) (string, error) {
 
 type stubRemoteAgentCardRequester struct{}
 
-func (s *stubRemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, error) {
-	return nil, fmt.Errorf("no agent node in integration tests")
+func (s *stubRemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
+	return nil, nil, fmt.Errorf("no agent node in integration tests")
 }
 
 type stubCacheStorage struct{}
