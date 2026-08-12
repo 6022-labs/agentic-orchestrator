@@ -1,6 +1,23 @@
 {
     "components": {
         "schemas": {
+            "requests.PostBrokerCompletionToSlackRequest": {
+                "properties": {
+                    "collectionAddress": {
+                        "type": "string"
+                    },
+                    "collectionTokenId": {
+                        "type": "integer"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "conversationId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "requests.SetWalletOwnershipToSlackUserRequest": {
                 "properties": {
                     "challenge": {
@@ -24,6 +41,77 @@
         "url": ""
     },
     "paths": {
+        "/internal/broker/callback": {
+            "post": {
+                "description": "Receives an agent completion from the conversation broker and posts it to the originating Slack thread.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/requests.PostBrokerCompletionToSlackRequest",
+                                        "summary": "request",
+                                        "description": "Broker callback payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Broker callback payload",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Conversation broker completion callback",
+                "tags": [
+                    "BrokerCallback"
+                ]
+            }
+        },
         "/wallet/set-ownership-to-slack-user": {
             "post": {
                 "description": "Confirms wallet ownership for a Slack user by providing a signed challenge",
@@ -57,6 +145,16 @@
                             }
                         },
                         "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
                     },
                     "500": {
                         "content": {

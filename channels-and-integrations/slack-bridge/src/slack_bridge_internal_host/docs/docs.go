@@ -15,6 +15,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/internal/broker/callback": {
+            "post": {
+                "description": "Receives an agent completion from the conversation broker and posts it to the originating Slack thread.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "BrokerCallback"
+                ],
+                "summary": "Conversation broker completion callback",
+                "parameters": [
+                    {
+                        "description": "Broker callback payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PostBrokerCompletionToSlackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet/set-ownership-to-slack-user": {
             "post": {
                 "description": "Confirms wallet ownership for a Slack user by providing a signed challenge",
@@ -46,6 +98,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -57,6 +115,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "requests.PostBrokerCompletionToSlackRequest": {
+            "type": "object",
+            "properties": {
+                "collectionAddress": {
+                    "type": "string"
+                },
+                "collectionTokenId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "conversationId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.SetWalletOwnershipToSlackUserRequest": {
             "type": "object",
             "properties": {
