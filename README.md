@@ -1,6 +1,6 @@
 # AgenticAI Orchestrator
 
-This repository owns the code for the AgenticAI Orchestrator. The orchestrator mirrors on-chain agent identities (registry + chain synchronizer), brokers multi-agent conversations, and invokes each agent's own runtime (agentic-agent-node) discovered via ENS CCIP-Read and its `/.well-known/6022` card. Bridges (Slack, the web console) are thin translators that speak the broker's HTTP contract.
+This repository owns the code for the AgenticAI Orchestrator. The orchestrator mirrors on-chain agent identities (registry + chain synchronizer), brokers multi-agent conversations, and invokes each agent's own runtime (agentic-agent-node) discovered via its ENS url record in the AgentEnsRegistry and its `/.well-known/6022` card. Bridges (Slack, the web console) are thin translators that speak the broker's HTTP contract.
 
 ## How to run the orchestrator
 

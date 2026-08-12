@@ -1,0 +1,15 @@
+{
+  "_comment": "Well-known AgentEnsRegistry contract addresses per EVM chain id. An explicit agent_ens_registry.smart_contract_address setting overrides these.",
+  "registries": [
+    {
+      "chainId": 137,
+      "name": "polygon-mainnet",
+      "address": "0x23dbc335f966d9869940FB55f61E919118AAD236"
+    },
+    {
+      "chainId": 80002,
+      "name": "polygon-amoy",
+      "address": "0x37c5879529E5b0241663ed40feeebb2326BBEE0d"
+    }
+  ]
+}

@@ -1,98 +1,61 @@
 package services_test
 
 import (
-	"encoding/hex"
+	"context"
 	"errors"
-	"net/http"
-	"net/http/httptest"
+	"math/big"
 	"testing"
 
+	contract_abi "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/abi"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/helpers"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_blockchain_mocks/clients_mocks"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
-const resolverAddressForTest = "0xa3f6011779B55BB155BDAcd25Dd5Bcb9f5597646"
-
-// fakeDataError mimics an rpc.DataError revert carrying ABI-encoded data.
-type fakeDataError struct {
-	data string
-}
-
-func (e *fakeDataError) Error() string          { return "execution reverted" }
-func (e *fakeDataError) ErrorData() interface{} { return e.data }
+const (
+	agentEnsRegistryAddressForTest = "0xa3f6011779B55BB155BDAcd25Dd5Bcb9f5597646"
+	resolvableEnsDomain            = "agent.collection.80002.6022.eth"
+)
 
 type WhenResolvingEnsUrlTestingSuite struct {
 	sut *services.EnsUrlResolver
 
-	mockEthCaller *clients_mocks.MockEthCallerInterface
+	mockEthClient *clients_mocks.MockEthClientInterface
+	sentCall      ethereum.CallMsg
 }
 
 func WhenResolvingEnsUrlBeforeEach(t *testing.T) *WhenResolvingEnsUrlTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockEthCaller := clients_mocks.NewMockEthCallerInterface(mockController)
-
-	sut := services.NewEnsUrlResolver(services.NewEnsUrlResolverParams{
-		Logger:     zap.NewNop(),
-		EthCaller:  mockEthCaller,
-		HttpClient: http.DefaultClient,
-		EnsResolverSettings: &settings.EnsResolverSettings{
-			RpcUrl:                       "http://localhost:0",
-			RegistryAddress:              "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
-			GatewayRequestTimeoutSeconds: 5,
-		},
-	})
+	mockEthClient := clients_mocks.NewMockEthClientInterface(mockController)
 
 	return &WhenResolvingEnsUrlTestingSuite{
-		sut: sut,
+		sut: services.NewEnsUrlResolver(
+			zap.NewNop(),
+			mockEthClient,
+			&settings.BlockchainSettings{ChainId: 80002},
+			&settings.RpcNodeSettings{RequestTimeoutSeconds: 10},
+			&settings.AgentEnsRegistrySettings{
+				SmartContractAddress: common.HexToAddress(agentEnsRegistryAddressForTest),
+			},
+		),
 
-		mockEthCaller: mockEthCaller,
+		mockEthClient: mockEthClient,
 	}
 }
 
-func packOffchainLookupRevertHex(t *testing.T, gatewayUrl string) string {
-	addressType, _ := abi.NewType("address", "", nil)
-	stringsType, _ := abi.NewType("string[]", "", nil)
-	bytesType, _ := abi.NewType("bytes", "", nil)
-	bytes4Type, _ := abi.NewType("bytes4", "", nil)
-
-	args := abi.Arguments{{Type: addressType}, {Type: stringsType}, {Type: bytesType}, {Type: bytes4Type}, {Type: bytesType}}
-	packed, err := args.Pack(common.HexToAddress(resolverAddressForTest), []string{gatewayUrl}, []byte{1}, [4]byte{1, 2, 3, 4}, []byte{2})
-	assert.NoError(t, err)
-
-	selector := crypto.Keccak256([]byte("OffchainLookup(address,string[],bytes,bytes4,bytes)"))[:4]
-	return "0x" + hex.EncodeToString(append(selector, packed...))
-}
-
-func packedResolverAddressReturn(t *testing.T) []byte {
-	addressType, _ := abi.NewType("address", "", nil)
-	returnData, err := abi.Arguments{{Type: addressType}}.Pack(common.HexToAddress(resolverAddressForTest))
-	assert.NoError(t, err)
-
-	return returnData
-}
-
-func registryDiscoveryReturningResolver(suite *WhenResolvingEnsUrlTestingSuite, t *testing.T) *gomock.Call {
-	return suite.mockEthCaller.EXPECT().
-		CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(packedResolverAddressReturn(t), nil).
-		Times(1)
-}
-
 func packedTextReturn(t *testing.T, url string) []byte {
-	stringType, _ := abi.NewType("string", "", nil)
-	innerResult, err := abi.Arguments{{Type: stringType}}.Pack(url)
+	stringType, err := abi.NewType("string", "", nil)
 	assert.NoError(t, err)
 
-	bytesType, _ := abi.NewType("bytes", "", nil)
-	returnData, err := abi.Arguments{{Type: bytesType}}.Pack(innerResult)
+	returnData, err := abi.Arguments{{Type: stringType}}.Pack(url)
 	assert.NoError(t, err)
 
 	return returnData
@@ -101,194 +64,134 @@ func packedTextReturn(t *testing.T, url string) []byte {
 func TestWhenResolvingEnsUrl(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given the resolver reverts with OffchainLookup and the gateway answers", func(t *testing.T) {
+	t.Run("Given the registry holds a url text record", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should follow the gateway and return the verified url", func(t *testing.T) {
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().
+				CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, call ethereum.CallMsg, _ *big.Int) ([]byte, error) {
+					suite.sentCall = call
+					return packedTextReturn(t, "https://node.example/"), nil
+				}).
+				Times(1)
+		}
+
+		t.Run("Should return it in a single call, without a trailing slash", func(t *testing.T) {
 			t.Parallel()
 
-			gatewayServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, http.MethodGet, r.Method)
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{"data":"0x1234"}`))
-			}))
-			defer gatewayServer.Close()
-
 			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
 
-			revertHex := packOffchainLookupRevertHex(t, gatewayServer.URL+"/{sender}/{data}.json")
-
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, &fakeDataError{data: revertHex}).
-					Times(1),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(packedTextReturn(t, "https://node.example/"), nil).
-					Times(1),
-			)
-
-			url, err := suite.sut.ResolveUrl("agent.collection.80002.6022.eth")
+			url, err := suite.sut.ResolveUrl(resolvableEnsDomain)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)
 		})
-	})
 
-	t.Run("Given the resolver does not revert", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should return an error", func(t *testing.T) {
+		t.Run("Should call text(namehash, \"url\") on the configured registry", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
 
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return([]byte{}, nil).
-					Times(1),
-			)
-
-			_, err := suite.sut.ResolveUrl("agent.eth")
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given the revert carries no data", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should return a clear error about missing revert data", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingEnsUrlBeforeEach(t)
-
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("execution reverted")).
-					Times(1),
-			)
-
-			_, err := suite.sut.ResolveUrl("agent.eth")
-
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "revert data")
-		})
-	})
-
-	t.Run("Given the gateway fails", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should return an error", func(t *testing.T) {
-			t.Parallel()
-
-			gatewayServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusInternalServerError)
-			}))
-			defer gatewayServer.Close()
-
-			suite := WhenResolvingEnsUrlBeforeEach(t)
-
-			revertHex := packOffchainLookupRevertHex(t, gatewayServer.URL+"/{sender}/{data}.json")
-
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, &fakeDataError{data: revertHex}).
-					Times(1),
-			)
-
-			_, err := suite.sut.ResolveUrl("agent.eth")
-
-			assert.Error(t, err)
-		})
-	})
-
-	t.Run("Given the on-chain proof verification fails", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should return an error", func(t *testing.T) {
-			t.Parallel()
-
-			gatewayServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				_, _ = w.Write([]byte(`{"data":"0x1234"}`))
-			}))
-			defer gatewayServer.Close()
-
-			suite := WhenResolvingEnsUrlBeforeEach(t)
-
-			revertHex := packOffchainLookupRevertHex(t, gatewayServer.URL+"/{sender}/{data}.json")
-
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, &fakeDataError{data: revertHex}).
-					Times(1),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("UntrustedSigner")).
-					Times(1),
-			)
-
-			_, err := suite.sut.ResolveUrl("agent.eth")
-
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "resolveWithProof")
-		})
-	})
-
-	t.Run("Given no resolver is registered for the name or any parent", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should return an error without calling any resolver", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingEnsUrlBeforeEach(t)
-
-			addressType, _ := abi.NewType("address", "", nil)
-			zeroReturn, err := abi.Arguments{{Type: addressType}}.Pack(common.Address{})
+			_, err := suite.sut.ResolveUrl(resolvableEnsDomain)
 			assert.NoError(t, err)
 
-			suite.mockEthCaller.EXPECT().
-				CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(zeroReturn, nil).
-				Times(2)
+			registryAbi, err := contract_abi.AgentEnsRegistryMetaData.GetAbi()
+			assert.NoError(t, err)
 
-			_, err = suite.sut.ResolveUrl("agent.eth")
+			expectedQuery, err := registryAbi.Pack("text", helpers.Namehash(resolvableEnsDomain), "url")
+			assert.NoError(t, err)
 
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "no resolver registered")
+			if assert.NotNil(t, suite.sentCall.To) {
+				assert.Equal(t, common.HexToAddress(agentEnsRegistryAddressForTest), *suite.sentCall.To)
+			}
+			assert.Equal(t, expectedQuery, suite.sentCall.Data)
 		})
 	})
 
-	t.Run("Given the revert is not an OffchainLookup", func(t *testing.T) {
+	t.Run("Given the agent published no url", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return an error", func(t *testing.T) {
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().
+				CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(packedTextReturn(t, ""), nil).
+				Times(1)
+		}
+
+		t.Run("Should return an empty url rather than an error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
 
-			gomock.InOrder(
-				registryDiscoveryReturningResolver(suite, t),
-				suite.mockEthCaller.EXPECT().
-					CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, &fakeDataError{data: "0xdeadbeef00"}).
-					Times(1),
-			)
+			url, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+
+			assert.NoError(t, err)
+			assert.Empty(t, url)
+		})
+	})
+
+	t.Run("Given the rpc call fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().
+				CallContract(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("boom")).
+				Times(1)
+		}
+
+		t.Run("Should propagate the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+
+			assert.Error(t, err)
+		})
+	})
+
+	// Reading another chain's name against this registry would answer empty, not wrong-but-obvious.
+	t.Run("Given a name belonging to another chain", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().CallContract(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		}
+
+		t.Run("Should refuse before calling the chain", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.ResolveUrl("agent.collection.1.6022.eth")
+
+			assert.ErrorContains(t, err, "belongs to chain 1")
+		})
+	})
+
+	t.Run("Given a name with no chain id label", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().CallContract(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		}
+
+		t.Run("Should refuse before calling the chain", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
 
 			_, err := suite.sut.ResolveUrl("agent.eth")
 
 			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "OffchainLookup")
 		})
 	})
 }

@@ -37,7 +37,7 @@ func (c *RemoteAgentsController) InitRoutes(app fiber.Router) {
 }
 
 // @Summary Get Agent Node Card
-// @Description Resolves the agent's runtime via ENS CCIP-Read and returns its cached /.well-known/6022 card.
+// @Description Resolves the agent's runtime from the AgentEnsRegistry and returns its cached /.well-known/6022 card.
 // @Tags Agent Cards
 // @Produce json
 // @Param ensDomain path string true "Agent ENS domain"
@@ -58,7 +58,7 @@ func (c *RemoteAgentsController) GetCard(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get Agent Node URL
-// @Description Resolves the agent's node URL from its ENS url text record via CCIP-Read.
+// @Description Resolves the agent's node URL from its ENS url text record in the AgentEnsRegistry.
 // @Tags Agent Urls
 // @Produce json
 // @Param ensDomain path string true "Agent ENS domain"

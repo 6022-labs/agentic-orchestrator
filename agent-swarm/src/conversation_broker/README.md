@@ -9,7 +9,7 @@ All messages — whether authored by a user or an agent — are persisted exclus
 **Agent completion flow:**
 
 ```
-Daemon → resolve ENS (CCIP-Read) → /.well-known/6022 → agent node /responses → completion
+Daemon → resolve ENS url record (AgentEnsRegistry) → /.well-known/6022 → agent node /responses → completion
   → callback POST to bridge
     → bridge delivers to platform (e.g. Slack chat.postMessage)
     → bridge calls IngestMessage(conversationId, participantId, content)

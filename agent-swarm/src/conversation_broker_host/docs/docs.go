@@ -804,7 +804,7 @@ const docTemplate = `{
         },
         "/remote-agents/{ensDomain}/card": {
             "get": {
-                "description": "Resolves the agent's runtime via ENS CCIP-Read and returns its cached /.well-known/6022 card.",
+                "description": "Resolves the agent's runtime from the AgentEnsRegistry and returns its cached /.well-known/6022 card.",
                 "produces": [
                     "application/json"
                 ],
@@ -845,7 +845,7 @@ const docTemplate = `{
         },
         "/remote-agents/{ensDomain}/url": {
             "get": {
-                "description": "Resolves the agent's node URL from its ENS url text record via CCIP-Read.",
+                "description": "Resolves the agent's node URL from its ENS url text record in the AgentEnsRegistry.",
                 "produces": [
                     "application/json"
                 ],

@@ -1,9 +1,6 @@
 package configurations
 
 import (
-	"net/http"
-	"time"
-
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/services"
@@ -13,21 +10,24 @@ import (
 )
 
 func AddConversationBrokerBlockchainConfiguration(container *dig.Container) {
-	err := container.Provide(settings.NewEnsResolverSettings)
+	err := container.Provide(settings.NewBlockchainSettings)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(func(ensResolverSettings *settings.EnsResolverSettings) (clients.EthCallerInterface, error) {
-		return ethclient.Dial(ensResolverSettings.RpcUrl)
+	err = container.Provide(settings.NewRpcNodeSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewAgentEnsRegistrySettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (clients.EthClientInterface, error) {
+		return ethclient.Dial(rpcNodeSettings.HttpUrl)
 	})
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(func(ensResolverSettings *settings.EnsResolverSettings) *http.Client {
-		return &http.Client{Timeout: time.Duration(ensResolverSettings.GatewayRequestTimeoutSeconds) * time.Second}
-	}, dig.Name("ens-gateway-http-client"))
 	if err != nil {
 		panic(err)
 	}
