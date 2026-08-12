@@ -42,6 +42,7 @@ services:
       - DECENTRALIZED_DOMAIN_NAME_PROVIDER__DOMAIN_EXTENSION=eth
       - RPC_NODE__WS_URL=ws://evm-node:8545
       - RPC_NODE__HTTP_URL=http://evm-node:8545
+      - RPC_NODE__REQUEST_TIMEOUT_SECONDS=10
       - SYNC__START_BLOCK=1
       - SYNC__BLOCK_FINALIZATION_DELAY=2s
     networks:

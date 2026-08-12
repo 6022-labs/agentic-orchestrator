@@ -1,10 +1,15 @@
 package configurations
 
 import (
+	"context"
+	"net/http"
+	"time"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"go.uber.org/dig"
 )
 
@@ -70,8 +75,22 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	// Only the http client is time-bounded: the ws one carries long-lived subscriptions.
 	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
-		return ethclient.Dial(rpcNodeSettings.HttpUrl)
+		httpClient := &http.Client{
+			Timeout: time.Duration(rpcNodeSettings.RequestTimeoutSeconds) * time.Second,
+		}
+
+		rpcClient, err := rpc.DialOptions(
+			context.Background(),
+			rpcNodeSettings.HttpUrl,
+			rpc.WithHTTPClient(httpClient),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		return ethclient.NewClient(rpcClient), nil
 	}, dig.Name("http"))
 	if err != nil {
 		panic(err)

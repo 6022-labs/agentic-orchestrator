@@ -13,13 +13,14 @@ import (
 func TestWhenLoadingRpcNodeSettings(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given configured urls", func(t *testing.T) {
+	t.Run("Given configured values", func(t *testing.T) {
 		t.Parallel()
 
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
-			"rpc_node.ws_url":   "wss://example.com/ws",
-			"rpc_node.http_url": "https://example.com/rpc",
+			"rpc_node.ws_url":                  "wss://example.com/ws",
+			"rpc_node.http_url":                "https://example.com/rpc",
+			"rpc_node.request_timeout_seconds": 30,
 		}, "."), nil)
 
 		t.Run("Should load them", func(t *testing.T) {
@@ -30,6 +31,25 @@ func TestWhenLoadingRpcNodeSettings(t *testing.T) {
 			assert.NotNil(t, settings)
 			assert.Equal(t, "wss://example.com/ws", settings.WsUrl)
 			assert.Equal(t, "https://example.com/rpc", settings.HttpUrl)
+			assert.Equal(t, uint64(30), settings.RequestTimeoutSeconds)
+		})
+	})
+
+	t.Run("Given no configured timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"rpc_node.ws_url":   "wss://example.com/ws",
+			"rpc_node.http_url": "https://example.com/rpc",
+		}, "."), nil)
+
+		t.Run("Should fall back to the default", func(t *testing.T) {
+			t.Parallel()
+
+			settings := rpc_node_settings.NewRpcNodeSettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(10), settings.RequestTimeoutSeconds)
 		})
 	})
 

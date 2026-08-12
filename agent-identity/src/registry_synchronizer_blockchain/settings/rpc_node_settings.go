@@ -9,13 +9,17 @@ import (
 
 const RpcNodeSettingsKey = "rpc_node"
 
+// RpcNodeSettings holds the read timeout for http only; ws carries long-lived subscriptions.
 type RpcNodeSettings struct {
-	WsUrl   string `koanf:"ws_url"`
-	HttpUrl string `koanf:"http_url"`
+	WsUrl                 string `koanf:"ws_url"`
+	HttpUrl               string `koanf:"http_url"`
+	RequestTimeoutSeconds uint64 `koanf:"request_timeout_seconds"`
 }
 
 func NewRpcNodeSettings(logger *zap.Logger, k *koanf.Koanf) *RpcNodeSettings {
-	var settings RpcNodeSettings
+	settings := RpcNodeSettings{
+		RequestTimeoutSeconds: 10,
+	}
 	if err := k.Unmarshal(RpcNodeSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal rpc node settings", zap.Error(err))
 	}
@@ -29,6 +33,10 @@ func NewRpcNodeSettings(logger *zap.Logger, k *koanf.Koanf) *RpcNodeSettings {
 
 	if len(settings.HttpUrl) == 0 {
 		logger.Fatal("please set your rpc_node.http_url value in your configuration")
+	}
+
+	if settings.RequestTimeoutSeconds == 0 {
+		settings.RequestTimeoutSeconds = 10
 	}
 
 	return &settings
