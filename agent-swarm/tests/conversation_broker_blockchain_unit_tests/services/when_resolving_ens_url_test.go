@@ -176,6 +176,25 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a name whose chain id label is not a number", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingEnsUrlTestingSuite) {
+			suite.mockEthClient.EXPECT().CallContract(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		}
+
+		t.Run("Should refuse before calling the chain", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingEnsUrlBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.ResolveUrl("agent.collection.polygon.6022.eth")
+
+			assert.ErrorContains(t, err, "non-numeric chain id label")
+		})
+	})
+
 	t.Run("Given a name with no chain id label", func(t *testing.T) {
 		t.Parallel()
 
