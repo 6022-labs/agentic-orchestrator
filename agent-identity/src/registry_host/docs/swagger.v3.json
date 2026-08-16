@@ -225,6 +225,16 @@
                         },
                         "description": "OK"
                     },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "Agent not found"
+                    },
                     "500": {
                         "content": {
                             "application/json": {

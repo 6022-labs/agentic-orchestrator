@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -59,7 +60,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker fails", func(t *testing.T) {
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
@@ -70,6 +71,26 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentUrlBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
+			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(nil, errors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentUrlBeforeEach(t)

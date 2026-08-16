@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	stderrors "errors"
 	"net/http"
 	"testing"
 
@@ -85,6 +86,49 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+				Body:         []byte("boom"),
+			}, nil).Times(1)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(nil, stderrors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+
+			assert.Error(t, err)
 			assert.Nil(t, result)
 		})
 	})

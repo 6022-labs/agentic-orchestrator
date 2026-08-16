@@ -43,7 +43,7 @@ func (c *BrokerCallbackController) InitRoutes(app fiber.Router) {
 // @Failure      400 {string} string "Bad Request"
 // @Failure      404 {string} string "Not Found"
 // @Failure      500 {string} string "Internal Server Error"
-// @Router       /internal/broker/callback [post]
+// @Router       /broker/callback [post]
 func (c *BrokerCallbackController) Handle(ctx *fiber.Ctx) error {
 	request := new(requests.PostBrokerCompletionToSlackRequest)
 	if err := ctx.BodyParser(request); err != nil {

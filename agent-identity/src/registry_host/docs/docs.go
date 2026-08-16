@@ -118,6 +118,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentResponse"
                         }
                     },
+                    "404": {
+                        "description": "Agent not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {

@@ -2,6 +2,7 @@ package configurations
 
 import (
 	"net/http"
+	"time"
 
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_swarm_conversation_broker/clients"
@@ -17,16 +18,11 @@ func AddSlackBridgeHttpAgentSwarmConversationBrokerConfiguration(container *dig.
 		panic(err)
 	}
 
-	err = container.Provide(func() *http.Client {
-		return http.DefaultClient
-	}, dig.Name("conversation-broker-http-client"))
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(
-		clients.NewConversationBrokerClient,
-		dig.As(new(clients.ConversationBrokerClientInterface)),
+		func(conversationBrokerSettings *settings.ConversationBrokerSettings) (clients.ClientWithResponsesInterface, error) {
+			httpClient := &http.Client{Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second}
+			return clients.NewClientWithResponses(conversationBrokerSettings.BaseUrl, clients.WithHTTPClient(httpClient))
+		},
 	)
 	if err != nil {
 		panic(err)

@@ -66,4 +66,57 @@ func TestWhenLoadingAgentIdentityRegistrySettings(t *testing.T) {
 			assert.Equal(t, "https://registry.example.com", settings.BaseUrl)
 		})
 	})
+
+	t.Run("Given no request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"agent_identity_registry.base_url": "https://registry.example.com",
+		}, "."), nil)
+
+		t.Run("Should default to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(30), settings.RequestTimeoutSeconds)
+		})
+	})
+
+	t.Run("Given a zero request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"agent_identity_registry.base_url":                "https://registry.example.com",
+			"agent_identity_registry.request_timeout_seconds": 0,
+		}, "."), nil)
+
+		t.Run("Should fall back to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(30), settings.RequestTimeoutSeconds)
+		})
+	})
+
+	t.Run("Given a configured request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"agent_identity_registry.base_url":                "https://registry.example.com",
+			"agent_identity_registry.request_timeout_seconds": 5,
+		}, "."), nil)
+
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
+
+			settings := registry_settings.NewAgentIdentityRegistrySettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(5), settings.RequestTimeoutSeconds)
+		})
+	})
 }

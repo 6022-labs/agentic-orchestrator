@@ -17,8 +17,8 @@ import (
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	db_configuration "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/configurations"
+	registry_clients "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/clients"
 	registry_configuration "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/configurations"
-	registry_models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_mvc"
 	mvc_configuration "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_mvc/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests"
@@ -27,6 +27,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -36,7 +37,7 @@ type httpSuite struct {
 	dbName        string
 	app           *fiber.App
 	registryStub  *httptest.Server
-	registryAgent *registry_models.ExternalAgentResponse
+	registryAgent *registry_clients.ResponsesAgentResponse
 }
 
 // Stubs satisfy the broker's node-discovery and cache ports; the http flow
@@ -183,12 +184,12 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			//    + a user participant
 			agentId := uuid.New()
 			tokenId := uint64(1)
-			suite.registryAgent = &registry_models.ExternalAgentResponse{
-				ID:                agentId,
-				Attributes:        map[string]string{"role": "clone"},
-				EnsDomain:         "demo.eth",
-				CollectionAddress: "0xabc",
-				CollectionTokenId: &tokenId,
+			suite.registryAgent = &registry_clients.ResponsesAgentResponse{
+				Id:                lo.ToPtr(agentId.String()),
+				Attributes:        lo.ToPtr(map[string]string{"role": "clone"}),
+				EnsDomain:         lo.ToPtr("demo.eth"),
+				CollectionAddress: lo.ToPtr("0xabc"),
+				CollectionTokenId: lo.ToPtr(int(tokenId)),
 			}
 			resp, _ = suite.do(http.MethodPost, "/participants/agents", &requests.RegisterAgentRequest{
 				CollectionAddress: "0xabc",

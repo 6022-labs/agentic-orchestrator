@@ -2,6 +2,7 @@ package configurations
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
@@ -17,19 +18,14 @@ func AddConversationBrokerHttpChannelsAndIntegrationsBridgeConfiguration(contain
 		panic(err)
 	}
 
-	err = container.Provide(func(s *settings.BridgeCallbackSettings) *http.Client {
-		return &http.Client{
-			Timeout: time.Duration(s.RequestTimeoutSeconds) * time.Second,
+	err = container.Provide(func(bridgeCallbackSettings *settings.BridgeCallbackSettings) clients.ClientFactory {
+		httpClient := &http.Client{
+			Timeout: time.Duration(bridgeCallbackSettings.RequestTimeoutSeconds) * time.Second,
 		}
-	}, dig.Name("bridge-callback-http-client"))
-	if err != nil {
-		panic(err)
-	}
-
-	err = container.Provide(
-		clients.NewBridgeCallbackClient,
-		dig.As(new(clients.BridgeCallbackClientInterface)),
-	)
+		return func(baseUrl string) (clients.ClientWithResponsesInterface, error) {
+			return clients.NewClientWithResponses(strings.TrimRight(baseUrl, "/"), clients.WithHTTPClient(httpClient))
+		}
+	})
 	if err != nil {
 		panic(err)
 	}

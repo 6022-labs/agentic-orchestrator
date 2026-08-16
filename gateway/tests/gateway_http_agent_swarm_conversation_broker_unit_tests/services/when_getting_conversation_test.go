@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	stderrors "errors"
 	"net/http"
 	"testing"
 
@@ -84,6 +85,51 @@ func TestWhenGettingConversation(t *testing.T) {
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingConversationTestingSuite, conversationId uuid.UUID) {
+			suite.mockClient.EXPECT().GetConversationsIdWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdResponse{
+				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+				Body:         []byte("boom"),
+			}, nil).Times(1)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingConversationBeforeEach(t)
+			conversationId := uuid.New()
+			initSuite(suite, conversationId)
+
+			result, err := suite.sut.GetConversation(conversationId)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingConversationTestingSuite, conversationId uuid.UUID) {
+			suite.mockClient.EXPECT().GetConversationsIdWithResponse(gomock.Any(), conversationId.String()).Return(nil, stderrors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingConversationBeforeEach(t)
+			conversationId := uuid.New()
+			initSuite(suite, conversationId)
+
+			result, err := suite.sut.GetConversation(conversationId)
+
+			assert.Error(t, err)
 			assert.Nil(t, result)
 		})
 	})

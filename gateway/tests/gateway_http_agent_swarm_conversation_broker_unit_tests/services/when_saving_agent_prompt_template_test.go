@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	stderrors "errors"
 	"io"
 	"net/http"
 	"testing"
@@ -124,7 +125,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker fails", func(t *testing.T) {
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
@@ -135,6 +136,26 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(nil, stderrors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)

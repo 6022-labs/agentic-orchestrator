@@ -1,11 +1,13 @@
 ---
 name: go-http-client-test-conventions
-description: Enforce consistent Go HTTP client unit test conventions for this repository using net/http/httptest fake servers, when_*_test.go naming, Given/Should nested subtests, and BeforeEach/AfterEach suite setup that captures request method, path, headers, and body. Use when creating or refactoring unit tests for HTTP client wrappers under tests/*_unit_tests/clients and whenever a client test needs a stub upstream server instead of a gomock transport.
+description: Enforce consistent Go HTTP client unit test conventions for HAND-WRITTEN clients only (e.g. conversation_broker_http_remote_agent, slack_bridge_http_slack) using net/http/httptest fake servers, when_*_test.go naming, Given/Should nested subtests, and BeforeEach/AfterEach suite setup. Do NOT use for generated oapi-codegen client wrappers — those are tested with gomock on clients.ClientWithResponsesInterface, never httptest.
 ---
 
 # Go HTTP Client Test Conventions
 
-Apply this workflow to keep HTTP client unit tests structurally consistent across the repository. These tests exercise a thin client wrapper against a real `httptest.Server` so serialization, URL building, method, headers, and status-code handling are verified end-to-end at the transport boundary — without mocking `http.RoundTripper`.
+**Scope: hand-written HTTP clients only** (today: `conversation_broker_http_remote_agent`, `slack_bridge_http_slack`). Adapters built on generated `oapi_client.gen.go` clients test their wrapper services with a gomock `MockClientWithResponsesInterface` instead — no httptest, no transport tests (the transport is generated code).
+
+Apply this workflow to keep hand-written HTTP client unit tests structurally consistent across the repository. These tests exercise a thin client wrapper against a real `httptest.Server` so serialization, URL building, method, headers, and status-code handling are verified end-to-end at the transport boundary — without mocking `http.RoundTripper`.
 
 ## Workflow
 

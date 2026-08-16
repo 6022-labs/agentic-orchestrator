@@ -11,13 +11,16 @@ import (
 const ConversationBrokerSettingsKey = "conversation_broker"
 
 type ConversationBrokerSettings struct {
-	BaseUrl     string    `koanf:"base_url"`
-	CallbackUrl string    `koanf:"callback_url"`
-	BridgeID    uuid.UUID `koanf:"bridge_id"`
+	BaseUrl               string    `koanf:"base_url"`
+	CallbackUrl           string    `koanf:"callback_url"`
+	BridgeID              uuid.UUID `koanf:"bridge_id"`
+	RequestTimeoutSeconds uint64    `koanf:"request_timeout_seconds"`
 }
 
 func NewConversationBrokerSettings(logger *zap.Logger, k *koanf.Koanf) *ConversationBrokerSettings {
-	var settings ConversationBrokerSettings
+	settings := ConversationBrokerSettings{
+		RequestTimeoutSeconds: 30,
+	}
 	if err := k.Unmarshal(ConversationBrokerSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal conversation_broker settings", zap.Error(err))
 	}
@@ -33,6 +36,9 @@ func NewConversationBrokerSettings(logger *zap.Logger, k *koanf.Koanf) *Conversa
 	}
 	if settings.BridgeID == uuid.Nil {
 		logger.Fatal("please set your conversation_broker.bridge_id value in your configuration (any stable UUID)")
+	}
+	if settings.RequestTimeoutSeconds == 0 {
+		settings.RequestTimeoutSeconds = 30
 	}
 	settings.BaseUrl = strings.TrimRight(settings.BaseUrl, "/")
 	return &settings

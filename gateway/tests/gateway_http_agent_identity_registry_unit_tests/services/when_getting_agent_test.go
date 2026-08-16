@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -88,7 +89,7 @@ func TestWhenGettingAgent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the registry fails", func(t *testing.T) {
+	t.Run("Given the registry returns an unexpected status", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
@@ -99,6 +100,26 @@ func TestWhenGettingAgent(t *testing.T) {
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.GetAgent("0xabc", 7)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentTestingSuite) {
+			suite.mockClient.EXPECT().GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).Return(nil, errors.New("registry down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentBeforeEach(t)

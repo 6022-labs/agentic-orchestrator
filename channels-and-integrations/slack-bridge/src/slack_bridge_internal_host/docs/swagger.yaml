@@ -24,7 +24,7 @@ info:
   title: Slack Bridge Internal API
   version: "1.0"
 paths:
-  /internal/broker/callback:
+  /broker/callback:
     post:
       consumes:
       - application/json

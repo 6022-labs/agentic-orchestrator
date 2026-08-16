@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	stderrors "errors"
 	"net/http"
 	"testing"
 
@@ -78,7 +79,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker fails", func(t *testing.T) {
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
@@ -89,6 +90,26 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenForceConcludingConversationBeforeEach(t)
+			conversationId := uuid.New()
+			initSuite(suite, conversationId)
+
+			err := suite.sut.ForceConcludeConversation(conversationId)
+
+			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
+			suite.mockClient.EXPECT().PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).Return(nil, stderrors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForceConcludingConversationBeforeEach(t)

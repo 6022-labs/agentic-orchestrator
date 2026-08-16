@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -84,7 +85,7 @@ func TestWhenListingConversations(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker fails", func(t *testing.T) {
+	t.Run("Given the broker returns an unexpected status", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
@@ -95,6 +96,26 @@ func TestWhenListingConversations(t *testing.T) {
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenListingConversationsBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.ListConversations(nil, nil)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	})
+
+	t.Run("Given the transport fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenListingConversationsTestingSuite) {
+			suite.mockClient.EXPECT().GetConversationsWithResponse(gomock.Any(), gomock.Any()).Return(nil, errors.New("broker down")).Times(1)
+		}
+
+		t.Run("Should return the transport error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenListingConversationsBeforeEach(t)

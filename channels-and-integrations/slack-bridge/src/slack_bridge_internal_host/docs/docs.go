@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/internal/broker/callback": {
+        "/broker/callback": {
             "post": {
                 "description": "Receives an agent completion from the conversation broker and posts it to the originating Slack thread.",
                 "consumes": [

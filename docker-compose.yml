@@ -17,7 +17,7 @@ services:
       - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
       - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTIONS_MANAGER_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
       - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTION_CREATOR_ADDRESS=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
-      - PLATFORM_BRIDGES__SLACK_BRIDGE_URL=http://slack-bridge-internal-host:3000
+      - PLATFORM_BRIDGES__SLACK_BRIDGE__BASE_URL=http://slack-bridge-internal-host:3000
     networks:
       orchestrator-network:
     depends_on:

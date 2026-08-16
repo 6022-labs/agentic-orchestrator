@@ -2,6 +2,7 @@ package configurations
 
 import (
 	"net/http"
+	"time"
 
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/clients"
@@ -16,16 +17,11 @@ func AddConversationBrokerHttpAgentIdentityRegistryConfiguration(container *dig.
 		panic(err)
 	}
 
-	err = container.Provide(func() *http.Client {
-		return http.DefaultClient
-	}, dig.Name("agent-identity-registry-http-client"))
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(
-		clients.NewAgentIdentityRegistryClient,
-		dig.As(new(clients.AgentIdentityRegistryClientInterface)),
+		func(agentIdentityRegistrySettings *settings.AgentIdentityRegistrySettings) (clients.ClientWithResponsesInterface, error) {
+			httpClient := &http.Client{Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second}
+			return clients.NewClientWithResponses(agentIdentityRegistrySettings.BaseUrl, clients.WithHTTPClient(httpClient))
+		},
 	)
 	if err != nil {
 		panic(err)

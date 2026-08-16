@@ -1,6 +1,9 @@
 package configurations
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	http_registry_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
 	http_registry_services "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/services"
@@ -16,7 +19,8 @@ func AddGatewayHttpAgentIdentityRegistryConfiguration(container *dig.Container) 
 
 	err = container.Provide(
 		func(settings *http_registry_settings.AgentIdentityRegistrySettings) (http_registry_clients.ClientWithResponsesInterface, error) {
-			return http_registry_clients.NewClientWithResponses(settings.BaseUrl)
+			httpClient := &http.Client{Timeout: time.Duration(settings.RequestTimeoutSeconds) * time.Second}
+			return http_registry_clients.NewClientWithResponses(settings.BaseUrl, http_registry_clients.WithHTTPClient(httpClient))
 		},
 	)
 	if err != nil {

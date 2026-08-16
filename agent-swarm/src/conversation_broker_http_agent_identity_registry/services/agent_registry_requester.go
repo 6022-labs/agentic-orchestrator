@@ -1,32 +1,55 @@
 package services
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/clients"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/mappings"
 )
 
 type AgentRegistryRequester struct {
-	client clients.AgentIdentityRegistryClientInterface
+	client clients.ClientWithResponsesInterface
 }
 
-func NewAgentRegistryRequester(client clients.AgentIdentityRegistryClientInterface) *AgentRegistryRequester {
+func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *AgentRegistryRequester {
 	return &AgentRegistryRequester{client: client}
 }
 
 func (r *AgentRegistryRequester) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
-	external, err := r.client.GetAgent(collectionAddress, collectionTokenId)
+	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
+		context.Background(),
+		collectionAddress,
+		int(collectionTokenId),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return external.ToRegistryAgent(), nil
+	if rsp.StatusCode() == http.StatusNotFound {
+		return nil, nil
+	}
+	if rsp.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
+	}
+
+	return (*mappings.ExternalAgentResponse)(rsp.JSON200).ToRegistryAgent(), nil
 }
 
 func (r *AgentRegistryRequester) GetMintedAgentByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
-	external, err := r.client.GetMintedAgentByEnsDomain(ensDomain)
+	rsp, err := r.client.GetAgentEnsEnsDomainWithResponse(context.Background(), ensDomain)
 	if err != nil {
 		return nil, err
 	}
 
-	return external.ToRegistryAgent(), nil
+	if rsp.StatusCode() == http.StatusNotFound {
+		return nil, nil
+	}
+	if rsp.JSON200 == nil {
+		return nil, fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
+	}
+
+	return (*mappings.ExternalAgentResponse)(rsp.JSON200).ToRegistryAgent(), nil
 }

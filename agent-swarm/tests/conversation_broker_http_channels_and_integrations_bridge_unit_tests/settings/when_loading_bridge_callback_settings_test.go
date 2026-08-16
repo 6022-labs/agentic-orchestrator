@@ -31,6 +31,23 @@ func TestWhenLoadingBridgeCallbackSettings(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a zero request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"bridge_callback.request_timeout_seconds": 0,
+		}, "."), nil)
+
+		t.Run("Should fall back to 30 seconds", func(t *testing.T) {
+			t.Parallel()
+
+			settings := bridge_callback_settings.NewBridgeCallbackSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 30, settings.RequestTimeoutSeconds)
+		})
+	})
+
 	t.Run("Given no configuration", func(t *testing.T) {
 		t.Parallel()
 

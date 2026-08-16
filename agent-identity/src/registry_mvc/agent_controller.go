@@ -48,6 +48,7 @@ func (controller *AgentController) RegisterRoutes(app fiber.Router) {
 // @Param        agentCollectionAddress path string true "Agent collection address"
 // @Param        agentCollectionTokenId path int true "Agent collection token ID"
 // @Success      200 {object} responses.AgentResponse
+// @Failure      404 {string} string "Agent not found"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
@@ -61,6 +62,9 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 	if err != nil {
 		controller.logger.Error("Failed to get agent", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	if response == nil {
+		return c.Status(fiber.StatusNotFound).SendString("Agent not found")
 	}
 
 	return c.JSON(response)

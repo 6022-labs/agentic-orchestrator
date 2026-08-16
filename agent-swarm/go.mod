@@ -18,6 +18,7 @@ require (
 	github.com/knadh/koanf/v2 v2.3.2
 	github.com/kyokomi/emoji/v2 v2.2.13
 	github.com/lib/pq v1.11.2
+	github.com/oapi-codegen/runtime v1.1.2
 	github.com/pressly/goose v2.7.0+incompatible
 	github.com/pressly/goose/v3 v3.27.0
 	github.com/redis/go-redis/v9 v9.10.0
@@ -54,6 +55,7 @@ require (
 	github.com/ProjectZKM/Ziren/crates/go-runtime/zkvm_runtime v0.0.0-20251001021608-1fe7b43fc4d6 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
