@@ -7,9 +7,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -20,7 +20,7 @@ type WhenSynchronizingSlackAgentTestingSuite struct {
 
 	mockAgentRequester       *interfaces_mocks.MockAgentRequesterInterface
 	mockSlackAgentRepository *repositories_mocks.MockSlackAgentRepositoryInterface
-	mockBrokerRequester         *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester      *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenSynchronizingSlackAgentBeforeEach(t *testing.T) *WhenSynchronizingSlackAgentTestingSuite {
@@ -41,7 +41,7 @@ func WhenSynchronizingSlackAgentBeforeEach(t *testing.T) *WhenSynchronizingSlack
 
 		mockAgentRequester:       mockAgentRequester,
 		mockSlackAgentRepository: mockSlackAgentRepository,
-		mockBrokerRequester:         mockBrokerRequester,
+		mockBrokerRequester:      mockBrokerRequester,
 	}
 }
 
@@ -186,15 +186,18 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 				})
 		}
 
-		t.Run("Should register the agent with the broker, store the broker participant id, and persist the row", func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			"Should register the agent with the broker, store the broker participant id, and persist the row",
+			func(t *testing.T) {
+				t.Parallel()
 
-			suite := WhenSynchronizingSlackAgentBeforeEach(t)
-			initSuite(suite)
+				suite := WhenSynchronizingSlackAgentBeforeEach(t)
+				initSuite(suite)
 
-			_, err := suite.sut.Sync(common_tests.RandomEthAddress().Hex(), 123)
+				_, err := suite.sut.Sync(common_tests.RandomEthAddress().Hex(), 123)
 
-			assert.Nil(t, err)
-		})
+				assert.Nil(t, err)
+			},
+		)
 	})
 }

@@ -24,7 +24,7 @@ func (c *BridgesController) InitRoutes(app fiber.Router) {
 }
 
 // @Summary Register Bridge
-// @Description Upserts a bridge instance. When the caller supplies `id` and the row already exists the broker returns 200 with the existing row; when the row does not exist (whether or not an id was provided) the broker returns 201 with the new row.
+// @Description Upserts a bridge: 200 with the existing row when the given `id` exists, 201 with the new row otherwise.
 // @Tags Bridges
 // @Accept json
 // @Produce json

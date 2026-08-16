@@ -10,14 +10,17 @@ import (
 
 type VerifyWalletForBridgeRequest struct {
 	AuthenticatedWallet common.Address       `swaggerignore:"true"`
-	Platform            enums.BridgePlatform `json:"platform"`
-	Challenge           string               `json:"challenge"`
-	Signature           string               `json:"signature"`
+	Platform            enums.BridgePlatform `                     json:"platform"`
+	Challenge           string               `                     json:"challenge"`
+	Signature           string               `                     json:"signature"`
 }
 
 func (r *VerifyWalletForBridgeRequest) Validate() error {
 	if !enums.GetAllBridgePlatforms().Contains(r.Platform) {
-		return errors.NewValidationError("platform", "invalid platform, must be one of: "+enums.GetAllBridgePlatforms().String())
+		return errors.NewValidationError(
+			"platform",
+			"invalid platform, must be one of: "+enums.GetAllBridgePlatforms().String(),
+		)
 	}
 
 	if len(strings.TrimSpace(r.Challenge)) == 0 {

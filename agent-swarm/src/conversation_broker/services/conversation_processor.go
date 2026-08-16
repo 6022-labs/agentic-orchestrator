@@ -73,7 +73,10 @@ func NewConversationProcessor(
 	}
 }
 
-func (p *ConversationProcessor) ProcessConversation(participant *models.Participant, conversation *models.Conversation) error {
+func (p *ConversationProcessor) ProcessConversation(
+	participant *models.Participant,
+	conversation *models.Conversation,
+) error {
 	logFields := p.processingLogFields(participant, conversation)
 
 	if p.shouldForceConcludeConversation(conversation) {
@@ -106,7 +109,11 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return nil
 	}
 
-	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(participant, role, conversation.ID)
+	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(
+		participant,
+		role,
+		conversation.ID,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to fetch processable messages: %w", err)
 	}
@@ -129,7 +136,14 @@ func (p *ConversationProcessor) ProcessConversation(participant *models.Particip
 		return fmt.Errorf("failed to resolve remote agent card: %w", err)
 	}
 
-	turn, err := p.conversationPromptBuilder.BuildInput(string(bridge.Kind), participant, role, conversation, messages, participants)
+	turn, err := p.conversationPromptBuilder.BuildInput(
+		string(bridge.Kind),
+		participant,
+		role,
+		conversation,
+		messages,
+		participants,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to build turn: %w", err)
 	}
@@ -185,7 +199,15 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 		return completions, false, nil
 	}
 
-	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(turn, completions, participant, role, conversation, messages, participants)
+	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(
+		turn,
+		completions,
+		participant,
+		role,
+		conversation,
+		messages,
+		participants,
+	)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to build conclude turn: %w", err)
 	}
@@ -252,7 +274,10 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 // carriesConcludeMarker mirrors the old facilitator strategy: the marker
 // counts whether it comes from the facilitator's fresh completions or the
 // latest inbound platform message (a user saying ":end:" ends the swarm).
-func (p *ConversationProcessor) carriesConcludeMarker(completions []string, messages []*models.ConversationMessage) bool {
+func (p *ConversationProcessor) carriesConcludeMarker(
+	completions []string,
+	messages []*models.ConversationMessage,
+) bool {
 	for _, completion := range completions {
 		if strings.Contains(strings.ToLower(completion), facilitatorConcludeMarker) {
 			return true
@@ -301,7 +326,10 @@ func (p *ConversationProcessor) shouldForceConcludeAfter(conversation *models.Co
 	return referenceTime.Add(concludeAfter).Before(time.Now())
 }
 
-func (p *ConversationProcessor) processingLogFields(participant *models.Participant, conversation *models.Conversation) []zap.Field {
+func (p *ConversationProcessor) processingLogFields(
+	participant *models.Participant,
+	conversation *models.Conversation,
+) []zap.Field {
 	fields := []zap.Field{
 		zap.String("conversationId", conversation.ID.String()),
 		zap.String("bridgeId", conversation.BridgeID.String()),

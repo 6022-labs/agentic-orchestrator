@@ -38,7 +38,9 @@ func NewIngestMessage(
 	}
 }
 
-func (uc *IngestMessage) Ingest(request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error) {
+func (uc *IngestMessage) Ingest(
+	request *requests.IngestMessageRequest,
+) (*responses.ConversationMessageResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

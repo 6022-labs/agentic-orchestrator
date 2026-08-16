@@ -41,14 +41,17 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, conversationId uuid.UUID) uuid.UUID {
 			messageId := uuid.New()
 
-			suite.mockClient.EXPECT().GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdMessagesResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &[]clients.ResponsesConversationMessageResponse{{
-					Id:             lo.ToPtr(messageId.String()),
-					ConversationId: lo.ToPtr(conversationId.String()),
-					Content:        lo.ToPtr("hello"),
-				}},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdMessagesResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &[]clients.ResponsesConversationMessageResponse{{
+						Id:             lo.ToPtr(messageId.String()),
+						ConversationId: lo.ToPtr(conversationId.String()),
+						Content:        lo.ToPtr("hello"),
+					}},
+				}, nil).
+				Times(1)
 
 			return messageId
 		}
@@ -75,9 +78,12 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdMessagesResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdMessagesResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return a NotFoundError", func(t *testing.T) {
@@ -99,10 +105,13 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdMessagesResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdMessagesResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -123,7 +132,10 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).Return(nil, stderrors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdMessagesWithResponse(gomock.Any(), conversationId.String()).
+				Return(nil, stderrors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

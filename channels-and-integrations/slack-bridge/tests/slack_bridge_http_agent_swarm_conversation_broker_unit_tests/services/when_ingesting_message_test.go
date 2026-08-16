@@ -46,7 +46,12 @@ func TestWhenIngestingMessage(t *testing.T) {
 			messageId := uuid.New()
 
 			suite.mockClient.EXPECT().
-				PostConversationsIdMessagesWithBodyWithResponse(gomock.Any(), conversationId.String(), "application/json", gomock.Any()).
+				PostConversationsIdMessagesWithBodyWithResponse(
+					gomock.Any(),
+					conversationId.String(),
+					"application/json",
+					gomock.Any(),
+				).
 				DoAndReturn(func(_ any, _ string, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostConversationsIdMessagesResponse, error) {
 					var request clients.RequestsIngestMessageRequest
 					assert.NoError(t, json.NewDecoder(body).Decode(&request))

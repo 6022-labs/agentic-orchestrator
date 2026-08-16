@@ -103,8 +103,11 @@ func (f *BrokerMessageForwarder) resolveAuthorParticipant(
 ) (*uuid.UUID, error) {
 	if authorSlackAgent != nil {
 		if authorSlackAgent.BrokerParticipantId == nil {
-			return nil, fmt.Errorf("slack agent %s/%d has no broker participant id; SlackAgentSynchronizer must run before forwarding",
-				authorSlackAgent.CollectionAddress, authorSlackAgent.CollectionTokenId)
+			return nil, fmt.Errorf(
+				"slack agent %s/%d has no broker participant id; SlackAgentSynchronizer must run before forwarding",
+				authorSlackAgent.CollectionAddress,
+				authorSlackAgent.CollectionTokenId,
+			)
 		}
 		return authorSlackAgent.BrokerParticipantId, nil
 	}
@@ -112,7 +115,10 @@ func (f *BrokerMessageForwarder) resolveAuthorParticipant(
 		return nil, fmt.Errorf("forward called with neither agent nor slack user")
 	}
 	if authorSlackUser.BrokerParticipantId == nil {
-		return nil, fmt.Errorf("slack user %s has no broker participant id; SlackUserSynchronizer must run before forwarding", authorSlackUser.Id)
+		return nil, fmt.Errorf(
+			"slack user %s has no broker participant id; SlackUserSynchronizer must run before forwarding",
+			authorSlackUser.Id,
+		)
 	}
 	return authorSlackUser.BrokerParticipantId, nil
 }
@@ -150,7 +156,11 @@ func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
 		description = &slackChannel.Description
 	}
 
-	conversationId, err := f.conversationBrokerRequester.RegisterConversation(f.brokerSettings.BridgeID, description, participantIds)
+	conversationId, err := f.conversationBrokerRequester.RegisterConversation(
+		f.brokerSettings.BridgeID,
+		description,
+		participantIds,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register conversation with broker: %w", err)
 	}

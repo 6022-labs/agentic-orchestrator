@@ -74,7 +74,10 @@ func (card *ExternalWellKnownAgent6022) parseSignatures(raw []byte) ([]models.Ag
 
 	signatures := make([]models.AgentCardSignature, 0, len(external))
 	for _, signature := range external {
-		signatures = append(signatures, models.AgentCardSignature{Protected: signature.Protected, Signature: signature.Signature})
+		signatures = append(
+			signatures,
+			models.AgentCardSignature{Protected: signature.Protected, Signature: signature.Signature},
+		)
 	}
 	return signatures, nil
 }

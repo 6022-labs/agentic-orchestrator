@@ -52,7 +52,9 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 	}
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite) {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(
+	suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

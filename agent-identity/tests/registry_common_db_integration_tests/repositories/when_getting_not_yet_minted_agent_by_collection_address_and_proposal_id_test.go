@@ -48,7 +48,9 @@ func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach() *W
 	}
 }
 
-func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdAfterEach(suite *WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdTestingSuite) {
+func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdAfterEach(
+	suite *WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

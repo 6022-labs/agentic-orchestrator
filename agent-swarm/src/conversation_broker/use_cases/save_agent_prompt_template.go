@@ -32,7 +32,9 @@ func NewSaveAgentPromptTemplate(
 	}
 }
 
-func (uc *SaveAgentPromptTemplate) Save(request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (uc *SaveAgentPromptTemplate) Save(
+	request *requests.SaveAgentPromptTemplateRequest,
+) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

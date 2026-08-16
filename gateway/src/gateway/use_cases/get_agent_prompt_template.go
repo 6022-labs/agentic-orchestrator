@@ -14,11 +14,15 @@ type GetAgentPromptTemplate struct {
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewGetAgentPromptTemplate(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *GetAgentPromptTemplate {
+func NewGetAgentPromptTemplate(
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
+) *GetAgentPromptTemplate {
 	return &GetAgentPromptTemplate{conversationBrokerRequester: conversationBrokerRequester}
 }
 
-func (uc *GetAgentPromptTemplate) Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (uc *GetAgentPromptTemplate) Get(
+	request *requests.GetAgentPromptTemplateRequest,
+) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

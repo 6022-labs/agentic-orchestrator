@@ -20,14 +20,14 @@ import (
 type Participant struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
-	CollectionAddress *string `gorm:"type:text;uniqueIndex:idx_participants_collection" json:"collectionAddress,omitempty"`
+	CollectionAddress *string `gorm:"type:text;uniqueIndex:idx_participants_collection"    json:"collectionAddress,omitempty"`
 	CollectionTokenId *uint64 `gorm:"type:numeric;uniqueIndex:idx_participants_collection" json:"collectionTokenId,omitempty"`
-	EnsDomain         *string `gorm:"type:text" json:"ensDomain,omitempty"`
+	EnsDomain         *string `gorm:"type:text"                                            json:"ensDomain,omitempty"`
 
 	DisplayName *string `gorm:"type:text" json:"displayName,omitempty"`
 
 	IsProcessing    bool       `gorm:"type:boolean;not null;default:false;index:idx_participants_processing,priority:1" json:"isProcessing"`
-	LastProcessedAt *time.Time `gorm:"type:timestamptz;index:idx_participants_processing,priority:2" json:"lastProcessedAt,omitempty"`
+	LastProcessedAt *time.Time `gorm:"type:timestamptz;index:idx_participants_processing,priority:2"                    json:"lastProcessedAt,omitempty"`
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`

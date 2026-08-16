@@ -49,7 +49,11 @@ func (c *X402PaymentChallengeCache) Read(ensDomain string) (*models.X402PaymentC
 func (c *X402PaymentChallengeCache) Store(ensDomain string, paymentChallenge *models.X402PaymentChallenge) {
 	serialized, err := json.Marshal(paymentChallenge)
 	if err != nil {
-		c.logger.Warn("Failed to serialize x402 payment requirements", zap.String("ensDomain", ensDomain), zap.Error(err))
+		c.logger.Warn(
+			"Failed to serialize x402 payment requirements",
+			zap.String("ensDomain", ensDomain),
+			zap.Error(err),
+		)
 		return
 	}
 

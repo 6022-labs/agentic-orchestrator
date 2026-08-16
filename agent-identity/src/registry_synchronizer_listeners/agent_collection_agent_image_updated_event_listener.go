@@ -60,7 +60,9 @@ func (listener *AgentCollectionAgentImageUpdatedListener) SubscribeAll() error {
 	}
 
 	if len(collectionAddresses) == 0 {
-		listener.logger.Info("no agent collections found, skipping subscription to AgentCollection.AgentImageUpdated events")
+		listener.logger.Info(
+			"no agent collections found, skipping subscription to AgentCollection.AgentImageUpdated events",
+		)
 		return nil
 	}
 
@@ -69,7 +71,9 @@ func (listener *AgentCollectionAgentImageUpdatedListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentImageUpdated events: %w", err)
 	}
@@ -79,7 +83,10 @@ func (listener *AgentCollectionAgentImageUpdatedListener) SubscribeAll() error {
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("subscribed to AgentCollection.AgentImageUpdated events", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"subscribed to AgentCollection.AgentImageUpdated events",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 
 	return nil
 }
@@ -102,7 +109,9 @@ func (listener *AgentCollectionAgentImageUpdatedListener) rebuildSubscription() 
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageUpdatedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to rebuild AgentCollection.AgentImageUpdated subscription: %w", err)
 	}
@@ -115,11 +124,17 @@ func (listener *AgentCollectionAgentImageUpdatedListener) rebuildSubscription() 
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("rebuilt AgentCollection.AgentImageUpdated subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"rebuilt AgentCollection.AgentImageUpdated subscription",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 	return nil
 }
 
-func (listener *AgentCollectionAgentImageUpdatedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1AgentImageUpdated) {
+func (listener *AgentCollectionAgentImageUpdatedListener) startSubscriptionHandler(
+	subscription ethereum.Subscription,
+	eventChan <-chan *abi.AgentCollectionV1AgentImageUpdated,
+) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -134,7 +149,10 @@ func (listener *AgentCollectionAgentImageUpdatedListener) startSubscriptionHandl
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentImageUpdatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentImageUpdated{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentImageUpdatedEvents(
+					event.Raw.BlockNumber,
+					[]*abi.AgentCollectionV1AgentImageUpdated{event},
+				); err != nil {
 					listener.logger.Error(
 						"failed to enqueue AgentCollection.AgentImageUpdated event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),

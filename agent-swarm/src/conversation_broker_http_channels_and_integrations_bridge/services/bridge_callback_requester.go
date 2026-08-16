@@ -52,7 +52,11 @@ func (r *BridgeCallbackRequester) PostCompletion(
 		return fmt.Errorf("failed to marshal callback body: %w", err)
 	}
 
-	rsp, err := client.PostBrokerCallbackWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := client.PostBrokerCallbackWithBodyWithResponse(
+		context.Background(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return fmt.Errorf("HTTP request failed: %w", err)
 	}

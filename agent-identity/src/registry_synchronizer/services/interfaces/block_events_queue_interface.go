@@ -20,15 +20,39 @@ type QueueItem struct {
 type BlockEventsQueueInterface interface {
 	AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error
 	AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error
-	AddAgentCollectionV1AgentAddressAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressAdded) error
-	AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error
-	AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error
-	AddAgentCollectionV1AgentAddressRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressRemoved) error
-	AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error
-	AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error
-	AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error
+	AddAgentCollectionV1AgentAddressAddedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1AgentAddressAdded,
+	) error
+	AddAgentCollectionV1AgentImageUpdatedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1AgentImageUpdated,
+	) error
+	AddAgentCollectionV1AgentImageRemovedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1AgentImageRemoved,
+	) error
+	AddAgentCollectionV1AgentAddressRemovedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1AgentAddressRemoved,
+	) error
+	AddAgentCollectionV1MintProposalCreatedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1MintProposalCreated,
+	) error
+	AddAgentCollectionV1MintProposalRemovedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1MintProposalRemoved,
+	) error
+	AddAgentCollectionV1AgentAttributeUpdatedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionV1AgentAttributeUpdated,
+	) error
 
-	AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error
+	AddAgentCollectionsManagerCollectionCreatedEvents(
+		blockNumber uint64,
+		events []*abi.AgentCollectionsManagerCollectionCreated,
+	) error
 
 	// Dequeue returns the next block to dequeue, ordered by block number ascending.
 	Dequeue() (uint64, *QueueItem)

@@ -7,5 +7,7 @@ import (
 )
 
 type AgentCollectionsManagerEventSubscriptionProviderInterface interface {
-	StartCollectionCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error)
+	StartCollectionCreatedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error)
 }

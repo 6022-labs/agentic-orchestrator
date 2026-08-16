@@ -83,7 +83,10 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	agent.Creator = agentInformation.Creator.Hex()
 	agent.Owner = &ownerHex
 	agent.Name = agentInformation.Name
-	agent.EnsDomain = handler.decentralizedDomainNameBuilder.BuildDomainName(agentInformation.Name, agentCollection.Name)
+	agent.EnsDomain = handler.decentralizedDomainNameBuilder.BuildDomainName(
+		agentInformation.Name,
+		agentCollection.Name,
+	)
 	agent.ProposalId = nil
 
 	if agentInformation.CloneOf.IsSet {

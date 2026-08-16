@@ -60,7 +60,9 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) SubscribeAll() err
 	}
 
 	if len(collectionAddresses) == 0 {
-		listener.logger.Info("no agent collections found, skipping subscription to AgentCollection.AgentAttributeUpdated events")
+		listener.logger.Info(
+			"no agent collections found, skipping subscription to AgentCollection.AgentAttributeUpdated events",
+		)
 		return nil
 	}
 
@@ -69,7 +71,9 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) SubscribeAll() err
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.AgentAttributeUpdated events: %w", err)
 	}
@@ -79,7 +83,10 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) SubscribeAll() err
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("subscribed to AgentCollection.AgentAttributeUpdated events", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"subscribed to AgentCollection.AgentAttributeUpdated events",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 
 	return nil
 }
@@ -102,7 +109,9 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) rebuildSubscriptio
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentAttributeUpdatedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to rebuild AgentCollection.AgentAttributeUpdated subscription: %w", err)
 	}
@@ -115,11 +124,17 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) rebuildSubscriptio
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("rebuilt AgentCollection.AgentAttributeUpdated subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"rebuilt AgentCollection.AgentAttributeUpdated subscription",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 	return nil
 }
 
-func (listener *AgentCollectionAgentAttributeUpdatedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1AgentAttributeUpdated) {
+func (listener *AgentCollectionAgentAttributeUpdatedListener) startSubscriptionHandler(
+	subscription ethereum.Subscription,
+	eventChan <-chan *abi.AgentCollectionV1AgentAttributeUpdated,
+) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -134,7 +149,10 @@ func (listener *AgentCollectionAgentAttributeUpdatedListener) startSubscriptionH
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1AgentAttributeUpdated{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(
+					event.Raw.BlockNumber,
+					[]*abi.AgentCollectionV1AgentAttributeUpdated{event},
+				); err != nil {
 					listener.logger.Error(
 						"failed to enqueue AgentCollection.AgentAttributeUpdated event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),

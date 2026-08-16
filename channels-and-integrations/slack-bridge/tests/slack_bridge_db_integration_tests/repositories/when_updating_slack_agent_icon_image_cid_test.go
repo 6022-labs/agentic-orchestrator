@@ -92,12 +92,19 @@ func TestWhenUpdatingSlackAgentIconImageCid(t *testing.T) {
 
 			iconImageCid := "bafybeibwzifn5t5c6q4g3y3lt7z7e3z7e3z7e3z7e3z7e3z7e3z7e3"
 
-			err = suite.sut.UpdateIconImageCid(slackAgent.CollectionAddress, slackAgent.CollectionTokenId, &iconImageCid)
+			err = suite.sut.UpdateIconImageCid(
+				slackAgent.CollectionAddress,
+				slackAgent.CollectionTokenId,
+				&iconImageCid,
+			)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(slackAgent.CollectionAddress, slackAgent.CollectionTokenId)
+			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+				slackAgent.CollectionAddress,
+				slackAgent.CollectionTokenId,
+			)
 			if err != nil {
 				t.Fatal(err)
 			}

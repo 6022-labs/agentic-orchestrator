@@ -22,7 +22,9 @@ type WhenGettingAgentPromptTemplateTestingSuite struct {
 func WhenGettingAgentPromptTemplateBeforeEach(t *testing.T) *WhenGettingAgentPromptTemplateTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(mockController)
+	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(
+		mockController,
+	)
 
 	sut := use_cases.NewGetAgentPromptTemplate(mockAgentPromptTemplateRepository)
 

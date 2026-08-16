@@ -43,7 +43,12 @@ func TestWhenAttachingParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenAttachingParticipantTestingSuite) {
 			suite.mockClient.EXPECT().
-				PostConversationsIdParticipantsWithBodyWithResponse(gomock.Any(), conversationId.String(), "application/json", gomock.Any()).
+				PostConversationsIdParticipantsWithBodyWithResponse(
+					gomock.Any(),
+					conversationId.String(),
+					"application/json",
+					gomock.Any(),
+				).
 				DoAndReturn(func(_ any, _ string, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostConversationsIdParticipantsResponse, error) {
 					var request clients.RequestsConversationParticipantRequest
 					assert.NoError(t, json.NewDecoder(body).Decode(&request))

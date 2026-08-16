@@ -13,7 +13,9 @@ type WhenGettingBlockchainConfigTestingSuite struct {
 	sut *use_cases.GetBlockchainConfig
 }
 
-func WhenGettingBlockchainConfigBeforeEach(blockchainConfigSettings *settings.BlockchainConfigSettings) *WhenGettingBlockchainConfigTestingSuite {
+func WhenGettingBlockchainConfigBeforeEach(
+	blockchainConfigSettings *settings.BlockchainConfigSettings,
+) *WhenGettingBlockchainConfigTestingSuite {
 	walletSettings := &settings.WalletSettings{
 		Address: common.HexToAddress("0x2222222222222222222222222222222222222222"),
 	}
@@ -73,7 +75,9 @@ func TestWhenGettingBlockchainConfig(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func() *WhenGettingBlockchainConfigTestingSuite {
-			return WhenGettingBlockchainConfigBeforeEach(&settings.BlockchainConfigSettings{EvmChains: map[string]settings.EvmChainSettings{}})
+			return WhenGettingBlockchainConfigBeforeEach(
+				&settings.BlockchainConfigSettings{EvmChains: map[string]settings.EvmChainSettings{}},
+			)
 		}
 
 		t.Run("Should return an empty map", func(t *testing.T) {

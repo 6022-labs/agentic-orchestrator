@@ -20,7 +20,9 @@ func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *Age
 	return &AgentRegistryRequester{client: client}
 }
 
-func (r *AgentRegistryRequester) ListAgents(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+func (r *AgentRegistryRequester) ListAgents(
+	request *interfaces.ListRegistryAgentsRequest,
+) (*responses.ListAgentsResponse, error) {
 	params := &clients.GetAgentsParams{
 		SortBy:        request.SortBy,
 		SortDirection: request.SortDirection,
@@ -44,7 +46,10 @@ func (r *AgentRegistryRequester) ListAgents(request *interfaces.ListRegistryAgen
 	return (*mappings.ExternalListAgentsResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *AgentRegistryRequester) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.AgentResponse, error) {
+func (r *AgentRegistryRequester) GetAgent(
+	agentCollectionAddress string,
+	agentCollectionTokenId uint64,
+) (*responses.AgentResponse, error) {
 	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
 		context.Background(),
 		agentCollectionAddress,

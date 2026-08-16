@@ -14,7 +14,9 @@ type GetConversationMessages struct {
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewGetConversationMessages(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *GetConversationMessages {
+func NewGetConversationMessages(
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
+) *GetConversationMessages {
 	return &GetConversationMessages{conversationBrokerRequester: conversationBrokerRequester}
 }
 

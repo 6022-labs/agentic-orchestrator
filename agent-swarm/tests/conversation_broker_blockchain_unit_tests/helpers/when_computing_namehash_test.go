@@ -19,7 +19,11 @@ func TestWhenComputingNamehash(t *testing.T) {
 			t.Parallel()
 
 			node := helpers.Namehash("eth")
-			assert.Equal(t, "93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae", hex.EncodeToString(node[:]))
+			assert.Equal(
+				t,
+				"93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
+				hex.EncodeToString(node[:]),
+			)
 		})
 	})
 
@@ -30,7 +34,11 @@ func TestWhenComputingNamehash(t *testing.T) {
 			t.Parallel()
 
 			node := helpers.Namehash("6022.eth")
-			assert.Equal(t, "9ec94752dcac587079728bde5f535457f7aa0bbe0b088555bca6d40cfcc78197", hex.EncodeToString(node[:]))
+			assert.Equal(
+				t,
+				"9ec94752dcac587079728bde5f535457f7aa0bbe0b088555bca6d40cfcc78197",
+				hex.EncodeToString(node[:]),
+			)
 		})
 	})
 

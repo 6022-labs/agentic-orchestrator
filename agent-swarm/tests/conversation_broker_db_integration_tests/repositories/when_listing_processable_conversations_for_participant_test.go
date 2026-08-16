@@ -38,24 +38,34 @@ func WhenListingProcessableConversationsForParticipantBeforeEach() *WhenListingP
 	}
 }
 
-func WhenListingProcessableConversationsForParticipantAfterEach(suite *WhenListingProcessableConversationsForParticipantTestingSuite) {
+func WhenListingProcessableConversationsForParticipantAfterEach(
+	suite *WhenListingProcessableConversationsForParticipantTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
-func (s *WhenListingProcessableConversationsForParticipantTestingSuite) seedConversation(bridgeId uuid.UUID) *models.Conversation {
+func (s *WhenListingProcessableConversationsForParticipantTestingSuite) seedConversation(
+	bridgeId uuid.UUID,
+) *models.Conversation {
 	conv := model_builders.NewConversationBuilder().WithBridgeID(bridgeId).Build()
 	_, _ = s.sut.Save(conv)
 	return conv
 }
 
-func (s *WhenListingProcessableConversationsForParticipantTestingSuite) attach(conversationId, participantId uuid.UUID) {
+func (s *WhenListingProcessableConversationsForParticipantTestingSuite) attach(
+	conversationId, participantId uuid.UUID,
+) {
 	_, _ = s.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
 		WithConversationID(conversationId).
 		WithParticipantID(participantId).
 		Build())
 }
 
-func (s *WhenListingProcessableConversationsForParticipantTestingSuite) postMessage(conversationId, participantId uuid.UUID, content string, createdAt time.Time) {
+func (s *WhenListingProcessableConversationsForParticipantTestingSuite) postMessage(
+	conversationId, participantId uuid.UUID,
+	content string,
+	createdAt time.Time,
+) {
 	_, _ = s.messages.Save(model_builders.NewConversationMessageBuilder().
 		WithConversationID(conversationId).
 		WithParticipantID(participantId).
@@ -80,7 +90,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				Build()
 			_, _ = suite.participants.Save(facilitator)
 
-			result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+			result, err := suite.sut.ListProcessableForParticipant(
+				facilitator,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				uint64(30),
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 0)
@@ -110,7 +124,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			_, _ = suite.sut.Save(concluded)
 			suite.attach(concluded.ID, facilitator.ID)
 
-			result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+			result, err := suite.sut.ListProcessableForParticipant(
+				facilitator,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				uint64(30),
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 0)
@@ -137,7 +155,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, facilitator.ID)
 
-				result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					facilitator,
+					lo.ToPtr(enums.ParticipantRoleFacilitator),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -162,7 +184,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, facilitator.ID)
 				suite.postMessage(conv.ID, facilitator.ID, "recent", time.Now().Add(-5*time.Second))
 
-				result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					facilitator,
+					lo.ToPtr(enums.ParticipantRoleFacilitator),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 0)
@@ -187,7 +213,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, facilitator.ID)
 				suite.postMessage(conv.ID, facilitator.ID, "ancient", time.Now().Add(-10*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					facilitator,
+					lo.ToPtr(enums.ParticipantRoleFacilitator),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -221,7 +251,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, other.ID, "unrelated chatter", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(human, lo.ToPtr(enums.ParticipantRoleHuman), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					human,
+					lo.ToPtr(enums.ParticipantRoleHuman),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 0)
@@ -250,7 +284,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, other.ID, "hey pierre.eth check this", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(human, lo.ToPtr(enums.ParticipantRoleHuman), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					human,
+					lo.ToPtr(enums.ParticipantRoleHuman),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -277,7 +315,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, human.ID, "hello team", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(human, lo.ToPtr(enums.ParticipantRoleHuman), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					human,
+					lo.ToPtr(enums.ParticipantRoleHuman),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -307,7 +349,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.postMessage(conv.ID, human.ID, "first post", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, other.ID, "pierre.eth follow up", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(human, lo.ToPtr(enums.ParticipantRoleHuman), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					human,
+					lo.ToPtr(enums.ParticipantRoleHuman),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -339,7 +385,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, other.ID, "unrelated", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(agent, lo.ToPtr(enums.ParticipantRoleClone), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					agent,
+					lo.ToPtr(enums.ParticipantRoleClone),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 0)
@@ -368,7 +418,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.postMessage(conv.ID, other.ID, "helper.eth ping", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, agent.ID, "on it", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(agent, lo.ToPtr(enums.ParticipantRoleClone), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					agent,
+					lo.ToPtr(enums.ParticipantRoleClone),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 0)
@@ -398,7 +452,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.postMessage(conv.ID, agent.ID, "on it", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, other.ID, "helper.eth follow up", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(agent, lo.ToPtr(enums.ParticipantRoleClone), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					agent,
+					lo.ToPtr(enums.ParticipantRoleClone),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -425,7 +483,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.postMessage(conv.ID, agent.ID, "hi I am helper.eth", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, agent.ID, "still helper.eth here", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(agent, lo.ToPtr(enums.ParticipantRoleClone), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					agent,
+					lo.ToPtr(enums.ParticipantRoleClone),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 0)
@@ -453,7 +515,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, other.ID, "helper.eth are you there?", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(agent, lo.ToPtr(enums.ParticipantRoleClone), uint64(30))
+				result, err := suite.sut.ListProcessableForParticipant(
+					agent,
+					lo.ToPtr(enums.ParticipantRoleClone),
+					uint64(30),
+				)
 
 				assert.NoError(t, err)
 				assert.Len(t, result, 1)
@@ -483,7 +549,11 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			suite.attach(convA.ID, facilitator.ID)
 			suite.attach(convB.ID, outsider.ID)
 
-			result, err := suite.sut.ListProcessableForParticipant(facilitator, lo.ToPtr(enums.ParticipantRoleFacilitator), uint64(30))
+			result, err := suite.sut.ListProcessableForParticipant(
+				facilitator,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				uint64(30),
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 1)

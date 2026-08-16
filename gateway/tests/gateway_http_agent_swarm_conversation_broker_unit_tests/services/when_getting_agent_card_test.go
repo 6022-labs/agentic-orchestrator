@@ -37,19 +37,22 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesRemoteAgentCardResponse{
-					Protocol:        lo.ToPtr("6022"),
-					ProtocolVersion: lo.ToPtr("1"),
-					Name:            lo.ToPtr("Ada"),
-					EnsDomain:       lo.ToPtr("ada.experts.80002.6022.eth"),
-					Endpoints: &clients.ResponsesRemoteAgentCardEndpointsResponse{
-						Responses: lo.ToPtr("https://ada.example/responses"),
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesRemoteAgentCardResponse{
+						Protocol:        lo.ToPtr("6022"),
+						ProtocolVersion: lo.ToPtr("1"),
+						Name:            lo.ToPtr("Ada"),
+						EnsDomain:       lo.ToPtr("ada.experts.80002.6022.eth"),
+						Endpoints: &clients.ResponsesRemoteAgentCardEndpointsResponse{
+							Responses: lo.ToPtr("https://ada.example/responses"),
+						},
+						PaymentMethods: lo.ToPtr([]string{"x402"}),
 					},
-					PaymentMethods: lo.ToPtr([]string{"x402"}),
-				},
-			}, nil).Times(1)
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the mapped card", func(t *testing.T) {
@@ -74,10 +77,13 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(&clients.GetRemoteAgentsEnsDomainCardResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -97,7 +103,10 @@ func TestWhenGettingAgentCard(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentCardTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(nil, errors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainCardWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(nil, errors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

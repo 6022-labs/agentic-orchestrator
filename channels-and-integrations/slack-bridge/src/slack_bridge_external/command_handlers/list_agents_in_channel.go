@@ -22,7 +22,9 @@ func NewListAgentInChannel(
 	}
 }
 
-func (handler *ListAgentInChannel) List(request *requests.ListAgentInChannelRequest) ([]*responses.ListAgentsInChannelResponse, error) {
+func (handler *ListAgentInChannel) List(
+	request *requests.ListAgentInChannelRequest,
+) ([]*responses.ListAgentsInChannelResponse, error) {
 	slackChannel, err := handler.slackChannelSynchronizer.Sync(request.ChannelID)
 	if err != nil {
 		return nil, err

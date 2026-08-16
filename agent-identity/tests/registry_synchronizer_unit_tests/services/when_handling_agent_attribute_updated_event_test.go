@@ -24,7 +24,9 @@ type WhenHandlingAgentAttributeUpdatedEventTestingSuite struct {
 	sut *services.AgentAttributeUpdatedEventHandler
 }
 
-func WhenHandlingAgentAttributeUpdatedEventBeforeEach(t *testing.T) *WhenHandlingAgentAttributeUpdatedEventTestingSuite {
+func WhenHandlingAgentAttributeUpdatedEventBeforeEach(
+	t *testing.T,
+) *WhenHandlingAgentAttributeUpdatedEventTestingSuite {
 	mockController := gomock.NewController(t)
 
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)

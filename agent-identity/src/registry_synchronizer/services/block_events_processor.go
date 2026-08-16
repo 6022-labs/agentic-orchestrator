@@ -89,18 +89,34 @@ func NewBlockEventsProcessor(
 }
 
 func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uint64, item *interfaces.QueueItem) error {
-	p.logger.Info("Processing block events",
+	p.logger.Info(
+		"Processing block events",
 		zap.Uint64("blockNumber", blockNumber),
 		zap.Int("agentCollectionV1MintedEventsCount", len(item.AgentCollectionV1MintedEvents)),
 		zap.Int("agentCollectionV1TransferEventsCount", len(item.AgentCollectionV1TransferEvents)),
 		zap.Int("agentCollectionV1AgentAddressAddedEventsCount", len(item.AgentCollectionV1AgentAddressAddedEvents)),
 		zap.Int("agentCollectionV1AgentImageUpdatedEventsCount", len(item.AgentCollectionV1AgentImageUpdatedEvents)),
 		zap.Int("agentCollectionV1AgentImageRemovedEventsCount", len(item.AgentCollectionV1AgentImageRemovedEvents)),
-		zap.Int("agentCollectionV1AgentAddressRemovedEventsCount", len(item.AgentCollectionV1AgentAddressRemovedEvents)),
-		zap.Int("agentCollectionV1MintProposalCreatedEventsCount", len(item.AgentCollectionV1MintProposalCreatedEvents)),
-		zap.Int("agentCollectionV1MintProposalRemovedEventsCount", len(item.AgentCollectionV1MintProposalRemovedEvents)),
-		zap.Int("agentCollectionV1AgentAttributeUpdatedEventsCount", len(item.AgentCollectionV1AgentAttributeUpdatedEvents)),
-		zap.Int("agentCollectionManagerCollectionCreatedEventsCount", len(item.AgentCollectionsManagerCollectionCreatedEvents)),
+		zap.Int(
+			"agentCollectionV1AgentAddressRemovedEventsCount",
+			len(item.AgentCollectionV1AgentAddressRemovedEvents),
+		),
+		zap.Int(
+			"agentCollectionV1MintProposalCreatedEventsCount",
+			len(item.AgentCollectionV1MintProposalCreatedEvents),
+		),
+		zap.Int(
+			"agentCollectionV1MintProposalRemovedEventsCount",
+			len(item.AgentCollectionV1MintProposalRemovedEvents),
+		),
+		zap.Int(
+			"agentCollectionV1AgentAttributeUpdatedEventsCount",
+			len(item.AgentCollectionV1AgentAttributeUpdatedEvents),
+		),
+		zap.Int(
+			"agentCollectionManagerCollectionCreatedEventsCount",
+			len(item.AgentCollectionsManagerCollectionCreatedEvents),
+		),
 	)
 
 	operation := func() error {
@@ -110,7 +126,9 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		default:
 		}
 
-		if err := p.syncAgentCollectionsManagerCollectionCreatedEvents(item.AgentCollectionsManagerCollectionCreatedEvents); err != nil {
+		if err := p.syncAgentCollectionsManagerCollectionCreatedEvents(
+			item.AgentCollectionsManagerCollectionCreatedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync collection created events at block %d: %w", blockNumber, err)
 		}
 
@@ -122,31 +140,45 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 			return fmt.Errorf("failed to sync transfer events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1AgentImageUpdatedEvents(item.AgentCollectionV1AgentImageUpdatedEvents); err != nil {
+		if err := p.syncAgentCollectionV1AgentImageUpdatedEvents(
+			item.AgentCollectionV1AgentImageUpdatedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync agent image updated events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1AgentImageRemovedEvents(item.AgentCollectionV1AgentImageRemovedEvents); err != nil {
+		if err := p.syncAgentCollectionV1AgentImageRemovedEvents(
+			item.AgentCollectionV1AgentImageRemovedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync agent image removed events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1MintProposalCreatedEvents(item.AgentCollectionV1MintProposalCreatedEvents); err != nil {
+		if err := p.syncAgentCollectionV1MintProposalCreatedEvents(
+			item.AgentCollectionV1MintProposalCreatedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync mint proposal created events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1MintProposalRemovedEvents(item.AgentCollectionV1MintProposalRemovedEvents); err != nil {
+		if err := p.syncAgentCollectionV1MintProposalRemovedEvents(
+			item.AgentCollectionV1MintProposalRemovedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync mint proposal removed events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1AgentAttributeUpdatedEvents(item.AgentCollectionV1AgentAttributeUpdatedEvents); err != nil {
+		if err := p.syncAgentCollectionV1AgentAttributeUpdatedEvents(
+			item.AgentCollectionV1AgentAttributeUpdatedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync agent attribute updated events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1AgentAddressAddedEvents(item.AgentCollectionV1AgentAddressAddedEvents); err != nil {
+		if err := p.syncAgentCollectionV1AgentAddressAddedEvents(
+			item.AgentCollectionV1AgentAddressAddedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync agent wallet added events at block %d: %w", blockNumber, err)
 		}
 
-		if err := p.syncAgentCollectionV1AgentAddressRemovedEvents(item.AgentCollectionV1AgentAddressRemovedEvents); err != nil {
+		if err := p.syncAgentCollectionV1AgentAddressRemovedEvents(
+			item.AgentCollectionV1AgentAddressRemovedEvents,
+		); err != nil {
 			return fmt.Errorf("failed to sync agent wallet removed events at block %d: %w", blockNumber, err)
 		}
 
@@ -226,7 +258,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1TransferEvents(events []*abi
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageUpdatedEvents(events []*abi.AgentCollectionV1AgentImageUpdated) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageUpdatedEvents(
+	events []*abi.AgentCollectionV1AgentImageUpdated,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentImageUpdatedHandler.Handle(event); err != nil {
 			return err
@@ -236,7 +270,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageUpdatedEvents(even
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageRemovedEvents(events []*abi.AgentCollectionV1AgentImageRemoved) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageRemovedEvents(
+	events []*abi.AgentCollectionV1AgentImageRemoved,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentImageRemovedHandler.Handle(event); err != nil {
 			return err
@@ -246,7 +282,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageRemovedEvents(even
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalCreatedEvents(events []*abi.AgentCollectionV1MintProposalCreated) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalCreatedEvents(
+	events []*abi.AgentCollectionV1MintProposalCreated,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1MintProposalCreatedHandler.Handle(event); err != nil {
 			return err
@@ -256,7 +294,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalCreatedEvents(ev
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalRemovedEvents(events []*abi.AgentCollectionV1MintProposalRemoved) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalRemovedEvents(
+	events []*abi.AgentCollectionV1MintProposalRemoved,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1MintProposalRemovedHandler.Handle(event); err != nil {
 			return err
@@ -266,7 +306,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalRemovedEvents(ev
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAttributeUpdatedEvents(events []*abi.AgentCollectionV1AgentAttributeUpdated) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAttributeUpdatedEvents(
+	events []*abi.AgentCollectionV1AgentAttributeUpdated,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAttributeUpdatedHandler.Handle(event); err != nil {
 			return err
@@ -276,7 +318,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAttributeUpdatedEvents(
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressAddedEvents(events []*abi.AgentCollectionV1AgentAddressAdded) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressAddedEvents(
+	events []*abi.AgentCollectionV1AgentAddressAdded,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAddressAddedHandler.Handle(event); err != nil {
 			return err
@@ -286,7 +330,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressAddedEvents(even
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressRemovedEvents(events []*abi.AgentCollectionV1AgentAddressRemoved) error {
+func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressRemovedEvents(
+	events []*abi.AgentCollectionV1AgentAddressRemoved,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAddressRemovedHandler.Handle(event); err != nil {
 			return err
@@ -296,7 +342,9 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressRemovedEvents(ev
 	return nil
 }
 
-func (p *BlockEventsProcessor) syncAgentCollectionsManagerCollectionCreatedEvents(events []*abi.AgentCollectionsManagerCollectionCreated) error {
+func (p *BlockEventsProcessor) syncAgentCollectionsManagerCollectionCreatedEvents(
+	events []*abi.AgentCollectionsManagerCollectionCreated,
+) error {
 	for _, event := range events {
 		if err := p.agentCollectionManagerCollectionCreatedHandler.Handle(event); err != nil {
 			return err

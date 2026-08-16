@@ -24,9 +24,13 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	gateway_configurations.AddGatewayConfiguration(container)
 	gateway_mvc_configurations.AddGatewayMvcConfiguration(container)
 	gateway_redis_configurations.AddGatewayRedisConfiguration(container)
-	gateway_http_channels_and_integrations_bridge_configurations.AddGatewayHttpChannelsAndIntegrationsBridgeConfiguration(container)
+	gateway_http_channels_and_integrations_bridge_configurations.AddGatewayHttpChannelsAndIntegrationsBridgeConfiguration(
+		container,
+	)
 	gateway_http_agent_identity_registry_configurations.AddGatewayHttpAgentIdentityRegistryConfiguration(container)
-	gateway_http_agent_swarm_conversation_broker_configurations.AddGatewayHttpAgentSwarmConversationBrokerConfiguration(container)
+	gateway_http_agent_swarm_conversation_broker_configurations.AddGatewayHttpAgentSwarmConversationBrokerConfiguration(
+		container,
+	)
 
 	return container
 }

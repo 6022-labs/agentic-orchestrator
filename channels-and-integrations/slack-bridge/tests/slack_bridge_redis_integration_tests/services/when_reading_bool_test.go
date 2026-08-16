@@ -73,21 +73,24 @@ func TestWhenReadingBool(t *testing.T) {
 		assert.False(t, *result)
 	})
 
-	t.Run("Given a key storing an invalid bool string, When reading it as bool, Then it returns an error", func(t *testing.T) {
-		key := fmt.Sprintf("test_key_invalid_%s_%d", t.Name(), time.Now().UnixNano())
+	t.Run(
+		"Given a key storing an invalid bool string, When reading it as bool, Then it returns an error",
+		func(t *testing.T) {
+			key := fmt.Sprintf("test_key_invalid_%s_%d", t.Name(), time.Now().UnixNano())
 
-		suite := WhenReadingBoolBeforeEach()
-		defer WhenReadingBoolAfterEach(suite)
+			suite := WhenReadingBoolBeforeEach()
+			defer WhenReadingBoolAfterEach(suite)
 
-		err := suite.redisClient.Set(context.Background(), key, "not_a_bool", 0).Err()
-		if err != nil {
-			t.Fatalf("Failed to set key in Redis: %v", err)
-		}
+			err := suite.redisClient.Set(context.Background(), key, "not_a_bool", 0).Err()
+			if err != nil {
+				t.Fatalf("Failed to set key in Redis: %v", err)
+			}
 
-		_, err = suite.sut.ReadBool(key)
+			_, err = suite.sut.ReadBool(key)
 
-		assert.Error(t, err)
-	})
+			assert.Error(t, err)
+		},
+	)
 
 	t.Run("Given a non-existing key, When reading it as bool, Then it returns nothing", func(t *testing.T) {
 		key := fmt.Sprintf("non_existing_%s_%d", t.Name(), time.Now().UnixNano())

@@ -20,7 +20,10 @@ func AddGatewayHttpAgentIdentityRegistryConfiguration(container *dig.Container) 
 	err = container.Provide(
 		func(settings *http_registry_settings.AgentIdentityRegistrySettings) (http_registry_clients.ClientWithResponsesInterface, error) {
 			httpClient := &http.Client{Timeout: time.Duration(settings.RequestTimeoutSeconds) * time.Second}
-			return http_registry_clients.NewClientWithResponses(settings.BaseUrl, http_registry_clients.WithHTTPClient(httpClient))
+			return http_registry_clients.NewClientWithResponses(
+				settings.BaseUrl,
+				http_registry_clients.WithHTTPClient(httpClient),
+			)
 		},
 	)
 	if err != nil {

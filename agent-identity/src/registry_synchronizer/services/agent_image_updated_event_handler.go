@@ -32,12 +32,24 @@ func (handler *AgentImageUpdatedEventHandler) Handle(event *abi.AgentCollectionV
 		zap.String("newValue", event.NewValue),
 	)
 
-	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+		event.Raw.Address.Hex(),
+		event.TokenId.Uint64(),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent by collection %s and id %s: %w", event.Raw.Address.Hex(), event.TokenId.String(), err)
+		return fmt.Errorf(
+			"failed to get agent by collection %s and id %s: %w",
+			event.Raw.Address.Hex(),
+			event.TokenId.String(),
+			err,
+		)
 	}
 	if agent == nil {
-		return fmt.Errorf("agent not found for collection %s and id %s", event.Raw.Address.Hex(), event.TokenId.String())
+		return fmt.Errorf(
+			"agent not found for collection %s and id %s",
+			event.Raw.Address.Hex(),
+			event.TokenId.String(),
+		)
 	}
 
 	if agent.Images == nil {

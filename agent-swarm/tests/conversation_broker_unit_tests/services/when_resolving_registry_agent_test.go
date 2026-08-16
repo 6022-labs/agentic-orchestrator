@@ -160,7 +160,10 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Return(nil, errors.New("boom")).Times(1)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("boom")).
+				Times(1)
 		}
 
 		t.Run("Should propagate the error and cache nothing", func(t *testing.T) {
@@ -181,7 +184,10 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("not-json", nil).Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Return(registryAgentForTest(), nil).Times(1)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any()).
+				Return(registryAgentForTest(), nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 		}
 

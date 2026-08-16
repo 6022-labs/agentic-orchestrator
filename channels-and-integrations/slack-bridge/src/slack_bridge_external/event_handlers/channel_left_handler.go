@@ -38,8 +38,14 @@ func (c *ChannelLeftHandler) Handle(request *requests.ChannelLeftRequest) error 
 	}
 
 	for _, conversation := range conversations {
-		if err := c.conversationBrokerRequester.ForceConcludeConversation(conversation.BrokerConversationID); err != nil {
-			return fmt.Errorf("failed to force-conclude broker conversation %s: %w", conversation.BrokerConversationID, err)
+		if err := c.conversationBrokerRequester.ForceConcludeConversation(
+			conversation.BrokerConversationID,
+		); err != nil {
+			return fmt.Errorf(
+				"failed to force-conclude broker conversation %s: %w",
+				conversation.BrokerConversationID,
+				err,
+			)
 		}
 	}
 

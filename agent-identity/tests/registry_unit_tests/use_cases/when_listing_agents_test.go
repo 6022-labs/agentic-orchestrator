@@ -115,7 +115,10 @@ func TestWhenListingAgents(t *testing.T) {
 			basics.mockAgentAddressRepository.EXPECT().
 				GetAllByAgentIds(gomock.Any()).
 				Return([]*models.AgentAddress{
-					model_builders.NewAgentAddressBuilder().WithAgentId(agents[0].ID).WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").Build(),
+					model_builders.NewAgentAddressBuilder().
+						WithAgentId(agents[0].ID).
+						WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").
+						Build(),
 				}, nil).
 				Times(1)
 

@@ -12,7 +12,9 @@ import (
 )
 
 // newConversationBrokerClient builds the generated broker client with the configured timeout.
-func newConversationBrokerClient(conversationBrokerSettings *settings.ConversationBrokerSettings) (clients.ClientWithResponsesInterface, error) {
+func newConversationBrokerClient(
+	conversationBrokerSettings *settings.ConversationBrokerSettings,
+) (clients.ClientWithResponsesInterface, error) {
 	httpClient := &http.Client{Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second}
 	return clients.NewClientWithResponses(conversationBrokerSettings.BaseUrl, clients.WithHTTPClient(httpClient))
 }

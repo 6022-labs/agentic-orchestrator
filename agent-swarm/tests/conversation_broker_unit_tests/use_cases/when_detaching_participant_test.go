@@ -22,7 +22,9 @@ type WhenDetachingParticipantTestingSuite struct {
 func WhenDetachingParticipantBeforeEach(t *testing.T) *WhenDetachingParticipantTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(mockController)
+	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(
+		mockController,
+	)
 
 	sut := use_cases.NewDetachParticipant(mockConversationParticipantRepository)
 

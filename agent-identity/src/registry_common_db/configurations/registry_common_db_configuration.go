@@ -67,14 +67,16 @@ func AddRegistryCommonDbConfiguration(container *dig.Container) {
 	}
 
 	// Provide the orchestrator database client factory
-	err = container.Provide(func(databaseClientFactory *infra_factories.DatabaseClientFactory, logger *zap.Logger) db_clients.DatabaseClientInterface {
-		dbClient, err := databaseClientFactory.CreateDatabaseClient()
-		if err != nil {
-			logger.Fatal("Failed to create orchestrator database client", zap.Error(err))
-		}
+	err = container.Provide(
+		func(databaseClientFactory *infra_factories.DatabaseClientFactory, logger *zap.Logger) db_clients.DatabaseClientInterface {
+			dbClient, err := databaseClientFactory.CreateDatabaseClient()
+			if err != nil {
+				logger.Fatal("Failed to create orchestrator database client", zap.Error(err))
+			}
 
-		return dbClient
-	})
+			return dbClient
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

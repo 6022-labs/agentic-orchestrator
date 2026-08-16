@@ -28,7 +28,11 @@ func eip3009Option() models.X402PaymentOption {
 		Asset:             signerTestAsset,
 		PayTo:             signerTestPayTo,
 		MaxTimeoutSeconds: 300,
-		Extra:             map[string]any{"assetTransferMethod": models.X402AssetTransferMethodEip3009, "name": "USDC", "version": "2"},
+		Extra: map[string]any{
+			"assetTransferMethod": models.X402AssetTransferMethodEip3009,
+			"name":                "USDC",
+			"version":             "2",
+		},
 	}
 }
 
@@ -62,7 +66,12 @@ func recoverPayloadSigner(t *testing.T, digest []byte, signature string) common.
 }
 
 // eip3009Digest independently rebuilds the node verifier's TransferWithAuthorization digest.
-func eip3009Digest(t *testing.T, authorization *models.X402Eip3009Authorization, option models.X402PaymentOption, chainId int64) []byte {
+func eip3009Digest(
+	t *testing.T,
+	authorization *models.X402Eip3009Authorization,
+	option models.X402PaymentOption,
+	chainId int64,
+) []byte {
 	t.Helper()
 
 	typedData := apitypes.TypedData{

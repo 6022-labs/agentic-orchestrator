@@ -131,22 +131,40 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 			err = basics.sut.AddAgentCollectionV1TransferEvents(blockNumber, []*abi.AgentCollectionV1Transfer{{}})
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber, []*abi.AgentCollectionV1AgentImageUpdated{{}})
+			err = basics.sut.AddAgentCollectionV1AgentImageUpdatedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionV1AgentImageUpdated{{}},
+			)
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionV1AgentImageRemovedEvents(blockNumber, []*abi.AgentCollectionV1AgentImageRemoved{{}})
+			err = basics.sut.AddAgentCollectionV1AgentImageRemovedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionV1AgentImageRemoved{{}},
+			)
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionV1MintProposalCreatedEvents(blockNumber, []*abi.AgentCollectionV1MintProposalCreated{{}})
+			err = basics.sut.AddAgentCollectionV1MintProposalCreatedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionV1MintProposalCreated{{}},
+			)
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionV1MintProposalRemovedEvents(blockNumber, []*abi.AgentCollectionV1MintProposalRemoved{{}})
+			err = basics.sut.AddAgentCollectionV1MintProposalRemovedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionV1MintProposalRemoved{{}},
+			)
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber, []*abi.AgentCollectionV1AgentAttributeUpdated{{}})
+			err = basics.sut.AddAgentCollectionV1AgentAttributeUpdatedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionV1AgentAttributeUpdated{{}},
+			)
 			assert.Nil(t, err)
 
-			err = basics.sut.AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber, []*abi.AgentCollectionsManagerCollectionCreated{{}})
+			err = basics.sut.AddAgentCollectionsManagerCollectionCreatedEvents(
+				blockNumber,
+				[]*abi.AgentCollectionsManagerCollectionCreated{{}},
+			)
 			assert.Nil(t, err)
 
 			waitForFinalization()

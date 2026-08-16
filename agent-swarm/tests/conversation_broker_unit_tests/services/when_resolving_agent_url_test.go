@@ -138,7 +138,10 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
 			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("boom")).Times(1)
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(errors.New("boom")).
+				Times(1)
 		}
 
 		t.Run("Should still return the resolved url", func(t *testing.T) {

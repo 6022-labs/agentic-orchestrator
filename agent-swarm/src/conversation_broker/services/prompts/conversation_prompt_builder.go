@@ -158,9 +158,12 @@ func (b *ConversationPromptBuilder) buildParameters(
 		description = *conversation.Description
 	}
 
-	participantsById := lo.SliceToMap(participants, func(participant *models.Participant) (uuid.UUID, *models.Participant) {
-		return participant.ID, participant
-	})
+	participantsById := lo.SliceToMap(
+		participants,
+		func(participant *models.Participant) (uuid.UUID, *models.Participant) {
+			return participant.ID, participant
+		},
+	)
 
 	initialMessage := messages[0]
 	latestMessage := messages[len(messages)-1]
@@ -172,8 +175,16 @@ func (b *ConversationPromptBuilder) buildParameters(
 		WithParam([]string{"ConversationMessageCount"}, messageCount, nil).
 		WithParam([]string{"InitialRequest", "Content"}, initialMessage.Content, nil).
 		WithParam([]string{"LatestRequest", "Content"}, latestMessage.Content, nil).
-		WithParam([]string{"InitialRequest", "Author"}, b.authorName(initialMessage, participantsById), lo.ToPtr(PromptParameterTypePotentialAgent)).
-		WithParam([]string{"LatestRequest", "Author"}, b.authorName(latestMessage, participantsById), lo.ToPtr(PromptParameterTypePotentialAgent)).
+		WithParam(
+			[]string{"InitialRequest", "Author"},
+			b.authorName(initialMessage, participantsById),
+			lo.ToPtr(PromptParameterTypePotentialAgent),
+		).
+		WithParam(
+			[]string{"LatestRequest", "Author"},
+			b.authorName(latestMessage, participantsById),
+			lo.ToPtr(PromptParameterTypePotentialAgent),
+		).
 		Build()
 }
 
@@ -182,9 +193,12 @@ func (b *ConversationPromptBuilder) mapMessagesToInput(
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
 ) []*models.RemoteAgentInputMessage {
-	participantsById := lo.SliceToMap(participants, func(participant *models.Participant) (uuid.UUID, *models.Participant) {
-		return participant.ID, participant
-	})
+	participantsById := lo.SliceToMap(
+		participants,
+		func(participant *models.Participant) (uuid.UUID, *models.Participant) {
+			return participant.ID, participant
+		},
+	)
 
 	input := make([]*models.RemoteAgentInputMessage, len(messages))
 	for i, message := range messages {
@@ -209,7 +223,10 @@ func (b *ConversationPromptBuilder) mapMessagesToInput(
 	return input
 }
 
-func (b *ConversationPromptBuilder) authorName(message *models.ConversationMessage, participantsById map[uuid.UUID]*models.Participant) string {
+func (b *ConversationPromptBuilder) authorName(
+	message *models.ConversationMessage,
+	participantsById map[uuid.UUID]*models.Participant,
+) string {
 	author := participantsById[message.ParticipantID]
 	if author == nil {
 		return ""
@@ -223,7 +240,9 @@ func (b *ConversationPromptBuilder) authorName(message *models.ConversationMessa
 	return ""
 }
 
-func (b *ConversationPromptBuilder) templateKeysForRole(role enums.ParticipantRole) (enums.AgentPromptTemplateKey, enums.AgentPromptTemplateKey, error) {
+func (b *ConversationPromptBuilder) templateKeysForRole(
+	role enums.ParticipantRole,
+) (enums.AgentPromptTemplateKey, enums.AgentPromptTemplateKey, error) {
 	switch role {
 	case enums.ParticipantRoleClone:
 		return enums.AgentPromptTemplateKeyCloneSystem, enums.AgentPromptTemplateKeyCloneDefault, nil

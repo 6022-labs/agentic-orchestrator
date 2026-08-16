@@ -29,7 +29,9 @@ func (r *ConversationBrokerRequester) unexpectedStatus(statusCode int, body []by
 	return fmt.Errorf("unexpected status code: %d, response: %s", statusCode, string(body))
 }
 
-func (r *ConversationBrokerRequester) ListConversations(page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
+func (r *ConversationBrokerRequester) ListConversations(
+	page, elementsPerPage *uint,
+) (*responses.ListBrokerConversationsResponse, error) {
 	params := &clients.GetConversationsParams{}
 	if page != nil {
 		value := int(*page)
@@ -51,7 +53,9 @@ func (r *ConversationBrokerRequester) ListConversations(page, elementsPerPage *u
 	return (*mappings.ExternalListConversationsResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *ConversationBrokerRequester) GetConversation(conversationId uuid.UUID) (*responses.BrokerConversationResponse, error) {
+func (r *ConversationBrokerRequester) GetConversation(
+	conversationId uuid.UUID,
+) (*responses.BrokerConversationResponse, error) {
 	rsp, err := r.client.GetConversationsIdWithResponse(context.Background(), conversationId.String())
 	if err != nil {
 		return nil, err
@@ -66,7 +70,9 @@ func (r *ConversationBrokerRequester) GetConversation(conversationId uuid.UUID) 
 	return (*mappings.ExternalConversationResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *ConversationBrokerRequester) GetConversationMessages(conversationId uuid.UUID) ([]*responses.BrokerMessageResponse, error) {
+func (r *ConversationBrokerRequester) GetConversationMessages(
+	conversationId uuid.UUID,
+) ([]*responses.BrokerMessageResponse, error) {
 	rsp, err := r.client.GetConversationsIdMessagesWithResponse(context.Background(), conversationId.String())
 	if err != nil {
 		return nil, err
@@ -86,7 +92,9 @@ func (r *ConversationBrokerRequester) GetConversationMessages(conversationId uui
 	return messages, nil
 }
 
-func (r *ConversationBrokerRequester) ListConversationParticipants(conversationId uuid.UUID) ([]*responses.BrokerParticipantResponse, error) {
+func (r *ConversationBrokerRequester) ListConversationParticipants(
+	conversationId uuid.UUID,
+) ([]*responses.BrokerParticipantResponse, error) {
 	rsp, err := r.client.GetConversationsIdParticipantsWithResponse(context.Background(), conversationId.String())
 	if err != nil {
 		return nil, err
@@ -120,7 +128,11 @@ func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId u
 	return nil
 }
 
-func (r *ConversationBrokerRequester) GetAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key string) (*responses.AgentPromptTemplateResponse, error) {
+func (r *ConversationBrokerRequester) GetAgentPromptTemplate(
+	collectionAddress string,
+	collectionTokenId uint64,
+	key string,
+) (*responses.AgentPromptTemplateResponse, error) {
 	rsp, err := r.client.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
 		context.Background(),
 		collectionAddress,
@@ -140,7 +152,11 @@ func (r *ConversationBrokerRequester) GetAgentPromptTemplate(collectionAddress s
 	return (*mappings.ExternalPromptTemplateResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key, content string) (*responses.AgentPromptTemplateResponse, error) {
+func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
+	collectionAddress string,
+	collectionTokenId uint64,
+	key, content string,
+) (*responses.AgentPromptTemplateResponse, error) {
 	body, err := json.Marshal(map[string]string{"content": content})
 	if err != nil {
 		return nil, err

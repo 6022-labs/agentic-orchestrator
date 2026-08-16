@@ -52,7 +52,12 @@ func startPostgres() string {
 		host, _ := container.Host(ctx)
 		port, _ := container.MappedPort(ctx, "5432")
 
-		postgresConnStrTemplate = fmt.Sprintf("host=%s port=%s dbname=%s user=postgres password=postgres sslmode=disable", host, port.Port(), "%s")
+		postgresConnStrTemplate = fmt.Sprintf(
+			"host=%s port=%s dbname=%s user=postgres password=postgres sslmode=disable",
+			host,
+			port.Port(),
+			"%s",
+		)
 
 		log.Println("PostgreSQL container started and ready")
 	}

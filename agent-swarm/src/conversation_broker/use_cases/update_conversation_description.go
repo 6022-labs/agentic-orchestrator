@@ -16,7 +16,9 @@ type UpdateConversationDescription struct {
 	conversationRepository repositories.ConversationRepositoryInterface
 }
 
-func NewUpdateConversationDescription(conversationRepository repositories.ConversationRepositoryInterface) *UpdateConversationDescription {
+func NewUpdateConversationDescription(
+	conversationRepository repositories.ConversationRepositoryInterface,
+) *UpdateConversationDescription {
 	return &UpdateConversationDescription{conversationRepository: conversationRepository}
 }
 

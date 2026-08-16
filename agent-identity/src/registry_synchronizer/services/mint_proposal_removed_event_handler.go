@@ -32,7 +32,10 @@ func (handler *MintProposalRemovedEventHandler) Handle(event *abi.AgentCollectio
 		zap.Uint64("proposalId", event.ProposalId.Uint64()),
 	)
 
-	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(event.Raw.Address.Hex(), event.ProposalId.Uint64())
+	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(
+		event.Raw.Address.Hex(),
+		event.ProposalId.Uint64(),
+	)
 	if err != nil {
 		return err
 	}

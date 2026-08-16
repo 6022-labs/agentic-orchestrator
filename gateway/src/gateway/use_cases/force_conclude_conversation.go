@@ -13,7 +13,9 @@ type ForceConcludeConversation struct {
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewForceConcludeConversation(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *ForceConcludeConversation {
+func NewForceConcludeConversation(
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
+) *ForceConcludeConversation {
 	return &ForceConcludeConversation{conversationBrokerRequester: conversationBrokerRequester}
 }
 

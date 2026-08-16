@@ -40,7 +40,11 @@ func NewAgentCardSignatureVerifier() *AgentCardSignatureVerifier {
 	return &AgentCardSignatureVerifier{}
 }
 
-func (v *AgentCardSignatureVerifier) Verify(raw []byte, signatures []models.AgentCardSignature, expectedSigner string) error {
+func (v *AgentCardSignatureVerifier) Verify(
+	raw []byte,
+	signatures []models.AgentCardSignature,
+	expectedSigner string,
+) error {
 	// No claim made — integrity is the node's responsibility, not ours to enforce.
 	if len(signatures) == 0 {
 		return nil
@@ -89,7 +93,11 @@ func (v *AgentCardSignatureVerifier) canonicalizeWithoutSignatures(raw []byte) (
 	return canonical, nil
 }
 
-func (v *AgentCardSignatureVerifier) verifyOne(canonical []byte, signature models.AgentCardSignature, expected common.Address) error {
+func (v *AgentCardSignatureVerifier) verifyOne(
+	canonical []byte,
+	signature models.AgentCardSignature,
+	expected common.Address,
+) error {
 	header, err := v.decodeProtectedHeader(signature.Protected)
 	if err != nil {
 		return err

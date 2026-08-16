@@ -108,7 +108,10 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			basics.mockAgentAddressRepository.EXPECT().
 				GetAllByAgentId(agent.ID).
 				Return([]*models.AgentAddress{
-					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").Build(),
+					model_builders.NewAgentAddressBuilder().
+						WithAgentId(agent.ID).
+						WithAddress("0x2f0ddd93040c19863527b0553feceb696862ea7d").
+						Build(),
 				}, nil).
 				Times(1)
 

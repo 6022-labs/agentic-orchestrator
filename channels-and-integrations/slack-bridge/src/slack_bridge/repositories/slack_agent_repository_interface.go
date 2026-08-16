@@ -6,5 +6,8 @@ type SlackAgentRepositoryInterface interface {
 	Save(entity *models.SlackAgent) (*models.SlackAgent, error)
 	UpdateOwnerWallet(collectionAddress string, collectionTokenId uint64, ownerWallet string) error
 	UpdateIconImageCid(collectionAddress string, collectionTokenId uint64, iconImageCid *string) error
-	GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error)
+	GetByCollectionAddressAndCollectionTokenId(
+		collectionAddress string,
+		collectionTokenId uint64,
+	) (*models.SlackAgent, error)
 }

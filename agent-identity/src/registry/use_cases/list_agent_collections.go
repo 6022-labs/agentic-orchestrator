@@ -13,7 +13,9 @@ type ListAgentCollections struct {
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface
 }
 
-func NewListAgentCollections(agentCollectionRepository repositories.AgentCollectionRepositoryInterface) *ListAgentCollections {
+func NewListAgentCollections(
+	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
+) *ListAgentCollections {
 	return &ListAgentCollections{agentCollectionRepository: agentCollectionRepository}
 }
 

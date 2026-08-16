@@ -51,10 +51,17 @@ func (r *SlackUserRepository) ListByIds(ids []string) ([]*models.SlackUser, erro
 	return entities, nil
 }
 
-func (r *SlackUserRepository) GetByPairedHumanAgent(collectionAddress string, collectionTokenId uint64) (*models.SlackUser, error) {
+func (r *SlackUserRepository) GetByPairedHumanAgent(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.SlackUser, error) {
 	var entity models.SlackUser
 	err := r.client.
-		Where("paired_human_agent_collection_address = ? AND paired_human_agent_collection_token_id = ?", collectionAddress, collectionTokenId).
+		Where(
+			"paired_human_agent_collection_address = ? AND paired_human_agent_collection_token_id = ?",
+			collectionAddress,
+			collectionTokenId,
+		).
 		First(&entity).
 		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

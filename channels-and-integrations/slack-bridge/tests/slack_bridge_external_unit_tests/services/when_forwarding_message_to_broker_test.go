@@ -224,7 +224,9 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			suite.mockSlackConversationRepository.EXPECT().
 				GetBySlackIds(channelId, threadTs).
 				Return(&models.SlackConversation{BrokerConversationID: brokerConvId}, nil)
-			suite.mockBrokerRequester.EXPECT().IngestMessage(brokerConvId, brokerUserId, "hi").Return(uuid.Nil, errors.New("boom"))
+			suite.mockBrokerRequester.EXPECT().
+				IngestMessage(brokerConvId, brokerUserId, "hi").
+				Return(uuid.Nil, errors.New("boom"))
 		}
 
 		t.Run("Should propagate the error and not save a message mapping", func(t *testing.T) {

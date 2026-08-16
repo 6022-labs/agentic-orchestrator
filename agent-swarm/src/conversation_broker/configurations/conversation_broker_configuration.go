@@ -181,12 +181,18 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewGetConversationMessages, dig.As(new(use_cases.GetConversationMessagesInterface)))
+	err = container.Provide(
+		use_cases.NewGetConversationMessages,
+		dig.As(new(use_cases.GetConversationMessagesInterface)),
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewListConversationParticipants, dig.As(new(use_cases.ListConversationParticipantsInterface)))
+	err = container.Provide(
+		use_cases.NewListConversationParticipants,
+		dig.As(new(use_cases.ListConversationParticipantsInterface)),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -196,7 +202,10 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewSaveAgentPromptTemplate, dig.As(new(use_cases.SaveAgentPromptTemplateInterface)))
+	err = container.Provide(
+		use_cases.NewSaveAgentPromptTemplate,
+		dig.As(new(use_cases.SaveAgentPromptTemplateInterface)),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -211,7 +220,10 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(use_cases.NewUpdateConversationDescription, dig.As(new(use_cases.UpdateConversationDescriptionInterface)))
+	err = container.Provide(
+		use_cases.NewUpdateConversationDescription,
+		dig.As(new(use_cases.UpdateConversationDescriptionInterface)),
+	)
 	if err != nil {
 		panic(err)
 	}

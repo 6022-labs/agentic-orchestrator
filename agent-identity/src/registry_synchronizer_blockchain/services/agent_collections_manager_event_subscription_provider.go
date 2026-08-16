@@ -39,7 +39,9 @@ func NewAgentCollectionsManagerEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionsManagerEventSubscriptionProvider) StartCollectionCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (s *AgentCollectionsManagerEventSubscriptionProvider) StartCollectionCreatedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionsManagerMetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err

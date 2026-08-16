@@ -26,7 +26,9 @@ func WhenGettingConversationMessagesBeforeEach(t *testing.T) *WhenGettingConvers
 	mockController := gomock.NewController(t)
 
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
-	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(mockController)
+	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(
+		mockController,
+	)
 
 	sut := use_cases.NewGetConversationMessages(mockConversationRepository, mockConversationMessageRepository)
 

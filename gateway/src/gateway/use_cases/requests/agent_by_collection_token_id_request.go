@@ -7,8 +7,8 @@ import (
 
 type AgentByCollectionTokenIdRequest struct {
 	AuthenticatedWallet    *common.Address `swaggerignore:"true"`
-	AgentCollectionAddress string          `param:"agentCollectionAddress" swaggerignore:"true"`
-	AgentCollectionTokenId uint64          `param:"agentCollectionTokenId" swaggerignore:"true"`
+	AgentCollectionAddress string          `swaggerignore:"true" param:"agentCollectionAddress"`
+	AgentCollectionTokenId uint64          `swaggerignore:"true" param:"agentCollectionTokenId"`
 }
 
 func (request *AgentByCollectionTokenIdRequest) EnsureAuthenticatedWallet() error {

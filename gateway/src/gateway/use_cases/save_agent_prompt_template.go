@@ -14,11 +14,15 @@ type SaveAgentPromptTemplate struct {
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewSaveAgentPromptTemplate(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *SaveAgentPromptTemplate {
+func NewSaveAgentPromptTemplate(
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
+) *SaveAgentPromptTemplate {
 	return &SaveAgentPromptTemplate{conversationBrokerRequester: conversationBrokerRequester}
 }
 
-func (uc *SaveAgentPromptTemplate) Save(request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (uc *SaveAgentPromptTemplate) Save(
+	request *requests.SaveAgentPromptTemplateRequest,
+) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

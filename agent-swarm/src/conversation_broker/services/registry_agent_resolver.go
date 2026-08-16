@@ -18,7 +18,7 @@ const (
 	registryAgentByEnsDomainCachePathTemplate  = "registry-agents/ens/%s"
 )
 
-// RegistryAgentResolver caches the registry's agent projection under every key it can be looked up by, so one fetch warms both paths.
+// RegistryAgentResolver caches the registry's agent projection under every lookup key, so one fetch warms both paths.
 type RegistryAgentResolver struct {
 	logger                          *zap.Logger
 	cacheStorage                    interfaces.CacheStorageInterface
@@ -41,10 +41,16 @@ func NewRegistryAgentResolver(
 	}
 }
 
-func (r *RegistryAgentResolver) ResolveByCollection(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
-	return r.resolve(r.collectionCachePath(collectionAddress, collectionTokenId), func() (*models.RegistryAgent, error) {
-		return r.agentRegistryRequester.GetAgent(collectionAddress, collectionTokenId)
-	})
+func (r *RegistryAgentResolver) ResolveByCollection(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.RegistryAgent, error) {
+	return r.resolve(
+		r.collectionCachePath(collectionAddress, collectionTokenId),
+		func() (*models.RegistryAgent, error) {
+			return r.agentRegistryRequester.GetAgent(collectionAddress, collectionTokenId)
+		},
+	)
 }
 
 func (r *RegistryAgentResolver) ResolveByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
@@ -68,7 +74,10 @@ func (r *RegistryAgentResolver) ensDomainCachePath(ensDomain string) string {
 }
 
 // resolve takes a per-key lock so concurrent misses collapse into one registry call.
-func (r *RegistryAgentResolver) resolve(cachePath string, fetch func() (*models.RegistryAgent, error)) (*models.RegistryAgent, error) {
+func (r *RegistryAgentResolver) resolve(
+	cachePath string,
+	fetch func() (*models.RegistryAgent, error),
+) (*models.RegistryAgent, error) {
 	if agent, ok := r.readCachedAgent(cachePath); ok {
 		return agent, nil
 	}

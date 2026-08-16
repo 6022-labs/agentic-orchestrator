@@ -49,7 +49,9 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 	}
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite) {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(
+	suite *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -117,7 +119,10 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				Build()
 			suite.sut.Save(agentModel)
 
-			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId("non-existing-address", collectionTokenId)
+			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+				"non-existing-address",
+				collectionTokenId,
+			)
 			assert.NoError(t, err)
 			assert.Nil(t, agent)
 		})

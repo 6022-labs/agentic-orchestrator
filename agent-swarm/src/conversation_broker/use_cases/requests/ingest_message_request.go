@@ -8,7 +8,7 @@ import (
 )
 
 type IngestMessageRequest struct {
-	ConversationID uuid.UUID `json:"-" params:"id"`
+	ConversationID uuid.UUID `json:"-"             params:"id"`
 	ParticipantID  uuid.UUID `json:"participantId"`
 	Content        string    `json:"content"`
 }

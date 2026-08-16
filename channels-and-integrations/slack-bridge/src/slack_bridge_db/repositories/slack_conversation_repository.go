@@ -19,7 +19,9 @@ func NewSlackConversationRepository(client *slack_bridge_db.DatabaseClient) *Sla
 	}
 }
 
-func (r *SlackConversationRepository) GetBySlackIds(slackChannelId, slackThreadTs string) (*models.SlackConversation, error) {
+func (r *SlackConversationRepository) GetBySlackIds(
+	slackChannelId, slackThreadTs string,
+) (*models.SlackConversation, error) {
 	var entity models.SlackConversation
 	err := r.client.
 		Where("slack_channel_id = ? AND slack_thread_ts = ?", slackChannelId, slackThreadTs).
@@ -34,7 +36,9 @@ func (r *SlackConversationRepository) GetBySlackIds(slackChannelId, slackThreadT
 	return &entity, nil
 }
 
-func (r *SlackConversationRepository) GetByBrokerConversationId(brokerConversationId uuid.UUID) (*models.SlackConversation, error) {
+func (r *SlackConversationRepository) GetByBrokerConversationId(
+	brokerConversationId uuid.UUID,
+) (*models.SlackConversation, error) {
 	var entity models.SlackConversation
 	err := r.client.
 		Where("broker_conversation_id = ?", brokerConversationId).

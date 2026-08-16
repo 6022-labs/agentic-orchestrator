@@ -30,7 +30,11 @@ func TestWhenLoadingAgentCollectionsManagerSettings(t *testing.T) {
 		t.Run("Should load it", func(t *testing.T) {
 			t.Parallel()
 
-			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, blockchainSettings)
+			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(
+				zap.NewNop(),
+				k,
+				blockchainSettings,
+			)
 
 			assert.NotNil(t, settings)
 			assert.Equal(t, common.HexToAddress(address), settings.SmartContractAddress)
@@ -45,7 +49,11 @@ func TestWhenLoadingAgentCollectionsManagerSettings(t *testing.T) {
 		t.Run("Should fall back to the built-in address for the chain", func(t *testing.T) {
 			t.Parallel()
 
-			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(zap.NewNop(), k, blockchainSettings)
+			settings := agent_collections_manager_settings.NewAgentCollectionsManagerSettings(
+				zap.NewNop(),
+				k,
+				blockchainSettings,
+			)
 
 			assert.NotNil(t, settings)
 			assert.NotEqual(t, common.Address{}, settings.SmartContractAddress)

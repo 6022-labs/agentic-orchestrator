@@ -20,7 +20,9 @@ func NewListConversations(conversationRepository repositories.ConversationReposi
 	return &ListConversations{conversationRepository: conversationRepository}
 }
 
-func (uc *ListConversations) List(request *requests.ListConversationsRequest) (*responses.ListConversationsResponse, error) {
+func (uc *ListConversations) List(
+	request *requests.ListConversationsRequest,
+) (*responses.ListConversationsResponse, error) {
 	request.Sanitize()
 
 	conversations, err := uc.conversationRepository.List(*request.Page, *request.ElementsPerPage)

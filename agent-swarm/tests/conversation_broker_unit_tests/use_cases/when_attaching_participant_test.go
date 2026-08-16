@@ -27,7 +27,9 @@ func WhenAttachingParticipantBeforeEach(t *testing.T) *WhenAttachingParticipantT
 
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
-	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(mockController)
+	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(
+		mockController,
+	)
 
 	sut := use_cases.NewAttachParticipant(
 		mockConversationRepository,

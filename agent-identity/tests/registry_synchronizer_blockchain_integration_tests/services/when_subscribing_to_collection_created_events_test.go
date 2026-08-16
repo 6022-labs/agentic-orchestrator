@@ -25,11 +25,13 @@ type WhenSubscribingToCollectionCreatedEventsTestingSuite struct {
 	sut     *services.AgentCollectionsManagerEventSubscriptionProvider
 }
 
-func WhenSubscribingToCollectionCreatedEventsBeforeEach(t *testing.T) *WhenSubscribingToCollectionCreatedEventsTestingSuite {
+func WhenSubscribingToCollectionCreatedEventsBeforeEach(
+	t *testing.T,
+) *WhenSubscribingToCollectionCreatedEventsTestingSuite {
 	fixture := newChainFixture(t)
 	return &WhenSubscribingToCollectionCreatedEventsTestingSuite{
 		fixture: fixture,
-		sut:     fixture.agentCollectionsManagerEventSubscriptionProvider(),
+		sut:     fixture.managerSubscriptionProvider(),
 	}
 }
 

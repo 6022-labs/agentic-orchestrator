@@ -14,7 +14,7 @@ type Bridge struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
 	Kind    enums.BridgeKind `gorm:"type:text;not null;index:idx_bridges_kind" json:"kind"`
-	BaseUrl string           `gorm:"type:text;not null" json:"baseUrl"`
+	BaseUrl string           `gorm:"type:text;not null"                        json:"baseUrl"`
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`

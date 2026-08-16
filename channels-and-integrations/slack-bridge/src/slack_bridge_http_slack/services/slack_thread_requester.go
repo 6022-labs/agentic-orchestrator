@@ -26,7 +26,11 @@ func NewSlackThreadRequester(
 	}
 }
 
-func (s *SlackThreadRequester) PushCompletionToThread(completion string, slackAgent *models.SlackAgent, slackChannelId, slackThreadId string) error {
+func (s *SlackThreadRequester) PushCompletionToThread(
+	completion string,
+	slackAgent *models.SlackAgent,
+	slackChannelId, slackThreadId string,
+) error {
 	request := &http_slack_models.ExternalPostMessageRequest{
 		Channel:  slackChannelId,
 		Text:     completion,

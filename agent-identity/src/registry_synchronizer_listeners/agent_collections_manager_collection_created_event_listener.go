@@ -57,7 +57,8 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen() error
 }
 
 func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll() error {
-	events, subscription, err := listener.agentCollectionsManagerEventSubscriptionProvider.StartCollectionCreatedSubscription(
+	provider := listener.agentCollectionsManagerEventSubscriptionProvider
+	events, subscription, err := provider.StartCollectionCreatedSubscription(
 		[]common.Address{listener.agentCollectionsManagerSettings.SmartContractAddress},
 	)
 	if err != nil {
@@ -72,13 +73,19 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll()
 
 	listener.logger.Info(
 		"subscribed to AgentCollectionsManager.CollectionCreated events",
-		zap.String("agentCollectionsManagerAddress", listener.agentCollectionsManagerSettings.SmartContractAddress.Hex()),
+		zap.String(
+			"agentCollectionsManagerAddress",
+			listener.agentCollectionsManagerSettings.SmartContractAddress.Hex(),
+		),
 	)
 
 	return nil
 }
 
-func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionsManagerCollectionCreated) {
+func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscriptionHandler(
+	subscription ethereum.Subscription,
+	eventChan <-chan *abi.AgentCollectionsManagerCollectionCreated,
+) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -95,7 +102,10 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionsManagerCollectionCreated{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(
+					event.Raw.BlockNumber,
+					[]*abi.AgentCollectionsManagerCollectionCreated{event},
+				); err != nil {
 					listener.logger.Error(
 						"failed to enqueue AgentCollectionsManager.CollectionCreated event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),

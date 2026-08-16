@@ -17,5 +17,9 @@ type ConversationRepositoryInterface interface {
 	// Facilitators are additionally throttled: a conversation is returned
 	// only when the facilitator's last message in it is older than
 	// facilitatorTickIntervalSeconds (or no message at all).
-	ListProcessableForParticipant(participant *models.Participant, role *enums.ParticipantRole, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error)
+	ListProcessableForParticipant(
+		participant *models.Participant,
+		role *enums.ParticipantRole,
+		facilitatorTickIntervalSeconds uint64,
+	) ([]*models.Conversation, error)
 }

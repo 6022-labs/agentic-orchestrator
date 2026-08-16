@@ -16,5 +16,9 @@ type ConversationMessageRepositoryInterface interface {
 	//   - facilitator: every message
 	//   - clone/expert: messages whose content mentions the participant's ENS domain
 	//   - human: messages from this participant OR mentioning their ENS domain
-	ListProcessableForParticipantAndConversation(participant *models.Participant, role *enums.ParticipantRole, conversationId uuid.UUID) ([]*models.ConversationMessage, error)
+	ListProcessableForParticipantAndConversation(
+		participant *models.Participant,
+		role *enums.ParticipantRole,
+		conversationId uuid.UUID,
+	) ([]*models.ConversationMessage, error)
 }

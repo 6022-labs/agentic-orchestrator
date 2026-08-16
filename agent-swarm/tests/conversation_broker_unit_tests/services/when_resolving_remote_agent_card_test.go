@@ -85,7 +85,10 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(cardWithResponses(), []byte(rawCardBody), nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().
 				Store("remote-agent-cards/agent.eth", gomock.Any(), gomock.Any()).
 				DoAndReturn(func(key, value string, ttl *time.Duration) error {
@@ -138,7 +141,10 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 					return "https://node.example", nil
 				}).
 				Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(cardWithResponses(), []byte(rawCardBody), nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().
 				Store(gomock.Any(), gomock.Any(), gomock.Any()).
 				DoAndReturn(func(key, value string, ttl *time.Duration) error {
@@ -209,7 +215,10 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("not-json", nil).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(cardWithResponses(), []byte(rawCardBody), nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 		}
 
@@ -232,7 +241,10 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(cardWithResponses(), []byte(rawCardBody), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(cardWithResponses(), []byte(rawCardBody), nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 		}
 
@@ -258,8 +270,19 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
-			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(model_builders.NewRegistryAgentBuilder().WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").Build(), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(signedCard(), []byte(rawCardBody), nil).
+				Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain("agent.eth").
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
+						Build(),
+					nil,
+				).
+				Times(1)
 			suite.mockAgentCardSignatureVerifier.EXPECT().
 				Verify([]byte(rawCardBody), signedCard().Signatures, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
 				Return(nil).
@@ -286,8 +309,19 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
-			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(model_builders.NewRegistryAgentBuilder().WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").Build(), nil).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(signedCard(), []byte(rawCardBody), nil).
+				Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain("agent.eth").
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
+						Build(),
+					nil,
+				).
+				Times(1)
 			suite.mockAgentCardSignatureVerifier.EXPECT().
 				Verify(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(errors.New("signer mismatch")).
@@ -314,8 +348,14 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
 			suite.mockCacheStorage.EXPECT().Read("remote-agent-cards/agent.eth").Return("", errors.New("miss")).Times(2)
 			suite.mockAgentUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
-			suite.mockRemoteAgentCardRequester.EXPECT().GetCard("https://node.example").Return(signedCard(), []byte(rawCardBody), nil).Times(1)
-			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain("agent.eth").Return(nil, errors.New("registry down")).Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard("https://node.example").
+				Return(signedCard(), []byte(rawCardBody), nil).
+				Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain("agent.eth").
+				Return(nil, errors.New("registry down")).
+				Times(1)
 		}
 
 		t.Run("Should fail", func(t *testing.T) {

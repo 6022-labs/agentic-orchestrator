@@ -25,7 +25,10 @@ func NewPlatformBridgeRequester(
 	}
 }
 
-func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(platform enums.BridgePlatform, challenge, walletAddress string) error {
+func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(
+	platform enums.BridgePlatform,
+	challenge, walletAddress string,
+) error {
 	client, found := r.platformClients[platform]
 	if !found {
 		return fmt.Errorf("unsupported platform: %s", platform)
@@ -39,7 +42,11 @@ func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(platform enums.Bridge
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	rsp, err := client.PostWalletSetOwnershipToSlackUserWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := client.PostWalletSetOwnershipToSlackUserWithBodyWithResponse(
+		context.Background(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return err
 	}

@@ -41,20 +41,30 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) *string {
 			var sentBody string
 
-			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).DoAndReturn(
-				func(_ any, _, _, _, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse, error) {
-					raw, _ := io.ReadAll(body)
-					sentBody = string(raw)
-					return &clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-						HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-						JSON200: &clients.ResponsesAgentPromptTemplateResponse{
-							CollectionAddress: lo.ToPtr("0xabc"),
-							CollectionTokenId: lo.ToPtr(7),
-							Key:               lo.ToPtr(clients.EnumsAgentPromptTemplateKey("clone-system")),
-							Content:           lo.ToPtr("You are {{name}}"),
-						},
-					}, nil
-				}).Times(1)
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				DoAndReturn(
+					func(_ any, _, _, _, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse, error) {
+						raw, _ := io.ReadAll(body)
+						sentBody = string(raw)
+						return &clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+							HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+							JSON200: &clients.ResponsesAgentPromptTemplateResponse{
+								CollectionAddress: lo.ToPtr("0xabc"),
+								CollectionTokenId: lo.ToPtr(7),
+								Key:               lo.ToPtr(clients.EnumsAgentPromptTemplateKey("clone-system")),
+								Content:           lo.ToPtr("You are {{name}}"),
+							},
+						}, nil
+					}).
+				Times(1)
 
 			return &sentBody
 		}
@@ -80,10 +90,22 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
-				Body:         []byte(`{"field":"key","message":"must be one of: expert-system, expert-default for agent role \"human\""}`),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
+					Body: []byte(
+						`{"field":"key","message":"must be one of: expert-system, expert-default for agent role \"human\""}`,
+					),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the broker validation error", func(t *testing.T) {
@@ -106,10 +128,20 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-				Body:         []byte(`{"resource":"agent","id":"0xabc/7"}`),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+					Body:         []byte(`{"resource":"agent","id":"0xabc/7"}`),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return a not found error", func(t *testing.T) {
@@ -129,10 +161,20 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -152,7 +194,17 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(gomock.Any(), "0xabc", "7", "clone-system", "application/json", gomock.Any()).Return(nil, stderrors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				Return(nil, stderrors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

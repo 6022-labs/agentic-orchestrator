@@ -7,15 +7,33 @@ import (
 )
 
 type AgentCollectionEventSubscriptionProviderInterface interface {
-	StartAgentAttributeUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error)
-	StartAgentAddressAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error)
-	StartAgentAddressRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error)
-	StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error)
-	StartAgentImageRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error)
+	StartAgentAttributeUpdatedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error)
+	StartAgentAddressAddedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error)
+	StartAgentAddressRemovedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error)
+	StartAgentImageUpdatedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error)
+	StartAgentImageRemovedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error)
 
-	StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)
-	StartMintProposalRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error)
-	StartMintedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error)
+	StartMintProposalCreatedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error)
+	StartMintProposalRemovedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error)
+	StartMintedSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error)
 
-	StartTransferSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error)
+	StartTransferSubscription(
+		addresses []common.Address,
+	) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error)
 }

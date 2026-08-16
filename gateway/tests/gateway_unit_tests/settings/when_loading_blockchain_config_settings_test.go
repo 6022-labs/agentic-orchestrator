@@ -29,8 +29,16 @@ func TestWhenLoadingBlockchainConfigSettings(t *testing.T) {
 
 			assert.NotNil(t, settings)
 			if assert.Len(t, settings.EvmChains, 1) {
-				assert.Equal(t, "0x39DD75a025145770a8b8278Cc8BA705116443Ea7", settings.EvmChains["80002"].CollectionsManagerAddress)
-				assert.Equal(t, "0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16", settings.EvmChains["80002"].CollectionCreatorAddress)
+				assert.Equal(
+					t,
+					"0x39DD75a025145770a8b8278Cc8BA705116443Ea7",
+					settings.EvmChains["80002"].CollectionsManagerAddress,
+				)
+				assert.Equal(
+					t,
+					"0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16",
+					settings.EvmChains["80002"].CollectionCreatorAddress,
+				)
 				assert.Equal(t, "https://amoy.polygonscan.com", settings.EvmChains["80002"].ScannerBaseUrl)
 			}
 		})

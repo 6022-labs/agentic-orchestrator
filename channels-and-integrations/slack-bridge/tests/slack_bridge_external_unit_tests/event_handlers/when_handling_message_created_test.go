@@ -40,8 +40,12 @@ func WhenHandlingMessageCreatedBeforeEach(t *testing.T) *WhenHandlingMessageCrea
 	mockSlackThreadRequester := interfaces_mocks.NewMockSlackThreadRequesterInterface(mockController)
 	mockSlackAgentRepository := repositories_mocks.NewMockSlackAgentRepositoryInterface(mockController)
 	mockBrokerMessageForwarder := external_interfaces_mocks.NewMockBrokerMessageForwarderInterface(mockController)
-	mockSlackUserSynchronizerCached := external_interfaces_mocks.NewMockSlackUserSynchronizerCachedInterface(mockController)
-	mockSlackChannelSynchronizerCached := external_interfaces_mocks.NewMockSlackChannelSynchronizerCachedInterface(mockController)
+	mockSlackUserSynchronizerCached := external_interfaces_mocks.NewMockSlackUserSynchronizerCachedInterface(
+		mockController,
+	)
+	mockSlackChannelSynchronizerCached := external_interfaces_mocks.NewMockSlackChannelSynchronizerCachedInterface(
+		mockController,
+	)
 
 	sut := event_handlers.NewMessageCreatedHandler(
 		zap.NewNop(),
@@ -172,7 +176,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 
 				agent := model_builders.NewSlackAgentBuilder().
@@ -219,7 +225,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 			}
 
@@ -246,7 +254,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 
 				suite.mockSlackAgentRepository.EXPECT().
@@ -289,7 +299,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 
 				slackUser := model_builders.NewSlackUserBuilder().
@@ -329,7 +341,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 				suite.mockSlackUserSynchronizerCached.EXPECT().Sync(*request.Event.User).Return(nil, assert.AnError)
 			}
@@ -362,7 +376,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
 				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
 
 				slackUser := model_builders.NewSlackUserBuilder().

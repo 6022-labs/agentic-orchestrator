@@ -41,7 +41,11 @@ func TestWhenDetachingParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenDetachingParticipantTestingSuite) {
 			suite.mockClient.EXPECT().
-				DeleteConversationsIdParticipantsParticipantIdWithResponse(gomock.Any(), conversationId.String(), participantId.String()).
+				DeleteConversationsIdParticipantsParticipantIdWithResponse(
+					gomock.Any(),
+					conversationId.String(),
+					participantId.String(),
+				).
 				Return(&clients.DeleteConversationsIdParticipantsParticipantIdResponse{
 					HTTPResponse: &http.Response{StatusCode: http.StatusNoContent},
 				}, nil).

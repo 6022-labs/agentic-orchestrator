@@ -16,7 +16,7 @@ type ConversationParticipant struct {
 	JoinedAt time.Time `gorm:"type:timestamptz;not null" json:"joinedAt"`
 
 	Conversation *Conversation `gorm:"foreignKey:ConversationID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
-	Participant  *Participant  `gorm:"foreignKey:ParticipantID;references:ID;constraint:OnDelete:CASCADE" json:"-"`
+	Participant  *Participant  `gorm:"foreignKey:ParticipantID;references:ID;constraint:OnDelete:CASCADE"  json:"-"`
 }
 
 func (entity *ConversationParticipant) BeforeCreate(tx *gorm.DB) (err error) {

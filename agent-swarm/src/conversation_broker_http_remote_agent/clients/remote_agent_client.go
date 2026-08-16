@@ -28,8 +28,16 @@ const (
 type RemoteAgentClientInterface interface {
 	// GetWellKnownCard also returns the body verbatim — signature verification runs over those bytes.
 	GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error)
-	CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error)
-	CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error)
+	CreateResponse(
+		endpointUrl, ensDomain string,
+		request *models.ExternalCreateResponseRequest,
+		headers *models.ExternalRequestHeaders,
+	) (*models.ExternalResponse, error)
+	CreateChatCompletion(
+		endpointUrl, ensDomain string,
+		request *models.ExternalChatCompletionRequest,
+		headers *models.ExternalRequestHeaders,
+	) (*models.ExternalChatCompletionResponse, error)
 }
 
 type RemoteAgentClient struct {
@@ -87,7 +95,11 @@ func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.Exte
 	return &card, body, nil
 }
 
-func (client *RemoteAgentClient) CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error) {
+func (client *RemoteAgentClient) CreateResponse(
+	endpointUrl, ensDomain string,
+	request *models.ExternalCreateResponseRequest,
+	headers *models.ExternalRequestHeaders,
+) (*models.ExternalResponse, error) {
 	var response models.ExternalResponse
 	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
@@ -95,7 +107,11 @@ func (client *RemoteAgentClient) CreateResponse(endpointUrl, ensDomain string, r
 	return &response, nil
 }
 
-func (client *RemoteAgentClient) CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error) {
+func (client *RemoteAgentClient) CreateChatCompletion(
+	endpointUrl, ensDomain string,
+	request *models.ExternalChatCompletionRequest,
+	headers *models.ExternalRequestHeaders,
+) (*models.ExternalChatCompletionResponse, error) {
 	var response models.ExternalChatCompletionResponse
 	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
@@ -121,7 +137,11 @@ func (client *RemoteAgentClient) setRequestHeaders(httpRequest *http.Request, he
 	}
 }
 
-func (client *RemoteAgentClient) post(url, ensDomain string, headers *models.ExternalRequestHeaders, requestBody, responseBody any) error {
+func (client *RemoteAgentClient) post(
+	url, ensDomain string,
+	headers *models.ExternalRequestHeaders,
+	requestBody, responseBody any,
+) error {
 	payload, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)

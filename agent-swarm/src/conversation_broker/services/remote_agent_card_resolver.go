@@ -82,7 +82,10 @@ func (r *RemoteAgentCardResolver) readCachedCard(cachePath string) (*models.Remo
 	return &card, true
 }
 
-func (r *RemoteAgentCardResolver) resolveAndCacheCard(ensDomain string, cachePath string) (*models.RemoteAgentCard, error) {
+func (r *RemoteAgentCardResolver) resolveAndCacheCard(
+	ensDomain string,
+	cachePath string,
+) (*models.RemoteAgentCard, error) {
 	agentUrl, err := r.agentUrlResolver.ResolveUrl(ensDomain)
 	if err != nil {
 		return nil, err

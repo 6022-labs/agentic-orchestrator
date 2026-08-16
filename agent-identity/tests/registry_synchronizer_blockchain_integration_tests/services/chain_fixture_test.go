@@ -52,10 +52,6 @@ func newChainFixture(t *testing.T) *chainFixture {
 	}
 }
 
-func (f *chainFixture) chainId() string {
-	return f.anvilAccountSettings.ChainId
-}
-
 func (f *chainFixture) agentCollectionsManagerSettings() *settings.AgentCollectionsManagerSettings {
 	return &settings.AgentCollectionsManagerSettings{SmartContractAddress: f.stack.Manager}
 }
@@ -80,18 +76,22 @@ func (f *chainFixture) agentCollectionsManagerRequester() *services.AgentCollect
 }
 
 func (f *chainFixture) agentCollectionEventSubscriptionProvider() *services.AgentCollectionEventSubscriptionProvider {
-	return services.NewAgentCollectionEventSubscriptionProvider(services.NewAgentCollectionEventSubscriptionProviderParams{
-		Logger: zap.NewNop(),
-		Client: f.wsClient,
-	})
+	return services.NewAgentCollectionEventSubscriptionProvider(
+		services.NewAgentCollectionEventSubscriptionProviderParams{
+			Logger: zap.NewNop(),
+			Client: f.wsClient,
+		},
+	)
 }
 
-func (f *chainFixture) agentCollectionsManagerEventSubscriptionProvider() *services.AgentCollectionsManagerEventSubscriptionProvider {
-	return services.NewAgentCollectionsManagerEventSubscriptionProvider(services.NewAgentCollectionsManagerEventSubscriptionProviderParams{
-		Logger:                          zap.NewNop(),
-		Client:                          f.wsClient,
-		AgentCollectionsManagerSettings: f.agentCollectionsManagerSettings(),
-	})
+func (f *chainFixture) managerSubscriptionProvider() *services.AgentCollectionsManagerEventSubscriptionProvider {
+	return services.NewAgentCollectionsManagerEventSubscriptionProvider(
+		services.NewAgentCollectionsManagerEventSubscriptionProviderParams{
+			Logger:                          zap.NewNop(),
+			Client:                          f.wsClient,
+			AgentCollectionsManagerSettings: f.agentCollectionsManagerSettings(),
+		},
+	)
 }
 
 func (f *chainFixture) currentBlock() uint64 {

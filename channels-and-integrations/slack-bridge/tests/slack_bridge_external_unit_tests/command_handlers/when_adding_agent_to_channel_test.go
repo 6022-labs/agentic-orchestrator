@@ -8,9 +8,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,11 +19,11 @@ import (
 type WhenAddingAgentToChannelTestingSuite struct {
 	sut *command_handlers.AddAgentToChannel
 
-	mockSlackAgentSynchronizer          *interfaces_mocks.MockSlackAgentSynchronizerInterface
-	mockSlackChannelSynchronizer        *interfaces_mocks.MockSlackChannelSynchronizerInterface
-	mockSlackChannelRepository          *repositories_mocks.MockSlackChannelRepositoryInterface
+	mockSlackAgentSynchronizer      *interfaces_mocks.MockSlackAgentSynchronizerInterface
+	mockSlackChannelSynchronizer    *interfaces_mocks.MockSlackChannelSynchronizerInterface
+	mockSlackChannelRepository      *repositories_mocks.MockSlackChannelRepositoryInterface
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelTestingSuite {
@@ -46,11 +46,11 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 	return &WhenAddingAgentToChannelTestingSuite{
 		sut: sut,
 
-		mockSlackAgentSynchronizer:          mockSlackAgentSynchronizer,
-		mockSlackChannelRepository:          mockSlackChannelRepository,
-		mockSlackChannelSynchronizer:        mockSlackChannelSynchronizer,
+		mockSlackAgentSynchronizer:      mockSlackAgentSynchronizer,
+		mockSlackChannelRepository:      mockSlackChannelRepository,
+		mockSlackChannelSynchronizer:    mockSlackChannelSynchronizer,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockBrokerRequester:                    mockBrokerRequester,
+		mockBrokerRequester:             mockBrokerRequester,
 	}
 }
 

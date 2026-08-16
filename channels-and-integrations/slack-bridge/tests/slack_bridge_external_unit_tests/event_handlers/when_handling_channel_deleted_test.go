@@ -6,8 +6,8 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ type WhenHandlingChannelDeletedTestingSuite struct {
 	sut *event_handlers.ChannelDeletedHandler
 
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenHandlingChannelDeletedBeforeEach(t *testing.T) *WhenHandlingChannelDeletedTestingSuite {
@@ -30,9 +30,9 @@ func WhenHandlingChannelDeletedBeforeEach(t *testing.T) *WhenHandlingChannelDele
 	sut := event_handlers.NewChannelDeletedHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
 
 	return &WhenHandlingChannelDeletedTestingSuite{
-		sut:                                 sut,
+		sut:                             sut,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockBrokerRequester:                    mockBrokerRequester,
+		mockBrokerRequester:             mockBrokerRequester,
 	}
 }
 

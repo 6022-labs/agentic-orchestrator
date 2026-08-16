@@ -38,15 +38,23 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesAgentPromptTemplateResponse{
-					CollectionAddress: lo.ToPtr("0xabc"),
-					CollectionTokenId: lo.ToPtr(7),
-					Key:               lo.ToPtr(clients.EnumsAgentPromptTemplateKey("clone-system")),
-					Content:           lo.ToPtr("You are {{name}}"),
-				},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+				).
+				Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesAgentPromptTemplateResponse{
+						CollectionAddress: lo.ToPtr("0xabc"),
+						CollectionTokenId: lo.ToPtr(7),
+						Key:               lo.ToPtr(clients.EnumsAgentPromptTemplateKey("clone-system")),
+						Content:           lo.ToPtr("You are {{name}}"),
+					},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the mapped template", func(t *testing.T) {
@@ -71,9 +79,17 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+				).
+				Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return a NotFoundError", func(t *testing.T) {
@@ -94,10 +110,18 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+				).
+				Return(&clients.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -117,7 +141,15 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(gomock.Any(), "0xabc", "7", "clone-system").Return(nil, stderrors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
+					gomock.Any(),
+					"0xabc",
+					"7",
+					"clone-system",
+				).
+				Return(nil, stderrors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

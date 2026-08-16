@@ -68,7 +68,11 @@ func completedResponseForTest() *http_node_models.ExternalResponse {
 	return &http_node_models.ExternalResponse{
 		Status: "completed",
 		Output: []*http_node_models.ExternalResponseOutput{
-			{Type: "message", Role: "assistant", Content: []*http_node_models.ExternalResponseOutputContent{{Type: "output_text", Text: "answer"}}},
+			{
+				Type:    "message",
+				Role:    "assistant",
+				Content: []*http_node_models.ExternalResponseOutputContent{{Type: "output_text", Text: "answer"}},
+			},
 		},
 	}
 }
@@ -85,7 +89,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given a responses endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite, turn *models.RemoteAgentInput) {
 			suite.noCachedChallenge()
@@ -101,7 +108,13 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 						Status: "completed",
 						Output: []*http_node_models.ExternalResponseOutput{
 							{Type: "reasoning"},
-							{Type: "message", Role: "assistant", Content: []*http_node_models.ExternalResponseOutputContent{{Type: "output_text", Text: "answer"}}},
+							{
+								Type: "message",
+								Role: "assistant",
+								Content: []*http_node_models.ExternalResponseOutputContent{
+									{Type: "output_text", Text: "answer"},
+								},
+							},
 						},
 					}, nil
 				}).
@@ -125,13 +138,21 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the response carries an error payload", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			suite.noCachedChallenge()
 			suite.mockRemoteAgentClient.EXPECT().
 				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
-				Return(&http_node_models.ExternalResponse{Error: &http_node_models.ExternalResponseError{Code: "server_error", Message: "boom"}}, nil).
+				Return(
+					&http_node_models.ExternalResponse{
+						Error: &http_node_models.ExternalResponseError{Code: "server_error", Message: "boom"},
+					},
+					nil,
+				).
 				Times(1)
 		}
 
@@ -150,7 +171,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given a chat completions endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{ChatCompletions: "https://node.example/api/chat"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{ChatCompletions: "https://node.example/api/chat"},
+		}
 
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite, turn *models.RemoteAgentInput) {
 			suite.noCachedChallenge()
@@ -162,7 +186,12 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 					assert.Equal(t, turn.Instructions, request.Messages[0].Content)
 					return &http_node_models.ExternalChatCompletionResponse{
 						Choices: []*http_node_models.ExternalChatCompletionChoice{
-							{Message: &http_node_models.ExternalChatCompletionMessage{Role: "assistant", Content: "chat answer"}},
+							{
+								Message: &http_node_models.ExternalChatCompletionMessage{
+									Role:    "assistant",
+									Content: "chat answer",
+								},
+							},
 						},
 					}, nil
 				}).
@@ -186,7 +215,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the response carries no message output", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			suite.noCachedChallenge()
@@ -211,14 +243,20 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the node answers 402 then accepts the signed free call", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{
 				X402Version: models.X402Version,
 				Accepts:     []models.X402PaymentOption{{Scheme: models.X402SchemeExact, Network: "eip155:80002"}},
 			}
-			paymentPayload := &models.X402PaymentPayload{X402Version: models.X402Version, Scheme: models.X402SchemeExact}
+			paymentPayload := &models.X402PaymentPayload{
+				X402Version: models.X402Version,
+				Scheme:      models.X402SchemeExact,
+			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
 			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(nil, false)
@@ -229,7 +267,12 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), &http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader}).
+				CreateResponse(
+					card.Endpoints.Responses,
+					"agent.eth",
+					gomock.Any(),
+					&http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader},
+				).
 				Return(completedResponseForTest(), nil).
 				Times(1)
 		}
@@ -250,17 +293,28 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given cached payment challenge exist", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
-			paymentPayload := &models.X402PaymentPayload{X402Version: models.X402Version, Scheme: models.X402SchemeExact}
+			paymentPayload := &models.X402PaymentPayload{
+				X402Version: models.X402Version,
+				Scheme:      models.X402SchemeExact,
+			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
 			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(challenge, true)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), &http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader}).
+				CreateResponse(
+					card.Endpoints.Responses,
+					"agent.eth",
+					gomock.Any(),
+					&http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader},
+				).
 				Return(completedResponseForTest(), nil).
 				Times(1)
 		}
@@ -281,20 +335,31 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the node rejects the pre-signed call with identical terms", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{
 				X402Version: models.X402Version,
 				Accepts:     []models.X402PaymentOption{{Scheme: models.X402SchemeExact, Network: "eip155:80002"}},
 			}
-			paymentPayload := &models.X402PaymentPayload{X402Version: models.X402Version, Scheme: models.X402SchemeExact}
+			paymentPayload := &models.X402PaymentPayload{
+				X402Version: models.X402Version,
+				Scheme:      models.X402SchemeExact,
+			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
 			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(challenge, true)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), &http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader}).
+				CreateResponse(
+					card.Endpoints.Responses,
+					"agent.eth",
+					gomock.Any(),
+					&http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader},
+				).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))).
 				Times(1)
 			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
@@ -316,7 +381,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the signer cannot sign after a 402", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
@@ -346,7 +414,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 	t.Run("Given the node answers 402 twice", func(t *testing.T) {
 		t.Parallel()
 
-		card := &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
 
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
@@ -361,7 +432,12 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), &http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader}).
+				CreateResponse(
+					card.Endpoints.Responses,
+					"agent.eth",
+					gomock.Any(),
+					&http_node_models.ExternalRequestHeaders{PaymentSignature: expectedSignatureHeader},
+				).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", "retry-header")).
 				Times(1)
 		}

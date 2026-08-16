@@ -52,7 +52,10 @@ func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompleti
 		return ErrConversationLinkNotFound
 	}
 
-	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId)
+	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+		request.CollectionAddress,
+		request.CollectionTokenId,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack agent: %w", err)
 	}
@@ -60,7 +63,12 @@ func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompleti
 		return ErrSlackAgentNotFound
 	}
 
-	if err := uc.slackThreadRequester.PushCompletionToThread(request.Content, slackAgent, link.SlackChannelId, link.SlackThreadTs); err != nil {
+	if err := uc.slackThreadRequester.PushCompletionToThread(
+		request.Content,
+		slackAgent,
+		link.SlackChannelId,
+		link.SlackThreadTs,
+	); err != nil {
 		return fmt.Errorf("failed to post completion to slack thread: %w", err)
 	}
 

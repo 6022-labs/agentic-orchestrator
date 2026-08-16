@@ -13,7 +13,9 @@ type ListConversations struct {
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
-func NewListConversations(conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface) *ListConversations {
+func NewListConversations(
+	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
+) *ListConversations {
 	return &ListConversations{conversationBrokerRequester: conversationBrokerRequester}
 }
 

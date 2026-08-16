@@ -79,7 +79,8 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fi
 	addRequest, err := request.ToAddAgentToChannelRequest()
 	if err != nil {
 		controller.logger.Error("Failed to convert request to AddAgentToChannelRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format, expected: [collection address] [token ID]")
+		return c.Status(fiber.StatusBadRequest).
+			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
 	if err := controller.addAgentToChannel.Add(addRequest); err != nil {
@@ -164,7 +165,8 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 	removeRequest, err := request.ToRemoveAgentFromChannelRequest()
 	if err != nil {
 		controller.logger.Error("Failed to convert request to RemoveAgentFromChannelRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format, expected: [collection address] [token ID]")
+		return c.Status(fiber.StatusBadRequest).
+			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
 	if err := controller.removeAgentFromChannel.Remove(removeRequest); err != nil {
@@ -241,7 +243,9 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 	pairRequest, err := request.ToPairSlackUserToHumanAgentRequest()
 	if err != nil {
 		controller.logger.Error("Failed to convert request to PairSlackUserToHumanAgentRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format, expected: [slack user ID] [human agent collection address] [human agent collection token ID]")
+		return c.Status(fiber.StatusBadRequest).
+			SendString("Invalid command format, expected: " +
+				"[slack user ID] [human agent collection address] [human agent collection token ID]")
 	}
 
 	if err := controller.pairSlackUserToHumanAgent.Pair(pairRequest); err != nil {

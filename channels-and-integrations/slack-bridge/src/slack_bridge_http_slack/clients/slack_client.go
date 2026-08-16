@@ -16,8 +16,12 @@ import (
 type SlackClientInterface interface {
 	PostMessage(request *models.ExternalPostMessageRequest) (*models.ExternalPostMessageResponse, error)
 	JoinConversation(request *models.ExternalJoinConversationRequest) (*models.ExternalJoinConversationResponse, error)
-	GetConversationInfo(request *models.ExternalGetConversationInfoRequest) (*models.ExternalGetConversationInfoResponse, error)
-	GetConversationMembers(request *models.ExternalGetConversationMembersRequest) (*models.ExternalGetConversationMembersResponse, error)
+	GetConversationInfo(
+		request *models.ExternalGetConversationInfoRequest,
+	) (*models.ExternalGetConversationInfoResponse, error)
+	GetConversationMembers(
+		request *models.ExternalGetConversationMembersRequest,
+	) (*models.ExternalGetConversationMembersResponse, error)
 	GetUsersInfo(request *models.ExternalGetUsersInfoRequest) (*models.ExternalGetUsersInfoResponse, error)
 }
 
@@ -53,7 +57,9 @@ func NewSlackClient(
 	}
 }
 
-func (s *SlackClient) PostMessage(request *models.ExternalPostMessageRequest) (*models.ExternalPostMessageResponse, error) {
+func (s *SlackClient) PostMessage(
+	request *models.ExternalPostMessageRequest,
+) (*models.ExternalPostMessageResponse, error) {
 	url := s.slackSettings.ApiBaseURL + POST_MESSAGE_ENDPOINT
 	jsonBody, err := json.Marshal(request)
 	if err != nil {
@@ -93,7 +99,12 @@ func (s *SlackClient) PostMessage(request *models.ExternalPostMessageRequest) (*
 
 	var slackResp models.ExternalPostMessageResponse
 	if err := json.Unmarshal(bodyBytes, &slackResp); err != nil {
-		s.logger.Error("Failed to decode Slack response", zap.String("url", url), zap.String("raw_response", bodyString), zap.Error(err))
+		s.logger.Error(
+			"Failed to decode Slack response",
+			zap.String("url", url),
+			zap.String("raw_response", bodyString),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
@@ -105,14 +116,22 @@ func (s *SlackClient) PostMessage(request *models.ExternalPostMessageRequest) (*
 	return &slackResp, nil
 }
 
-func (s *SlackClient) JoinConversation(request *models.ExternalJoinConversationRequest) (*models.ExternalJoinConversationResponse, error) {
+func (s *SlackClient) JoinConversation(
+	request *models.ExternalJoinConversationRequest,
+) (*models.ExternalJoinConversationResponse, error) {
 	url := s.slackSettings.ApiBaseURL + JOIN_CONVERSATION_ENDPOINT
 	jsonBody, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	s.logger.Debug("Sending POST to Slack", zap.String("url", url), zap.ByteString("body", jsonBody), zap.String("method", "POST"), zap.String("token", s.slackSettings.BotToken))
+	s.logger.Debug(
+		"Sending POST to Slack",
+		zap.String("url", url),
+		zap.ByteString("body", jsonBody),
+		zap.String("method", "POST"),
+		zap.String("token", s.slackSettings.BotToken),
+	)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -139,7 +158,12 @@ func (s *SlackClient) JoinConversation(request *models.ExternalJoinConversationR
 
 	var slackResp models.ExternalJoinConversationResponse
 	if err := json.Unmarshal(bodyBytes, &slackResp); err != nil {
-		s.logger.Error("Failed to decode Slack response", zap.String("url", url), zap.String("raw_response", bodyString), zap.Error(err))
+		s.logger.Error(
+			"Failed to decode Slack response",
+			zap.String("url", url),
+			zap.String("raw_response", bodyString),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
@@ -151,10 +175,17 @@ func (s *SlackClient) JoinConversation(request *models.ExternalJoinConversationR
 	return &slackResp, nil
 }
 
-func (s *SlackClient) GetConversationInfo(request *models.ExternalGetConversationInfoRequest) (*models.ExternalGetConversationInfoResponse, error) {
+func (s *SlackClient) GetConversationInfo(
+	request *models.ExternalGetConversationInfoRequest,
+) (*models.ExternalGetConversationInfoResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_CONVERSATION_INFO_ENDPOINT + "?channel=" + request.Channel
 
-	s.logger.Debug("Sending GET to Slack", zap.String("url", url), zap.String("method", "GET"), zap.String("token", s.slackSettings.BotToken))
+	s.logger.Debug(
+		"Sending GET to Slack",
+		zap.String("url", url),
+		zap.String("method", "GET"),
+		zap.String("token", s.slackSettings.BotToken),
+	)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -182,7 +213,12 @@ func (s *SlackClient) GetConversationInfo(request *models.ExternalGetConversatio
 
 	var slackResp models.ExternalGetConversationInfoResponse
 	if err := json.Unmarshal(bodyBytes, &slackResp); err != nil {
-		s.logger.Error("Failed to decode Slack response", zap.String("url", url), zap.String("raw_response", bodyString), zap.Error(err))
+		s.logger.Error(
+			"Failed to decode Slack response",
+			zap.String("url", url),
+			zap.String("raw_response", bodyString),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
@@ -194,10 +230,17 @@ func (s *SlackClient) GetConversationInfo(request *models.ExternalGetConversatio
 	return &slackResp, nil
 }
 
-func (s *SlackClient) GetConversationMembers(request *models.ExternalGetConversationMembersRequest) (*models.ExternalGetConversationMembersResponse, error) {
+func (s *SlackClient) GetConversationMembers(
+	request *models.ExternalGetConversationMembersRequest,
+) (*models.ExternalGetConversationMembersResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_CONVERSATION_MEMBERS_ENDPOINT + "?channel=" + request.Channel
 
-	s.logger.Debug("Sending GET to Slack", zap.String("url", url), zap.String("method", "GET"), zap.String("token", s.slackSettings.BotToken))
+	s.logger.Debug(
+		"Sending GET to Slack",
+		zap.String("url", url),
+		zap.String("method", "GET"),
+		zap.String("token", s.slackSettings.BotToken),
+	)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -225,7 +268,12 @@ func (s *SlackClient) GetConversationMembers(request *models.ExternalGetConversa
 
 	var slackResp models.ExternalGetConversationMembersResponse
 	if err := json.Unmarshal(bodyBytes, &slackResp); err != nil {
-		s.logger.Error("Failed to decode Slack response", zap.String("url", url), zap.String("raw_response", bodyString), zap.Error(err))
+		s.logger.Error(
+			"Failed to decode Slack response",
+			zap.String("url", url),
+			zap.String("raw_response", bodyString),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 
@@ -237,10 +285,17 @@ func (s *SlackClient) GetConversationMembers(request *models.ExternalGetConversa
 	return &slackResp, nil
 }
 
-func (s *SlackClient) GetUsersInfo(request *models.ExternalGetUsersInfoRequest) (*models.ExternalGetUsersInfoResponse, error) {
+func (s *SlackClient) GetUsersInfo(
+	request *models.ExternalGetUsersInfoRequest,
+) (*models.ExternalGetUsersInfoResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_USERS_INFO_ENDPOINT + "?user=" + request.User
 
-	s.logger.Debug("Sending GET to Slack", zap.String("url", url), zap.String("method", "GET"), zap.String("token", s.slackSettings.BotToken))
+	s.logger.Debug(
+		"Sending GET to Slack",
+		zap.String("url", url),
+		zap.String("method", "GET"),
+		zap.String("token", s.slackSettings.BotToken),
+	)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -268,7 +323,12 @@ func (s *SlackClient) GetUsersInfo(request *models.ExternalGetUsersInfoRequest) 
 
 	var slackResp models.ExternalGetUsersInfoResponse
 	if err := json.Unmarshal(bodyBytes, &slackResp); err != nil {
-		s.logger.Error("Failed to decode Slack response", zap.String("url", url), zap.String("raw_response", bodyString), zap.Error(err))
+		s.logger.Error(
+			"Failed to decode Slack response",
+			zap.String("url", url),
+			zap.String("raw_response", bodyString),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 

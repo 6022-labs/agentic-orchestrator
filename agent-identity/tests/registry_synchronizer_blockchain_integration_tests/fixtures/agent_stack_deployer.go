@@ -164,7 +164,12 @@ func CreateCollection(
 		return common.Address{}, err
 	}
 	var collection common.Address
-	if err := deployer.Call(boundManager, &collection, "collections", new(big.Int).Sub(nextCollectionId, big.NewInt(1))); err != nil {
+	if err := deployer.Call(
+		boundManager,
+		&collection,
+		"collections",
+		new(big.Int).Sub(nextCollectionId, big.NewInt(1)),
+	); err != nil {
 		return common.Address{}, err
 	}
 	return collection, nil

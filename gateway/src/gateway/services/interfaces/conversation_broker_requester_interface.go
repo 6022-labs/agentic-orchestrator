@@ -13,8 +13,16 @@ type ConversationBrokerRequesterInterface interface {
 	GetConversationMessages(conversationId uuid.UUID) ([]*responses.BrokerMessageResponse, error)
 	ListConversationParticipants(conversationId uuid.UUID) ([]*responses.BrokerParticipantResponse, error)
 	ForceConcludeConversation(conversationId uuid.UUID) error
-	GetAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key string) (*responses.AgentPromptTemplateResponse, error)
-	SaveAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key, content string) (*responses.AgentPromptTemplateResponse, error)
+	GetAgentPromptTemplate(
+		collectionAddress string,
+		collectionTokenId uint64,
+		key string,
+	) (*responses.AgentPromptTemplateResponse, error)
+	SaveAgentPromptTemplate(
+		collectionAddress string,
+		collectionTokenId uint64,
+		key, content string,
+	) (*responses.AgentPromptTemplateResponse, error)
 	GetAgentCard(ensDomain string) (*responses.AgentCardResponse, error)
 	GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error)
 }

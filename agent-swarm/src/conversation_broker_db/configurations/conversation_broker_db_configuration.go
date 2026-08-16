@@ -26,13 +26,15 @@ func AddConversationBrokerDbConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	err = container.Provide(func(factory *factories.DatabaseClientFactory, logger *zap.Logger) db_clients.DatabaseClientInterface {
-		dbClient, err := factory.CreateDatabaseClient()
-		if err != nil {
-			logger.Fatal("Failed to create conversation broker database client", zap.Error(err))
-		}
-		return dbClient
-	})
+	err = container.Provide(
+		func(factory *factories.DatabaseClientFactory, logger *zap.Logger) db_clients.DatabaseClientInterface {
+			dbClient, err := factory.CreateDatabaseClient()
+			if err != nil {
+				logger.Fatal("Failed to create conversation broker database client", zap.Error(err))
+			}
+			return dbClient
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

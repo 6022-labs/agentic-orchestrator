@@ -26,7 +26,9 @@ func WhenSavingAgentPromptTemplateBeforeEach(t *testing.T) *WhenSavingAgentPromp
 	mockController := gomock.NewController(t)
 
 	mockAgentRegistryRequester := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
-	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(mockController)
+	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(
+		mockController,
+	)
 
 	sut := use_cases.NewSaveAgentPromptTemplate(mockAgentRegistryRequester, mockAgentPromptTemplateRepository)
 
@@ -74,7 +76,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest, role string) {
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
-				Return(model_builders.NewRegistryAgentBuilder().WithRole(role).WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).Build(), nil).
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithRole(role).
+						WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).
+						Build(),
+					nil,
+				).
 				Times(1)
 		}
 
@@ -134,7 +142,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest, role string) {
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
-				Return(model_builders.NewRegistryAgentBuilder().WithRole(role).WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).Build(), nil).
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithRole(role).
+						WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).
+						Build(),
+					nil,
+				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
@@ -227,7 +241,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
-				Return(model_builders.NewRegistryAgentBuilder().WithRole("clone").WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).Build(), nil).
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithRole("clone").
+						WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).
+						Build(),
+					nil,
+				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
@@ -272,7 +292,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
-				Return(model_builders.NewRegistryAgentBuilder().WithRole("clone").WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).Build(), nil).
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithRole("clone").
+						WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).
+						Build(),
+					nil,
+				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
@@ -307,7 +333,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
 				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
-				Return(model_builders.NewRegistryAgentBuilder().WithRole("clone").WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).Build(), nil).
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithRole("clone").
+						WithCollection(request.CollectionAddress, request.ParsedCollectionTokenId()).
+						Build(),
+					nil,
+				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).

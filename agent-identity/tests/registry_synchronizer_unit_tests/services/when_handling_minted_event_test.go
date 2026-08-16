@@ -37,8 +37,12 @@ func WhenHandlingMintedEventBeforeEach(t *testing.T) *WhenHandlingMintedEventTes
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
 	agentAddressRepositoryMock := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
-	decentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
-	agentCollectionBlockchainRequester := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
+	decentralizedDomainNameBuilder := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(
+		mockController,
+	)
+	agentCollectionBlockchainRequester := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(
+		mockController,
+	)
 
 	sut := services.NewMintedEventHandler(
 		zap.NewNop(),
@@ -292,7 +296,10 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			suite.agentAddressRepositoryMock.
 				EXPECT().
 				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(wallet.Hex())).
-				Return(model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress(strings.ToLower(wallet.Hex())).Build(), nil)
+				Return(model_builders.NewAgentAddressBuilder().
+					WithAgentId(agent.ID).
+					WithAddress(strings.ToLower(wallet.Hex())).
+					Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
 				GetById(agent.ID).

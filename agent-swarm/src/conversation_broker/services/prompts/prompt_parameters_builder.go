@@ -17,14 +17,20 @@ type PromptParametersBuilder struct {
 	params                map[string]any
 }
 
-func NewPromptParametersBuilder(registryAgentResolver interfaces.RegistryAgentResolverInterface) *PromptParametersBuilder {
+func NewPromptParametersBuilder(
+	registryAgentResolver interfaces.RegistryAgentResolverInterface,
+) *PromptParametersBuilder {
 	return &PromptParametersBuilder{
 		registryAgentResolver: registryAgentResolver,
 		params:                map[string]any{},
 	}
 }
 
-func (b *PromptParametersBuilder) WithParam(path []string, value any, parameterType *PromptParameterType) *PromptParametersBuilder {
+func (b *PromptParametersBuilder) WithParam(
+	path []string,
+	value any,
+	parameterType *PromptParameterType,
+) *PromptParametersBuilder {
 	if len(path) == 0 {
 		return b
 	}
@@ -176,7 +182,11 @@ func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]a
 	return nil
 }
 
-func (b *PromptParametersBuilder) resolvePotentialAgentParameter(target map[string]any, baseKey string, value any) error {
+func (b *PromptParametersBuilder) resolvePotentialAgentParameter(
+	target map[string]any,
+	baseKey string,
+	value any,
+) error {
 	strVal, ok := value.(string)
 	if !ok {
 		return fmt.Errorf("expected string value for potential agent, got %T", value)
@@ -192,7 +202,11 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(target map[stri
 	return nil
 }
 
-func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(target map[string]any, baseKey string, value any) error {
+func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(
+	target map[string]any,
+	baseKey string,
+	value any,
+) error {
 	strVals, err := b.interfaceToStringSlice(value)
 	if err != nil {
 		return err
@@ -257,7 +271,10 @@ func (b *PromptParametersBuilder) newAgentPromptParameter(agent *models.Registry
 	}
 }
 
-func (b *PromptParametersBuilder) newPotentialAgentPromptParameter(name string, agent *models.RegistryAgent) *potentialAgentPromptParameter {
+func (b *PromptParametersBuilder) newPotentialAgentPromptParameter(
+	name string,
+	agent *models.RegistryAgent,
+) *potentialAgentPromptParameter {
 	this := &potentialAgentPromptParameter{
 		Name:    name,
 		IsAgent: agent != nil,

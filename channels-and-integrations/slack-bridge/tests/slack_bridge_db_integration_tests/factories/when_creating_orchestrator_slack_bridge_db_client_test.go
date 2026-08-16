@@ -41,7 +41,9 @@ func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach() *WhenCreatingOrches
 	}
 }
 
-func WhenCreatingOrchestratorSlackBridgeDbClientAfterEach(suite *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite) {
+func WhenCreatingOrchestratorSlackBridgeDbClientAfterEach(
+	suite *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

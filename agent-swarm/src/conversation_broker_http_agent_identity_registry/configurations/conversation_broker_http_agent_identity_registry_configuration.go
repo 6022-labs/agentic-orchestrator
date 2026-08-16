@@ -19,8 +19,13 @@ func AddConversationBrokerHttpAgentIdentityRegistryConfiguration(container *dig.
 
 	err = container.Provide(
 		func(agentIdentityRegistrySettings *settings.AgentIdentityRegistrySettings) (clients.ClientWithResponsesInterface, error) {
-			httpClient := &http.Client{Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second}
-			return clients.NewClientWithResponses(agentIdentityRegistrySettings.BaseUrl, clients.WithHTTPClient(httpClient))
+			httpClient := &http.Client{
+				Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second,
+			}
+			return clients.NewClientWithResponses(
+				agentIdentityRegistrySettings.BaseUrl,
+				clients.WithHTTPClient(httpClient),
+			)
 		},
 	)
 	if err != nil {

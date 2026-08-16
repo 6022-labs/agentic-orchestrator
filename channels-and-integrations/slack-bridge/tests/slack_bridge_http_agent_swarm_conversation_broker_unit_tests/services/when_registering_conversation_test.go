@@ -52,7 +52,11 @@ func TestWhenRegisteringConversation(t *testing.T) {
 					assert.NoError(t, json.NewDecoder(body).Decode(&request))
 					assert.Equal(t, bridgeId.String(), *request.BridgeId)
 					assert.Equal(t, "demo", *request.Description)
-					assert.Equal(t, []string{participantIds[0].String(), participantIds[1].String()}, *request.ParticipantIds)
+					assert.Equal(
+						t,
+						[]string{participantIds[0].String(), participantIds[1].String()},
+						*request.ParticipantIds,
+					)
 
 					return &clients.PostConversationsResponse{
 						HTTPResponse: &http.Response{StatusCode: http.StatusCreated},

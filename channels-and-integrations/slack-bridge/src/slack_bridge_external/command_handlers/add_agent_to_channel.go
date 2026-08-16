@@ -46,7 +46,8 @@ func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) erro
 	}
 	if slackChannel != nil {
 		channelContainAgent := lo.ContainsBy(slackChannel.Agents, func(agent models.SlackAgent) bool {
-			return agent.CollectionAddress == request.CollectionAddress && agent.CollectionTokenId == request.CollectionTokenId
+			return agent.CollectionAddress == request.CollectionAddress &&
+				agent.CollectionTokenId == request.CollectionTokenId
 		})
 
 		if channelContainAgent { // Do not add the agent if it's already in the channel
@@ -81,8 +82,15 @@ func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) erro
 		return fmt.Errorf("failed to list slack conversations for channel %s: %w", request.ChannelID, err)
 	}
 	for _, conversation := range conversations {
-		if err := h.conversationBrokerRequester.AttachParticipant(conversation.BrokerConversationID, *slackAgent.BrokerParticipantId); err != nil {
-			return fmt.Errorf("failed to attach agent to broker conversation %s: %w", conversation.BrokerConversationID, err)
+		if err := h.conversationBrokerRequester.AttachParticipant(
+			conversation.BrokerConversationID,
+			*slackAgent.BrokerParticipantId,
+		); err != nil {
+			return fmt.Errorf(
+				"failed to attach agent to broker conversation %s: %w",
+				conversation.BrokerConversationID,
+				err,
+			)
 		}
 	}
 

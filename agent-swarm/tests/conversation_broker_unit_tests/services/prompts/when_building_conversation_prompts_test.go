@@ -24,7 +24,9 @@ type WhenBuildingConversationPromptsTestingSuite struct {
 func WhenBuildingConversationPromptsBeforeEach(t *testing.T) *WhenBuildingConversationPromptsTestingSuite {
 	mockController := gomock.NewController(t)
 
-	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(mockController)
+	mockAgentPromptTemplateRepository := repositories_mocks.NewMockAgentPromptTemplateRepositoryInterface(
+		mockController,
+	)
 	mockRegistryAgentResolver := interfaces_mocks.NewMockRegistryAgentResolverInterface(mockController)
 
 	sut := prompts.NewConversationPromptBuilder(mockAgentPromptTemplateRepository, mockRegistryAgentResolver)
@@ -67,7 +69,12 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
 				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyCloneDefault).
-				Return(model_builders.NewAgentPromptTemplateBuilder().WithContent("REPLY TO {{.LatestRequest.Content}}").Build(), nil).
+				Return(
+					model_builders.NewAgentPromptTemplateBuilder().
+						WithContent("REPLY TO {{.LatestRequest.Content}}").
+						Build(),
+					nil,
+				).
 				Times(1)
 			// ChannelMembers + Latest/Initial authors resolve through the registry.
 			suite.mockRegistryAgentResolver.EXPECT().
@@ -82,7 +89,14 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput("slack", agent, lo.ToPtr(enums.ParticipantRoleClone), conversation, messages, participants)
+			turn, err := suite.sut.BuildInput(
+				"slack",
+				agent,
+				lo.ToPtr(enums.ParticipantRoleClone),
+				conversation,
+				messages,
+				participants,
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "SYSTEM "+*conversation.Description, turn.Instructions)
@@ -128,7 +142,14 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput("web", agent, lo.ToPtr(enums.ParticipantRoleClone), conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
+			turn, err := suite.sut.BuildInput(
+				"web",
+				agent,
+				lo.ToPtr(enums.ParticipantRoleClone),
+				conversation,
+				[]*models.ConversationMessage{message},
+				[]*models.Participant{agent},
+			)
 
 			assert.NoError(t, err)
 			assert.NotEmpty(t, turn.Instructions)
@@ -156,7 +177,11 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyFacilitatorConclude).
+				GetByAgentAndKey(
+					*agent.CollectionAddress,
+					*agent.CollectionTokenId,
+					enums.AgentPromptTemplateKeyFacilitatorConclude,
+				).
 				Return(nil, nil).
 				Times(1)
 			suite.mockRegistryAgentResolver.EXPECT().
@@ -171,7 +196,15 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			concludeTurn, err := suite.sut.BuildConcludeInput(baseTurn, []string{"first completion"}, agent, lo.ToPtr(enums.ParticipantRoleFacilitator), conversation, messages, participants)
+			concludeTurn, err := suite.sut.BuildConcludeInput(
+				baseTurn,
+				[]string{"first completion"},
+				agent,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				conversation,
+				messages,
+				participants,
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, baseTurn.Instructions, concludeTurn.Instructions)
@@ -195,7 +228,14 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 
-			_, err := suite.sut.BuildInput("web", agent, lo.ToPtr(enums.ParticipantRoleHuman), conversation, []*models.ConversationMessage{message}, []*models.Participant{agent})
+			_, err := suite.sut.BuildInput(
+				"web",
+				agent,
+				lo.ToPtr(enums.ParticipantRoleHuman),
+				conversation,
+				[]*models.ConversationMessage{message},
+				[]*models.Participant{agent},
+			)
 
 			assert.Error(t, err)
 		})

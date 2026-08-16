@@ -51,11 +51,18 @@ func NewAgentCollectionsManagerSettings(
 	}
 
 	if len(addressStr) == 0 {
-		logger.Fatal("no built-in AgentCollectionsManager for this chain, please set your agent_collections_manager.smart_contract_address value in your configuration", zap.Int64("chainId", blockchainSettings.ChainId))
+		logger.Fatal(
+			"no built-in AgentCollectionsManager for this chain, please set your "+
+				"agent_collections_manager.smart_contract_address value in your configuration",
+			zap.Int64("chainId", blockchainSettings.ChainId),
+		)
 	}
 
 	if !common.IsHexAddress(addressStr) {
-		logger.Fatal("agent_collections_manager.smart_contract_address is not a valid Ethereum address", zap.String("smartContractAddress", addressStr))
+		logger.Fatal(
+			"agent_collections_manager.smart_contract_address is not a valid Ethereum address",
+			zap.String("smartContractAddress", addressStr),
+		)
 	}
 
 	return &AgentCollectionsManagerSettings{

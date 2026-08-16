@@ -103,19 +103,22 @@ func TestWhenRegisteringAgent(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should return the existing participant with existed=true and not call the registry or save", func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			"Should return the existing participant with existed=true and not call the registry or save",
+			func(t *testing.T) {
+				t.Parallel()
 
-			suite := WhenRegisteringAgentBeforeEach(t)
-			request := generateValidRegisterAgentRequest()
-			initSuite(suite, request)
+				suite := WhenRegisteringAgentBeforeEach(t)
+				request := generateValidRegisterAgentRequest()
+				initSuite(suite, request)
 
-			participant, existed, err := suite.sut.Register(request)
+				participant, existed, err := suite.sut.Register(request)
 
-			assert.NoError(t, err)
-			assert.True(t, existed)
-			assert.Equal(t, existing.ID, participant.ID)
-		})
+				assert.NoError(t, err)
+				assert.True(t, existed)
+				assert.Equal(t, existing.ID, participant.ID)
+			},
+		)
 	})
 
 	t.Run("Given the lookup fails with an unexpected error", func(t *testing.T) {

@@ -32,7 +32,10 @@ func NewDeployer(
 	if err != nil {
 		return nil, fmt.Errorf("invalid anvil private key: %w", err)
 	}
-	transactOpts, err := bind.NewKeyedTransactorWithChainID(key, new(big.Int).SetUint64(anvilAccountSettings.ChainIdUint))
+	transactOpts, err := bind.NewKeyedTransactorWithChainID(
+		key,
+		new(big.Int).SetUint64(anvilAccountSettings.ChainIdUint),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +48,17 @@ func NewDeployer(
 	}, nil
 }
 
-func (d *Deployer) Deploy(name string, contract *CompiledContract, args ...any) (common.Address, *bind.BoundContract, error) {
-	address, tx, boundContract, err := bind.DeployContract(d.transactOpts, contract.Abi, contract.Bytecode, d.client, args...)
+func (d *Deployer) Deploy(
+	name string,
+	contract *CompiledContract,
+	args ...any,
+) (common.Address, *bind.BoundContract, error) {
+	address, tx, boundContract, err := bind.DeployContract(
+		d.transactOpts,
+		contract.Abi,
+		contract.Bytecode,
+		d.client,
+		args...)
 	if err != nil {
 		return common.Address{}, nil, fmt.Errorf("failed to deploy %s: %w", name, err)
 	}

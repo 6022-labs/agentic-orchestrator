@@ -17,7 +17,7 @@ type DatabaseClient struct {
 	migrationsSettings *settings.MigrationsSettings
 }
 
-// goose does not support concurrent migrations, so we use a global mutex to ensure that only one migration runs at a time.
+// goose does not support concurrent migrations, so a global mutex ensures only one runs at a time.
 var gooseMigrationMu sync.Mutex
 
 func NewDatabaseClient(

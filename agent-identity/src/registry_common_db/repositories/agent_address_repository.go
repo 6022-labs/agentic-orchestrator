@@ -24,7 +24,10 @@ func NewAgentAddressRepository(client db_clients.DatabaseClientInterface) *Agent
 	}
 }
 
-func (r *AgentAddressRepository) GetByTypeAndAddress(addressType enums.AddressType, address string) (*models.AgentAddress, error) {
+func (r *AgentAddressRepository) GetByTypeAndAddress(
+	addressType enums.AddressType,
+	address string,
+) (*models.AgentAddress, error) {
 	agentAddress := &models.AgentAddress{}
 
 	tx := r.client.GetDB().Where("type = ? AND address = ?", addressType, address).First(agentAddress)

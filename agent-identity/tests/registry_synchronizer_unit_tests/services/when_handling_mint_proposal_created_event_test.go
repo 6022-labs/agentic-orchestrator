@@ -38,7 +38,9 @@ func WhenHandlingMintProposalCreatedEventBeforeEach(t *testing.T) *WhenHandlingM
 	agentAddressRepositoryMock := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
 	agentCollectionRepositoryMock := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
 	agentCollectionRequesterMock := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
-	decentralizedDomainNameBuilderMock := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(mockController)
+	decentralizedDomainNameBuilderMock := registry_common_interfaces_mocks.NewMockDecentralizedDomainNameBuilderInterface(
+		mockController,
+	)
 
 	sut := services.NewMintProposalCreatedEventHandler(
 		zap.NewNop(),

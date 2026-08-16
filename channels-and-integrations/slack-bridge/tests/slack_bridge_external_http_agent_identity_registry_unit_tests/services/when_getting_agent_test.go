@@ -38,17 +38,20 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesAgentResponse{
-					Owner:             lo.ToPtr("0xowner"),
-					EnsDomain:         lo.ToPtr("ada.eth"),
-					Images:            lo.ToPtr(map[string]string{"icon": "cid123"}),
-					Attributes:        lo.ToPtr(map[string]string{"role": "clone"}),
-					CollectionAddress: lo.ToPtr("0xabc"),
-					CollectionTokenId: lo.ToPtr(7),
-				},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).
+				Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesAgentResponse{
+						Owner:             lo.ToPtr("0xowner"),
+						EnsDomain:         lo.ToPtr("ada.eth"),
+						Images:            lo.ToPtr(map[string]string{"icon": "cid123"}),
+						Attributes:        lo.ToPtr(map[string]string{"role": "clone"}),
+						CollectionAddress: lo.ToPtr("0xabc"),
+						CollectionTokenId: lo.ToPtr(7),
+					},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the mapped slack agent", func(t *testing.T) {
@@ -75,12 +78,15 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesAgentResponse{
-					Attributes: lo.ToPtr(map[string]string{}),
-				},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).
+				Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesAgentResponse{
+						Attributes: lo.ToPtr(map[string]string{}),
+					},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -100,10 +106,13 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-				Body:         []byte("not found"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).
+				Return(&clients.GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+					Body:         []byte("not found"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -123,7 +132,10 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).Return(nil, errors.New("registry down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(gomock.Any(), "0xabc", 7).
+				Return(nil, errors.New("registry down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

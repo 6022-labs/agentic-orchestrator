@@ -13,7 +13,10 @@ type ConfigController struct {
 	getBlockchainConfig use_cases.GetBlockchainConfigInterface
 }
 
-func NewConfigController(logger *zap.Logger, getBlockchainConfig use_cases.GetBlockchainConfigInterface) *ConfigController {
+func NewConfigController(
+	logger *zap.Logger,
+	getBlockchainConfig use_cases.GetBlockchainConfigInterface,
+) *ConfigController {
 	return &ConfigController{logger: logger, getBlockchainConfig: getBlockchainConfig}
 }
 

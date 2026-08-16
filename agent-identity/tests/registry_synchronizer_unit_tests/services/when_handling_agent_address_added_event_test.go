@@ -33,7 +33,9 @@ func WhenHandlingAgentAddressAddedEventBeforeEach(t *testing.T) *WhenHandlingAge
 
 	agentRepositoryMock := repositories_mocks.NewMockAgentRepositoryInterface(mockController)
 	agentAddressRepositoryMock := repositories_mocks.NewMockAgentAddressRepositoryInterface(mockController)
-	agentCollectionBlockchainRequesterMock := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
+	agentCollectionBlockchainRequesterMock := interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(
+		mockController,
+	)
 
 	sut := services.NewAgentAddressAddedEventHandler(
 		zap.NewNop(),
@@ -151,8 +153,15 @@ func TestWhenHandlingAgentAddressAddedEvent(t *testing.T) {
 				EXPECT().
 				GetAllByAgentId(agent.ID).
 				Return([]*models.AgentAddress{
-					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress(strings.ToLower(wallet.Hex())).Build(),
-					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithType(enums.AddressTypeBtc).WithAddress("bc1qexampleonly").Build(),
+					model_builders.NewAgentAddressBuilder().
+						WithAgentId(agent.ID).
+						WithAddress(strings.ToLower(wallet.Hex())).
+						Build(),
+					model_builders.NewAgentAddressBuilder().
+						WithAgentId(agent.ID).
+						WithType(enums.AddressTypeBtc).
+						WithAddress("bc1qexampleonly").
+						Build(),
 				}, nil).
 				Times(1)
 

@@ -37,12 +37,15 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesAgentUrlResponse{
-					Url: lo.ToPtr("https://ada.example"),
-				},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesAgentUrlResponse{
+						Url: lo.ToPtr("https://ada.example"),
+					},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the mapped url", func(t *testing.T) {
@@ -64,10 +67,13 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(&clients.GetRemoteAgentsEnsDomainUrlResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusBadGateway},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -87,7 +93,10 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
-			suite.mockClient.EXPECT().GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").Return(nil, errors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetRemoteAgentsEnsDomainUrlWithResponse(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(nil, errors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

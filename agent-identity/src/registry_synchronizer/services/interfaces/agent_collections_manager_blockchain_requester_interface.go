@@ -5,5 +5,7 @@ import (
 )
 
 type AgentCollectionsManagerBlockchainRequesterInterface interface {
-	GetAgentCollectionsManagerCollectionCreatedEvent(from, to uint64) ([]*abi.AgentCollectionsManagerCollectionCreated, error)
+	GetAgentCollectionsManagerCollectionCreatedEvent(
+		from, to uint64,
+	) ([]*abi.AgentCollectionsManagerCollectionCreated, error)
 }

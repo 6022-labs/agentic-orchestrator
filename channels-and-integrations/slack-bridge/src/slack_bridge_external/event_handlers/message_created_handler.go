@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	NO_FACILITATOR_FOUND_ERROR = "Error: No facilitator found in this channel. Please add a facilitator to manage conversations."
+	NO_FACILITATOR_FOUND_ERROR = "Error: No facilitator found in this channel. " +
+		"Please add a facilitator to manage conversations."
 )
 
 const (
@@ -91,11 +92,19 @@ func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) 
 		)
 
 		if request.ApiAppId == p.slackSettings.AppId && request.Event.Text == NO_FACILITATOR_FOUND_ERROR {
-			p.logger.Info("Skipping no facilitator error message as it is already posted", zap.String("channelId", slackChannel.Id))
+			p.logger.Info(
+				"Skipping no facilitator error message as it is already posted",
+				zap.String("channelId", slackChannel.Id),
+			)
 			return nil
 		}
 
-		err = p.slackThreadRequester.PushCompletionToThread(NO_FACILITATOR_FOUND_ERROR, nil, request.Event.Channel, request.Event.Ts)
+		err = p.slackThreadRequester.PushCompletionToThread(
+			NO_FACILITATOR_FOUND_ERROR,
+			nil,
+			request.Event.Channel,
+			request.Event.Ts,
+		)
 		if err != nil {
 			return fmt.Errorf("failed to push completion to thread: %w", err)
 		}
@@ -114,7 +123,10 @@ func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) 
 	return fmt.Errorf("message created event does not have a user or app_id: %+v", request.Event)
 }
 
-func (p *MessageCreatedHandler) handleAsSlackUser(request *requests.MessageCreatedRequest, slackChannel *models.SlackChannel) error {
+func (p *MessageCreatedHandler) handleAsSlackUser(
+	request *requests.MessageCreatedRequest,
+	slackChannel *models.SlackChannel,
+) error {
 	slackUser, err := p.slackUserSynchronizerCached.Sync(*request.Event.User)
 	if err != nil {
 		return fmt.Errorf("failed to synchronize slack user and slack user not found in persistence: %w", err)
@@ -144,7 +156,10 @@ func (p *MessageCreatedHandler) handleAsSlackUser(request *requests.MessageCreat
 	return nil
 }
 
-func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRequest, slackChannel *models.SlackChannel) error {
+func (p *MessageCreatedHandler) handleAsAgent(
+	request *requests.MessageCreatedRequest,
+	slackChannel *models.SlackChannel,
+) error {
 	if request.Event.Metadata == nil {
 		return fmt.Errorf("message created event from agent does not have metadata: %+v", request.Event)
 	}
@@ -163,10 +178,19 @@ func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRe
 		*collectionTokenId,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent with metadata %s and %d : %w", *collectionTokenAddress, *collectionTokenId, err)
+		return fmt.Errorf(
+			"failed to get agent with metadata %s and %d : %w",
+			*collectionTokenAddress,
+			*collectionTokenId,
+			err,
+		)
 	}
 	if agent == nil {
-		return fmt.Errorf("agent not found in persistence with metadata %s and %d", *collectionTokenAddress, *collectionTokenId)
+		return fmt.Errorf(
+			"agent not found in persistence with metadata %s and %d",
+			*collectionTokenAddress,
+			*collectionTokenId,
+		)
 	}
 
 	parentMessageTs := p.getParentMessageTs(request)
@@ -186,7 +210,11 @@ func (p *MessageCreatedHandler) handleAsAgent(request *requests.MessageCreatedRe
 	return nil
 }
 
-func (p *MessageCreatedHandler) handleAsSlackUserAgent(request *requests.MessageCreatedRequest, slackUser *models.SlackUser, slackChannel *models.SlackChannel) error {
+func (p *MessageCreatedHandler) handleAsSlackUserAgent(
+	request *requests.MessageCreatedRequest,
+	slackUser *models.SlackUser,
+	slackChannel *models.SlackChannel,
+) error {
 	pairedHumanAgent, err := p.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
 		*slackUser.PairedHumanAgentCollectionAddress,
 		*slackUser.PairedHumanAgentCollectionTokenId,
@@ -195,7 +223,11 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(request *requests.Message
 		return fmt.Errorf("failed to get paired human agent: %w", err)
 	}
 	if pairedHumanAgent == nil {
-		return fmt.Errorf("paired human agent not found in persistence with collection address and token ID: %s %d", *slackUser.PairedHumanAgentCollectionAddress, *slackUser.PairedHumanAgentCollectionTokenId)
+		return fmt.Errorf(
+			"paired human agent not found in persistence with collection address and token ID: %s %d",
+			*slackUser.PairedHumanAgentCollectionAddress,
+			*slackUser.PairedHumanAgentCollectionTokenId,
+		)
 	}
 
 	err = p.addAgentToChannel.Add(

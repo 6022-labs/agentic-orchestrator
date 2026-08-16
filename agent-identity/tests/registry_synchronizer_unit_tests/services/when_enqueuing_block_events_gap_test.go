@@ -34,10 +34,16 @@ func WhenEnqueuingBlockEventsGapBeforeEach(t *testing.T) *WhenEnqueuingBlockEven
 
 	mockBlockEventsQueue := synchronizer_interfaces_mocks.NewMockBlockEventsQueueInterface(mockController)
 	mockBlockchainRequester := synchronizer_interfaces_mocks.NewMockBlockchainRequesterInterface(mockController)
-	mockAgentCollectionBlockchainRequester := synchronizer_interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(mockController)
-	mockAgentCollectionsManagerBlockchainRequester := synchronizer_interfaces_mocks.NewMockAgentCollectionsManagerBlockchainRequesterInterface(mockController)
+	mockAgentCollectionBlockchainRequester := synchronizer_interfaces_mocks.NewMockAgentCollectionBlockchainRequesterInterface(
+		mockController,
+	)
+	mockAgentCollectionsManagerBlockchainRequester := synchronizer_interfaces_mocks.NewMockAgentCollectionsManagerBlockchainRequesterInterface(
+		mockController,
+	)
 	mockAgentCollectionRepository := repositories_mocks.NewMockAgentCollectionRepositoryInterface(mockController)
-	mockSyncCheckpointRepository := synchronizer_repositories_mocks.NewMockSyncCheckpointRepositoryInterface(mockController)
+	mockSyncCheckpointRepository := synchronizer_repositories_mocks.NewMockSyncCheckpointRepositoryInterface(
+		mockController,
+	)
 
 	sut := services.NewBlockEventsGapEnqueuer(
 		zap.NewNop(),

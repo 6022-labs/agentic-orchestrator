@@ -51,7 +51,11 @@ func NewAgentEnsRegistrySettings(
 	}
 
 	if len(addressStr) == 0 {
-		logger.Fatal("no built-in AgentEnsRegistry for this chain, please set your agent_ens_registry.smart_contract_address value in your configuration", zap.Int64("chainId", blockchainSettings.ChainId))
+		logger.Fatal(
+			"no built-in AgentEnsRegistry for this chain, "+
+				"please set your agent_ens_registry.smart_contract_address value in your configuration",
+			zap.Int64("chainId", blockchainSettings.ChainId),
+		)
 	}
 
 	if !common.IsHexAddress(addressStr) {

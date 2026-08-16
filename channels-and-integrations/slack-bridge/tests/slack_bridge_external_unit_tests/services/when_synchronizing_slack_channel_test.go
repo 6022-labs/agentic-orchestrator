@@ -95,7 +95,9 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
-			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(gomock.Any()).Return(&interfaces.ChannelInformation{IsMember: false}, nil)
+			suite.mockSlackChannelRequester.EXPECT().
+				GetChannelInformation(gomock.Any()).
+				Return(&interfaces.ChannelInformation{IsMember: false}, nil)
 			suite.mockSlackChannelRequester.EXPECT().JoinChannel(gomock.Any()).Return(assert.AnError)
 		}
 
@@ -116,12 +118,14 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(slackChannel, nil)
-			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(gomock.Any()).Return(&interfaces.ChannelInformation{
-				IsMember:    true,
-				Id:          slackChannel.Id,
-				Name:        slackChannel.Name,
-				Description: slackChannel.Description,
-			}, nil)
+			suite.mockSlackChannelRequester.EXPECT().
+				GetChannelInformation(gomock.Any()).
+				Return(&interfaces.ChannelInformation{
+					IsMember:    true,
+					Id:          slackChannel.Id,
+					Name:        slackChannel.Name,
+					Description: slackChannel.Description,
+				}, nil)
 			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(nil, assert.AnError)
 		}
 
@@ -142,13 +146,15 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(slackChannel, nil)
-			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(gomock.Any()).Return(&interfaces.ChannelInformation{
-				IsMember:    true,
-				Id:          slackChannel.Id,
-				Name:        slackChannel.Name,
-				Description: slackChannel.Description,
-				UserIds:     nil,
-			}, nil)
+			suite.mockSlackChannelRequester.EXPECT().
+				GetChannelInformation(gomock.Any()).
+				Return(&interfaces.ChannelInformation{
+					IsMember:    true,
+					Id:          slackChannel.Id,
+					Name:        slackChannel.Name,
+					Description: slackChannel.Description,
+					UserIds:     nil,
+				}, nil)
 			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(slackChannel, nil)
 		}
 
@@ -172,13 +178,15 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().WithId(channelId).Build()
 			suite.mockSlackChannelRepository.EXPECT().GetById(channelId).Return(slackChannel, nil)
-			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(channelId).Return(&interfaces.ChannelInformation{
-				IsMember:    true,
-				Id:          channelId,
-				Name:        slackChannel.Name,
-				Description: slackChannel.Description,
-				UserIds:     userIds,
-			}, nil)
+			suite.mockSlackChannelRequester.EXPECT().
+				GetChannelInformation(channelId).
+				Return(&interfaces.ChannelInformation{
+					IsMember:    true,
+					Id:          channelId,
+					Name:        slackChannel.Name,
+					Description: slackChannel.Description,
+					UserIds:     userIds,
+				}, nil)
 			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(slackChannel, nil)
 
 			u1 := model_builders.NewSlackUserBuilder().WithId("U1").Build()

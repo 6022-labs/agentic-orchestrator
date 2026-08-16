@@ -35,7 +35,9 @@ func NewAgentCollectionEventSubscriptionProvider(
 	}
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -92,7 +94,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSub
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -149,7 +153,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscri
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -206,7 +212,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscri
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -263,7 +271,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubsc
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -320,7 +330,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -377,7 +389,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscri
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -434,7 +448,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubsc
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err
@@ -491,7 +507,9 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(addre
 	return logs, wrappedSub, nil
 }
 
-func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error) {
+func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(
+	addresses []common.Address,
+) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
 	if err != nil {
 		return nil, nil, err

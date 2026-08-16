@@ -40,9 +40,15 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	transferEventHandlerMock := interfaces_mocks.NewMockTransferEventHandlerInterface(mockController)
 	agentImageUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentImageUpdatedEventHandlerInterface(mockController)
 	agentImageRemovedEventHandlerMock := interfaces_mocks.NewMockAgentImageRemovedEventHandlerInterface(mockController)
-	mintProposalCreatedEventHandlerMock := interfaces_mocks.NewMockMintProposalCreatedEventHandlerInterface(mockController)
-	mintProposalRemovedEventHandlerMock := interfaces_mocks.NewMockMintProposalRemovedEventHandlerInterface(mockController)
-	agentAttributeUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentAttributeUpdatedEventHandlerInterface(mockController)
+	mintProposalCreatedEventHandlerMock := interfaces_mocks.NewMockMintProposalCreatedEventHandlerInterface(
+		mockController,
+	)
+	mintProposalRemovedEventHandlerMock := interfaces_mocks.NewMockMintProposalRemovedEventHandlerInterface(
+		mockController,
+	)
+	agentAttributeUpdatedEventHandlerMock := interfaces_mocks.NewMockAgentAttributeUpdatedEventHandlerInterface(
+		mockController,
+	)
 	collectionCreatedEventHandlerMock := interfaces_mocks.NewMockCollectionCreatedEventHandlerInterface(mockController)
 
 	sut := services.NewBlockEventsProcessor(

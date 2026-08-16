@@ -17,7 +17,9 @@ func NewConversationMessageRepository(client db_clients.DatabaseClientInterface)
 	}
 }
 
-func (r *ConversationMessageRepository) ListByConversationId(conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
+func (r *ConversationMessageRepository) ListByConversationId(
+	conversationId uuid.UUID,
+) ([]*models.ConversationMessage, error) {
 	var entities []*models.ConversationMessage
 	err := r.client.GetDB().
 		Where("conversation_id = ?", conversationId).

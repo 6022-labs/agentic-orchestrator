@@ -28,7 +28,9 @@ func NewListConversationParticipants(
 	}
 }
 
-func (uc *ListConversationParticipants) List(request *requests.ConversationIdRequest) ([]*responses.ParticipantResponse, error) {
+func (uc *ListConversationParticipants) List(
+	request *requests.ConversationIdRequest,
+) ([]*responses.ParticipantResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

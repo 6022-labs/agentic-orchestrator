@@ -118,10 +118,15 @@ func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	return entity, nil
 }
 
-func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
+func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.Agent, error) {
 	agent := &models.Agent{}
 
-	tx := r.client.GetDB().Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).First(agent)
+	tx := r.client.GetDB().
+		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
+		First(agent)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -157,7 +162,10 @@ func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent,
 	return agents, nil
 }
 
-func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error) {
+func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(
+	collectionAddress string,
+	proposalId uint64,
+) (*models.Agent, error) {
 	agent := &models.Agent{}
 
 	tx := r.client.GetDB().Where(
@@ -178,7 +186,10 @@ func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(collec
 func (r *AgentRepository) ExistsByCollectionAddressAndCollectionTokenId(address string, tokenId uint64) (bool, error) {
 	var count int64
 
-	tx := r.client.GetDB().Model(&models.Agent{}).Where("collection_address = ? AND collection_token_id = ?", address, tokenId).Count(&count)
+	tx := r.client.GetDB().
+		Model(&models.Agent{}).
+		Where("collection_address = ? AND collection_token_id = ?", address, tokenId).
+		Count(&count)
 	if tx.Error != nil {
 		return false, tx.Error
 	}

@@ -17,8 +17,8 @@ import (
 const CONFIGURATION_FILE = "config.yml"
 
 type config struct {
-	Connections   []string `json:"connections" yaml:"connections"`
-	Until         int64    `json:"until" yaml:"until"`
+	Connections   []string `json:"connections"    yaml:"connections"`
+	Until         int64    `json:"until"          yaml:"until"`
 	MigrationsDir string   `json:"migrations_dir" yaml:"migrations_dir"`
 }
 

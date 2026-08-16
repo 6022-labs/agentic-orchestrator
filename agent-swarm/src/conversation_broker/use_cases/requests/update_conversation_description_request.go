@@ -6,7 +6,7 @@ import (
 )
 
 type UpdateConversationDescriptionRequest struct {
-	ConversationID uuid.UUID `json:"-" params:"id"`
+	ConversationID uuid.UUID `json:"-"           params:"id"`
 	Description    *string   `json:"description"`
 }
 

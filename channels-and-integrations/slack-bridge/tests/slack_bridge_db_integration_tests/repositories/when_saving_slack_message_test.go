@@ -29,7 +29,11 @@ func WhenSavingSlackMessageBeforeEach() *WhenSavingSlackMessageTestingSuite {
 	if err != nil {
 		panic(err)
 	}
-	dbClient, _ := slack_bridge_db.NewDatabaseClient(connStr, zap.NewNop(), &db_settings.MigrationsSettings{MigrationsFolderPath: *folder})
+	dbClient, _ := slack_bridge_db.NewDatabaseClient(
+		connStr,
+		zap.NewNop(),
+		&db_settings.MigrationsSettings{MigrationsFolderPath: *folder},
+	)
 	if err := dbClient.Migrate(); err != nil {
 		panic(err)
 	}

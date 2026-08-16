@@ -6,9 +6,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -20,7 +20,7 @@ type WhenSynchronizingUserTestingSuite struct {
 
 	mockSlackUserRequester  *interfaces_mocks.MockSlackUserRequesterInterface
 	mockSlackUserRepository *repositories_mocks.MockSlackUserRepositoryInterface
-	mockBrokerRequester        *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester     *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenSynchronizingUserBeforeEach(t *testing.T) *WhenSynchronizingUserTestingSuite {
@@ -42,7 +42,7 @@ func WhenSynchronizingUserBeforeEach(t *testing.T) *WhenSynchronizingUserTesting
 
 		mockSlackUserRequester:  mockSlackUserRequester,
 		mockSlackUserRepository: mockSlackUserRepository,
-		mockBrokerRequester:        mockBrokerRequester,
+		mockBrokerRequester:     mockBrokerRequester,
 	}
 }
 
@@ -133,18 +133,21 @@ func TestWhenSynchronizingUser(t *testing.T) {
 				})
 		}
 
-		t.Run("Should register the user with the broker, store the broker participant id, and return the user", func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			"Should register the user with the broker, store the broker participant id, and return the user",
+			func(t *testing.T) {
+				t.Parallel()
 
-			suite := WhenSynchronizingUserBeforeEach(t)
-			initSuite(suite)
+				suite := WhenSynchronizingUserBeforeEach(t)
+				initSuite(suite)
 
-			user, err := suite.sut.Sync("some-user-id")
-			assert.NoError(t, err)
-			assert.Equal(t, "some-user-id", user.Id)
-			assert.NotNil(t, user.BrokerParticipantId)
-			assert.Equal(t, brokerUserId, *user.BrokerParticipantId)
-		})
+				user, err := suite.sut.Sync("some-user-id")
+				assert.NoError(t, err)
+				assert.Equal(t, "some-user-id", user.Id)
+				assert.NotNil(t, user.BrokerParticipantId)
+				assert.Equal(t, brokerUserId, *user.BrokerParticipantId)
+			},
+		)
 	})
 
 	t.Run("Given user already exists with a broker participant id", func(t *testing.T) {

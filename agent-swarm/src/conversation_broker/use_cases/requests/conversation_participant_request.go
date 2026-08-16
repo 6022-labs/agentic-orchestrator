@@ -7,7 +7,7 @@ import (
 
 // ConversationParticipantRequest is shared by Attach and Detach use cases.
 type ConversationParticipantRequest struct {
-	ConversationID uuid.UUID `json:"-" params:"id"`
+	ConversationID uuid.UUID `json:"-"             params:"id"`
 	ParticipantID  uuid.UUID `json:"participantId" params:"participantId"`
 }
 

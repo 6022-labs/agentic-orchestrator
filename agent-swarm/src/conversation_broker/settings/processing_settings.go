@@ -35,7 +35,9 @@ func NewProcessingSettings(logger *zap.Logger, k *koanf.Koanf) *ProcessingSettin
 	}
 	if settings.ConversationForceConcludeAfter == 0 {
 		settings.ConversationForceConcludeAfter = settings.ConversationForceConcludeByFacilitatorAfter * 2
-		logger.Info("processing.conversation_force_conclude_after is not set, defaulting to 2x conversation_force_conclude_by_facilitator_after",
+		logger.Info(
+			"processing.conversation_force_conclude_after is not set, "+
+				"defaulting to 2x conversation_force_conclude_by_facilitator_after",
 			zap.Uint64("defaultConversationForceConcludeAfter", settings.ConversationForceConcludeAfter),
 		)
 	}

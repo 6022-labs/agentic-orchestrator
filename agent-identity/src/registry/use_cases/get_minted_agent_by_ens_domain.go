@@ -25,7 +25,9 @@ func NewGetMintedAgentByEnsDomain(
 	}
 }
 
-func (s *GetMintedAgentByEnsDomain) Get(request *requests.GetAgentByEnsDomainRequest) (*responses.AgentResponse, error) {
+func (s *GetMintedAgentByEnsDomain) Get(
+	request *requests.GetAgentByEnsDomainRequest,
+) (*responses.AgentResponse, error) {
 	agent, err := s.agentRepository.GetMintedByEnsDomain(request.EnsDomain)
 	if err != nil {
 		return nil, err

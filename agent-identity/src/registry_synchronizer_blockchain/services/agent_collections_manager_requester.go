@@ -31,8 +31,13 @@ func NewAgentCollectionsManagerRequester(
 	}
 }
 
-func (a *AgentCollectionsManagerRequester) GetAgentCollectionsManagerCollectionCreatedEvent(from, to uint64) ([]*registry_abi.AgentCollectionsManagerCollectionCreated, error) {
-	agentCollectionsManager, err := registry_abi.NewAgentCollectionsManager(a.agentCollectionsManagerSettings.SmartContractAddress, a.client)
+func (a *AgentCollectionsManagerRequester) GetAgentCollectionsManagerCollectionCreatedEvent(
+	from, to uint64,
+) ([]*registry_abi.AgentCollectionsManagerCollectionCreated, error) {
+	agentCollectionsManager, err := registry_abi.NewAgentCollectionsManager(
+		a.agentCollectionsManagerSettings.SmartContractAddress,
+		a.client,
+	)
 	if err != nil {
 		return nil, err
 	}

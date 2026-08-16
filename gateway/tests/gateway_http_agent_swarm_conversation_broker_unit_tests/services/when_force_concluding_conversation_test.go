@@ -38,9 +38,12 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).Return(&clients.PostConversationsIdForceConcludeResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNoContent},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.PostConversationsIdForceConcludeResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNoContent},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return no error", func(t *testing.T) {
@@ -60,9 +63,12 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).Return(&clients.PostConversationsIdForceConcludeResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.PostConversationsIdForceConcludeResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return a NotFoundError", func(t *testing.T) {
@@ -83,10 +89,13 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).Return(&clients.PostConversationsIdForceConcludeResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.PostConversationsIdForceConcludeResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -106,7 +115,10 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForceConcludingConversationTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).Return(nil, stderrors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				PostConversationsIdForceConcludeWithResponse(gomock.Any(), conversationId.String()).
+				Return(nil, stderrors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

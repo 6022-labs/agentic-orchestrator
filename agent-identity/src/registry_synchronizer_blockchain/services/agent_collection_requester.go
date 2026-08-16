@@ -35,7 +35,10 @@ func NewAgentCollectionRequester(
 	}
 }
 
-func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Address, collectionTokenId big.Int) (*common.Address, error) {
+func (a *AgentCollectionRequester) GetAgentOwner(
+	collectionAddress common.Address,
+	collectionTokenId big.Int,
+) (*common.Address, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
 		return nil, err
@@ -49,7 +52,10 @@ func (a *AgentCollectionRequester) GetAgentOwner(collectionAddress common.Addres
 	return &owner, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentInformation(collectionAddress common.Address, collectionTokenId big.Int) (*registry_abi.AgentInformation, error) {
+func (a *AgentCollectionRequester) GetAgentInformation(
+	collectionAddress common.Address,
+	collectionTokenId big.Int,
+) (*registry_abi.AgentInformation, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
 		return nil, err
@@ -63,7 +69,11 @@ func (a *AgentCollectionRequester) GetAgentInformation(collectionAddress common.
 	return &info, nil
 }
 
-func (a *AgentCollectionRequester) GetMintProposal(collectionAddress common.Address, proposalId *big.Int, atBlock uint64) (*registry_abi.MintProposal, error) {
+func (a *AgentCollectionRequester) GetMintProposal(
+	collectionAddress common.Address,
+	proposalId *big.Int,
+	atBlock uint64,
+) (*registry_abi.MintProposal, error) {
 	agentCollection, err := registry_abi.NewAgentCollectionV1(collectionAddress, a.client)
 	if err != nil {
 		return nil, err
@@ -84,7 +94,11 @@ func (a *AgentCollectionRequester) GetMintProposal(collectionAddress common.Addr
 	return mintProposal, nil
 }
 
-func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_abi.AgentCollectionV1, agentCollectionAddress common.Address, atBlock uint64) ([]*registry_abi.MintProposal, error) {
+func (a *AgentCollectionRequester) getMintProposals(
+	agentCollection *registry_abi.AgentCollectionV1,
+	agentCollectionAddress common.Address,
+	atBlock uint64,
+) ([]*registry_abi.MintProposal, error) {
 	blockBigInt := new(big.Int).SetUint64(atBlock)
 	blockHex := fmt.Sprintf("0x%x", atBlock)
 
@@ -93,7 +107,9 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_ab
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
 
-	agentCollectionABI, err := abi.JSON(strings.NewReader(registry_abi.AgentCollectionV1ABI)) // You must expose raw ABI string
+	agentCollectionABI, err := abi.JSON(
+		strings.NewReader(registry_abi.AgentCollectionV1ABI),
+	) // You must expose raw ABI string
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
@@ -141,7 +157,10 @@ func (a *AgentCollectionRequester) getMintProposals(agentCollection *registry_ab
 	return mintProposals, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1Minted, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1Minted, error) {
 	var allEvents []*registry_abi.AgentCollectionV1Minted
 
 	for _, address := range fromAddresses {
@@ -167,7 +186,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(from, to uint
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1Transfer, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1Transfer, error) {
 	var allEvents []*registry_abi.AgentCollectionV1Transfer
 
 	for _, address := range fromAddresses {
@@ -193,7 +215,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(from, to ui
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentImageUpdated
 
 	for _, address := range fromAddresses {
@@ -219,7 +244,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(fr
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentImageRemoved
 
 	for _, address := range fromAddresses {
@@ -245,7 +273,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(fr
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentAttributeUpdated
 
 	for _, address := range fromAddresses {
@@ -271,7 +302,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEven
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
 	var allEvents []*registry_abi.AgentCollectionV1MintProposalCreated
 
 	for _, address := range fromAddresses {
@@ -297,7 +331,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
 	var allEvents []*registry_abi.AgentCollectionV1MintProposalRemoved
 
 	for _, address := range fromAddresses {
@@ -323,7 +360,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentAddressAdded
 
 	for _, address := range fromAddresses {
@@ -349,7 +389,10 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(fr
 	return allEvents, nil
 }
 
-func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(from, to uint64, fromAddresses []common.Address) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
+func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
+	from, to uint64,
+	fromAddresses []common.Address,
+) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
 	var allEvents []*registry_abi.AgentCollectionV1AgentAddressRemoved
 
 	for _, address := range fromAddresses {

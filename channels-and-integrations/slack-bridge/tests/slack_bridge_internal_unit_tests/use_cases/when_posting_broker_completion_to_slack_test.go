@@ -141,7 +141,10 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 					SlackThreadTs:        "1.0",
 					BrokerConversationID: req.ConversationId,
 				}, nil)
-			slackAgent := &models.SlackAgent{CollectionAddress: req.CollectionAddress, CollectionTokenId: req.CollectionTokenId}
+			slackAgent := &models.SlackAgent{
+				CollectionAddress: req.CollectionAddress,
+				CollectionTokenId: req.CollectionTokenId,
+			}
 			suite.mockSlackAgentRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
 				Return(slackAgent, nil)
@@ -173,7 +176,10 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 					SlackThreadTs:        "1.0",
 					BrokerConversationID: req.ConversationId,
 				}, nil)
-			slackAgent := &models.SlackAgent{CollectionAddress: req.CollectionAddress, CollectionTokenId: req.CollectionTokenId}
+			slackAgent := &models.SlackAgent{
+				CollectionAddress: req.CollectionAddress,
+				CollectionTokenId: req.CollectionTokenId,
+			}
 			suite.mockSlackAgentRepository.EXPECT().
 				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
 				Return(slackAgent, nil)

@@ -74,14 +74,16 @@ func AddSlackBridgeDbConfiguration(container *dig.Container) {
 	}
 
 	// Provide the orchestrator database client factory
-	err = container.Provide(func(orchestratorSlackBridgeDBClientFactory *factories.DatabaseClientFactory, logger *zap.Logger) *slack_bridge_db.DatabaseClient {
-		dbClient, err := orchestratorSlackBridgeDBClientFactory.CreateOrchestratorSlackBridgeDBClient()
-		if err != nil {
-			logger.Fatal("Failed to create orchestrator database client", zap.Error(err))
-		}
+	err = container.Provide(
+		func(orchestratorSlackBridgeDBClientFactory *factories.DatabaseClientFactory, logger *zap.Logger) *slack_bridge_db.DatabaseClient {
+			dbClient, err := orchestratorSlackBridgeDBClientFactory.CreateOrchestratorSlackBridgeDBClient()
+			if err != nil {
+				logger.Fatal("Failed to create orchestrator database client", zap.Error(err))
+			}
 
-		return dbClient
-	})
+			return dbClient
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

@@ -13,10 +13,10 @@ import (
 type AgentPromptTemplate struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
-	CollectionAddress string                       `gorm:"type:text;not null;uniqueIndex:idx_agent_prompt_templates_agent_key,priority:1" json:"collectionAddress"`
+	CollectionAddress string                       `gorm:"type:text;not null;uniqueIndex:idx_agent_prompt_templates_agent_key,priority:1"    json:"collectionAddress"`
 	CollectionTokenId uint64                       `gorm:"type:numeric;not null;uniqueIndex:idx_agent_prompt_templates_agent_key,priority:2" json:"collectionTokenId"`
-	Key               enums.AgentPromptTemplateKey `gorm:"type:text;not null;uniqueIndex:idx_agent_prompt_templates_agent_key,priority:3" json:"key"`
-	Content           string                       `gorm:"type:text;not null" json:"content"`
+	Key               enums.AgentPromptTemplateKey `gorm:"type:text;not null;uniqueIndex:idx_agent_prompt_templates_agent_key,priority:3"    json:"key"`
+	Content           string                       `gorm:"type:text;not null"                                                                json:"content"`
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`

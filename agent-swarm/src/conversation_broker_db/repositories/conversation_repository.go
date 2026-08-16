@@ -135,7 +135,16 @@ func (r *ConversationRepository) ListProcessableForParticipant(
 
 	var entities []*models.Conversation
 	err := query.
-		Distinct("conversations.id", "conversations.updated_at", "conversations.created_at", "conversations.bridge_id", "conversations.description", "conversations.status", "conversations.concluded_at", "conversations.unconcluded_at").
+		Distinct(
+			"conversations.id",
+			"conversations.updated_at",
+			"conversations.created_at",
+			"conversations.bridge_id",
+			"conversations.description",
+			"conversations.status",
+			"conversations.concluded_at",
+			"conversations.unconcluded_at",
+		).
 		Order("conversations.updated_at ASC").
 		Find(&entities).
 		Error

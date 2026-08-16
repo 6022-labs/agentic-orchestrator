@@ -31,7 +31,9 @@ func WhenVerifyingWalletOwnershipBeforeEach(t *testing.T) *WhenVerifyingWalletOw
 	}
 
 	mockWalletOwnershipChallenge := interfaces_mocks.NewMockWalletOwnershipChallengeInterface(mockController)
-	mockSlackUserSynchronizerCached := external_interfaces_mocks.NewMockSlackUserSynchronizerCachedInterface(mockController)
+	mockSlackUserSynchronizerCached := external_interfaces_mocks.NewMockSlackUserSynchronizerCachedInterface(
+		mockController,
+	)
 
 	sut := command_handlers.NewVerifyWalletOwnership(
 		zap.NewNop(),

@@ -85,9 +85,12 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 			Name:              mintProposal.Name,
 			Creator:           mintProposal.Creator.Hex(),
 			Owner:             &ownerHex,
-			EnsDomain:         handler.decentralizedDomainNameBuilder.BuildDomainName(mintProposal.Name, agentCollection.Name),
-			Images:            map[string]string{},
-			Attributes:        map[string]string{},
+			EnsDomain: handler.decentralizedDomainNameBuilder.BuildDomainName(
+				mintProposal.Name,
+				agentCollection.Name,
+			),
+			Images:     map[string]string{},
+			Attributes: map[string]string{},
 		}
 
 		if mintProposal.CloneOf.IsSet {

@@ -34,7 +34,9 @@ func WhenListingProcessableMessagesForParticipantBeforeEach() *WhenListingProces
 	}
 }
 
-func WhenListingProcessableMessagesForParticipantAfterEach(suite *WhenListingProcessableMessagesForParticipantTestingSuite) {
+func WhenListingProcessableMessagesForParticipantAfterEach(
+	suite *WhenListingProcessableMessagesForParticipantTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 
@@ -43,7 +45,9 @@ func WhenListingProcessableMessagesForParticipantAfterEach(suite *WhenListingPro
 //   - "hi everyone"          (mentions nobody)
 //   - "hey @agent.eth ping"  (mentions the agent)
 //   - "follow up"            (no mention) — authored by the human
-func (s *WhenListingProcessableMessagesForParticipantTestingSuite) seed(agentEnsDomain string) (*models.Conversation, *models.Participant, *models.Participant, []*models.ConversationMessage) {
+func (s *WhenListingProcessableMessagesForParticipantTestingSuite) seed(
+	agentEnsDomain string,
+) (*models.Conversation, *models.Participant, *models.Participant, []*models.ConversationMessage) {
 	bridge := model_builders.NewBridgeBuilder().Build()
 	_, _ = s.bridges.Save(bridge)
 
@@ -93,7 +97,11 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 
 			conv, agent, _, allMessages := suite.seed("agent.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, lo.ToPtr(enums.ParticipantRoleFacilitator), conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+				agent,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				conv.ID,
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, len(allMessages))
@@ -111,7 +119,11 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 
 			conv, agent, _, _ := suite.seed("agent.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(agent, lo.ToPtr(enums.ParticipantRoleClone), conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+				agent,
+				lo.ToPtr(enums.ParticipantRoleClone),
+				conv.ID,
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 1)
@@ -131,7 +143,11 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 			conv, _, human, _ := suite.seed("someone.eth")
 			human.EnsDomain = lo.ToPtr("human.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(human, lo.ToPtr(enums.ParticipantRoleHuman), conv.ID)
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+				human,
+				lo.ToPtr(enums.ParticipantRoleHuman),
+				conv.ID,
+			)
 
 			assert.NoError(t, err)
 			// Human authored all 3 messages in seed; mention substring is "someone.eth", not human's ens.

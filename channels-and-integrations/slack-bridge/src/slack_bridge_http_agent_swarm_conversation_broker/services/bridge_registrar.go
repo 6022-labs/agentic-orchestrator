@@ -61,12 +61,20 @@ func (r *BridgeRegistrar) Ensure() (uuid.UUID, error) {
 		payload = rsp.JSON200
 	}
 	if payload == nil {
-		return uuid.Nil, fmt.Errorf("failed to upsert bridge with broker: unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
+		return uuid.Nil, fmt.Errorf(
+			"failed to upsert bridge with broker: unexpected status code: %d, response: %s",
+			rsp.StatusCode(),
+			string(rsp.Body),
+		)
 	}
 
 	bridgeId := helpers.ParseUuid(payload.Id)
 	if bridgeId != r.conversationBrokerSettings.BridgeID {
-		return uuid.Nil, fmt.Errorf("broker returned unexpected bridge id %s (expected %s)", bridgeId, r.conversationBrokerSettings.BridgeID)
+		return uuid.Nil, fmt.Errorf(
+			"broker returned unexpected bridge id %s (expected %s)",
+			bridgeId,
+			r.conversationBrokerSettings.BridgeID,
+		)
 	}
 
 	r.logger.Info("Slack bridge confirmed with conversation broker",

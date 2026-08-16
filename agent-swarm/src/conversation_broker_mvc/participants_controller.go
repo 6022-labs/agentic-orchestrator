@@ -37,7 +37,7 @@ func (c *ParticipantsController) InitRoutes(app fiber.Router) {
 }
 
 // @Summary Register Agent Participant
-// @Description Upserts an agent participant by NFT identity. Returns 200 if the agent was already known, 201 if newly created. Broker fetches role + ENS from the agent-identity registry on first registration.
+// @Description Upserts an agent participant by NFT identity: 200 if known, 201 if new; role + ENS from the registry.
 // @Tags Participants
 // @Accept json
 // @Produce json
@@ -72,7 +72,7 @@ func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
 }
 
 // @Summary Register User Participant
-// @Description Creates a user participant identified only by display name. No dedup — bridges must cache the returned id locally to avoid duplicates.
+// @Description Creates a user participant by display name only. No dedup — bridges must cache the returned id.
 // @Tags Participants
 // @Accept json
 // @Produce json

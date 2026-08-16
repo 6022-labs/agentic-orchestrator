@@ -35,7 +35,9 @@ func NewRegisterConversation(
 	}
 }
 
-func (uc *RegisterConversation) Register(request *requests.RegisterConversationRequest) (*responses.ConversationResponse, error) {
+func (uc *RegisterConversation) Register(
+	request *requests.RegisterConversationRequest,
+) (*responses.ConversationResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

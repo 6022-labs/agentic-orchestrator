@@ -12,9 +12,16 @@ type promptTemplateProvider struct {
 	agentPromptTemplateRepository repositories.AgentPromptTemplateRepositoryInterface
 }
 
-func (p *promptTemplateProvider) templateFor(agent *models.Participant, key enums.AgentPromptTemplateKey) (string, error) {
+func (p *promptTemplateProvider) templateFor(
+	agent *models.Participant,
+	key enums.AgentPromptTemplateKey,
+) (string, error) {
 	if agent.CollectionAddress != nil && agent.CollectionTokenId != nil {
-		stored, err := p.agentPromptTemplateRepository.GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, key)
+		stored, err := p.agentPromptTemplateRepository.GetByAgentAndKey(
+			*agent.CollectionAddress,
+			*agent.CollectionTokenId,
+			key,
+		)
 		if err != nil {
 			return "", fmt.Errorf("failed to load prompt template %s: %w", key, err)
 		}

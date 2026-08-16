@@ -41,12 +41,16 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 	mockConversationConclude := interfaces_mocks.NewMockConversationConcludeInterface(mockController)
 	mockBridgeCallbackRequester := interfaces_mocks.NewMockBridgeCallbackRequesterInterface(mockController)
 	mockRemoteAgentCardResolver := interfaces_mocks.NewMockRemoteAgentCardResolverInterface(mockController)
-	mockRemoteAgentCompletionsRequester := interfaces_mocks.NewMockRemoteAgentCompletionsRequesterInterface(mockController)
+	mockRemoteAgentCompletionsRequester := interfaces_mocks.NewMockRemoteAgentCompletionsRequesterInterface(
+		mockController,
+	)
 	mockConversationPromptBuilder := interfaces_mocks.NewMockConversationPromptBuilderInterface(mockController)
 	mockParticipantRoleResolver := interfaces_mocks.NewMockParticipantRoleResolverInterface(mockController)
 	mockBridgeRepository := repositories_mocks.NewMockBridgeRepositoryInterface(mockController)
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
-	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(mockController)
+	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(
+		mockController,
+	)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 
 	mockEmojiDecoder := interfaces_mocks.NewMockEmojiDecoderInterface(mockController)
@@ -95,7 +99,10 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 }
 
 func remoteAgentCardForTest() *models.RemoteAgentCard {
-	return &models.RemoteAgentCard{Protocol: "6022", Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"}}
+	return &models.RemoteAgentCard{
+		Protocol:  "6022",
+		Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+	}
 }
 
 func agentTurnRequestForTest() *models.RemoteAgentInput {
@@ -162,7 +169,10 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(nil, nil).Times(1)
 			suite.mockConversationConclude.EXPECT().Conclude(conversation.ID).Return(nil).Times(1)
 		}
@@ -188,7 +198,10 @@ func TestWhenProcessingConversation(t *testing.T) {
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
@@ -216,25 +229,36 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
-		messages := []*models.ConversationMessage{model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()}
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
 		participants := []*models.Participant{participant}
 		card := remoteAgentCardForTest()
 		turn := agentTurnRequestForTest()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return(participants, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return(participants, nil).
+				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(card, nil).Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
 				BuildInput(string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
 				Return(turn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, turn).Return([]string{"only reply"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, turn).
+				Return([]string{"only reply"}, nil).
+				Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockBridgeCallbackRequester.EXPECT().
 				PostCompletion(bridge, conversation, participant, "only reply").
@@ -262,19 +286,27 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
-		messages := []*models.ConversationMessage{model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()}
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
 		participants := []*models.Participant{participant}
 		card := remoteAgentCardForTest()
 		turn := agentTurnRequestForTest()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return(participants, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return(participants, nil).
+				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(card, nil).Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
 				BuildInput(string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
@@ -306,17 +338,28 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
-		messages := []*models.ConversationMessage{model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()}
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return([]*models.Participant{participant}, nil).Times(1)
-			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(nil, errors.New("boom")).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return([]*models.Participant{participant}, nil).
+				Times(1)
+			suite.mockRemoteAgentCardResolver.EXPECT().
+				ResolveCard(*participant.EnsDomain).
+				Return(nil, errors.New("boom")).
+				Times(1)
 		}
 
 		t.Run("Should propagate the error", func(t *testing.T) {
@@ -339,31 +382,53 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
-		messages := []*models.ConversationMessage{model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()}
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
 		participants := []*models.Participant{participant}
 		card := remoteAgentCardForTest()
 		turn := agentTurnRequestForTest()
 		concludeTurn := agentTurnRequestForTest()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleFacilitator), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleFacilitator), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return(participants, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return(participants, nil).
+				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(card, nil).Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
 				BuildInput(string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
 				Return(turn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, turn).Return([]string{"we are done :end:"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, turn).
+				Return([]string{"we are done :end:"}, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildConcludeInput(gomock.Any(), []string{"we are done :end:"}, participant, gomock.Any(), conversation, messages, participants).
+				BuildConcludeInput(
+					gomock.Any(),
+					[]string{"we are done :end:"},
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+				).
 				Return(concludeTurn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, concludeTurn).Return([]string{"final summary"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, concludeTurn).
+				Return([]string{"final summary"}, nil).
+				Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockBridgeCallbackRequester.EXPECT().
 				PostCompletion(bridge, conversation, participant, "we are done :end:").
@@ -408,24 +473,44 @@ func TestWhenProcessingConversation(t *testing.T) {
 		concludeTurn := agentTurnRequestForTest()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleFacilitator), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleFacilitator), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return(participants, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return(participants, nil).
+				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(card, nil).Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
 				BuildInput(string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
 				Return(turn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, turn).Return([]string{"wrapping up"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, turn).
+				Return([]string{"wrapping up"}, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildConcludeInput(gomock.Any(), []string{"wrapping up"}, participant, gomock.Any(), conversation, messages, participants).
+				BuildConcludeInput(
+					gomock.Any(),
+					[]string{"wrapping up"},
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+				).
 				Return(concludeTurn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, concludeTurn).Return([]string{"final summary"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, concludeTurn).
+				Return([]string{"final summary"}, nil).
+				Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockBridgeCallbackRequester.EXPECT().
 				PostCompletion(bridge, conversation, participant, "wrapping up").
@@ -458,27 +543,41 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now()
 		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
 
-		messages := []*models.ConversationMessage{model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build()}
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
 		participants := []*models.Participant{participant}
 		card := remoteAgentCardForTest()
 		turn := agentTurnRequestForTest()
 
-		reloaded := model_builders.NewConversationBuilder().WithID(conversation.ID).WithStatus(enums.ConversationStatusConcluded).Build()
+		reloaded := model_builders.NewConversationBuilder().
+			WithID(conversation.ID).
+			WithStatus(enums.ConversationStatusConcluded).
+			Build()
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(participant).Return(lo.ToPtr(enums.ParticipantRoleClone), nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(conversation.BridgeID).Return(bridge, nil).Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
 				ListProcessableForParticipantAndConversation(participant, gomock.Any(), conversation.ID).
 				Return(messages, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().ListByConversationId(conversation.ID).Return(participants, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(conversation.ID).
+				Return(participants, nil).
+				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().ResolveCard(*participant.EnsDomain).Return(card, nil).Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
 				BuildInput(string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
 				Return(turn, nil).
 				Times(1)
-			suite.mockRemoteAgentCompletionsRequester.EXPECT().RequestCompletions(card, turn).Return([]string{"a"}, nil).Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(card, turn).
+				Return([]string{"a"}, nil).
+				Times(1)
 			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(reloaded, nil).Times(1)
 		}
 

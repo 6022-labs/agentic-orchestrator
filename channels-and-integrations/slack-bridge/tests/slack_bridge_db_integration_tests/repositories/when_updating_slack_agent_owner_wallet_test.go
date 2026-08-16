@@ -93,7 +93,10 @@ func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(slackAgent.CollectionAddress, slackAgent.CollectionTokenId)
+			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+				slackAgent.CollectionAddress,
+				slackAgent.CollectionTokenId,
+			)
 			if err != nil {
 				t.Fatal(err)
 			}

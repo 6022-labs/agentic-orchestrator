@@ -61,7 +61,11 @@ func (handler *CollectionCreatedEventHandler) Handle(event *abi.AgentCollections
 	for _, collectionListener := range handler.collectionListeners {
 		err = collectionListener.Subscribe(event.CollectionAddress)
 		if err != nil {
-			handler.logger.Error("failed to notify collection listener about AgentCollectionsManager.CollectionCreated event", zap.Any("event", event), zap.Error(err))
+			handler.logger.Error(
+				"failed to notify collection listener about AgentCollectionsManager.CollectionCreated event",
+				zap.Any("event", event),
+				zap.Error(err),
+			)
 		}
 	}
 

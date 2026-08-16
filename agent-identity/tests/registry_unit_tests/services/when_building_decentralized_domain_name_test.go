@@ -22,7 +22,11 @@ func WhenBuildingDecentralizedDomainNameBeforeEach(t *testing.T) *WhenBuildingDe
 	blockchainSettings := &settings.BlockchainSettings{ChainId: 1}
 	decentralizedDomainNameProviderSettings := &settings.DecentralizedDomainNameProviderSettings{DomainExtension: "eth"}
 
-	sut := services.NewDecentralizedDomainNameBuilder(logger, blockchainSettings, decentralizedDomainNameProviderSettings)
+	sut := services.NewDecentralizedDomainNameBuilder(
+		logger,
+		blockchainSettings,
+		decentralizedDomainNameProviderSettings,
+	)
 
 	return &WhenBuildingDecentralizedDomainNameTestingSuite{
 		sut:                                     sut,

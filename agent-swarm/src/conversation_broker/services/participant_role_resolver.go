@@ -13,7 +13,9 @@ type ParticipantRoleResolver struct {
 	registryAgentResolver interfaces.RegistryAgentResolverInterface
 }
 
-func NewParticipantRoleResolver(registryAgentResolver interfaces.RegistryAgentResolverInterface) *ParticipantRoleResolver {
+func NewParticipantRoleResolver(
+	registryAgentResolver interfaces.RegistryAgentResolverInterface,
+) *ParticipantRoleResolver {
 	return &ParticipantRoleResolver{
 		registryAgentResolver: registryAgentResolver,
 	}
@@ -24,7 +26,10 @@ func (r *ParticipantRoleResolver) Resolve(participant *models.Participant) (*enu
 		return nil, nil
 	}
 
-	agent, err := r.registryAgentResolver.ResolveByCollection(*participant.CollectionAddress, *participant.CollectionTokenId)
+	agent, err := r.registryAgentResolver.ResolveByCollection(
+		*participant.CollectionAddress,
+		*participant.CollectionTokenId,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve role for participant %s: %w", participant.ID, err)
 	}

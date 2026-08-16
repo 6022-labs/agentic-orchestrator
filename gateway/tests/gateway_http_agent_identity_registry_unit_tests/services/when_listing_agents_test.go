@@ -99,10 +99,13 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsWithResponse(gomock.Any(), gomock.Any()).Return(&clients.GetAgentsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsWithResponse(gomock.Any(), gomock.Any()).
+				Return(&clients.GetAgentsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -122,7 +125,10 @@ func TestWhenListingAgents(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentsWithResponse(gomock.Any(), gomock.Any()).Return(nil, errors.New("registry down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentsWithResponse(gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("registry down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

@@ -15,13 +15,13 @@ type Conversation struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;not null" json:"id"`
 
 	BridgeID    uuid.UUID `gorm:"type:uuid;not null;index" json:"bridgeId"`
-	Description *string   `gorm:"type:text" json:"description,omitempty"`
+	Description *string   `gorm:"type:text"                json:"description,omitempty"`
 
 	Status        enums.ConversationStatus `gorm:"type:text;not null;default:'active';index:idx_conversations_status_updated,priority:1" json:"status"`
-	ConcludedAt   *time.Time               `gorm:"type:timestamptz" json:"concludedAt,omitempty"`
-	UnconcludedAt *time.Time               `gorm:"type:timestamptz" json:"unconcludedAt,omitempty"`
+	ConcludedAt   *time.Time               `gorm:"type:timestamptz"                                                                      json:"concludedAt,omitempty"`
+	UnconcludedAt *time.Time               `gorm:"type:timestamptz"                                                                      json:"unconcludedAt,omitempty"`
 
-	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
+	CreatedAt time.Time `gorm:"type:timestamptz;not null"                                                   json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null;index:idx_conversations_status_updated,priority:2" json:"updatedAt"`
 
 	Bridge *Bridge `gorm:"foreignKey:BridgeID;references:ID;constraint:OnDelete:CASCADE" json:"-"`

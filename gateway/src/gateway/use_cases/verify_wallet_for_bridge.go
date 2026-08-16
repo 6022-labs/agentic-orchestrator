@@ -37,7 +37,11 @@ func (uc *VerifyWalletForBridge) Verify(request *requests.VerifyWalletForBridgeR
 		return errors.NewValidationError("signature", "invalid signature")
 	}
 
-	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex())
+	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(
+		request.Platform,
+		request.Challenge,
+		request.AuthenticatedWallet.Hex(),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to set wallet ownership to user: %w", err)
 	}

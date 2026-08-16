@@ -97,13 +97,19 @@ func newHttpSuite() *httpSuite {
 		panic(err)
 	}
 
-	if err := container.Provide(func() service_interfaces.EnsUrlResolverInterface { return &stubEnsUrlResolver{} }); err != nil {
+	if err := container.Provide(
+		func() service_interfaces.EnsUrlResolverInterface { return &stubEnsUrlResolver{} },
+	); err != nil {
 		panic(err)
 	}
-	if err := container.Provide(func() service_interfaces.RemoteAgentCardRequesterInterface { return &stubRemoteAgentCardRequester{} }); err != nil {
+	if err := container.Provide(
+		func() service_interfaces.RemoteAgentCardRequesterInterface { return &stubRemoteAgentCardRequester{} },
+	); err != nil {
 		panic(err)
 	}
-	if err := container.Provide(func() service_interfaces.CacheStorageInterface { return &stubCacheStorage{} }); err != nil {
+	if err := container.Provide(
+		func() service_interfaces.CacheStorageInterface { return &stubCacheStorage{} },
+	); err != nil {
 		panic(err)
 	}
 
@@ -216,7 +222,11 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			assert.NoError(t, json.Unmarshal(body, &conv))
 
 			// 4. Detach + re-attach the human
-			resp, _ = suite.do(http.MethodDelete, fmt.Sprintf("/conversations/%s/participants/%s", conv.ID, human.ID), nil)
+			resp, _ = suite.do(
+				http.MethodDelete,
+				fmt.Sprintf("/conversations/%s/participants/%s", conv.ID, human.ID),
+				nil,
+			)
 			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 
 			resp, _ = suite.do(http.MethodPost, fmt.Sprintf("/conversations/%s/participants", conv.ID), map[string]any{
@@ -225,10 +235,14 @@ func TestWhenCallingEndpoints(t *testing.T) {
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 			// 5. Ingest a message from the human
-			resp, _ = suite.do(http.MethodPost, fmt.Sprintf("/conversations/%s/messages", conv.ID), &requests.IngestMessageRequest{
-				ParticipantID: human.ID,
-				Content:       "hello",
-			})
+			resp, _ = suite.do(
+				http.MethodPost,
+				fmt.Sprintf("/conversations/%s/messages", conv.ID),
+				&requests.IngestMessageRequest{
+					ParticipantID: human.ID,
+					Content:       "hello",
+				},
+			)
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
 			// 6. Get conversation

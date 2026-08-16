@@ -44,15 +44,28 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		return fmt.Errorf("requester needs to verify their wallet first before pairing a human agent")
 	}
 
-	agent, err := p.slackAgentSynchronizer.Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId)
+	agent, err := p.slackAgentSynchronizer.Sync(
+		request.HumanAgentCollectionAddress,
+		request.HumanAgentCollectionTokenId,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to sync human agent: %w", err)
 	}
 	if agent.Role != enums.AgentRoleHuman {
-		return fmt.Errorf("the specified agent %s %d is not a human agent, role is: %s", request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId, agent.Role)
+		return fmt.Errorf(
+			"the specified agent %s %d is not a human agent, role is: %s",
+			request.HumanAgentCollectionAddress,
+			request.HumanAgentCollectionTokenId,
+			agent.Role,
+		)
 	}
 	if agent.OwnerWallet != *requesterUser.WalletAddress {
-		return fmt.Errorf("requester does not own the human agent %s %d, owner is: %s", request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId, agent.OwnerWallet)
+		return fmt.Errorf(
+			"requester does not own the human agent %s %d, owner is: %s",
+			request.HumanAgentCollectionAddress,
+			request.HumanAgentCollectionTokenId,
+			agent.OwnerWallet,
+		)
 	}
 
 	alreadyPairedUserForAgent, err := p.slackUserRepository.GetByPairedHumanAgent(
@@ -63,7 +76,11 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		return fmt.Errorf("failed to check if human agent is already paired: %w", err)
 	}
 	if alreadyPairedUserForAgent != nil {
-		return fmt.Errorf("the specified human agent %s %d is already paired to another slack user", request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId)
+		return fmt.Errorf(
+			"the specified human agent %s %d is already paired to another slack user",
+			request.HumanAgentCollectionAddress,
+			request.HumanAgentCollectionTokenId,
+		)
 	}
 
 	slackUserToPair, err := p.slackUserSynchronizerCached.Sync(request.SlackUserId)

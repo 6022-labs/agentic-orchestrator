@@ -38,9 +38,16 @@ func NewX402PaymentPayloadSigner(
 	}
 }
 
-func (signer *X402PaymentPayloadSigner) Sign(paymentChallenge *models.X402PaymentChallenge, amount string) (*models.X402PaymentPayload, error) {
+func (signer *X402PaymentPayloadSigner) Sign(
+	paymentChallenge *models.X402PaymentChallenge,
+	amount string,
+) (*models.X402PaymentPayload, error) {
 	if paymentChallenge.X402Version != models.X402Version {
-		return nil, fmt.Errorf("unsupported x402 version %d (only %d is supported)", paymentChallenge.X402Version, models.X402Version)
+		return nil, fmt.Errorf(
+			"unsupported x402 version %d (only %d is supported)",
+			paymentChallenge.X402Version,
+			models.X402Version,
+		)
 	}
 
 	privateKey, err := signer.fetchPrivateKey()
@@ -119,7 +126,12 @@ func (signer *X402PaymentPayloadSigner) parseCaip2(network string) (int64, error
 	return chainId, nil
 }
 
-func (signer *X402PaymentPayloadSigner) signEip3009(privateKey *ecdsa.PrivateKey, option *models.X402PaymentOption, chainId int64, amount string) (*models.X402ExactEvmPayload, error) {
+func (signer *X402PaymentPayloadSigner) signEip3009(
+	privateKey *ecdsa.PrivateKey,
+	option *models.X402PaymentOption,
+	chainId int64,
+	amount string,
+) (*models.X402ExactEvmPayload, error) {
 	nonce, err := signer.randomNonce()
 	if err != nil {
 		return nil, err
@@ -176,7 +188,12 @@ func (signer *X402PaymentPayloadSigner) signEip3009(privateKey *ecdsa.PrivateKey
 	return &models.X402ExactEvmPayload{Signature: signature, Authorization: authorization}, nil
 }
 
-func (signer *X402PaymentPayloadSigner) signPermit2(privateKey *ecdsa.PrivateKey, option *models.X402PaymentOption, chainId int64, amount string) (*models.X402ExactEvmPayload, error) {
+func (signer *X402PaymentPayloadSigner) signPermit2(
+	privateKey *ecdsa.PrivateKey,
+	option *models.X402PaymentOption,
+	chainId int64,
+	amount string,
+) (*models.X402ExactEvmPayload, error) {
 	nonce, err := signer.randomNonce()
 	if err != nil {
 		return nil, err
@@ -254,7 +271,10 @@ func (signer *X402PaymentPayloadSigner) randomNonce() ([]byte, error) {
 	return nonce, nil
 }
 
-func (signer *X402PaymentPayloadSigner) signTypedData(privateKey *ecdsa.PrivateKey, typedData apitypes.TypedData) (string, error) {
+func (signer *X402PaymentPayloadSigner) signTypedData(
+	privateKey *ecdsa.PrivateKey,
+	typedData apitypes.TypedData,
+) (string, error) {
 	digest, _, err := apitypes.TypedDataAndHash(typedData)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash typed data: %w", err)

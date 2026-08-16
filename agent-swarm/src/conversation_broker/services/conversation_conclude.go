@@ -15,7 +15,9 @@ type ConversationConclude struct {
 	conversationRepository repositories.ConversationRepositoryInterface
 }
 
-func NewConversationConclude(conversationRepository repositories.ConversationRepositoryInterface) *ConversationConclude {
+func NewConversationConclude(
+	conversationRepository repositories.ConversationRepositoryInterface,
+) *ConversationConclude {
 	return &ConversationConclude{conversationRepository: conversationRepository}
 }
 

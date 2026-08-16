@@ -46,7 +46,10 @@ func NewBlockEventsQueue(
 	}
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(blockNumber uint64, events []*abi.AgentCollectionV1Minted) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1Minted,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -57,7 +60,10 @@ func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(blockNumber uint64, 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(blockNumber uint64, events []*abi.AgentCollectionV1Transfer) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1Transfer,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -68,89 +74,129 @@ func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(blockNumber uint64
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1AgentImageUpdated,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentImageUpdatedEvents = append(entry.data.AgentCollectionV1AgentImageUpdatedEvents, events...)
+	entry.data.AgentCollectionV1AgentImageUpdatedEvents = append(
+		entry.data.AgentCollectionV1AgentImageUpdatedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentImageRemoved) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1AgentImageRemoved,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentImageRemovedEvents = append(entry.data.AgentCollectionV1AgentImageRemovedEvents, events...)
+	entry.data.AgentCollectionV1AgentImageRemovedEvents = append(
+		entry.data.AgentCollectionV1AgentImageRemovedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalCreated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1MintProposalCreated,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1MintProposalCreatedEvents = append(entry.data.AgentCollectionV1MintProposalCreatedEvents, events...)
+	entry.data.AgentCollectionV1MintProposalCreatedEvents = append(
+		entry.data.AgentCollectionV1MintProposalCreatedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1MintProposalRemoved) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1MintProposalRemoved,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1MintProposalRemovedEvents = append(entry.data.AgentCollectionV1MintProposalRemovedEvents, events...)
+	entry.data.AgentCollectionV1MintProposalRemovedEvents = append(
+		entry.data.AgentCollectionV1MintProposalRemovedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAttributeUpdated) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1AgentAttributeUpdated,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentAttributeUpdatedEvents = append(entry.data.AgentCollectionV1AgentAttributeUpdatedEvents, events...)
+	entry.data.AgentCollectionV1AgentAttributeUpdatedEvents = append(
+		entry.data.AgentCollectionV1AgentAttributeUpdatedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressAddedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressAdded) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressAddedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1AgentAddressAdded,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentAddressAddedEvents = append(entry.data.AgentCollectionV1AgentAddressAddedEvents, events...)
+	entry.data.AgentCollectionV1AgentAddressAddedEvents = append(
+		entry.data.AgentCollectionV1AgentAddressAddedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressRemovedEvents(blockNumber uint64, events []*abi.AgentCollectionV1AgentAddressRemoved) error {
+func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressRemovedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionV1AgentAddressRemoved,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionV1AgentAddressRemovedEvents = append(entry.data.AgentCollectionV1AgentAddressRemovedEvents, events...)
+	entry.data.AgentCollectionV1AgentAddressRemovedEvents = append(
+		entry.data.AgentCollectionV1AgentAddressRemovedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(blockNumber uint64, events []*abi.AgentCollectionsManagerCollectionCreated) error {
+func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(
+	blockNumber uint64,
+	events []*abi.AgentCollectionsManagerCollectionCreated,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	entry := s.ensureEntry(blockNumber)
-	entry.data.AgentCollectionsManagerCollectionCreatedEvents = append(entry.data.AgentCollectionsManagerCollectionCreatedEvents, events...)
+	entry.data.AgentCollectionsManagerCollectionCreatedEvents = append(
+		entry.data.AgentCollectionsManagerCollectionCreatedEvents,
+		events...)
 	s.trackPendingBlock(blockNumber, entry)
 
 	return nil

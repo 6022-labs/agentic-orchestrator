@@ -97,7 +97,9 @@ func (d *ConversationProcessorDaemon) runLoop() {
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant() {
-	participant, err := d.participantRepository.GetNextAgentToProcess(d.processingSettings.ParticipantProcessingInterval)
+	participant, err := d.participantRepository.GetNextAgentToProcess(
+		d.processingSettings.ParticipantProcessingInterval,
+	)
 	if err != nil {
 		d.logger.Error("Failed to fetch next participant to process", zap.Error(err))
 		return
@@ -136,7 +138,11 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 		return
 	}
 
-	conversations, err := d.conversationRepository.ListProcessableForParticipant(participant, role, d.processingSettings.FacilitatorTickInterval)
+	conversations, err := d.conversationRepository.ListProcessableForParticipant(
+		participant,
+		role,
+		d.processingSettings.FacilitatorTickInterval,
+	)
 	if err != nil {
 		d.logger.Error("Failed to fetch processable conversations for participant",
 			d.participantLogFields(participant, zap.Error(err))...,
@@ -166,8 +172,13 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 			)
 
 			if err := d.conversationProcessor.ProcessConversation(participant, conv); err != nil {
-				d.logger.Error("Failed to process conversation for participant",
-					d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()), zap.Error(err))...,
+				d.logger.Error(
+					"Failed to process conversation for participant",
+					d.participantLogFields(
+						participant,
+						zap.String("conversationId", conv.ID.String()),
+						zap.Error(err),
+					)...,
 				)
 				return
 			}
@@ -201,7 +212,10 @@ func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(participant 
 	return nil
 }
 
-func (d *ConversationProcessorDaemon) participantLogFields(participant *models.Participant, extra ...zap.Field) []zap.Field {
+func (d *ConversationProcessorDaemon) participantLogFields(
+	participant *models.Participant,
+	extra ...zap.Field,
+) []zap.Field {
 	fields := []zap.Field{zap.String("participantId", participant.ID.String())}
 	if participant.EnsDomain != nil {
 		fields = append(fields, zap.String("participantEnsDomain", *participant.EnsDomain))

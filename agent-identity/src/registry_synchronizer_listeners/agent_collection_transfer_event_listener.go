@@ -69,7 +69,9 @@ func (listener *AgentCollectionTransferListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.Transfer events: %w", err)
 	}
@@ -79,7 +81,10 @@ func (listener *AgentCollectionTransferListener) SubscribeAll() error {
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("subscribed to AgentCollection.Transfer events", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"subscribed to AgentCollection.Transfer events",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 
 	return nil
 }
@@ -102,7 +107,9 @@ func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to rebuild AgentCollection.Transfer subscription: %w", err)
 	}
@@ -115,11 +122,17 @@ func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("rebuilt AgentCollection.Transfer subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"rebuilt AgentCollection.Transfer subscription",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 	return nil
 }
 
-func (listener *AgentCollectionTransferListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1Transfer) {
+func (listener *AgentCollectionTransferListener) startSubscriptionHandler(
+	subscription ethereum.Subscription,
+	eventChan <-chan *abi.AgentCollectionV1Transfer,
+) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -134,7 +147,10 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(subscr
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1TransferEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1Transfer{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionV1TransferEvents(
+					event.Raw.BlockNumber,
+					[]*abi.AgentCollectionV1Transfer{event},
+				); err != nil {
 					listener.logger.Error(
 						"failed to enqueue AgentCollection.Transfer event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),

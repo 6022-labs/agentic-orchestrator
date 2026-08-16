@@ -26,7 +26,9 @@ func WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach() *WhenGettingAgentPr
 	}
 }
 
-func WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(suite *WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite) {
+func WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(
+	suite *WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite,
+) {
 	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
 }
 

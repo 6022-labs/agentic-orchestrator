@@ -23,7 +23,9 @@ func NewGetAgentPromptTemplate(
 	return &GetAgentPromptTemplate{agentPromptTemplateRepository: agentPromptTemplateRepository}
 }
 
-func (uc *GetAgentPromptTemplate) Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (uc *GetAgentPromptTemplate) Get(
+	request *requests.GetAgentPromptTemplateRequest,
+) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

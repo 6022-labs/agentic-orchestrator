@@ -39,15 +39,25 @@ func (handler *AgentAddressRemovedEventHandler) Handle(event *abi.AgentCollectio
 		zap.String("value", event.Value),
 	)
 
-	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(event.Raw.Address.Hex(), event.TokenId.Uint64())
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+		event.Raw.Address.Hex(),
+		event.TokenId.Uint64(),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get agent by collection address and token id: %w", err)
 	}
 	if agent == nil {
-		return fmt.Errorf("agent not found for collection %s and token id %d", event.Raw.Address.Hex(), event.TokenId.Uint64())
+		return fmt.Errorf(
+			"agent not found for collection %s and token id %d",
+			event.Raw.Address.Hex(),
+			event.TokenId.Uint64(),
+		)
 	}
 
-	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(event.Raw.Address, *event.TokenId)
+	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(
+		event.Raw.Address,
+		*event.TokenId,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get agent information: %w", err)
 	}

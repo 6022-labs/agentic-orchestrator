@@ -53,7 +53,10 @@ func NewSyncSettings(
 	}
 
 	if startBlockInt <= 0 {
-		logger.Fatal("no built-in start block for this chain, please set a valid sync.start_block value in your configuration", zap.Int64("chainId", blockchainSettings.ChainId))
+		logger.Fatal(
+			"no built-in start block for this chain, please set a valid sync.start_block value in your configuration",
+			zap.Int64("chainId", blockchainSettings.ChainId),
+		)
 	}
 
 	blockFinalizationDelay := k.Duration(SyncSettingsKey + ".block_finalization_delay")

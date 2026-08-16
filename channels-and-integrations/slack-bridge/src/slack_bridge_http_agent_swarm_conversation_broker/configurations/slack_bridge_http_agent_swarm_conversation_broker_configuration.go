@@ -20,8 +20,13 @@ func AddSlackBridgeHttpAgentSwarmConversationBrokerConfiguration(container *dig.
 
 	err = container.Provide(
 		func(conversationBrokerSettings *settings.ConversationBrokerSettings) (clients.ClientWithResponsesInterface, error) {
-			httpClient := &http.Client{Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second}
-			return clients.NewClientWithResponses(conversationBrokerSettings.BaseUrl, clients.WithHTTPClient(httpClient))
+			httpClient := &http.Client{
+				Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second,
+			}
+			return clients.NewClientWithResponses(
+				conversationBrokerSettings.BaseUrl,
+				clients.WithHTTPClient(httpClient),
+			)
 		},
 	)
 	if err != nil {

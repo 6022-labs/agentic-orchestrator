@@ -60,7 +60,9 @@ func (listener *AgentCollectionMintProposalRemovedListener) SubscribeAll() error
 	}
 
 	if len(collectionAddresses) == 0 {
-		listener.logger.Info("no agent collections found, skipping subscription to AgentCollection.MintProposalRemoved events")
+		listener.logger.Info(
+			"no agent collections found, skipping subscription to AgentCollection.MintProposalRemoved events",
+		)
 		return nil
 	}
 
@@ -69,7 +71,9 @@ func (listener *AgentCollectionMintProposalRemovedListener) SubscribeAll() error
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintProposalRemovedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintProposalRemovedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to AgentCollection.MintProposalRemoved events: %w", err)
 	}
@@ -79,7 +83,10 @@ func (listener *AgentCollectionMintProposalRemovedListener) SubscribeAll() error
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("subscribed to AgentCollection.MintProposalRemoved events", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"subscribed to AgentCollection.MintProposalRemoved events",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 
 	return nil
 }
@@ -102,7 +109,9 @@ func (listener *AgentCollectionMintProposalRemovedListener) rebuildSubscription(
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintProposalRemovedSubscription(addressesToSubscribe)
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintProposalRemovedSubscription(
+		addressesToSubscribe,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to rebuild AgentCollection.MintProposalRemoved subscription: %w", err)
 	}
@@ -115,11 +124,17 @@ func (listener *AgentCollectionMintProposalRemovedListener) rebuildSubscription(
 	listener.mu.Unlock()
 
 	listener.startSubscriptionHandler(subscription, events)
-	listener.logger.Info("rebuilt AgentCollection.MintProposalRemoved subscription", zap.Int("collectionCount", len(addressesToSubscribe)))
+	listener.logger.Info(
+		"rebuilt AgentCollection.MintProposalRemoved subscription",
+		zap.Int("collectionCount", len(addressesToSubscribe)),
+	)
 	return nil
 }
 
-func (listener *AgentCollectionMintProposalRemovedListener) startSubscriptionHandler(subscription ethereum.Subscription, eventChan <-chan *abi.AgentCollectionV1MintProposalRemoved) {
+func (listener *AgentCollectionMintProposalRemovedListener) startSubscriptionHandler(
+	subscription ethereum.Subscription,
+	eventChan <-chan *abi.AgentCollectionV1MintProposalRemoved,
+) {
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
@@ -134,7 +149,10 @@ func (listener *AgentCollectionMintProposalRemovedListener) startSubscriptionHan
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1MintProposalRemovedEvents(event.Raw.BlockNumber, []*abi.AgentCollectionV1MintProposalRemoved{event}); err != nil {
+				if err := listener.blockEventsQueue.AddAgentCollectionV1MintProposalRemovedEvents(
+					event.Raw.BlockNumber,
+					[]*abi.AgentCollectionV1MintProposalRemoved{event},
+				); err != nil {
 					listener.logger.Error(
 						"failed to enqueue AgentCollection.MintProposalRemoved event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),

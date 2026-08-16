@@ -33,7 +33,10 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 		return nil, fmt.Errorf("failed to get agent from orchestrator: %w", err)
 	}
 
-	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId)
+	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+		collectionAddress,
+		collectionTokenId,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +74,14 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 	}
 
 	if (slackAgentInDatabase.IconImageCid == nil && agentIdentity.IconImageCid != nil) ||
-		(slackAgentInDatabase.IconImageCid != nil && agentIdentity.IconImageCid != nil && *slackAgentInDatabase.IconImageCid != *agentIdentity.IconImageCid) {
+		(slackAgentInDatabase.IconImageCid != nil && agentIdentity.IconImageCid != nil &&
+			*slackAgentInDatabase.IconImageCid != *agentIdentity.IconImageCid) {
 		slackAgentInDatabase.IconImageCid = agentIdentity.IconImageCid
-		err = s.slackAgentRepository.UpdateIconImageCid(collectionAddress, collectionTokenId, agentIdentity.IconImageCid)
+		err = s.slackAgentRepository.UpdateIconImageCid(
+			collectionAddress,
+			collectionTokenId,
+			agentIdentity.IconImageCid,
+		)
 		if err != nil {
 			return nil, err
 		}

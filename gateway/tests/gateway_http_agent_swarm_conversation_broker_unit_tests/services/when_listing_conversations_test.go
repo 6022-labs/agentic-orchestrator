@@ -89,10 +89,13 @@ func TestWhenListingConversations(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
-			suite.mockClient.EXPECT().GetConversationsWithResponse(gomock.Any(), gomock.Any()).Return(&clients.GetConversationsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsWithResponse(gomock.Any(), gomock.Any()).
+				Return(&clients.GetConversationsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -112,7 +115,10 @@ func TestWhenListingConversations(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
-			suite.mockClient.EXPECT().GetConversationsWithResponse(gomock.Any(), gomock.Any()).Return(nil, errors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsWithResponse(gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

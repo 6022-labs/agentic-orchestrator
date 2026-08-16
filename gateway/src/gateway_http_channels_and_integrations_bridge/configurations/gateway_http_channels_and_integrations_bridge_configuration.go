@@ -22,8 +22,13 @@ func AddGatewayHttpChannelsAndIntegrationsBridgeConfiguration(container *dig.Con
 
 	err = container.Provide(
 		func(platformBridgesSettings *settings.PlatformBridgesSettings) (map[enums.BridgePlatform]clients.ClientWithResponsesInterface, error) {
-			httpClient := &http.Client{Timeout: time.Duration(platformBridgesSettings.SlackBridge.RequestTimeoutSeconds) * time.Second}
-			slackClient, err := clients.NewClientWithResponses(platformBridgesSettings.SlackBridge.BaseUrl, clients.WithHTTPClient(httpClient))
+			httpClient := &http.Client{
+				Timeout: time.Duration(platformBridgesSettings.SlackBridge.RequestTimeoutSeconds) * time.Second,
+			}
+			slackClient, err := clients.NewClientWithResponses(
+				platformBridgesSettings.SlackBridge.BaseUrl,
+				clients.WithHTTPClient(httpClient),
+			)
 			if err != nil {
 				return nil, err
 			}

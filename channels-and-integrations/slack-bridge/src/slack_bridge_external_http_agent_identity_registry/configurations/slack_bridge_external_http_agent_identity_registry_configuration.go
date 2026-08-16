@@ -19,8 +19,13 @@ func AddSlackBridgeExternalHttpAgentIdentityRegistryConfiguration(container *dig
 
 	err = container.Provide(
 		func(agentIdentityRegistrySettings *http_registry_settings.AgentIdentityRegistrySettings) (http_registry_clients.ClientWithResponsesInterface, error) {
-			httpClient := &http.Client{Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second}
-			return http_registry_clients.NewClientWithResponses(agentIdentityRegistrySettings.BaseUrl, http_registry_clients.WithHTTPClient(httpClient))
+			httpClient := &http.Client{
+				Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second,
+			}
+			return http_registry_clients.NewClientWithResponses(
+				agentIdentityRegistrySettings.BaseUrl,
+				http_registry_clients.WithHTTPClient(httpClient),
+			)
 		},
 	)
 	if err != nil {

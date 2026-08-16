@@ -12,7 +12,7 @@ import (
 type AgentAddress struct {
 	AgentId uuid.UUID         `gorm:"type:uuid;primaryKey" json:"agentId"`
 	Type    enums.AddressType `gorm:"type:text;primaryKey" json:"type"`
-	Address string            `gorm:"not null" json:"address"`
+	Address string            `gorm:"not null"             json:"address"`
 
 	UpdatedAt time.Time `gorm:"type:timestamp;not null" json:"updatedAt"`
 	CreatedAt time.Time `gorm:"type:timestamp;not null" json:"createdAt"`

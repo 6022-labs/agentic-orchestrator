@@ -28,7 +28,9 @@ func WhenRegisteringConversationBeforeEach(t *testing.T) *WhenRegisteringConvers
 
 	mockBridgeRepository := repositories_mocks.NewMockBridgeRepositoryInterface(mockController)
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
-	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(mockController)
+	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(
+		mockController,
+	)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 
 	sut := use_cases.NewRegisterConversation(

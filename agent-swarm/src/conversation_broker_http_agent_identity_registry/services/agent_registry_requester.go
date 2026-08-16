@@ -18,7 +18,10 @@ func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *Age
 	return &AgentRegistryRequester{client: client}
 }
 
-func (r *AgentRegistryRequester) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
+func (r *AgentRegistryRequester) GetAgent(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.RegistryAgent, error) {
 	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
 		context.Background(),
 		collectionAddress,

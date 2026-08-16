@@ -28,7 +28,9 @@ func NewGetConversationMessages(
 	}
 }
 
-func (uc *GetConversationMessages) Get(request *requests.ConversationIdRequest) ([]*responses.ConversationMessageResponse, error) {
+func (uc *GetConversationMessages) Get(
+	request *requests.ConversationIdRequest,
+) ([]*responses.ConversationMessageResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}

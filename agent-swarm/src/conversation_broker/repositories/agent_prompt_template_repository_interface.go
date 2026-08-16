@@ -7,6 +7,10 @@ import (
 
 type AgentPromptTemplateRepositoryInterface interface {
 	Save(entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error)
-	GetByAgentAndKey(collectionAddress string, collectionTokenId uint64, key enums.AgentPromptTemplateKey) (*models.AgentPromptTemplate, error)
+	GetByAgentAndKey(
+		collectionAddress string,
+		collectionTokenId uint64,
+		key enums.AgentPromptTemplateKey,
+	) (*models.AgentPromptTemplate, error)
 	ListByAgent(collectionAddress string, collectionTokenId uint64) ([]*models.AgentPromptTemplate, error)
 }

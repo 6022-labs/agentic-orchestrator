@@ -350,10 +350,8 @@ paths:
       - Prompt Templates
   /bridges:
     post:
-      description: Upserts a bridge instance. When the caller supplies `id` and the
-        row already exists the broker returns 200 with the existing row; when the
-        row does not exist (whether or not an id was provided) the broker returns
-        201 with the new row.
+      description: 'Upserts a bridge: 200 with the existing row when the given `id`
+        exists, 201 with the new row otherwise.'
       requestBody:
         content:
           application/json:
@@ -809,9 +807,8 @@ paths:
       - Conversations
   /participants/agents:
     post:
-      description: Upserts an agent participant by NFT identity. Returns 200 if the
-        agent was already known, 201 if newly created. Broker fetches role + ENS from
-        the agent-identity registry on first registration.
+      description: 'Upserts an agent participant by NFT identity: 200 if known, 201
+        if new; role + ENS from the registry.'
       requestBody:
         content:
           application/json:
@@ -859,8 +856,8 @@ paths:
       - Participants
   /participants/users:
     post:
-      description: Creates a user participant identified only by display name. No
-        dedup — bridges must cache the returned id locally to avoid duplicates.
+      description: Creates a user participant by display name only. No dedup — bridges
+        must cache the returned id.
       requestBody:
         content:
           application/json:

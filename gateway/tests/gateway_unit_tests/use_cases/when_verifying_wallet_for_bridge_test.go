@@ -117,32 +117,35 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 		})
 	})
 
-	t.Run("Given error occurs while setting user wallet ownership on platform bridge, should return error", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
-			suite.mockSignatureVerifier.
-				EXPECT().
-				Recover(request.Challenge, request.Signature).
-				Return(request.AuthenticatedWallet, nil)
-
-			suite.mockPlatformBridgeRequester.
-				EXPECT().
-				SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
-				Return(assert.AnError)
-		}
-
-		t.Run("Should return error", func(t *testing.T) {
+	t.Run(
+		"Given error occurs while setting user wallet ownership on platform bridge, should return error",
+		func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-			request := generateValidVerifyWalletForBridgeRequest()
-			initSuite(suite, request)
+			initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
+				suite.mockSignatureVerifier.
+					EXPECT().
+					Recover(request.Challenge, request.Signature).
+					Return(request.AuthenticatedWallet, nil)
 
-			err := suite.sut.Verify(request)
-			assert.NotNil(t, err)
-		})
-	})
+				suite.mockPlatformBridgeRequester.
+					EXPECT().
+					SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
+					Return(assert.AnError)
+			}
+
+			t.Run("Should return error", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+				request := generateValidVerifyWalletForBridgeRequest()
+				initSuite(suite, request)
+
+				err := suite.sut.Verify(request)
+				assert.NotNil(t, err)
+			})
+		},
+	)
 
 	t.Run("Given wallet is successfully setup to user", func(t *testing.T) {
 		t.Parallel()

@@ -37,14 +37,17 @@ func TestWhenListingAgentCollections(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentCollectionsWithResponse(gomock.Any()).Return(&clients.GetAgentCollectionsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &[]clients.ResponsesAgentCollectionResponse{{
-					Address: lo.ToPtr("0xabc"),
-					Name:    lo.ToPtr("Experts"),
-					Symbol:  lo.ToPtr("EXP"),
-				}},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentCollectionsWithResponse(gomock.Any()).
+				Return(&clients.GetAgentCollectionsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &[]clients.ResponsesAgentCollectionResponse{{
+						Address: lo.ToPtr("0xabc"),
+						Name:    lo.ToPtr("Experts"),
+						Symbol:  lo.ToPtr("EXP"),
+					}},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return the mapped collections", func(t *testing.T) {
@@ -68,10 +71,13 @@ func TestWhenListingAgentCollections(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentCollectionsWithResponse(gomock.Any()).Return(&clients.GetAgentCollectionsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentCollectionsWithResponse(gomock.Any()).
+				Return(&clients.GetAgentCollectionsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -91,7 +97,10 @@ func TestWhenListingAgentCollections(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentCollectionsWithResponse(gomock.Any()).Return(nil, errors.New("registry down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentCollectionsWithResponse(gomock.Any()).
+				Return(nil, errors.New("registry down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

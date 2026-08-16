@@ -10,13 +10,17 @@ type ConversationParticipantRepository struct {
 	AbstractRepository[models.ConversationParticipant]
 }
 
-func NewConversationParticipantRepository(client db_clients.DatabaseClientInterface) *ConversationParticipantRepository {
+func NewConversationParticipantRepository(
+	client db_clients.DatabaseClientInterface,
+) *ConversationParticipantRepository {
 	return &ConversationParticipantRepository{
 		AbstractRepository: *NewAbstractRepository[models.ConversationParticipant](client),
 	}
 }
 
-func (r *ConversationParticipantRepository) ListByConversationId(conversationId uuid.UUID) ([]*models.ConversationParticipant, error) {
+func (r *ConversationParticipantRepository) ListByConversationId(
+	conversationId uuid.UUID,
+) ([]*models.ConversationParticipant, error) {
 	var entities []*models.ConversationParticipant
 	err := r.client.GetDB().
 		Where("conversation_id = ?", conversationId).

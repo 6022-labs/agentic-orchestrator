@@ -32,7 +32,11 @@ func NewMigrationsSettings(
 	}
 
 	if _, err := os.Stat(settings.MigrationsFolderPath); os.IsNotExist(err) {
-		logger.Fatal("migrations folder path does not exist", zap.String("path", settings.MigrationsFolderPath), zap.Error(err))
+		logger.Fatal(
+			"migrations folder path does not exist",
+			zap.String("path", settings.MigrationsFolderPath),
+			zap.Error(err),
+		)
 	}
 
 	return &settings

@@ -19,7 +19,10 @@ func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *Age
 	}
 }
 
-func (r *AgentRegistryRequester) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
+func (r *AgentRegistryRequester) GetAgent(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.SlackAgent, error) {
 	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
 		context.Background(),
 		collectionAddress,

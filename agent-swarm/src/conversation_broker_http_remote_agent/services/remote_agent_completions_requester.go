@@ -37,7 +37,10 @@ func NewRemoteAgentCompletionsRequester(
 	}
 }
 
-func (r *RemoteAgentCompletionsRequester) RequestCompletions(card *models.RemoteAgentCard, input *models.RemoteAgentInput) ([]string, error) {
+func (r *RemoteAgentCompletionsRequester) RequestCompletions(
+	card *models.RemoteAgentCard,
+	input *models.RemoteAgentInput,
+) ([]string, error) {
 	ensDomain := input.Metadata["ensDomain"]
 
 	if card.Endpoints.Responses != "" {
@@ -55,7 +58,10 @@ func (r *RemoteAgentCompletionsRequester) RequestCompletions(card *models.Remote
 
 // requestWithFreeCallRetry pre-signs from cache, then after a 402 caches the fresh challenge and retries once
 // signed — unless the node just rejected these exact terms, where a retry would fail identically.
-func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(ensDomain string, request func(paymentSignature string) ([]string, error)) ([]string, error) {
+func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
+	ensDomain string,
+	request func(paymentSignature string) ([]string, error),
+) ([]string, error) {
 	cachedChallenge, _ := r.x402PaymentChallengeCache.Read(ensDomain)
 
 	completions, err := request(r.freeCallHeader(ensDomain, cachedChallenge))
@@ -85,7 +91,10 @@ func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(ensDomain str
 	return request(signatureHeader)
 }
 
-func (r *RemoteAgentCompletionsRequester) freeCallHeader(ensDomain string, challenge *models.X402PaymentChallenge) string {
+func (r *RemoteAgentCompletionsRequester) freeCallHeader(
+	ensDomain string,
+	challenge *models.X402PaymentChallenge,
+) string {
 	if challenge == nil {
 		return ""
 	}
@@ -98,7 +107,9 @@ func (r *RemoteAgentCompletionsRequester) freeCallHeader(ensDomain string, chall
 	return signatureHeader
 }
 
-func (r *RemoteAgentCompletionsRequester) decodePaymentChallengeHeader(paymentRequiredHeader string) (*models.X402PaymentChallenge, error) {
+func (r *RemoteAgentCompletionsRequester) decodePaymentChallengeHeader(
+	paymentRequiredHeader string,
+) (*models.X402PaymentChallenge, error) {
 	decoded, err := base64.StdEncoding.DecodeString(strings.TrimSpace(paymentRequiredHeader))
 	if err != nil {
 		return nil, fmt.Errorf("PAYMENT-REQUIRED header is not valid base64: %w", err)
@@ -111,14 +122,18 @@ func (r *RemoteAgentCompletionsRequester) decodePaymentChallengeHeader(paymentRe
 	return &paymentChallenge, nil
 }
 
-func (r *RemoteAgentCompletionsRequester) requestHeaders(paymentSignature string) *http_node_models.ExternalRequestHeaders {
+func (r *RemoteAgentCompletionsRequester) requestHeaders(
+	paymentSignature string,
+) *http_node_models.ExternalRequestHeaders {
 	if paymentSignature == "" {
 		return nil
 	}
 	return &http_node_models.ExternalRequestHeaders{PaymentSignature: paymentSignature}
 }
 
-func (r *RemoteAgentCompletionsRequester) signFreeCallHeader(paymentChallenge *models.X402PaymentChallenge) (string, error) {
+func (r *RemoteAgentCompletionsRequester) signFreeCallHeader(
+	paymentChallenge *models.X402PaymentChallenge,
+) (string, error) {
 	paymentPayload, err := r.x402PaymentPayloadSigner.Sign(paymentChallenge, "0")
 	if err != nil {
 		return "", err
@@ -131,7 +146,11 @@ func (r *RemoteAgentCompletionsRequester) signFreeCallHeader(paymentChallenge *m
 	return base64.StdEncoding.EncodeToString(encoded), nil
 }
 
-func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(endpointUrl, ensDomain string, turn *models.RemoteAgentInput, paymentSignature string) ([]string, error) {
+func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(
+	endpointUrl, ensDomain string,
+	turn *models.RemoteAgentInput,
+	paymentSignature string,
+) ([]string, error) {
 	input := make([]*http_node_models.ExternalResponseInputMessage, len(turn.Input))
 	for i, message := range turn.Input {
 		input[i] = &http_node_models.ExternalResponseInputMessage{
@@ -173,7 +192,11 @@ func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(endpointUrl, ensD
 	return completions, nil
 }
 
-func (r *RemoteAgentCompletionsRequester) requestChatCompletionTurn(endpointUrl, ensDomain string, turn *models.RemoteAgentInput, paymentSignature string) ([]string, error) {
+func (r *RemoteAgentCompletionsRequester) requestChatCompletionTurn(
+	endpointUrl, ensDomain string,
+	turn *models.RemoteAgentInput,
+	paymentSignature string,
+) ([]string, error) {
 	messages := make([]*http_node_models.ExternalChatCompletionMessage, 0, len(turn.Input)+1)
 	if turn.Instructions != "" {
 		messages = append(messages, &http_node_models.ExternalChatCompletionMessage{
@@ -188,10 +211,15 @@ func (r *RemoteAgentCompletionsRequester) requestChatCompletionTurn(endpointUrl,
 		})
 	}
 
-	response, err := r.client.CreateChatCompletion(endpointUrl, ensDomain, &http_node_models.ExternalChatCompletionRequest{
-		Messages: messages,
-		Metadata: turn.Metadata,
-	}, r.requestHeaders(paymentSignature))
+	response, err := r.client.CreateChatCompletion(
+		endpointUrl,
+		ensDomain,
+		&http_node_models.ExternalChatCompletionRequest{
+			Messages: messages,
+			Metadata: turn.Metadata,
+		},
+		r.requestHeaders(paymentSignature),
+	)
 	if err != nil {
 		return nil, err
 	}

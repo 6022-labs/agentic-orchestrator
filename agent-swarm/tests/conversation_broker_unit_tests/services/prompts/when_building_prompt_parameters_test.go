@@ -68,11 +68,19 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			initSuite(suite)
 
 			parameters, err := suite.sut.
-				WithParam([]string{"Members"}, []string{"hermes.eth"}, lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray)).
+				WithParam(
+					[]string{"Members"},
+					[]string{"hermes.eth"},
+					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
+				).
 				Build()
 
 			assert.NoError(t, err)
-			rendered := renderWith(t, `{{range .Members}}{{index .Addresses "evm"}}|{{index .Addresses "btc"}}{{end}}`, parameters)
+			rendered := renderWith(
+				t,
+				`{{range .Members}}{{index .Addresses "evm"}}|{{index .Addresses "btc"}}{{end}}`,
+				parameters,
+			)
 			assert.Equal(t, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266|bc1qexample", rendered)
 		})
 
@@ -83,7 +91,11 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			initSuite(suite)
 
 			parameters, err := suite.sut.
-				WithParam([]string{"Members"}, []string{"hermes.eth"}, lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray)).
+				WithParam(
+					[]string{"Members"},
+					[]string{"hermes.eth"},
+					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
+				).
 				Build()
 
 			assert.NoError(t, err)
@@ -109,7 +121,11 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			initSuite(suite)
 
 			parameters, err := suite.sut.
-				WithParam([]string{"Members"}, []string{"pierre"}, lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray)).
+				WithParam(
+					[]string{"Members"},
+					[]string{"pierre"},
+					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
+				).
 				Build()
 
 			assert.NoError(t, err)

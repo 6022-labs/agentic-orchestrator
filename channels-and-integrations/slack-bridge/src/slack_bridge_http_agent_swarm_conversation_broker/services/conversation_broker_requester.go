@@ -23,7 +23,10 @@ func NewConversationBrokerRequester(client clients.ClientWithResponsesInterface)
 	return &ConversationBrokerRequester{client: client}
 }
 
-func (r *ConversationBrokerRequester) RegisterAgent(collectionAddress string, collectionTokenId uint64) (uuid.UUID, error) {
+func (r *ConversationBrokerRequester) RegisterAgent(
+	collectionAddress string,
+	collectionTokenId uint64,
+) (uuid.UUID, error) {
 	body, err := json.Marshal(clients.RequestsRegisterAgentRequest{
 		CollectionAddress: &collectionAddress,
 		CollectionTokenId: lo.ToPtr(fmt.Sprintf("%d", collectionTokenId)),
@@ -32,7 +35,11 @@ func (r *ConversationBrokerRequester) RegisterAgent(collectionAddress string, co
 		return uuid.Nil, err
 	}
 
-	rsp, err := r.client.PostParticipantsAgentsWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostParticipantsAgentsWithBodyWithResponse(
+		context.Background(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -54,7 +61,11 @@ func (r *ConversationBrokerRequester) RegisterUser(displayName string) (uuid.UUI
 		return uuid.Nil, err
 	}
 
-	rsp, err := r.client.PostParticipantsUsersWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostParticipantsUsersWithBodyWithResponse(
+		context.Background(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -64,7 +75,11 @@ func (r *ConversationBrokerRequester) RegisterUser(displayName string) (uuid.UUI
 	return helpers.ParseUuid(rsp.JSON201.Id), nil
 }
 
-func (r *ConversationBrokerRequester) RegisterConversation(bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
+func (r *ConversationBrokerRequester) RegisterConversation(
+	bridgeId uuid.UUID,
+	description *string,
+	participantIds []uuid.UUID,
+) (uuid.UUID, error) {
 	ids := lo.Map(participantIds, func(id uuid.UUID, _ int) string { return id.String() })
 	body, err := json.Marshal(clients.RequestsRegisterConversationRequest{
 		BridgeId:       lo.ToPtr(bridgeId.String()),
@@ -75,7 +90,11 @@ func (r *ConversationBrokerRequester) RegisterConversation(bridgeId uuid.UUID, d
 		return uuid.Nil, err
 	}
 
-	rsp, err := r.client.PostConversationsWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostConversationsWithBodyWithResponse(
+		context.Background(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -85,7 +104,11 @@ func (r *ConversationBrokerRequester) RegisterConversation(bridgeId uuid.UUID, d
 	return helpers.ParseUuid(rsp.JSON201.Id), nil
 }
 
-func (r *ConversationBrokerRequester) IngestMessage(conversationId uuid.UUID, participantId uuid.UUID, content string) (uuid.UUID, error) {
+func (r *ConversationBrokerRequester) IngestMessage(
+	conversationId uuid.UUID,
+	participantId uuid.UUID,
+	content string,
+) (uuid.UUID, error) {
 	body, err := json.Marshal(clients.RequestsIngestMessageRequest{
 		ParticipantId: lo.ToPtr(participantId.String()),
 		Content:       &content,
@@ -94,7 +117,12 @@ func (r *ConversationBrokerRequester) IngestMessage(conversationId uuid.UUID, pa
 		return uuid.Nil, err
 	}
 
-	rsp, err := r.client.PostConversationsIdMessagesWithBodyWithResponse(context.Background(), conversationId.String(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostConversationsIdMessagesWithBodyWithResponse(
+		context.Background(),
+		conversationId.String(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -116,12 +144,19 @@ func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId u
 }
 
 func (r *ConversationBrokerRequester) AttachParticipant(conversationId uuid.UUID, participantId uuid.UUID) error {
-	body, err := json.Marshal(clients.RequestsConversationParticipantRequest{ParticipantId: lo.ToPtr(participantId.String())})
+	body, err := json.Marshal(
+		clients.RequestsConversationParticipantRequest{ParticipantId: lo.ToPtr(participantId.String())},
+	)
 	if err != nil {
 		return err
 	}
 
-	rsp, err := r.client.PostConversationsIdParticipantsWithBodyWithResponse(context.Background(), conversationId.String(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostConversationsIdParticipantsWithBodyWithResponse(
+		context.Background(),
+		conversationId.String(),
+		jsonContentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return err
 	}
@@ -132,7 +167,11 @@ func (r *ConversationBrokerRequester) AttachParticipant(conversationId uuid.UUID
 }
 
 func (r *ConversationBrokerRequester) DetachParticipant(conversationId uuid.UUID, participantId uuid.UUID) error {
-	rsp, err := r.client.DeleteConversationsIdParticipantsParticipantIdWithResponse(context.Background(), conversationId.String(), participantId.String())
+	rsp, err := r.client.DeleteConversationsIdParticipantsParticipantIdWithResponse(
+		context.Background(),
+		conversationId.String(),
+		participantId.String(),
+	)
 	if err != nil {
 		return err
 	}

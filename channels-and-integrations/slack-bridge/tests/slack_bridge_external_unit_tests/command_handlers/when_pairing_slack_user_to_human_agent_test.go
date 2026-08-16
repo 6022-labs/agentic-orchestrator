@@ -316,19 +316,22 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Return(alreadyExistingSlackUserForAgent, nil)
 		}
 
-		t.Run("Should return an error indicating the human agent is already paired to another slack user", func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			"Should return an error indicating the human agent is already paired to another slack user",
+			func(t *testing.T) {
+				t.Parallel()
 
-			suite := WhenPairingSlackUserToHumanAgentBeforeEach(t)
+				suite := WhenPairingSlackUserToHumanAgentBeforeEach(t)
 
-			request := generateValidPairSlackUserToHumanAgentRequest()
-			initSuite(suite, request)
+				request := generateValidPairSlackUserToHumanAgentRequest()
+				initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+				err := suite.sut.Pair(request)
 
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "is already paired to another slack user")
-		})
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "is already paired to another slack user")
+			},
+		)
 	})
 
 	t.Run("Given an error occurs while getting existing pairing for slack user", func(t *testing.T) {

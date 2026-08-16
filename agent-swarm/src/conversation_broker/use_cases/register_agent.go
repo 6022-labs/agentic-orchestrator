@@ -33,13 +33,18 @@ func NewRegisterAgent(
 	}
 }
 
-func (uc *RegisterAgent) Register(request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error) {
+func (uc *RegisterAgent) Register(
+	request *requests.RegisterAgentRequest,
+) (*responses.ParticipantResponse, bool, error) {
 	if err := request.Validate(); err != nil {
 		return nil, false, err
 	}
 
 	tokenId := request.ParsedCollectionTokenId()
-	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, tokenId)
+	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(
+		request.CollectionAddress,
+		tokenId,
+	)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to lookup agent participant: %w", err)
 	}

@@ -40,14 +40,17 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) uuid.UUID {
 			agentId := uuid.New()
 
-			suite.mockClient.EXPECT().GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").Return(&clients.GetAgentEnsEnsDomainResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &clients.ResponsesAgentResponse{
-					Id:        lo.ToPtr(agentId.String()),
-					Name:      lo.ToPtr("Ada"),
-					EnsDomain: lo.ToPtr("ada.eth"),
-				},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").
+				Return(&clients.GetAgentEnsEnsDomainResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &clients.ResponsesAgentResponse{
+						Id:        lo.ToPtr(agentId.String()),
+						Name:      lo.ToPtr("Ada"),
+						EnsDomain: lo.ToPtr("ada.eth"),
+					},
+				}, nil).
+				Times(1)
 
 			return agentId
 		}
@@ -72,9 +75,12 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").Return(&clients.GetAgentEnsEnsDomainResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").
+				Return(&clients.GetAgentEnsEnsDomainResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return nil without error", func(t *testing.T) {
@@ -94,10 +100,13 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").Return(&clients.GetAgentEnsEnsDomainResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").
+				Return(&clients.GetAgentEnsEnsDomainResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -117,7 +126,10 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) {
-			suite.mockClient.EXPECT().GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").Return(nil, errors.New("registry down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetAgentEnsEnsDomainWithResponse(gomock.Any(), "ada.eth").
+				Return(nil, errors.New("registry down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

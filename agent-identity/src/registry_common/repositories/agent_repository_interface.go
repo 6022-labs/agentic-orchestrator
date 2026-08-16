@@ -27,7 +27,10 @@ type AgentRepositoryInterface interface {
 	GetById(id uuid.UUID) (*models.Agent, error)
 	GetMintedByEnsDomain(ensDomain string) (*models.Agent, error)
 	GetByEnsDomains(ensDomains []string) ([]*models.Agent, error)
-	GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error)
+	GetByCollectionAddressAndCollectionTokenId(
+		collectionAddress string,
+		collectionTokenId uint64,
+	) (*models.Agent, error)
 	GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error)
 	ExistsByCollectionAddressAndCollectionTokenId(address string, tokenId uint64) (bool, error)
 }

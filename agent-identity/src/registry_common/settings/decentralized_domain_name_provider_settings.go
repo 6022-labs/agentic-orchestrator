@@ -13,7 +13,10 @@ type DecentralizedDomainNameProviderSettings struct {
 	DomainExtension string `koanf:"domain_extension"`
 }
 
-func NewDecentralizedDomainNameProviderSettings(logger *zap.Logger, k *koanf.Koanf) *DecentralizedDomainNameProviderSettings {
+func NewDecentralizedDomainNameProviderSettings(
+	logger *zap.Logger,
+	k *koanf.Koanf,
+) *DecentralizedDomainNameProviderSettings {
 	settings := DecentralizedDomainNameProviderSettings{DomainExtension: "eth"}
 	if err := k.Unmarshal(DecentralizedDomainNameProviderSettingsKey, &settings); err != nil {
 		logger.Fatal("failed to unmarshal decentralized domain name provider settings", zap.Error(err))

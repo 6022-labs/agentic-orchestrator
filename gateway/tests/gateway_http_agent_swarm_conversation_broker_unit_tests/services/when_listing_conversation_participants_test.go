@@ -41,16 +41,19 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite, conversationId uuid.UUID) uuid.UUID {
 			participantId := uuid.New()
 
-			suite.mockClient.EXPECT().GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdParticipantsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusOK},
-				JSON200: &[]clients.ResponsesParticipantResponse{{
-					Id:                lo.ToPtr(participantId.String()),
-					Role:              lo.ToPtr(clients.EnumsParticipantRole("expert")),
-					CollectionAddress: lo.ToPtr("0xabc"),
-					CollectionTokenId: lo.ToPtr(7),
-					EnsDomain:         lo.ToPtr("ada.experts.80002.6022.eth"),
-				}},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdParticipantsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+					JSON200: &[]clients.ResponsesParticipantResponse{{
+						Id:                lo.ToPtr(participantId.String()),
+						Role:              lo.ToPtr(clients.EnumsParticipantRole("expert")),
+						CollectionAddress: lo.ToPtr("0xabc"),
+						CollectionTokenId: lo.ToPtr(7),
+						EnsDomain:         lo.ToPtr("ada.experts.80002.6022.eth"),
+					}},
+				}, nil).
+				Times(1)
 
 			return participantId
 		}
@@ -82,9 +85,12 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdParticipantsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdParticipantsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return a NotFoundError", func(t *testing.T) {
@@ -106,10 +112,13 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).Return(&clients.GetConversationsIdParticipantsResponse{
-				HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
-				Body:         []byte("boom"),
-			}, nil).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).
+				Return(&clients.GetConversationsIdParticipantsResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusInternalServerError},
+					Body:         []byte("boom"),
+				}, nil).
+				Times(1)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -130,7 +139,10 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite, conversationId uuid.UUID) {
-			suite.mockClient.EXPECT().GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).Return(nil, stderrors.New("broker down")).Times(1)
+			suite.mockClient.EXPECT().
+				GetConversationsIdParticipantsWithResponse(gomock.Any(), conversationId.String()).
+				Return(nil, stderrors.New("broker down")).
+				Times(1)
 		}
 
 		t.Run("Should return the transport error", func(t *testing.T) {

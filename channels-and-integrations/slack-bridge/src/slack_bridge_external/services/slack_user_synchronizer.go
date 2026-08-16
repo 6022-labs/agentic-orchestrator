@@ -58,7 +58,9 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 	existingUserInDatabase.RealName = existingUserInSlack.RealName
 
 	if existingUserInDatabase.BrokerParticipantId == nil {
-		brokerParticipantId, err := s.conversationBrokerRequester.RegisterUser(s.pickDisplayName(existingUserInDatabase))
+		brokerParticipantId, err := s.conversationBrokerRequester.RegisterUser(
+			s.pickDisplayName(existingUserInDatabase),
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to register user participant with broker: %w", err)
 		}

@@ -10,10 +10,13 @@ import (
 // The cross-repo vector: agentic-agent-node signs this exact card with anvil account 0.
 const (
 	vectorSigner    = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-	vectorProtected = "eyJhbGciOiJFUzI1NksiLCJqd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiZ3hoVFcxUVFYVXA2cm1EQWo4UmZsb2NZRzBfZnhpVzlHblVfcHpsXzdYVSIsInkiOiJOVWZ4SEtocFprYnk4Nnl3ampFQmF2ckNQbU1NWFJIMW4ySC05WHNOS3FVIn0sImtpZCI6IjB4ZjM5RmQ2ZTUxYWFkODhGNkY0Y2U2YUI4ODI3Mjc5Y2ZmRmI5MjI2NiIsInR5cCI6IkpPU0UifQ"
+	vectorProtected = "eyJhbGciOiJFUzI1NksiLCJqd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiZ3hoVFcxUVFYVXA2cm1EQ" +
+		"Wo4UmZsb2NZRzBfZnhpVzlHblVfcHpsXzdYVSIsInkiOiJOVWZ4SEtocFprYnk4Nnl3ampFQmF2ckNQbU1NWFJIMW4ySC05WHNOS3FVIn0sImtpZCI" +
+		"6IjB4ZjM5RmQ2ZTUxYWFkODhGNkY0Y2U2YUI4ODI3Mjc5Y2ZmRmI5MjI2NiIsInR5cCI6IkpPU0UifQ"
 	vectorSignature = "HoLnS3IMLIFR8cgB35NLrQbvgxvUq_NFj6-cbEVbUm4CX_RV-lSHMNiy2kaKPbyvp8htlPvGlT0dTNJkHPjhvA"
 
-	vectorCardBody = `"protocol":"6022","protocolVersion":"0.1","name":"hermes","ensDomain":"hermes.agents6022.eth","endpoints":{"responses":"https://agent.example.com/api/responses"},"paymentMethods":["l402","x402"]`
+	vectorCardBody = `"protocol":"6022","protocolVersion":"0.1","name":"hermes","ensDomain":"hermes.agents6022.eth","end` +
+		`points":{"responses":"https://agent.example.com/api/responses"},"paymentMethods":["l402","x402"]`
 )
 
 // TestWhenVerifyingAMappedCard closes the seam between decoding and verifying: the case-collision
@@ -47,7 +50,10 @@ func TestWhenVerifyingAMappedCard(t *testing.T) {
 		t.Run("Should decode but fail verification", func(t *testing.T) {
 			t.Parallel()
 
-			body := servedBody(`"protocol":"6022","protocolVersion":"0.1","name":"hermes","ensDomain":"hermes.agents6022.eth","endpoints":{"responses":"https://attacker.example/api/responses"},"paymentMethods":["l402","x402"]`)
+			body := servedBody(
+				`"protocol":"6022","protocolVersion":"0.1","name":"hermes","ensDomain":"hermes.agents6022.eth","endpoints":{"resp` +
+					`onses":"https://attacker.example/api/responses"},"paymentMethods":["l402","x402"]`,
+			)
 			card, err := decodeExternal(t, body).ToModel([]byte(body))
 
 			assert.NoError(t, err)
@@ -61,7 +67,8 @@ func TestWhenVerifyingAMappedCard(t *testing.T) {
 		t.Run("Should not be waved through as unsigned", func(t *testing.T) {
 			t.Parallel()
 
-			body := `{` + vectorCardBody + `,"signatures":[{"protected":"` + vectorProtected + `","signature":"` + vectorSignature + `"}],"Signatures":[]}`
+			body := `{` + vectorCardBody + `,"signatures":[{"protected":"` + vectorProtected +
+				`","signature":"` + vectorSignature + `"}],"Signatures":[]}`
 			card, err := decodeExternal(t, body).ToModel([]byte(body))
 
 			assert.NoError(t, err)

@@ -6,8 +6,8 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
-	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -18,7 +18,7 @@ type WhenHandlingChannelLeftTestingSuite struct {
 	sut *event_handlers.ChannelLeftHandler
 
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
-	mockBrokerRequester                    *broker_requester_mocks.MockConversationBrokerRequesterInterface
+	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 }
 
 func WhenHandlingChannelLeftBeforeEach(t *testing.T) *WhenHandlingChannelLeftTestingSuite {
@@ -30,9 +30,9 @@ func WhenHandlingChannelLeftBeforeEach(t *testing.T) *WhenHandlingChannelLeftTes
 	sut := event_handlers.NewChannelLeftHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
 
 	return &WhenHandlingChannelLeftTestingSuite{
-		sut:                                 sut,
+		sut:                             sut,
 		mockSlackConversationRepository: mockSlackConversationRepository,
-		mockBrokerRequester:                    mockBrokerRequester,
+		mockBrokerRequester:             mockBrokerRequester,
 	}
 }
 

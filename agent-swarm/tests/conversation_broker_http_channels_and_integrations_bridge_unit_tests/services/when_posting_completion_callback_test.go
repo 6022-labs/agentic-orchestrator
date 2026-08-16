@@ -46,13 +46,16 @@ func WhenPostingCompletionCallbackBeforeEach(t *testing.T) *WhenPostingCompletio
 		},
 	}
 
-	suite.sut = services.NewBridgeCallbackRequester(zap.NewNop(), func(baseUrl string) (clients.ClientWithResponsesInterface, error) {
-		*suite.capturedBaseUrl = baseUrl
-		if suite.factoryErr != nil {
-			return nil, suite.factoryErr
-		}
-		return mockClient, nil
-	})
+	suite.sut = services.NewBridgeCallbackRequester(
+		zap.NewNop(),
+		func(baseUrl string) (clients.ClientWithResponsesInterface, error) {
+			*suite.capturedBaseUrl = baseUrl
+			if suite.factoryErr != nil {
+				return nil, suite.factoryErr
+			}
+			return mockClient, nil
+		},
+	)
 
 	return suite
 }

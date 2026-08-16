@@ -9,7 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 )
 
-// AbstractAgentAddressEventHandler carries the typed-address mapping and lookup logic shared by the synchronizer handlers.
+// AbstractAgentAddressEventHandler carries typed-address mapping and lookup logic shared by synchronizer handlers.
 type AbstractAgentAddressEventHandler struct {
 	agentRepository        repositories.AgentRepositoryInterface
 	agentAddressRepository repositories.AgentAddressRepositoryInterface
@@ -26,7 +26,9 @@ func NewAbstractAgentAddressEventHandler(
 }
 
 // typedAddresses maps on-chain entries to one address per known type (first entry wins, unknown types skipped).
-func (handler *AbstractAgentAddressEventHandler) typedAddresses(entries []abi.AgentAddress) map[enums.AddressType]string {
+func (handler *AbstractAgentAddressEventHandler) typedAddresses(
+	entries []abi.AgentAddress,
+) map[enums.AddressType]string {
 	addresses := map[enums.AddressType]string{}
 	for _, entry := range entries {
 		var addressType enums.AddressType
@@ -41,7 +43,9 @@ func (handler *AbstractAgentAddressEventHandler) typedAddresses(entries []abi.Ag
 }
 
 // findAgentByAddresses returns the agent holding any of the typed addresses, or nil.
-func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(addresses map[enums.AddressType]string) (*models.Agent, error) {
+func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(
+	addresses map[enums.AddressType]string,
+) (*models.Agent, error) {
 	for _, addressType := range enums.GetAllAddressTypes() {
 		value, exists := addresses[addressType]
 		if !exists {

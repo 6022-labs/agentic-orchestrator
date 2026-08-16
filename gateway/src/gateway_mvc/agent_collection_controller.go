@@ -52,7 +52,10 @@ func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) 
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 
-	controller.logger.Info("List agent collections request completed successfully", zap.Int("collections_count", len(collections)))
+	controller.logger.Info(
+		"List agent collections request completed successfully",
+		zap.Int("collections_count", len(collections)),
+	)
 	controller.logger.Debug("List agent collections response", zap.Any("collections", collections))
 
 	return c.JSON(collections)

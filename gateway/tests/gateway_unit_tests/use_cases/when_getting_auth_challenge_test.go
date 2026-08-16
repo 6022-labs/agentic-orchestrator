@@ -67,7 +67,9 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 			suite := WhenGettingAuthChallengeBeforeEach(t)
 			initSuite(suite)
 
-			resp, err := suite.sut.Execute(&requests.GetAuthChallengeRequest{Address: challengeWalletHex, ChainId: 80002})
+			resp, err := suite.sut.Execute(
+				&requests.GetAuthChallengeRequest{Address: challengeWalletHex, ChainId: 80002},
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "siwe message", resp.Message)

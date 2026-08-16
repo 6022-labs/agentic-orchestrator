@@ -38,7 +38,10 @@ func (r *SlackChannelRepository) GetById(id string) (*models.SlackChannel, error
 	return &entity, nil
 }
 
-func (r *SlackChannelRepository) AddAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
+func (r *SlackChannelRepository) AddAgent(
+	entity *models.SlackChannel,
+	agent *models.SlackAgent,
+) (*models.SlackChannel, error) {
 	r.client.GetDB().Model(entity).Association("Agents").Append(agent)
 	if err := r.client.GetDB().Save(entity).Error; err != nil {
 		return nil, err
@@ -47,7 +50,10 @@ func (r *SlackChannelRepository) AddAgent(entity *models.SlackChannel, agent *mo
 	return entity, nil
 }
 
-func (r *SlackChannelRepository) RemoveAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
+func (r *SlackChannelRepository) RemoveAgent(
+	entity *models.SlackChannel,
+	agent *models.SlackAgent,
+) (*models.SlackChannel, error) {
 	r.client.GetDB().Model(entity).Association("Agents").Delete(agent)
 	if err := r.client.GetDB().Save(entity).Error; err != nil {
 		return nil, err
