@@ -54,11 +54,8 @@
       "Read(**/credentials*)",
       "Read(~/.claude/**)",
 
-      "Write(**/.env*)",
       "Edit(**/.env*)",
-      "Write(.claude/settings*.json)",
       "Edit(.claude/settings*.json)",
-      "Write(.mcp.json)",
       "Edit(.mcp.json)"
     ]
   }
