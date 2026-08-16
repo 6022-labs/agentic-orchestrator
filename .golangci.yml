@@ -1,16 +1,51 @@
-run:
-  timeout: 5m
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
     - govet
     - ineffassign
-    - unused
+    - lll
     - misspell
-
-issues:
-  exclude-dirs:
-    - tests/.*_mocks
-    - src/.*_host/docs
-    - .*/abi
+    - unused
+  settings:
+    lll:
+      line-length: 120
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      # golines aligns struct tags past the cap; tag lines cannot be wrapped.
+      - linters:
+          - lll
+        source: '`[a-z_]+:"'
+      # Test-suite mock fields and constructors: generated mock type names make the lines unwrappable.
+      - linters:
+          - lll
+        source: '[a-z_]+_mocks\.(NewMock|Mock)'
+      # Func-literal signatures (e.g. gomock DoAndReturn callbacks): golines cannot wrap them (golangci/golines lacks support, see segmentio/golines#145).
+      - linters:
+          - lll
+        source: \bfunc\(.*\{$
+      # Suite declarations mirror the tested method's name (one test file per method); the declaration line cannot be wrapped.
+      - linters:
+          - lll
+        source: 'TestingSuite \{$'
+    paths:
+      - tests/.*_mocks
+      - src/.*_host/docs
+      - .*/abi
+      - web/
+formatters:
+  enable:
+    - golines
+  settings:
+    golines:
+      max-len: 120
+  exclusions:
+    generated: lax
+    paths:
+      - web/

@@ -82,6 +82,7 @@ Name dependency fields/params after their **full type** (drop the package qualif
 - [ ] **Settings** reachable from both JSON and env; new settings have tag + default.
 - [ ] **Secrets** in Vault, not DB/config rows.
 - [ ] `go build ./...` and the unit tests pass.
+- [ ] **Lint/format clean**: `make fmt` then `make lint` (golangci-lint v2, 120-char cap) report nothing.
 
 If any box is unchecked, the work isn't done — finish it before presenting.
 
