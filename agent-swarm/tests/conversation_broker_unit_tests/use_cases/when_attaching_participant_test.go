@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -66,7 +68,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			request := generateValidConversationParticipantRequest()
 			request.ConversationID = uuid.Nil
 
-			err := suite.sut.Attach(request)
+			err := suite.sut.Attach(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "conversationId")
@@ -79,7 +81,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			request := generateValidConversationParticipantRequest()
 			request.ParticipantID = uuid.Nil
 
-			err := suite.sut.Attach(request)
+			err := suite.sut.Attach(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "participantId")
@@ -91,7 +93,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenAttachingParticipantTestingSuite, request *requests.ConversationParticipantRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -103,7 +105,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			request := generateValidConversationParticipantRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Attach(request)
+			err := suite.sut.Attach(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -115,9 +117,12 @@ func TestWhenAttachingParticipant(t *testing.T) {
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenAttachingParticipantTestingSuite, request *requests.ConversationParticipantRequest) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetById(request.ParticipantID).
+				GetById(gomock.Any(), request.ParticipantID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -132,7 +137,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			err := suite.sut.Attach(request)
+			err := suite.sut.Attach(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -145,11 +150,17 @@ func TestWhenAttachingParticipant(t *testing.T) {
 		participant := model_builders.NewAgentParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenAttachingParticipantTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(participant.ID).Return(participant, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), participant.ID).
+				Return(participant, nil).
+				Times(1)
 			suite.mockConversationParticipantRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(link *models.ConversationParticipant) (*models.ConversationParticipant, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, link *models.ConversationParticipant) (*models.ConversationParticipant, error) {
 					assert.Equal(t, conversation.ID, link.ConversationID)
 					assert.Equal(t, participant.ID, link.ParticipantID)
 					return link, nil
@@ -167,7 +178,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			}
 			initSuite(suite)
 
-			err := suite.sut.Attach(request)
+			err := suite.sut.Attach(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -20,9 +22,9 @@ func NewBridgeRepository(client db_clients.DatabaseClientInterface) *BridgeRepos
 	}
 }
 
-func (r *BridgeRepository) GetById(id uuid.UUID) (*models.Bridge, error) {
+func (r *BridgeRepository) GetById(ctx context.Context, id uuid.UUID) (*models.Bridge, error) {
 	var entity models.Bridge
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("id = ?", id).
 		First(&entity).
 		Error
@@ -35,9 +37,9 @@ func (r *BridgeRepository) GetById(id uuid.UUID) (*models.Bridge, error) {
 	return &entity, nil
 }
 
-func (r *BridgeRepository) ListByKind(kind enums.BridgeKind) ([]*models.Bridge, error) {
+func (r *BridgeRepository) ListByKind(ctx context.Context, kind enums.BridgeKind) ([]*models.Bridge, error) {
 	var entities []*models.Bridge
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("kind = ?", kind).
 		Order("created_at ASC").
 		Find(&entities).

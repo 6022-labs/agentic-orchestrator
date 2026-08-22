@@ -91,7 +91,7 @@ func (c *ConversationsController) List(ctx *fiber.Ctx) error {
 	if err := ctx.QueryParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	resp, err := c.listConversations.List(req)
+	resp, err := c.listConversations.List(ctx.UserContext(), req)
 	if err != nil {
 		c.logger.Error("internal error", zap.Error(err))
 		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -114,7 +114,10 @@ func (c *ConversationsController) GetMessages(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
-	messages, err := c.getConversationMessages.Get(&requests.ConversationIdRequest{ConversationID: id})
+	messages, err := c.getConversationMessages.Get(
+		ctx.UserContext(),
+		&requests.ConversationIdRequest{ConversationID: id},
+	)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -143,7 +146,10 @@ func (c *ConversationsController) ListParticipants(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
-	participants, err := c.listConversationParticipants.List(&requests.ConversationIdRequest{ConversationID: id})
+	participants, err := c.listConversationParticipants.List(
+		ctx.UserContext(),
+		&requests.ConversationIdRequest{ConversationID: id},
+	)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -179,7 +185,7 @@ func (c *ConversationsController) UpdateDescription(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	if err := c.updateConversationDescription.Update(req); err != nil {
+	if err := c.updateConversationDescription.Update(ctx.UserContext(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -208,7 +214,7 @@ func (c *ConversationsController) Register(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	conv, err := c.registerConversation.Register(req)
+	conv, err := c.registerConversation.Register(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -237,7 +243,7 @@ func (c *ConversationsController) Get(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
-	conv, err := c.getConversation.Get(&requests.ConversationIdRequest{ConversationID: id})
+	conv, err := c.getConversation.Get(ctx.UserContext(), &requests.ConversationIdRequest{ConversationID: id})
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -265,7 +271,10 @@ func (c *ConversationsController) ForceConclude(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
-	if err := c.forceConclude.Conclude(&requests.ConversationIdRequest{ConversationID: id}); err != nil {
+	if err := c.forceConclude.Conclude(
+		ctx.UserContext(),
+		&requests.ConversationIdRequest{ConversationID: id},
+	); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -300,7 +309,7 @@ func (c *ConversationsController) Attach(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	if err := c.attachParticipant.Attach(req); err != nil {
+	if err := c.attachParticipant.Attach(ctx.UserContext(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -332,7 +341,7 @@ func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid participant id")
 	}
 	req := &requests.ConversationParticipantRequest{ConversationID: convID, ParticipantID: partID}
-	if err := c.detachParticipant.Detach(req); err != nil {
+	if err := c.detachParticipant.Detach(ctx.UserContext(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -367,7 +376,7 @@ func (c *ConversationsController) Ingest(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	msg, err := c.ingestMessage.Ingest(req)
+	msg, err := c.ingestMessage.Ingest(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

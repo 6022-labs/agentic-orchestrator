@@ -58,7 +58,7 @@ func TestWhenSubscribingToCollectionCreatedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenSubscribingToCollectionCreatedEventsBeforeEach(t)
 
-			events, subscription, err := suite.sut.StartCollectionCreatedSubscription(
+			events, subscription, err := suite.sut.StartCollectionCreatedSubscription(context.Background(),
 				[]common.Address{suite.fixture.stack.Manager},
 			)
 			assert.NoError(t, err)
@@ -89,7 +89,7 @@ func TestWhenSubscribingToCollectionCreatedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenSubscribingToCollectionCreatedEventsBeforeEach(t)
 
-			events, subscription, err := suite.sut.StartCollectionCreatedSubscription(
+			events, subscription, err := suite.sut.StartCollectionCreatedSubscription(context.Background(),
 				[]common.Address{suite.fixture.stack.Manager},
 			)
 			assert.NoError(t, err)

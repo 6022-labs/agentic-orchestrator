@@ -1,12 +1,14 @@
 package use_cases
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
 
 type ListConversationsInterface interface {
-	List(page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error)
+	List(ctx context.Context, page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error)
 }
 
 type ListConversations struct {
@@ -19,6 +21,9 @@ func NewListConversations(
 	return &ListConversations{conversationBrokerRequester: conversationBrokerRequester}
 }
 
-func (uc *ListConversations) List(page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
-	return uc.conversationBrokerRequester.ListConversations(page, elementsPerPage)
+func (uc *ListConversations) List(
+	ctx context.Context,
+	page, elementsPerPage *uint,
+) (*responses.ListBrokerConversationsResponse, error) {
+	return uc.conversationBrokerRequester.ListConversations(ctx, page, elementsPerPage)
 }

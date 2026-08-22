@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,31 +42,31 @@ func (m *MockRepositoryInterface[T]) EXPECT() *MockRepositoryInterfaceMockRecord
 }
 
 // Save mocks base method.
-func (m *MockRepositoryInterface[T]) Save(entity *T) (*T, error) {
+func (m *MockRepositoryInterface[T]) Save(ctx context.Context, entity *T) (*T, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*T)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockRepositoryInterfaceMockRecorder[T]) Save(entity any) *gomock.Call {
+func (mr *MockRepositoryInterfaceMockRecorder[T]) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockRepositoryInterface[T])(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockRepositoryInterface[T])(nil).Save), ctx, entity)
 }
 
 // SaveUsingTransaction mocks base method.
-func (m *MockRepositoryInterface[T]) SaveUsingTransaction(entity *T, tx *gorm.DB) (*T, error) {
+func (m *MockRepositoryInterface[T]) SaveUsingTransaction(ctx context.Context, entity *T, tx *gorm.DB) (*T, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUsingTransaction", entity, tx)
+	ret := m.ctrl.Call(m, "SaveUsingTransaction", ctx, entity, tx)
 	ret0, _ := ret[0].(*T)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUsingTransaction indicates an expected call of SaveUsingTransaction.
-func (mr *MockRepositoryInterfaceMockRecorder[T]) SaveUsingTransaction(entity, tx any) *gomock.Call {
+func (mr *MockRepositoryInterfaceMockRecorder[T]) SaveUsingTransaction(ctx, entity, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockRepositoryInterface[T])(nil).SaveUsingTransaction), entity, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockRepositoryInterface[T])(nil).SaveUsingTransaction), ctx, entity, tx)
 }

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -68,7 +70,7 @@ func TestWhenUpdatingSlackAgentIconImageCid(t *testing.T) {
 
 			iconImageCid := "bafybeibwzifn5t5c6q4g3y3lt7z7e3z7e3z7e3z7e3z7e3z7e3z7e3z7e3"
 
-			err := suite.sut.UpdateIconImageCid("0x123", 1, &iconImageCid)
+			err := suite.sut.UpdateIconImageCid(context.Background(), "0x123", 1, &iconImageCid)
 
 			assert.NotNil(t, err)
 		})
@@ -85,14 +87,14 @@ func TestWhenUpdatingSlackAgentIconImageCid(t *testing.T) {
 
 			slackAgent := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(slackAgent)
+			_, err := suite.sut.Save(context.Background(), slackAgent)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			iconImageCid := "bafybeibwzifn5t5c6q4g3y3lt7z7e3z7e3z7e3z7e3z7e3z7e3z7e3"
 
-			err = suite.sut.UpdateIconImageCid(
+			err = suite.sut.UpdateIconImageCid(context.Background(),
 				slackAgent.CollectionAddress,
 				slackAgent.CollectionTokenId,
 				&iconImageCid,
@@ -101,7 +103,7 @@ func TestWhenUpdatingSlackAgentIconImageCid(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				slackAgent.CollectionAddress,
 				slackAgent.CollectionTokenId,
 			)

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,16 +42,16 @@ func (m *MockSlackChannelSynchronizerCachedInterface) EXPECT() *MockSlackChannel
 }
 
 // Sync mocks base method.
-func (m *MockSlackChannelSynchronizerCachedInterface) Sync(channelId string) (*models.SlackChannel, error) {
+func (m *MockSlackChannelSynchronizerCachedInterface) Sync(ctx context.Context, channelId string) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sync", channelId)
+	ret := m.ctrl.Call(m, "Sync", ctx, channelId)
 	ret0, _ := ret[0].(*models.SlackChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Sync indicates an expected call of Sync.
-func (mr *MockSlackChannelSynchronizerCachedInterfaceMockRecorder) Sync(channelId any) *gomock.Call {
+func (mr *MockSlackChannelSynchronizerCachedInterfaceMockRecorder) Sync(ctx, channelId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sync", reflect.TypeOf((*MockSlackChannelSynchronizerCachedInterface)(nil).Sync), channelId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sync", reflect.TypeOf((*MockSlackChannelSynchronizerCachedInterface)(nil).Sync), ctx, channelId)
 }

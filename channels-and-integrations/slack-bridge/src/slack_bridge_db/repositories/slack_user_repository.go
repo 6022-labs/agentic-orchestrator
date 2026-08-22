@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -20,9 +22,9 @@ func NewSlackUserRepository(
 	}
 }
 
-func (r *SlackUserRepository) GetById(id string) (*models.SlackUser, error) {
+func (r *SlackUserRepository) GetById(ctx context.Context, id string) (*models.SlackUser, error) {
 	var entity models.SlackUser
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("id = ?", id).
 		First(&entity).
 		Error
@@ -36,12 +38,12 @@ func (r *SlackUserRepository) GetById(id string) (*models.SlackUser, error) {
 	return &entity, nil
 }
 
-func (r *SlackUserRepository) ListByIds(ids []string) ([]*models.SlackUser, error) {
+func (r *SlackUserRepository) ListByIds(ctx context.Context, ids []string) ([]*models.SlackUser, error) {
 	if len(ids) == 0 {
 		return []*models.SlackUser{}, nil
 	}
 	var entities []*models.SlackUser
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("id IN ?", ids).
 		Find(&entities).
 		Error
@@ -52,11 +54,12 @@ func (r *SlackUserRepository) ListByIds(ids []string) ([]*models.SlackUser, erro
 }
 
 func (r *SlackUserRepository) GetByPairedHumanAgent(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.SlackUser, error) {
 	var entity models.SlackUser
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where(
 			"paired_human_agent_collection_address = ? AND paired_human_agent_collection_token_id = ?",
 			collectionAddress,

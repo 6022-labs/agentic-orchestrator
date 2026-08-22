@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -22,10 +24,10 @@ func NewAgentCollectionRepository(client db_clients.DatabaseClientInterface) *Ag
 	}
 }
 
-func (r *AgentCollectionRepository) GetAll() ([]*models.AgentCollection, error) {
+func (r *AgentCollectionRepository) GetAll(ctx context.Context) ([]*models.AgentCollection, error) {
 	collections := []*models.AgentCollection{}
 
-	tx := r.client.GetDB().Find(&collections)
+	tx := r.client.GetDB().WithContext(ctx).Find(&collections)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -33,10 +35,10 @@ func (r *AgentCollectionRepository) GetAll() ([]*models.AgentCollection, error) 
 	return collections, nil
 }
 
-func (r *AgentCollectionRepository) GetByAddress(address string) (*models.AgentCollection, error) {
+func (r *AgentCollectionRepository) GetByAddress(ctx context.Context, address string) (*models.AgentCollection, error) {
 	collection := &models.AgentCollection{}
 
-	tx := r.client.GetDB().Where("address = ?", address).First(collection)
+	tx := r.client.GetDB().WithContext(ctx).Where("address = ?", address).First(collection)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -47,10 +49,10 @@ func (r *AgentCollectionRepository) GetByAddress(address string) (*models.AgentC
 	return collection, nil
 }
 
-func (r *AgentCollectionRepository) ExistsByCollectionAddress(address string) (bool, error) {
+func (r *AgentCollectionRepository) ExistsByCollectionAddress(ctx context.Context, address string) (bool, error) {
 	var count int64
 
-	tx := r.client.GetDB().Model(&models.AgentCollection{}).Where("address = ?", address).Count(&count)
+	tx := r.client.GetDB().WithContext(ctx).Model(&models.AgentCollection{}).Where("address = ?", address).Count(&count)
 	if tx.Error != nil {
 		return false, tx.Error
 	}

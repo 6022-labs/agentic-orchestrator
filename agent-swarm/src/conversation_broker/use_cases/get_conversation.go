@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type GetConversationInterface interface {
-	Get(request *requests.ConversationIdRequest) (*responses.ConversationResponse, error)
+	Get(ctx context.Context, request *requests.ConversationIdRequest) (*responses.ConversationResponse, error)
 }
 
 type GetConversation struct {
@@ -21,12 +23,15 @@ func NewGetConversation(conversationRepository repositories.ConversationReposito
 	return &GetConversation{conversationRepository: conversationRepository}
 }
 
-func (uc *GetConversation) Get(request *requests.ConversationIdRequest) (*responses.ConversationResponse, error) {
+func (uc *GetConversation) Get(
+	ctx context.Context,
+	request *requests.ConversationIdRequest,
+) (*responses.ConversationResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}

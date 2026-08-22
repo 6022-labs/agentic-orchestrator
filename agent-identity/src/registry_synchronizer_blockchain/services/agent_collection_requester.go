@@ -36,6 +36,7 @@ func NewAgentCollectionRequester(
 }
 
 func (a *AgentCollectionRequester) GetAgentOwner(
+	ctx context.Context,
 	collectionAddress common.Address,
 	collectionTokenId big.Int,
 ) (*common.Address, error) {
@@ -44,7 +45,7 @@ func (a *AgentCollectionRequester) GetAgentOwner(
 		return nil, err
 	}
 
-	owner, err := agentCollection.OwnerOf(nil, &collectionTokenId)
+	owner, err := agentCollection.OwnerOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +54,7 @@ func (a *AgentCollectionRequester) GetAgentOwner(
 }
 
 func (a *AgentCollectionRequester) GetAgentInformation(
+	ctx context.Context,
 	collectionAddress common.Address,
 	collectionTokenId big.Int,
 ) (*registry_abi.AgentInformation, error) {
@@ -61,7 +63,7 @@ func (a *AgentCollectionRequester) GetAgentInformation(
 		return nil, err
 	}
 
-	info, err := agentCollection.InformationOf(nil, &collectionTokenId)
+	info, err := agentCollection.InformationOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +72,7 @@ func (a *AgentCollectionRequester) GetAgentInformation(
 }
 
 func (a *AgentCollectionRequester) GetMintProposal(
+	ctx context.Context,
 	collectionAddress common.Address,
 	proposalId *big.Int,
 	atBlock uint64,
@@ -79,7 +82,7 @@ func (a *AgentCollectionRequester) GetMintProposal(
 		return nil, err
 	}
 
-	mintProposals, err := a.getMintProposals(agentCollection, collectionAddress, atBlock)
+	mintProposals, err := a.getMintProposals(ctx, agentCollection, collectionAddress, atBlock)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposals: %w", err)
 	}
@@ -95,6 +98,7 @@ func (a *AgentCollectionRequester) GetMintProposal(
 }
 
 func (a *AgentCollectionRequester) getMintProposals(
+	ctx context.Context,
 	agentCollection *registry_abi.AgentCollectionV1,
 	agentCollectionAddress common.Address,
 	atBlock uint64,
@@ -102,7 +106,9 @@ func (a *AgentCollectionRequester) getMintProposals(
 	blockBigInt := new(big.Int).SetUint64(atBlock)
 	blockHex := fmt.Sprintf("0x%x", atBlock)
 
-	mintProposalLength, err := agentCollection.MintProposalsLength(&bind.CallOpts{BlockNumber: blockBigInt})
+	mintProposalLength, err := agentCollection.MintProposalsLength(
+		&bind.CallOpts{Context: ctx, BlockNumber: blockBigInt},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
@@ -135,7 +141,7 @@ func (a *AgentCollectionRequester) getMintProposals(
 		})
 	}
 
-	if err := a.client.Client().BatchCall(batch); err != nil {
+	if err := a.client.Client().BatchCallContext(ctx, batch); err != nil {
 		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
@@ -158,6 +164,7 @@ func (a *AgentCollectionRequester) getMintProposals(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Minted, error) {
@@ -172,7 +179,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
 		iter, err := agentCollection.FilterMinted(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil)
 		if err != nil {
 			return nil, err
@@ -187,6 +194,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Transfer, error) {
@@ -201,7 +209,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
 		iter, err := agentCollection.FilterTransfer(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil, nil, nil)
 		if err != nil {
 			return nil, err
@@ -216,6 +224,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
@@ -230,7 +239,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
 		iter, err := agentCollection.FilterAgentImageUpdated(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil, nil)
 		if err != nil {
 			return nil, err
@@ -245,6 +254,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
@@ -259,7 +269,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
 		iter, err := agentCollection.FilterAgentImageRemoved(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil, nil)
 		if err != nil {
 			return nil, err
@@ -274,6 +284,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
@@ -288,7 +299,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEven
 		iter, err := agentCollection.FilterAgentAttributeUpdated(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil, nil)
 		if err != nil {
 			return nil, err
@@ -303,6 +314,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEven
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
@@ -317,7 +329,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 		iter, err := agentCollection.FilterMintProposalCreated(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil)
 		if err != nil {
 			return nil, err
@@ -332,6 +344,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
@@ -346,7 +359,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 		iter, err := agentCollection.FilterMintProposalRemoved(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil)
 		if err != nil {
 			return nil, err
@@ -361,6 +374,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
@@ -375,7 +389,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
 		iter, err := agentCollection.FilterAgentAddressAdded(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil)
 		if err != nil {
 			return nil, err
@@ -390,6 +404,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
+	ctx context.Context,
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
@@ -404,7 +419,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
 		iter, err := agentCollection.FilterAgentAddressRemoved(&bind.FilterOpts{
 			Start:   from,
 			End:     &to,
-			Context: context.Background(),
+			Context: ctx,
 		}, nil)
 		if err != nil {
 			return nil, err

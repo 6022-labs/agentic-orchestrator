@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -67,7 +69,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
 				Return(nil, assert.AnError)
 
 			return event
@@ -79,7 +81,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAttributeUpdatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to get agent by collection")
@@ -95,7 +97,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(8)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(8)).
 				Return(nil, nil)
 
 			return event
@@ -107,7 +109,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAttributeUpdatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "agent not found")
@@ -128,11 +130,11 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(9)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(9)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
+				Save(gomock.Any(), agent).
 				Return(nil, assert.AnError)
 
 			return event
@@ -144,7 +146,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAttributeUpdatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to update agent")
@@ -165,12 +167,12 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(10)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(10)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
-				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
+				Save(gomock.Any(), agent).
+				DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
 					assert.Equal(t, "new-value", saved.Attributes[event.Key.String()])
 					return saved, nil
 				})
@@ -184,7 +186,7 @@ func TestWhenHandlingAgentAttributeUpdatedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAttributeUpdatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})

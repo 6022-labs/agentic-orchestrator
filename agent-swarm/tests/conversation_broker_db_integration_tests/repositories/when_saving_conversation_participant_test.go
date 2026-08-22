@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -48,31 +50,31 @@ func TestWhenSavingConversationParticipant(t *testing.T) {
 			defer WhenSavingConversationParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 
 			conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, _ = suite.conversations.Save(conv)
+			_, _ = suite.conversations.Save(context.Background(), conv)
 
 			part := model_builders.NewAgentParticipantBuilder().Build()
-			_, _ = suite.participants.Save(part)
+			_, _ = suite.participants.Save(context.Background(), part)
 
 			link := model_builders.NewConversationParticipantBuilder().
 				WithConversationID(conv.ID).
 				WithParticipantID(part.ID).
 				Build()
 
-			_, err := suite.sut.Save(link)
+			_, err := suite.sut.Save(context.Background(), link)
 			assert.NoError(t, err)
 
-			list, err := suite.sut.ListByConversationId(conv.ID)
+			list, err := suite.sut.ListByConversationId(context.Background(), conv.ID)
 			assert.NoError(t, err)
 			assert.Len(t, list, 1)
 			assert.Equal(t, part.ID, list[0].ParticipantID)
 
-			err = suite.sut.DeleteByConversationIdAndParticipantId(conv.ID, part.ID)
+			err = suite.sut.DeleteByConversationIdAndParticipantId(context.Background(), conv.ID, part.ID)
 			assert.NoError(t, err)
 
-			list, err = suite.sut.ListByConversationId(conv.ID)
+			list, err = suite.sut.ListByConversationId(context.Background(), conv.ID)
 			assert.NoError(t, err)
 			assert.Len(t, list, 0)
 		})

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -49,17 +51,17 @@ func (s *WhenListingProcessableMessagesForParticipantTestingSuite) seed(
 	agentEnsDomain string,
 ) (*models.Conversation, *models.Participant, *models.Participant, []*models.ConversationMessage) {
 	bridge := model_builders.NewBridgeBuilder().Build()
-	_, _ = s.bridges.Save(bridge)
+	_, _ = s.bridges.Save(context.Background(), bridge)
 
 	conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-	_, _ = s.conversations.Save(conv)
+	_, _ = s.conversations.Save(context.Background(), conv)
 
 	human := model_builders.NewUserParticipantBuilder().Build()
-	_, _ = s.participants.Save(human)
+	_, _ = s.participants.Save(context.Background(), human)
 
 	agent := model_builders.NewAgentParticipantBuilder().Build()
 	agent.EnsDomain = lo.ToPtr(agentEnsDomain)
-	_, _ = s.participants.Save(agent)
+	_, _ = s.participants.Save(context.Background(), agent)
 
 	plain := model_builders.NewConversationMessageBuilder().
 		WithConversationID(conv.ID).
@@ -76,9 +78,9 @@ func (s *WhenListingProcessableMessagesForParticipantTestingSuite) seed(
 		WithParticipantID(human.ID).
 		WithContent("follow up").
 		Build()
-	_, _ = s.sut.Save(plain)
-	_, _ = s.sut.Save(mention)
-	_, _ = s.sut.Save(followUp)
+	_, _ = s.sut.Save(context.Background(), plain)
+	_, _ = s.sut.Save(context.Background(), mention)
+	_, _ = s.sut.Save(context.Background(), followUp)
 
 	return conv, agent, human, []*models.ConversationMessage{plain, mention, followUp}
 }
@@ -97,7 +99,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 
 			conv, agent, _, allMessages := suite.seed("agent.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(context.Background(),
 				agent,
 				lo.ToPtr(enums.ParticipantRoleFacilitator),
 				conv.ID,
@@ -119,7 +121,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 
 			conv, agent, _, _ := suite.seed("agent.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(context.Background(),
 				agent,
 				lo.ToPtr(enums.ParticipantRoleClone),
 				conv.ID,
@@ -143,7 +145,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 			conv, _, human, _ := suite.seed("someone.eth")
 			human.EnsDomain = lo.ToPtr("human.eth")
 
-			result, err := suite.sut.ListProcessableForParticipantAndConversation(
+			result, err := suite.sut.ListProcessableForParticipantAndConversation(context.Background(),
 				human,
 				lo.ToPtr(enums.ParticipantRoleHuman),
 				conv.ID,

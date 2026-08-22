@@ -28,6 +28,7 @@ func NewBridgeCallbackRequester(logger *zap.Logger, clientFactory clients.Client
 }
 
 func (r *BridgeCallbackRequester) PostCompletion(
+	ctx context.Context,
 	bridge *models.Bridge,
 	conversation *models.Conversation,
 	agent *models.Participant,
@@ -53,7 +54,7 @@ func (r *BridgeCallbackRequester) PostCompletion(
 	}
 
 	rsp, err := client.PostBrokerCallbackWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		jsonContentType,
 		bytes.NewReader(body),
 	)

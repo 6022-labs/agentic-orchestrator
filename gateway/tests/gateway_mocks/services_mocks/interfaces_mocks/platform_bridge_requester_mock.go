@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	enums "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
@@ -41,15 +42,15 @@ func (m *MockPlatformBridgeRequesterInterface) EXPECT() *MockPlatformBridgeReque
 }
 
 // SetWalletOwnershipToUser mocks base method.
-func (m *MockPlatformBridgeRequesterInterface) SetWalletOwnershipToUser(platform enums.BridgePlatform, challenge, walletAddress string) error {
+func (m *MockPlatformBridgeRequesterInterface) SetWalletOwnershipToUser(ctx context.Context, platform enums.BridgePlatform, challenge, walletAddress string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetWalletOwnershipToUser", platform, challenge, walletAddress)
+	ret := m.ctrl.Call(m, "SetWalletOwnershipToUser", ctx, platform, challenge, walletAddress)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetWalletOwnershipToUser indicates an expected call of SetWalletOwnershipToUser.
-func (mr *MockPlatformBridgeRequesterInterfaceMockRecorder) SetWalletOwnershipToUser(platform, challenge, walletAddress any) *gomock.Call {
+func (mr *MockPlatformBridgeRequesterInterfaceMockRecorder) SetWalletOwnershipToUser(ctx, platform, challenge, walletAddress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWalletOwnershipToUser", reflect.TypeOf((*MockPlatformBridgeRequesterInterface)(nil).SetWalletOwnershipToUser), platform, challenge, walletAddress)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWalletOwnershipToUser", reflect.TypeOf((*MockPlatformBridgeRequesterInterface)(nil).SetWalletOwnershipToUser), ctx, platform, challenge, walletAddress)
 }

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -70,7 +72,11 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 			collectionAddress := common_tests.RandomEthAddress().Hex()
 			collectionTokenId := uint64(12345)
 
-			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId)
+			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+				context.Background(),
+				collectionAddress,
+				collectionTokenId,
+			)
 
 			assert.NoError(t, err)
 			assert.Nil(t, agent)
@@ -93,9 +99,13 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				WithCollectionAddress(collectionAddress).
 				WithCollectionTokenId(collectionTokenId).
 				Build()
-			suite.sut.Save(agentModel)
+			suite.sut.Save(context.Background(), agentModel)
 
-			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId+1)
+			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+				context.Background(),
+				collectionAddress,
+				collectionTokenId+1,
+			)
 			assert.NoError(t, err)
 			assert.Nil(t, agent)
 		})
@@ -117,9 +127,9 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				WithCollectionAddress(collectionAddress).
 				WithCollectionTokenId(collectionTokenId).
 				Build()
-			suite.sut.Save(agentModel)
+			suite.sut.Save(context.Background(), agentModel)
 
-			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				"non-existing-address",
 				collectionTokenId,
 			)
@@ -144,9 +154,9 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 				WithCollectionAddress(address).
 				WithCollectionTokenId(tokenId).
 				Build()
-			suite.sut.Save(agentModel)
+			suite.sut.Save(context.Background(), agentModel)
 
-			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(address, tokenId)
+			agent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(), address, tokenId)
 			assert.Nil(t, err)
 			assert.NotNil(t, agent)
 			assert.Equal(t, address, agent.CollectionAddress)

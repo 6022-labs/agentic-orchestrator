@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"fmt"
@@ -22,9 +24,9 @@ func NewConversationRepository(client db_clients.DatabaseClientInterface) *Conve
 	}
 }
 
-func (r *ConversationRepository) GetById(id uuid.UUID) (*models.Conversation, error) {
+func (r *ConversationRepository) GetById(ctx context.Context, id uuid.UUID) (*models.Conversation, error) {
 	var entity models.Conversation
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("id = ?", id).
 		First(&entity).
 		Error
@@ -37,9 +39,9 @@ func (r *ConversationRepository) GetById(id uuid.UUID) (*models.Conversation, er
 	return &entity, nil
 }
 
-func (r *ConversationRepository) List(page, elementsPerPage uint) ([]*models.Conversation, error) {
+func (r *ConversationRepository) List(ctx context.Context, page, elementsPerPage uint) ([]*models.Conversation, error) {
 	var entities []*models.Conversation
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Order("updated_at DESC").
 		Offset(int((page - 1) * elementsPerPage)).
 		Limit(int(elementsPerPage)).
@@ -51,9 +53,9 @@ func (r *ConversationRepository) List(page, elementsPerPage uint) ([]*models.Con
 	return entities, nil
 }
 
-func (r *ConversationRepository) Count() (uint, error) {
+func (r *ConversationRepository) Count(ctx context.Context) (uint, error) {
 	var count int64
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Model(&models.Conversation{}).
 		Count(&count).
 		Error
@@ -64,11 +66,12 @@ func (r *ConversationRepository) Count() (uint, error) {
 }
 
 func (r *ConversationRepository) ListProcessableForParticipant(
+	ctx context.Context,
 	participant *models.Participant,
 	role *enums.ParticipantRole,
 	facilitatorTickIntervalSeconds uint64,
 ) ([]*models.Conversation, error) {
-	query := r.client.GetDB().Model(&models.Conversation{}).
+	query := r.client.GetDB().WithContext(ctx).Model(&models.Conversation{}).
 		Joins("INNER JOIN conversation_participants ON conversation_participants.conversation_id = conversations.id").
 		Where("conversation_participants.participant_id = ?", participant.ID).
 		Where("conversations.status = ?", enums.ConversationStatusActive)
@@ -84,7 +87,7 @@ func (r *ConversationRepository) ListProcessableForParticipant(
 		case enums.ParticipantRoleFacilitator:
 			// Wake only when the facilitator's own last message is older than
 			// the tick interval (or they never posted).
-			lastOwnMessageEpoch := r.client.GetDB().
+			lastOwnMessageEpoch := r.client.GetDB().WithContext(ctx).
 				Model(&models.ConversationMessage{}).
 				Select("MAX(EXTRACT(EPOCH FROM conversation_messages.created_at))").
 				Where("conversation_messages.conversation_id = conversations.id").
@@ -98,11 +101,11 @@ func (r *ConversationRepository) ListProcessableForParticipant(
 		case enums.ParticipantRoleHuman:
 			// Wake if any message in the conversation mentions the human's ENS
 			// OR was authored by them.
-			mention := r.client.GetDB().Model(&models.ConversationMessage{}).
+			mention := r.client.GetDB().WithContext(ctx).Model(&models.ConversationMessage{}).
 				Select("1").
 				Where("conversation_messages.conversation_id = conversations.id").
 				Where("conversation_messages.content ILIKE ?", ensMention)
-			own := r.client.GetDB().Model(&models.ConversationMessage{}).
+			own := r.client.GetDB().WithContext(ctx).Model(&models.ConversationMessage{}).
 				Select("1").
 				Where("conversation_messages.conversation_id = conversations.id").
 				Where("conversation_messages.participant_id = ?", participant.ID)
@@ -112,7 +115,7 @@ func (r *ConversationRepository) ListProcessableForParticipant(
 		default:
 			// Clone / Expert: wake only when a new ENS mention has landed AFTER
 			// this agent's last own reply. Prevents infinite re-processing.
-			mentionSinceLastReply := r.client.GetDB().Model(&models.ConversationMessage{}).
+			mentionSinceLastReply := r.client.GetDB().WithContext(ctx).Model(&models.ConversationMessage{}).
 				Select("1").
 				Where("conversation_messages.conversation_id = conversations.id").
 				Where("conversation_messages.content ILIKE ?", ensMention).

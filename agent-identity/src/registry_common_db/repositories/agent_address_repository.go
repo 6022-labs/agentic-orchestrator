@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -25,12 +27,13 @@ func NewAgentAddressRepository(client db_clients.DatabaseClientInterface) *Agent
 }
 
 func (r *AgentAddressRepository) GetByTypeAndAddress(
+	ctx context.Context,
 	addressType enums.AddressType,
 	address string,
 ) (*models.AgentAddress, error) {
 	agentAddress := &models.AgentAddress{}
 
-	tx := r.client.GetDB().Where("type = ? AND address = ?", addressType, address).First(agentAddress)
+	tx := r.client.GetDB().WithContext(ctx).Where("type = ? AND address = ?", addressType, address).First(agentAddress)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -41,10 +44,13 @@ func (r *AgentAddressRepository) GetByTypeAndAddress(
 	return agentAddress, nil
 }
 
-func (r *AgentAddressRepository) GetAllByAgentId(agentId uuid.UUID) ([]*models.AgentAddress, error) {
+func (r *AgentAddressRepository) GetAllByAgentId(
+	ctx context.Context,
+	agentId uuid.UUID,
+) ([]*models.AgentAddress, error) {
 	agentAddresses := []*models.AgentAddress{}
 
-	tx := r.client.GetDB().Where("agent_id = ?", agentId).Find(&agentAddresses)
+	tx := r.client.GetDB().WithContext(ctx).Where("agent_id = ?", agentId).Find(&agentAddresses)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -52,10 +58,13 @@ func (r *AgentAddressRepository) GetAllByAgentId(agentId uuid.UUID) ([]*models.A
 	return agentAddresses, nil
 }
 
-func (r *AgentAddressRepository) GetAllByAgentIds(agentIds []uuid.UUID) ([]*models.AgentAddress, error) {
+func (r *AgentAddressRepository) GetAllByAgentIds(
+	ctx context.Context,
+	agentIds []uuid.UUID,
+) ([]*models.AgentAddress, error) {
 	agentAddresses := []*models.AgentAddress{}
 
-	tx := r.client.GetDB().Where("agent_id IN ?", agentIds).Find(&agentAddresses)
+	tx := r.client.GetDB().WithContext(ctx).Where("agent_id IN ?", agentIds).Find(&agentAddresses)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -63,8 +72,12 @@ func (r *AgentAddressRepository) GetAllByAgentIds(agentIds []uuid.UUID) ([]*mode
 	return agentAddresses, nil
 }
 
-func (r *AgentAddressRepository) ReplaceAllForAgent(agentId uuid.UUID, addresses map[enums.AddressType]string) error {
-	return r.client.GetDB().Transaction(func(tx *gorm.DB) error {
+func (r *AgentAddressRepository) ReplaceAllForAgent(
+	ctx context.Context,
+	agentId uuid.UUID,
+	addresses map[enums.AddressType]string,
+) error {
+	return r.client.GetDB().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("agent_id = ?", agentId).Delete(&models.AgentAddress{}).Error; err != nil {
 			return err
 		}

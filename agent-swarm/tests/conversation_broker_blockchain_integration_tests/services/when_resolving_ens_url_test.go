@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/services"
@@ -37,7 +39,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			suite.fixture.publishAgent(t, agentName, agentUrl)
 
-			url, err := suite.sut.ResolveUrl(suite.fixture.ensDomainFor(agentName))
+			url, err := suite.sut.ResolveUrl(context.Background(), suite.fixture.ensDomainFor(agentName))
 
 			assert.NoError(t, err)
 			assert.Equal(t, agentUrl, url)
@@ -53,7 +55,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			suite.fixture.publishAgent(t, "slashed-agent", "https://agent.example.com/")
 
-			url, err := suite.sut.ResolveUrl(suite.fixture.ensDomainFor("slashed-agent"))
+			url, err := suite.sut.ResolveUrl(context.Background(), suite.fixture.ensDomainFor("slashed-agent"))
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://agent.example.com", url)
@@ -69,7 +71,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			suite.fixture.publishAgent(t, "unprovisioned-agent", "")
 
-			url, err := suite.sut.ResolveUrl(suite.fixture.ensDomainFor("unprovisioned-agent"))
+			url, err := suite.sut.ResolveUrl(context.Background(), suite.fixture.ensDomainFor("unprovisioned-agent"))
 
 			assert.NoError(t, err)
 			assert.Empty(t, url)
@@ -85,7 +87,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			suite.fixture.publishAgent(t, "published-agent", "https://agent.example.com")
 
-			url, err := suite.sut.ResolveUrl("published-agent.other.31337.6022.eth")
+			url, err := suite.sut.ResolveUrl(context.Background(), "published-agent.other.31337.6022.eth")
 
 			assert.NoError(t, err)
 			assert.Empty(t, url)
@@ -100,7 +102,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 
-			url, err := suite.sut.ResolveUrl(suite.fixture.ensDomainFor("never-minted-agent"))
+			url, err := suite.sut.ResolveUrl(context.Background(), suite.fixture.ensDomainFor("never-minted-agent"))
 
 			assert.NoError(t, err)
 			assert.Empty(t, url)

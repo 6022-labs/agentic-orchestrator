@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -53,7 +55,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingUserTestingSuite) {
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -62,7 +64,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 			suite := WhenSynchronizingUserBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("some-user-id")
+			_, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.Error(t, err)
 		})
 	})
@@ -71,8 +73,10 @@ func TestWhenSynchronizingUser(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingUserTestingSuite) {
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
-			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, nil)
+			suite.mockSlackUserRequester.EXPECT().
+				GetUserInformation(gomock.Any(), gomock.Any()).
+				Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -81,7 +85,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 			suite := WhenSynchronizingUserBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("some-user-id")
+			_, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.Error(t, err)
 		})
 	})
@@ -90,8 +94,8 @@ func TestWhenSynchronizingUser(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingUserTestingSuite) {
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
-			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any()).Return(nil, nil)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, nil)
+			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any(), gomock.Any()).Return(nil, nil)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -100,7 +104,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 			suite := WhenSynchronizingUserBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("some-user-id")
+			_, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.Error(t, err)
 		})
 	})
@@ -111,22 +115,22 @@ func TestWhenSynchronizingUser(t *testing.T) {
 		brokerUserId := uuid.New()
 
 		initSuite := func(suite *WhenSynchronizingUserTestingSuite) {
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId("some-user-id").
 				WithName("some-name").
 				WithRealName("Some Real Name").
 				Build()
-			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any()).Return(slackUser, nil)
+			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any(), gomock.Any()).Return(slackUser, nil)
 
 			suite.mockBrokerRequester.EXPECT().
-				RegisterUser("Some Real Name").
+				RegisterUser(gomock.Any(), "Some Real Name").
 				Return(brokerUserId, nil)
 
 			suite.mockSlackUserRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(user *models.SlackUser) (*models.SlackUser, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, user *models.SlackUser) (*models.SlackUser, error) {
 					assert.NotNil(t, user.BrokerParticipantId)
 					assert.Equal(t, brokerUserId, *user.BrokerParticipantId)
 					return user, nil
@@ -141,7 +145,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 				suite := WhenSynchronizingUserBeforeEach(t)
 				initSuite(suite)
 
-				user, err := suite.sut.Sync("some-user-id")
+				user, err := suite.sut.Sync(context.Background(), "some-user-id")
 				assert.NoError(t, err)
 				assert.Equal(t, "some-user-id", user.Id)
 				assert.NotNil(t, user.BrokerParticipantId)
@@ -162,19 +166,19 @@ func TestWhenSynchronizingUser(t *testing.T) {
 				WithRealName("Some Real Name").
 				Build()
 			existing.BrokerParticipantId = &existingBrokerId
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(existing, nil)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(existing, nil)
 
 			fresh := model_builders.NewSlackUserBuilder().
 				WithId("some-user-id").
 				WithName("some-name-updated").
 				WithRealName("Some Real Name").
 				Build()
-			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any()).Return(fresh, nil)
+			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any(), gomock.Any()).Return(fresh, nil)
 
 			// No broker call — participant id already present.
 			suite.mockSlackUserRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(user *models.SlackUser) (*models.SlackUser, error) { return user, nil })
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, user *models.SlackUser) (*models.SlackUser, error) { return user, nil })
 		}
 
 		t.Run("Should skip the broker call and just refresh the profile", func(t *testing.T) {
@@ -183,7 +187,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 			suite := WhenSynchronizingUserBeforeEach(t)
 			initSuite(suite)
 
-			user, err := suite.sut.Sync("some-user-id")
+			user, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.NoError(t, err)
 			assert.Equal(t, existingBrokerId, *user.BrokerParticipantId)
 		})
@@ -193,20 +197,20 @@ func TestWhenSynchronizingUser(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingUserTestingSuite) {
-			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
+			suite.mockSlackUserRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId("some-user-id").
 				WithName("some-name").
 				WithRealName("Some Real Name").
 				Build()
-			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any()).Return(slackUser, nil)
+			suite.mockSlackUserRequester.EXPECT().GetUserInformation(gomock.Any(), gomock.Any()).Return(slackUser, nil)
 
 			suite.mockBrokerRequester.EXPECT().
-				RegisterUser(gomock.Any()).
+				RegisterUser(gomock.Any(), gomock.Any()).
 				Return(uuid.New(), nil)
 
-			suite.mockSlackUserRepository.EXPECT().Save(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackUserRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -215,7 +219,7 @@ func TestWhenSynchronizingUser(t *testing.T) {
 			suite := WhenSynchronizingUserBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("some-user-id")
+			_, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.Error(t, err)
 		})
 	})

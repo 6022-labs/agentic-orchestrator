@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"fmt"
@@ -21,9 +23,9 @@ func NewParticipantRepository(client db_clients.DatabaseClientInterface) *Partic
 	}
 }
 
-func (r *ParticipantRepository) GetById(id uuid.UUID) (*models.Participant, error) {
+func (r *ParticipantRepository) GetById(ctx context.Context, id uuid.UUID) (*models.Participant, error) {
 	var entity models.Participant
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("id = ?", id).
 		First(&entity).
 		Error
@@ -37,11 +39,12 @@ func (r *ParticipantRepository) GetById(id uuid.UUID) (*models.Participant, erro
 }
 
 func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.Participant, error) {
 	var entity models.Participant
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(&entity).
 		Error
@@ -59,10 +62,11 @@ func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 // processingIntervalSeconds. User participants (display-name only) are never
 // returned.
 func (r *ParticipantRepository) GetNextAgentToProcess(
+	ctx context.Context,
 	processingIntervalSeconds uint64,
 ) (*models.Participant, error) {
 	var entity models.Participant
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("collection_address IS NOT NULL AND collection_token_id IS NOT NULL").
 		Where("is_processing = ?", false).
 		Where(fmt.Sprintf(
@@ -81,9 +85,12 @@ func (r *ParticipantRepository) GetNextAgentToProcess(
 	return &entity, nil
 }
 
-func (r *ParticipantRepository) ListByConversationId(conversationId uuid.UUID) ([]*models.Participant, error) {
+func (r *ParticipantRepository) ListByConversationId(
+	ctx context.Context,
+	conversationId uuid.UUID,
+) ([]*models.Participant, error) {
 	var entities []*models.Participant
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Joins("INNER JOIN conversation_participants ON conversation_participants.participant_id = participants.id").
 		Where("conversation_participants.conversation_id = ?", conversationId).
 		Order("conversation_participants.joined_at ASC").

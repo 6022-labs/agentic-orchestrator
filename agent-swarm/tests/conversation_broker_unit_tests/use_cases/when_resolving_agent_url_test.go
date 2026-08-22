@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -43,7 +45,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 
-			_, err := suite.sut.Resolve(&requests.ResolveAgentUrlRequest{EnsDomain: "   "})
+			_, err := suite.sut.Resolve(context.Background(), &requests.ResolveAgentUrlRequest{EnsDomain: "   "})
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -54,7 +56,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
 			suite.mockAgentUrlResolver.EXPECT().
-				ResolveUrl("agent.6022.eth").
+				ResolveUrl(gomock.Any(), "agent.6022.eth").
 				Return("", errors.New("boom")).
 				Times(1)
 		}
@@ -65,7 +67,10 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Resolve(&requests.ResolveAgentUrlRequest{EnsDomain: "agent.6022.eth"})
+			_, err := suite.sut.Resolve(
+				context.Background(),
+				&requests.ResolveAgentUrlRequest{EnsDomain: "agent.6022.eth"},
+			)
 
 			assert.Error(t, err)
 		})
@@ -76,7 +81,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
 			suite.mockAgentUrlResolver.EXPECT().
-				ResolveUrl("agent.6022.eth").
+				ResolveUrl(gomock.Any(), "agent.6022.eth").
 				Return("https://agent.example.com", nil).
 				Times(1)
 		}
@@ -87,7 +92,10 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.Resolve(&requests.ResolveAgentUrlRequest{EnsDomain: " agent.6022.eth "})
+			got, err := suite.sut.Resolve(
+				context.Background(),
+				&requests.ResolveAgentUrlRequest{EnsDomain: " agent.6022.eth "},
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://agent.example.com", got.Url)

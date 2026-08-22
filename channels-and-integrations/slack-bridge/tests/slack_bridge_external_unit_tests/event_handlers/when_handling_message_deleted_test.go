@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -53,9 +55,9 @@ func TestWhenHandlingMessageDeleted(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingMessageDeletedTestingSuite, channel, ts string) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetBySlackIds(channel, ts).
+				GetBySlackIds(gomock.Any(), channel, ts).
 				Return(&models.SlackConversation{BrokerConversationID: convId}, nil)
-			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(gomock.Any(), convId).Return(nil)
 		}
 
 		t.Run("Should force-conclude the broker conversation", func(t *testing.T) {
@@ -66,7 +68,7 @@ func TestWhenHandlingMessageDeleted(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel, req.Event.PreviousMessage.TS)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})
@@ -76,7 +78,7 @@ func TestWhenHandlingMessageDeleted(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingMessageDeletedTestingSuite, channel, ts string) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetBySlackIds(channel, ts).
+				GetBySlackIds(gomock.Any(), channel, ts).
 				Return(nil, nil)
 		}
 
@@ -88,7 +90,7 @@ func TestWhenHandlingMessageDeleted(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel, req.Event.PreviousMessage.TS)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})

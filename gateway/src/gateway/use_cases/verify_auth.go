@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -9,7 +11,7 @@ import (
 )
 
 type VerifyAuthInterface interface {
-	Execute(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error)
+	Execute(ctx context.Context, request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error)
 }
 
 type VerifyAuth struct {
@@ -33,13 +35,16 @@ func NewVerifyAuth(
 	}
 }
 
-func (uc *VerifyAuth) Execute(request *requests.VerifyAuthRequest) (*responses.VerifyAuthResponse, error) {
+func (uc *VerifyAuth) Execute(
+	ctx context.Context,
+	request *requests.VerifyAuthRequest,
+) (*responses.VerifyAuthResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
 	address := common.HexToAddress(request.Address)
-	entry := uc.nonceStore.Consume(address)
+	entry := uc.nonceStore.Consume(ctx, address)
 	if entry == nil {
 		return nil, errors.NewUnauthorizedError("challenge_not_found", "challenge not found or expired")
 	}

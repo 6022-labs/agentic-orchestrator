@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 
@@ -21,17 +23,23 @@ func NewSlackChannelRequester(
 	}
 }
 
-func (s *SlackChannelRequester) GetChannelInformation(channelId string) (*interfaces.ChannelInformation, error) {
-	channelInfoResponse, err := s.client.GetConversationInfo(&http_slack_models.ExternalGetConversationInfoRequest{
+func (s *SlackChannelRequester) GetChannelInformation(
+	ctx context.Context,
+	channelId string,
+) (*interfaces.ChannelInformation, error) {
+	channelInfoResponse, err := s.client.GetConversationInfo(ctx, &http_slack_models.ExternalGetConversationInfoRequest{
 		Channel: channelId,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	channelMembers, err := s.client.GetConversationMembers(&http_slack_models.ExternalGetConversationMembersRequest{
-		Channel: channelId,
-	})
+	channelMembers, err := s.client.GetConversationMembers(
+		ctx,
+		&http_slack_models.ExternalGetConversationMembersRequest{
+			Channel: channelId,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +58,8 @@ func (s *SlackChannelRequester) GetChannelInformation(channelId string) (*interf
 	}, nil
 }
 
-func (s *SlackChannelRequester) JoinChannel(channelId string) error {
-	_, err := s.client.JoinConversation(&http_slack_models.ExternalJoinConversationRequest{
+func (s *SlackChannelRequester) JoinChannel(ctx context.Context, channelId string) error {
+	_, err := s.client.JoinConversation(ctx, &http_slack_models.ExternalJoinConversationRequest{
 		Channel: channelId,
 	})
 	if err != nil {

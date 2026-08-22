@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
@@ -9,7 +11,7 @@ import (
 )
 
 type ResolveAgentUrlInterface interface {
-	Resolve(request *requests.ResolveAgentUrlRequest) (*responses.AgentUrlResponse, error)
+	Resolve(ctx context.Context, request *requests.ResolveAgentUrlRequest) (*responses.AgentUrlResponse, error)
 }
 
 type ResolveAgentUrl struct {
@@ -24,12 +26,15 @@ func NewResolveAgentUrl(
 	}
 }
 
-func (uc *ResolveAgentUrl) Resolve(request *requests.ResolveAgentUrlRequest) (*responses.AgentUrlResponse, error) {
+func (uc *ResolveAgentUrl) Resolve(
+	ctx context.Context,
+	request *requests.ResolveAgentUrlRequest,
+) (*responses.AgentUrlResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	url, err := uc.agentUrlResolver.ResolveUrl(strings.TrimSpace(request.EnsDomain))
+	url, err := uc.agentUrlResolver.ResolveUrl(ctx, strings.TrimSpace(request.EnsDomain))
 	if err != nil {
 		return nil, err
 	}

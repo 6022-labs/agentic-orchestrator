@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -9,7 +11,7 @@ import (
 )
 
 type UpdateConversationDescriptionInterface interface {
-	Update(request *requests.UpdateConversationDescriptionRequest) error
+	Update(ctx context.Context, request *requests.UpdateConversationDescriptionRequest) error
 }
 
 type UpdateConversationDescription struct {
@@ -22,12 +24,15 @@ func NewUpdateConversationDescription(
 	return &UpdateConversationDescription{conversationRepository: conversationRepository}
 }
 
-func (uc *UpdateConversationDescription) Update(request *requests.UpdateConversationDescriptionRequest) error {
+func (uc *UpdateConversationDescription) Update(
+	ctx context.Context,
+	request *requests.UpdateConversationDescriptionRequest,
+) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
 
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
 	}
@@ -37,7 +42,7 @@ func (uc *UpdateConversationDescription) Update(request *requests.UpdateConversa
 
 	conversation.Description = request.Description
 
-	if _, err := uc.conversationRepository.Save(conversation); err != nil {
+	if _, err := uc.conversationRepository.Save(ctx, conversation); err != nil {
 		return fmt.Errorf("failed to update conversation description: %w", err)
 	}
 	return nil

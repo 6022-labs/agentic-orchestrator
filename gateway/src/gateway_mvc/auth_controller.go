@@ -58,7 +58,7 @@ func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	challenge, err := controller.getAuthChallenge.Execute(request)
+	challenge, err := controller.getAuthChallenge.Execute(c.UserContext(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -87,7 +87,7 @@ func (controller *AuthController) VerifyAuth(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.verifyAuth.Execute(request)
+	response, err := controller.verifyAuth.Execute(c.UserContext(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)

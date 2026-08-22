@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -74,7 +76,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, err := suite.sut.SaveUsingTransaction(entityToCreate, databaseTransaction)
+			createdEntity, err := suite.sut.SaveUsingTransaction(
+				context.Background(),
+				entityToCreate,
+				databaseTransaction,
+			)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToCreate, createdEntity)
@@ -92,7 +98,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			entityToCreate, _ = suite.sut.SaveUsingTransaction(entityToCreate, databaseTransaction)
+			entityToCreate, _ = suite.sut.SaveUsingTransaction(
+				context.Background(),
+				entityToCreate,
+				databaseTransaction,
+			)
 
 			databaseTransaction.Commit()
 
@@ -113,7 +123,7 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			defer WhenSavingEntityUsingTransactionAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			databaseTransaction, err := suite.dbClient.BeginTransaction()
 			if err != nil {
@@ -121,7 +131,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToUpdate := model_builders.NewAgentBuilder().WithID(createdEntity.ID).Build()
-			updatedEntity, err := suite.sut.SaveUsingTransaction(entityToUpdate, databaseTransaction)
+			updatedEntity, err := suite.sut.SaveUsingTransaction(
+				context.Background(),
+				entityToUpdate,
+				databaseTransaction,
+			)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToUpdate, updatedEntity)
@@ -134,7 +148,7 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			databaseTransaction, err := suite.dbClient.BeginTransaction()
 			if err != nil {
@@ -142,11 +156,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToUpdate := model_builders.NewAgentBuilder().WithID(createdEntity.ID).Build()
-			suite.sut.SaveUsingTransaction(entityToUpdate, databaseTransaction)
+			suite.sut.SaveUsingTransaction(context.Background(), entityToUpdate, databaseTransaction)
 
 			databaseTransaction.Commit()
 
-			entityToCreate, _ = suite.sut.GetById(createdEntity.ID)
+			entityToCreate, _ = suite.sut.GetById(context.Background(), createdEntity.ID)
 
 			assert.Equal(t, entityToCreate.ID, entityToUpdate.ID)
 			assert.Equal(t, entityToCreate.Name, entityToUpdate.Name)
@@ -170,7 +184,7 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 		}
 
 		entityToCreate := model_builders.NewAgentBuilder().Build()
-		createdEntity, err := suite.sut.SaveUsingTransaction(entityToCreate, databaseTransaction)
+		createdEntity, err := suite.sut.SaveUsingTransaction(context.Background(), entityToCreate, databaseTransaction)
 
 		assert.Nil(t, err)
 		assert.Equal(t, entityToCreate, createdEntity)
@@ -191,7 +205,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.SaveUsingTransaction(entityToCreate, databaseTransaction)
+			createdEntity, _ := suite.sut.SaveUsingTransaction(
+				context.Background(),
+				entityToCreate,
+				databaseTransaction,
+			)
 
 			databaseTransaction.Rollback()
 
@@ -217,7 +235,11 @@ func TestWhenSavingEntityUsingTransaction(t *testing.T) {
 			}
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			entityToCreate, _ = suite.sut.SaveUsingTransaction(entityToCreate, databaseTransaction)
+			entityToCreate, _ = suite.sut.SaveUsingTransaction(
+				context.Background(),
+				entityToCreate,
+				databaseTransaction,
+			)
 
 			databaseTransaction.Commit()
 

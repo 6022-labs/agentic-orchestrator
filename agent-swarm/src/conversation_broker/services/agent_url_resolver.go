@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 	"sync"
@@ -37,11 +39,11 @@ func NewAgentUrlResolver(
 	}
 }
 
-func (r *AgentUrlResolver) ResolveUrl(ensDomain string) (string, error) {
+func (r *AgentUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (string, error) {
 	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 	cachePath := fmt.Sprintf(agentUrlCachePathTemplate, ensDomain)
 
-	if url, ok := r.readCachedUrl(cachePath); ok {
+	if url, ok := r.readCachedUrl(ctx, cachePath); ok {
 		return url, nil
 	}
 
@@ -50,23 +52,23 @@ func (r *AgentUrlResolver) ResolveUrl(ensDomain string) (string, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if url, ok := r.readCachedUrl(cachePath); ok {
+	if url, ok := r.readCachedUrl(ctx, cachePath); ok {
 		return url, nil
 	}
 
-	return r.resolveAndCacheUrl(ensDomain, cachePath)
+	return r.resolveAndCacheUrl(ctx, ensDomain, cachePath)
 }
 
-func (r *AgentUrlResolver) readCachedUrl(cachePath string) (string, bool) {
-	cached, err := r.cacheStorage.Read(cachePath)
+func (r *AgentUrlResolver) readCachedUrl(ctx context.Context, cachePath string) (string, bool) {
+	cached, err := r.cacheStorage.Read(ctx, cachePath)
 	if err != nil || cached == "" {
 		return "", false
 	}
 	return cached, true
 }
 
-func (r *AgentUrlResolver) resolveAndCacheUrl(ensDomain string, cachePath string) (string, error) {
-	url, err := r.ensUrlResolver.ResolveUrl(ensDomain)
+func (r *AgentUrlResolver) resolveAndCacheUrl(ctx context.Context, ensDomain string, cachePath string) (string, error) {
+	url, err := r.ensUrlResolver.ResolveUrl(ctx, ensDomain)
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve url for %s: %w", ensDomain, err)
 	}
@@ -75,7 +77,7 @@ func (r *AgentUrlResolver) resolveAndCacheUrl(ensDomain string, cachePath string
 	}
 
 	ttl := time.Duration(r.remoteAgentResolutionSettings.CacheTtlSeconds) * time.Second
-	if err := r.cacheStorage.Store(cachePath, url, &ttl); err != nil {
+	if err := r.cacheStorage.Store(ctx, cachePath, url, &ttl); err != nil {
 		r.logger.Warn("Failed to cache agent url", zap.String("ensDomain", ensDomain), zap.Error(err))
 	}
 

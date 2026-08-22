@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_redis/services"
@@ -45,14 +47,14 @@ func TestWhenReadingAndDeleting(t *testing.T) {
 			defer WhenReadingAndDeletingAfterEach(suite)
 
 			key := uuid.New().String()
-			err := suite.sut.Store(key, "test-value", nil)
+			err := suite.sut.Store(context.Background(), key, "test-value", nil)
 			assert.Nil(t, err)
 
-			value, err := suite.sut.ReadAndDelete(key)
+			value, err := suite.sut.ReadAndDelete(context.Background(), key)
 			assert.Nil(t, err)
 			assert.Equal(t, "test-value", value)
 
-			_, err = suite.sut.ReadAndDelete(key)
+			_, err = suite.sut.ReadAndDelete(context.Background(), key)
 			assert.NotNil(t, err)
 		})
 	})
@@ -66,7 +68,7 @@ func TestWhenReadingAndDeleting(t *testing.T) {
 			suite := WhenReadingAndDeletingBeforeEach()
 			defer WhenReadingAndDeletingAfterEach(suite)
 
-			_, err := suite.sut.ReadAndDelete(uuid.New().String())
+			_, err := suite.sut.ReadAndDelete(context.Background(), uuid.New().String())
 			assert.NotNil(t, err)
 		})
 	})

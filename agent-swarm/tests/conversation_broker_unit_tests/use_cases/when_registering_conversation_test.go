@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -69,7 +71,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			request := generateValidRegisterConversationRequest()
 			request.BridgeID = uuid.Nil
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "bridgeId")
@@ -82,7 +84,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			request := generateValidRegisterConversationRequest()
 			request.ParticipantIDs = []uuid.UUID{uuid.Nil}
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "participantIds")
@@ -94,7 +96,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringConversationTestingSuite, request *requests.RegisterConversationRequest) {
 			suite.mockBridgeRepository.EXPECT().
-				GetById(request.BridgeID).
+				GetById(gomock.Any(), request.BridgeID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -106,7 +108,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			request := generateValidRegisterConversationRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -119,9 +121,9 @@ func TestWhenRegisteringConversation(t *testing.T) {
 		missingParticipantId := uuid.New()
 
 		initSuite := func(suite *WhenRegisteringConversationTestingSuite) {
-			suite.mockBridgeRepository.EXPECT().GetById(bridge.ID).Return(bridge, nil).Times(1)
+			suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), bridge.ID).Return(bridge, nil).Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetById(missingParticipantId).
+				GetById(gomock.Any(), missingParticipantId).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -136,7 +138,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			}
 			initSuite(suite)
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -150,13 +152,19 @@ func TestWhenRegisteringConversation(t *testing.T) {
 		participant2 := model_builders.NewUserParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenRegisteringConversationTestingSuite, request *requests.RegisterConversationRequest) {
-			suite.mockBridgeRepository.EXPECT().GetById(bridge.ID).Return(bridge, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(participant1.ID).Return(participant1, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(participant2.ID).Return(participant2, nil).Times(1)
+			suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), bridge.ID).Return(bridge, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), participant1.ID).
+				Return(participant1, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), participant2.ID).
+				Return(participant2, nil).
+				Times(1)
 
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.Equal(t, bridge.ID, c.BridgeID)
 					assert.Equal(t, request.Description, c.Description)
 					c.ID = uuid.New()
@@ -165,8 +173,8 @@ func TestWhenRegisteringConversation(t *testing.T) {
 				Times(1)
 
 			suite.mockConversationParticipantRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(link *models.ConversationParticipant) (*models.ConversationParticipant, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, link *models.ConversationParticipant) (*models.ConversationParticipant, error) {
 					assert.Contains(t, []uuid.UUID{participant1.ID, participant2.ID}, link.ParticipantID)
 					return link, nil
 				}).
@@ -185,7 +193,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			conversation, err := suite.sut.Register(request)
+			conversation, err := suite.sut.Register(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.NotEqual(t, uuid.Nil, conversation.ID)

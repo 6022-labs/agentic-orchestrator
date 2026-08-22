@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -42,22 +44,26 @@ func NewRegistryAgentResolver(
 }
 
 func (r *RegistryAgentResolver) ResolveByCollection(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.RegistryAgent, error) {
-	return r.resolve(
+	return r.resolve(ctx,
 		r.collectionCachePath(collectionAddress, collectionTokenId),
 		func() (*models.RegistryAgent, error) {
-			return r.agentRegistryRequester.GetAgent(collectionAddress, collectionTokenId)
+			return r.agentRegistryRequester.GetAgent(ctx, collectionAddress, collectionTokenId)
 		},
 	)
 }
 
-func (r *RegistryAgentResolver) ResolveByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
+func (r *RegistryAgentResolver) ResolveByEnsDomain(
+	ctx context.Context,
+	ensDomain string,
+) (*models.RegistryAgent, error) {
 	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 
-	return r.resolve(r.ensDomainCachePath(ensDomain), func() (*models.RegistryAgent, error) {
-		return r.agentRegistryRequester.GetMintedAgentByEnsDomain(ensDomain)
+	return r.resolve(ctx, r.ensDomainCachePath(ensDomain), func() (*models.RegistryAgent, error) {
+		return r.agentRegistryRequester.GetMintedAgentByEnsDomain(ctx, ensDomain)
 	})
 }
 
@@ -75,10 +81,11 @@ func (r *RegistryAgentResolver) ensDomainCachePath(ensDomain string) string {
 
 // resolve takes a per-key lock so concurrent misses collapse into one registry call.
 func (r *RegistryAgentResolver) resolve(
+	ctx context.Context,
 	cachePath string,
 	fetch func() (*models.RegistryAgent, error),
 ) (*models.RegistryAgent, error) {
-	if agent, ok := r.readCachedAgent(cachePath); ok {
+	if agent, ok := r.readCachedAgent(ctx, cachePath); ok {
 		return agent, nil
 	}
 
@@ -87,7 +94,7 @@ func (r *RegistryAgentResolver) resolve(
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if agent, ok := r.readCachedAgent(cachePath); ok {
+	if agent, ok := r.readCachedAgent(ctx, cachePath); ok {
 		return agent, nil
 	}
 
@@ -100,12 +107,12 @@ func (r *RegistryAgentResolver) resolve(
 		return nil, nil
 	}
 
-	r.cacheAgent(cachePath, agent)
+	r.cacheAgent(ctx, cachePath, agent)
 	return agent, nil
 }
 
-func (r *RegistryAgentResolver) readCachedAgent(cachePath string) (*models.RegistryAgent, bool) {
-	cached, err := r.cacheStorage.Read(cachePath)
+func (r *RegistryAgentResolver) readCachedAgent(ctx context.Context, cachePath string) (*models.RegistryAgent, bool) {
+	cached, err := r.cacheStorage.Read(ctx, cachePath)
 	if err != nil || cached == "" {
 		return nil, false
 	}
@@ -117,7 +124,7 @@ func (r *RegistryAgentResolver) readCachedAgent(cachePath string) (*models.Regis
 	return &agent, true
 }
 
-func (r *RegistryAgentResolver) cacheAgent(requestedPath string, agent *models.RegistryAgent) {
+func (r *RegistryAgentResolver) cacheAgent(ctx context.Context, requestedPath string, agent *models.RegistryAgent) {
 	serialized, err := json.Marshal(agent)
 	if err != nil {
 		return
@@ -125,7 +132,7 @@ func (r *RegistryAgentResolver) cacheAgent(requestedPath string, agent *models.R
 
 	ttl := time.Duration(r.registryAgentResolutionSettings.CacheTtlSeconds) * time.Second
 	for _, cachePath := range r.cachePathsFor(requestedPath, agent) {
-		if err := r.cacheStorage.Store(cachePath, string(serialized), &ttl); err != nil {
+		if err := r.cacheStorage.Store(ctx, cachePath, string(serialized), &ttl); err != nil {
 			r.logger.Warn("Failed to cache registry agent", zap.String("cachePath", cachePath), zap.Error(err))
 		}
 	}

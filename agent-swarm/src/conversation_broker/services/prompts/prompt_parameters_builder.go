@@ -1,6 +1,8 @@
 package prompts
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
@@ -55,8 +57,8 @@ func (b *PromptParametersBuilder) WithParam(
 	return b
 }
 
-func (b *PromptParametersBuilder) Build() (map[string]any, error) {
-	if err := b.applyTypeDirectivesInValue(b.params); err != nil {
+func (b *PromptParametersBuilder) Build(ctx context.Context) (map[string]any, error) {
+	if err := b.applyTypeDirectivesInValue(ctx, b.params); err != nil {
 		return nil, err
 	}
 
@@ -71,20 +73,20 @@ type typeDirective struct {
 	Type PromptParameterType
 }
 
-func (b *PromptParametersBuilder) applyTypeDirectivesInValue(v any) error {
+func (b *PromptParametersBuilder) applyTypeDirectivesInValue(ctx context.Context, v any) error {
 	switch vv := v.(type) {
 	case map[string]any:
-		if err := b.applyTypeDirectivesInMap(vv); err != nil {
+		if err := b.applyTypeDirectivesInMap(ctx, vv); err != nil {
 			return err
 		}
 		for _, child := range vv {
-			if err := b.applyTypeDirectivesInValue(child); err != nil {
+			if err := b.applyTypeDirectivesInValue(ctx, child); err != nil {
 				return err
 			}
 		}
 	case []any:
 		for _, item := range vv {
-			if err := b.applyTypeDirectivesInValue(item); err != nil {
+			if err := b.applyTypeDirectivesInValue(ctx, item); err != nil {
 				return err
 			}
 		}
@@ -92,7 +94,7 @@ func (b *PromptParametersBuilder) applyTypeDirectivesInValue(v any) error {
 	return nil
 }
 
-func (b *PromptParametersBuilder) applyTypeDirectivesInMap(m map[string]any) error {
+func (b *PromptParametersBuilder) applyTypeDirectivesInMap(ctx context.Context, m map[string]any) error {
 	dotted := map[string]*typeDirective{}
 	for k, v := range m {
 		if strings.HasSuffix(k, ".type") {
@@ -114,19 +116,19 @@ func (b *PromptParametersBuilder) applyTypeDirectivesInMap(m map[string]any) err
 		if ok {
 			switch spec.Type {
 			case PromptParameterTypeAgent:
-				if err := b.resolveAgentParameter(m, baseKey, val); err != nil {
+				if err := b.resolveAgentParameter(ctx, m, baseKey, val); err != nil {
 					return err
 				}
 			case PromptParameterTypeAgentArray:
-				if err := b.resolveAgentArrayParameter(m, baseKey, val); err != nil {
+				if err := b.resolveAgentArrayParameter(ctx, m, baseKey, val); err != nil {
 					return err
 				}
 			case PromptParameterTypePotentialAgent:
-				if err := b.resolvePotentialAgentParameter(m, baseKey, val); err != nil {
+				if err := b.resolvePotentialAgentParameter(ctx, m, baseKey, val); err != nil {
 					return err
 				}
 			case PromptParameterTypePotentialAgentArray:
-				if err := b.resolvePotentialAgentArrayParameter(m, baseKey, val); err != nil {
+				if err := b.resolvePotentialAgentArrayParameter(ctx, m, baseKey, val); err != nil {
 					return err
 				}
 			}
@@ -138,13 +140,18 @@ func (b *PromptParametersBuilder) applyTypeDirectivesInMap(m map[string]any) err
 	return nil
 }
 
-func (b *PromptParametersBuilder) resolveAgentParameter(target map[string]any, baseKey string, value any) error {
+func (b *PromptParametersBuilder) resolveAgentParameter(
+	ctx context.Context,
+	target map[string]any,
+	baseKey string,
+	value any,
+) error {
 	strVal, ok := value.(string)
 	if !ok {
 		return fmt.Errorf("expected string value for agent, got %T", value)
 	}
 
-	agent, err := b.registryAgentResolver.ResolveByEnsDomain(strVal)
+	agent, err := b.registryAgentResolver.ResolveByEnsDomain(ctx, strVal)
 	if err != nil {
 		return fmt.Errorf("failed to get agent by ENS domain: %w", err)
 	}
@@ -157,7 +164,12 @@ func (b *PromptParametersBuilder) resolveAgentParameter(target map[string]any, b
 	return nil
 }
 
-func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]any, baseKey string, value any) error {
+func (b *PromptParametersBuilder) resolveAgentArrayParameter(
+	ctx context.Context,
+	target map[string]any,
+	baseKey string,
+	value any,
+) error {
 	strVals, err := b.interfaceToStringSlice(value)
 	if err != nil {
 		return err
@@ -167,7 +179,7 @@ func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]a
 
 	agentParameters := make([]*agentPromptParameter, len(strVals))
 	for i, ensDomain := range strVals {
-		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ensDomain)
+		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ctx, ensDomain)
 		if err != nil {
 			return fmt.Errorf("failed to get agents by ENS domains: %w", err)
 		}
@@ -183,6 +195,7 @@ func (b *PromptParametersBuilder) resolveAgentArrayParameter(target map[string]a
 }
 
 func (b *PromptParametersBuilder) resolvePotentialAgentParameter(
+	ctx context.Context,
 	target map[string]any,
 	baseKey string,
 	value any,
@@ -192,7 +205,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(
 		return fmt.Errorf("expected string value for potential agent, got %T", value)
 	}
 
-	agent, err := b.registryAgentResolver.ResolveByEnsDomain(strVal)
+	agent, err := b.registryAgentResolver.ResolveByEnsDomain(ctx, strVal)
 	if err != nil {
 		return fmt.Errorf("failed to get potential agent by ENS domain: %w", err)
 	}
@@ -203,6 +216,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentParameter(
 }
 
 func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(
+	ctx context.Context,
 	target map[string]any,
 	baseKey string,
 	value any,
@@ -216,7 +230,7 @@ func (b *PromptParametersBuilder) resolvePotentialAgentArrayParameter(
 
 	agentMap := make(map[string]*models.RegistryAgent, len(strVals))
 	for _, ensDomain := range strVals {
-		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ensDomain)
+		agent, err := b.registryAgentResolver.ResolveByEnsDomain(ctx, ensDomain)
 		if err != nil {
 			return fmt.Errorf("failed to get potential agents by ENS domains: %w", err)
 		}

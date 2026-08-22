@@ -48,7 +48,7 @@ func TestWhenReadingBool(t *testing.T) {
 			t.Fatalf("Failed to set key in Redis: %v", err)
 		}
 
-		result, err := suite.sut.ReadBool(key)
+		result, err := suite.sut.ReadBool(context.Background(), key)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -66,7 +66,7 @@ func TestWhenReadingBool(t *testing.T) {
 			t.Fatalf("Failed to set key in Redis: %v", err)
 		}
 
-		result, err := suite.sut.ReadBool(key)
+		result, err := suite.sut.ReadBool(context.Background(), key)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -86,7 +86,7 @@ func TestWhenReadingBool(t *testing.T) {
 				t.Fatalf("Failed to set key in Redis: %v", err)
 			}
 
-			_, err = suite.sut.ReadBool(key)
+			_, err = suite.sut.ReadBool(context.Background(), key)
 
 			assert.Error(t, err)
 		},
@@ -98,7 +98,7 @@ func TestWhenReadingBool(t *testing.T) {
 		suite := WhenReadingBoolBeforeEach()
 		defer WhenReadingBoolAfterEach(suite)
 
-		result, err := suite.sut.ReadBool(key)
+		result, err := suite.sut.ReadBool(context.Background(), key)
 
 		assert.Nil(t, err)
 		assert.Nil(t, result)

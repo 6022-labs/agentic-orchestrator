@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -42,7 +44,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			suite := WhenGettingNextAgentToProcessBeforeEach()
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -59,9 +61,9 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			p := model_builders.NewAgentParticipantBuilder().WithIsProcessing(true).Build()
-			_, _ = suite.sut.Save(p)
+			_, _ = suite.sut.Save(context.Background(), p)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -79,9 +81,9 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 
 			recent := time.Now().UTC().Add(-5 * time.Second)
 			p := model_builders.NewAgentParticipantBuilder().WithLastProcessedAt(recent).Build()
-			_, _ = suite.sut.Save(p)
+			_, _ = suite.sut.Save(context.Background(), p)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -103,10 +105,10 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			pOld := model_builders.NewAgentParticipantBuilder().WithLastProcessedAt(older).Build()
 			pRecent := model_builders.NewAgentParticipantBuilder().WithLastProcessedAt(newer).Build()
 
-			_, _ = suite.sut.Save(pRecent)
-			_, _ = suite.sut.Save(pOld)
+			_, _ = suite.sut.Save(context.Background(), pRecent)
+			_, _ = suite.sut.Save(context.Background(), pOld)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.NoError(t, err)
 			assert.Equal(t, pOld.ID, next.ID)
@@ -127,10 +129,10 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			pNeverRun := model_builders.NewAgentParticipantBuilder().Build()
 			pOld := model_builders.NewAgentParticipantBuilder().WithLastProcessedAt(older).Build()
 
-			_, _ = suite.sut.Save(pOld)
-			_, _ = suite.sut.Save(pNeverRun)
+			_, _ = suite.sut.Save(context.Background(), pOld)
+			_, _ = suite.sut.Save(context.Background(), pNeverRun)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.NoError(t, err)
 			assert.Equal(t, pNeverRun.ID, next.ID)
@@ -147,9 +149,9 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			human := model_builders.NewUserParticipantBuilder().Build()
-			_, _ = suite.sut.Save(human)
+			_, _ = suite.sut.Save(context.Background(), human)
 
-			next, err := suite.sut.GetNextAgentToProcess(20)
+			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)

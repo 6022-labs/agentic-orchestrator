@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
@@ -66,7 +68,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Platform = enums.BridgePlatform("none")
 
-			err := suite.sut.Verify(request)
+			err := suite.sut.Verify(context.Background(), request)
 			assert.NotNil(t, err)
 		})
 
@@ -78,7 +80,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Challenge = "   "
 
-			err := suite.sut.Verify(request)
+			err := suite.sut.Verify(context.Background(), request)
 			assert.NotNil(t, err)
 		})
 
@@ -90,7 +92,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Signature = "   "
 
-			err := suite.sut.Verify(request)
+			err := suite.sut.Verify(context.Background(), request)
 			assert.NotNil(t, err)
 		})
 	})
@@ -112,7 +114,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			request := generateValidVerifyWalletForBridgeRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Verify(request)
+			err := suite.sut.Verify(context.Background(), request)
 			assert.NotNil(t, err)
 		})
 	})
@@ -130,7 +132,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 
 				suite.mockPlatformBridgeRequester.
 					EXPECT().
-					SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
+					SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
 					Return(assert.AnError)
 			}
 
@@ -141,7 +143,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 				request := generateValidVerifyWalletForBridgeRequest()
 				initSuite(suite, request)
 
-				err := suite.sut.Verify(request)
+				err := suite.sut.Verify(context.Background(), request)
 				assert.NotNil(t, err)
 			})
 		},
@@ -158,7 +160,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 
 			suite.mockPlatformBridgeRequester.
 				EXPECT().
-				SetWalletOwnershipToUser(request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
+				SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
 				Return(nil)
 		}
 
@@ -169,7 +171,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			request := generateValidVerifyWalletForBridgeRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Verify(request)
+			err := suite.sut.Verify(context.Background(), request)
 			assert.Nil(t, err)
 		})
 	})

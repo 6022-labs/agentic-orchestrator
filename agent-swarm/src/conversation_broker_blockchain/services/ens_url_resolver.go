@@ -57,18 +57,18 @@ func NewEnsUrlResolver(
 	}
 }
 
-func (r *EnsUrlResolver) ResolveUrl(ensDomain string) (string, error) {
+func (r *EnsUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (string, error) {
 	if err := r.verifyChain(ensDomain); err != nil {
 		return "", err
 	}
 
 	timeout := time.Duration(r.rpcNodeSettings.RequestTimeoutSeconds) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	callCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	node := helpers.Namehash(ensDomain)
 
-	agentUrl, err := r.agentEnsRegistry.Text(&bind.CallOpts{Context: ctx}, node, urlRecordKey)
+	agentUrl, err := r.agentEnsRegistry.Text(&bind.CallOpts{Context: callCtx}, node, urlRecordKey)
 	if err != nil {
 		return "", fmt.Errorf("text record lookup failed for %s: %w", ensDomain, err)
 	}

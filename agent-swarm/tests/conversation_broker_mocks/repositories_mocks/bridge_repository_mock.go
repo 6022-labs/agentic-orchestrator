@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -43,46 +44,46 @@ func (m *MockBridgeRepositoryInterface) EXPECT() *MockBridgeRepositoryInterfaceM
 }
 
 // GetById mocks base method.
-func (m *MockBridgeRepositoryInterface) GetById(id uuid.UUID) (*models.Bridge, error) {
+func (m *MockBridgeRepositoryInterface) GetById(ctx context.Context, id uuid.UUID) (*models.Bridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*models.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockBridgeRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
+func (mr *MockBridgeRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).GetById), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).GetById), ctx, id)
 }
 
 // ListByKind mocks base method.
-func (m *MockBridgeRepositoryInterface) ListByKind(kind enums.BridgeKind) ([]*models.Bridge, error) {
+func (m *MockBridgeRepositoryInterface) ListByKind(ctx context.Context, kind enums.BridgeKind) ([]*models.Bridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByKind", kind)
+	ret := m.ctrl.Call(m, "ListByKind", ctx, kind)
 	ret0, _ := ret[0].([]*models.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListByKind indicates an expected call of ListByKind.
-func (mr *MockBridgeRepositoryInterfaceMockRecorder) ListByKind(kind any) *gomock.Call {
+func (mr *MockBridgeRepositoryInterfaceMockRecorder) ListByKind(ctx, kind any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKind", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).ListByKind), kind)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKind", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).ListByKind), ctx, kind)
 }
 
 // Save mocks base method.
-func (m *MockBridgeRepositoryInterface) Save(entity *models.Bridge) (*models.Bridge, error) {
+func (m *MockBridgeRepositoryInterface) Save(ctx context.Context, entity *models.Bridge) (*models.Bridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.Bridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockBridgeRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockBridgeRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockBridgeRepositoryInterface)(nil).Save), ctx, entity)
 }

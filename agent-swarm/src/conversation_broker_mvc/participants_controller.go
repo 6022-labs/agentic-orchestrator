@@ -53,7 +53,7 @@ func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, existed, err := c.registerAgent.Register(req)
+	p, existed, err := c.registerAgent.Register(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -86,7 +86,7 @@ func (c *ParticipantsController) RegisterUser(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, err := c.registerUser.Register(req)
+	p, err := c.registerUser.Register(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

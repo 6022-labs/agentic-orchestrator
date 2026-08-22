@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"slices"
 	"strings"
@@ -43,12 +45,13 @@ func NewBrokerMessageForwarder(
 // authorSlackUser or authorSlackAgent must be non-nil, and its BrokerParticipantId
 // must already be populated by its synchronizer.
 func (f *BrokerMessageForwarder) Forward(
+	ctx context.Context,
 	slackChannel *models.SlackChannel,
 	parentMessageTs, messageTs, content string,
 	authorSlackUser *models.SlackUser,
 	authorSlackAgent *models.SlackAgent,
 ) error {
-	alreadyForwarded, err := f.alreadyForwarded(slackChannel.Id, messageTs)
+	alreadyForwarded, err := f.alreadyForwarded(ctx, slackChannel.Id, messageTs)
 	if err != nil {
 		return err
 	}
@@ -65,17 +68,22 @@ func (f *BrokerMessageForwarder) Forward(
 		return err
 	}
 
-	conversationId, err := f.resolveOrRegisterConversation(slackChannel, parentMessageTs, *authorParticipantId)
+	conversationId, err := f.resolveOrRegisterConversation(ctx, slackChannel, parentMessageTs, *authorParticipantId)
 	if err != nil {
 		return err
 	}
 
-	brokerMessageId, err := f.conversationBrokerRequester.IngestMessage(*conversationId, *authorParticipantId, content)
+	brokerMessageId, err := f.conversationBrokerRequester.IngestMessage(
+		ctx,
+		*conversationId,
+		*authorParticipantId,
+		content,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to ingest message into broker: %w", err)
 	}
 
-	_, err = f.slackMessageRepository.Save(
+	_, err = f.slackMessageRepository.Save(ctx,
 		&models.SlackMessage{
 			SlackChannelId:  slackChannel.Id,
 			SlackMessageTs:  messageTs,
@@ -89,8 +97,8 @@ func (f *BrokerMessageForwarder) Forward(
 	return nil
 }
 
-func (f *BrokerMessageForwarder) alreadyForwarded(channelId, messageTs string) (bool, error) {
-	message, err := f.slackMessageRepository.GetBySlackIds(channelId, messageTs)
+func (f *BrokerMessageForwarder) alreadyForwarded(ctx context.Context, channelId, messageTs string) (bool, error) {
+	message, err := f.slackMessageRepository.GetBySlackIds(ctx, channelId, messageTs)
 	if err != nil {
 		return false, fmt.Errorf("failed to lookup slack message mapping: %w", err)
 	}
@@ -124,11 +132,12 @@ func (f *BrokerMessageForwarder) resolveAuthorParticipant(
 }
 
 func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
+	ctx context.Context,
 	slackChannel *models.SlackChannel,
 	parentMessageTs string,
 	authorParticipantId uuid.UUID,
 ) (*uuid.UUID, error) {
-	conversation, err := f.slackConversationRepository.GetBySlackIds(slackChannel.Id, parentMessageTs)
+	conversation, err := f.slackConversationRepository.GetBySlackIds(ctx, slackChannel.Id, parentMessageTs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to lookup slack conversation mapping: %w", err)
 	}
@@ -156,7 +165,7 @@ func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
 		description = &slackChannel.Description
 	}
 
-	conversationId, err := f.conversationBrokerRequester.RegisterConversation(
+	conversationId, err := f.conversationBrokerRequester.RegisterConversation(ctx,
 		f.brokerSettings.BridgeID,
 		description,
 		participantIds,
@@ -165,7 +174,7 @@ func (f *BrokerMessageForwarder) resolveOrRegisterConversation(
 		return nil, fmt.Errorf("failed to register conversation with broker: %w", err)
 	}
 
-	_, err = f.slackConversationRepository.Save(
+	_, err = f.slackConversationRepository.Save(ctx,
 		&models.SlackConversation{
 			SlackChannelId:       slackChannel.Id,
 			SlackThreadTs:        parentMessageTs,

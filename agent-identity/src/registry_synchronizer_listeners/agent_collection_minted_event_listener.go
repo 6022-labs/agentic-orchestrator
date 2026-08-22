@@ -1,6 +1,8 @@
 package registry_synchronizer_listeners
 
 import (
+	"context"
+
 	"fmt"
 	"slices"
 
@@ -44,12 +46,12 @@ func NewAgentCollectionMintedListener(
 	return el
 }
 
-func (listener *AgentCollectionMintedListener) Listen() error {
-	return listener.AbstractUpdatableSubscriptionListener.Listen()
+func (listener *AgentCollectionMintedListener) Listen(ctx context.Context) error {
+	return listener.AbstractUpdatableSubscriptionListener.Listen(ctx)
 }
 
-func (listener *AgentCollectionMintedListener) SubscribeAll() error {
-	collections, err := listener.agentCollectionRepository.GetAll()
+func (listener *AgentCollectionMintedListener) SubscribeAll(ctx context.Context) error {
+	collections, err := listener.agentCollectionRepository.GetAll(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collections: %w", err)
 	}
@@ -69,7 +71,7 @@ func (listener *AgentCollectionMintedListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -80,7 +82,7 @@ func (listener *AgentCollectionMintedListener) SubscribeAll() error {
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"subscribed to AgentCollection.Minted events",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -102,12 +104,12 @@ func (listener *AgentCollectionMintedListener) Subscribe(collectionAddress commo
 	return nil
 }
 
-func (listener *AgentCollectionMintedListener) rebuildSubscription() error {
+func (listener *AgentCollectionMintedListener) rebuildSubscription(ctx context.Context) error {
 	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartMintedSubscription(ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -121,7 +123,7 @@ func (listener *AgentCollectionMintedListener) rebuildSubscription() error {
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"rebuilt AgentCollection.Minted subscription",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -129,7 +131,7 @@ func (listener *AgentCollectionMintedListener) rebuildSubscription() error {
 	return nil
 }
 
-func (listener *AgentCollectionMintedListener) startSubscriptionHandler(
+func (listener *AgentCollectionMintedListener) startSubscriptionHandler(ctx context.Context,
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionV1Minted,
 ) {
@@ -159,6 +161,8 @@ func (listener *AgentCollectionMintedListener) startSubscriptionHandler(
 				}
 
 				listener.onBlockSeen(event.Raw.BlockNumber)
+			case <-ctx.Done():
+				return
 			case err := <-subscription.Err():
 				if err == nil {
 					return

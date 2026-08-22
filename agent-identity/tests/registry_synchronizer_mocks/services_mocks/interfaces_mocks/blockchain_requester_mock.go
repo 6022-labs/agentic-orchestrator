@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,16 +41,16 @@ func (m *MockBlockchainRequesterInterface) EXPECT() *MockBlockchainRequesterInte
 }
 
 // GetCurrentBlockNumber mocks base method.
-func (m *MockBlockchainRequesterInterface) GetCurrentBlockNumber() (*uint64, error) {
+func (m *MockBlockchainRequesterInterface) GetCurrentBlockNumber(ctx context.Context) (*uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentBlockNumber")
+	ret := m.ctrl.Call(m, "GetCurrentBlockNumber", ctx)
 	ret0, _ := ret[0].(*uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrentBlockNumber indicates an expected call of GetCurrentBlockNumber.
-func (mr *MockBlockchainRequesterInterfaceMockRecorder) GetCurrentBlockNumber() *gomock.Call {
+func (mr *MockBlockchainRequesterInterfaceMockRecorder) GetCurrentBlockNumber(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBlockNumber", reflect.TypeOf((*MockBlockchainRequesterInterface)(nil).GetCurrentBlockNumber))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBlockNumber", reflect.TypeOf((*MockBlockchainRequesterInterface)(nil).GetCurrentBlockNumber), ctx)
 }

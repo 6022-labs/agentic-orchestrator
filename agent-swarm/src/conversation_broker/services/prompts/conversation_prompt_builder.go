@@ -1,6 +1,8 @@
 package prompts
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -27,6 +29,7 @@ func NewConversationPromptBuilder(
 }
 
 func (b *ConversationPromptBuilder) BuildInput(
+	ctx context.Context,
 	platform string,
 	agent *models.Participant,
 	role *enums.ParticipantRole,
@@ -46,17 +49,17 @@ func (b *ConversationPromptBuilder) BuildInput(
 		return nil, err
 	}
 
-	parameters, err := b.buildParameters(conversation, messages, participants, len(messages))
+	parameters, err := b.buildParameters(ctx, conversation, messages, participants, len(messages))
 	if err != nil {
 		return nil, err
 	}
 
-	instructions, err := b.parseTemplate(agent, systemKey, parameters)
+	instructions, err := b.parseTemplate(ctx, agent, systemKey, parameters)
 	if err != nil {
 		return nil, err
 	}
 
-	turnPrompt, err := b.parseTemplate(agent, defaultKey, parameters)
+	turnPrompt, err := b.parseTemplate(ctx, agent, defaultKey, parameters)
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +86,7 @@ func (b *ConversationPromptBuilder) BuildInput(
 }
 
 func (b *ConversationPromptBuilder) BuildConcludeInput(
+	ctx context.Context,
 	turn *models.RemoteAgentInput,
 	completions []string,
 	agent *models.Participant,
@@ -91,12 +95,12 @@ func (b *ConversationPromptBuilder) BuildConcludeInput(
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
 ) (*models.RemoteAgentInput, error) {
-	parameters, err := b.buildParameters(conversation, messages, participants, len(turn.Input)+len(completions))
+	parameters, err := b.buildParameters(ctx, conversation, messages, participants, len(turn.Input)+len(completions))
 	if err != nil {
 		return nil, err
 	}
 
-	concludePrompt, err := b.parseTemplate(agent, enums.AgentPromptTemplateKeyFacilitatorConclude, parameters)
+	concludePrompt, err := b.parseTemplate(ctx, agent, enums.AgentPromptTemplateKeyFacilitatorConclude, parameters)
 	if err != nil {
 		return nil, err
 	}
@@ -122,11 +126,12 @@ func (b *ConversationPromptBuilder) BuildConcludeInput(
 }
 
 func (b *ConversationPromptBuilder) parseTemplate(
+	ctx context.Context,
 	agent *models.Participant,
 	key enums.AgentPromptTemplateKey,
 	parameters map[string]any,
 ) (string, error) {
-	tpl, err := b.promptTemplateProvider.templateFor(agent, key)
+	tpl, err := b.promptTemplateProvider.templateFor(ctx, agent, key)
 	if err != nil {
 		return "", err
 	}
@@ -139,6 +144,7 @@ func (b *ConversationPromptBuilder) parseTemplate(
 }
 
 func (b *ConversationPromptBuilder) buildParameters(
+	ctx context.Context,
 	conversation *models.Conversation,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
@@ -185,7 +191,7 @@ func (b *ConversationPromptBuilder) buildParameters(
 			b.authorName(latestMessage, participantsById),
 			lo.ToPtr(PromptParameterTypePotentialAgent),
 		).
-		Build()
+		Build(ctx)
 }
 
 func (b *ConversationPromptBuilder) mapMessagesToInput(

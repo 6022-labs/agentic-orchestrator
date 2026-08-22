@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -21,12 +23,15 @@ func NewParticipantRoleResolver(
 	}
 }
 
-func (r *ParticipantRoleResolver) Resolve(participant *models.Participant) (*enums.ParticipantRole, error) {
+func (r *ParticipantRoleResolver) Resolve(
+	ctx context.Context,
+	participant *models.Participant,
+) (*enums.ParticipantRole, error) {
 	if participant == nil || !participant.IsAgent() {
 		return nil, nil
 	}
 
-	agent, err := r.registryAgentResolver.ResolveByCollection(
+	agent, err := r.registryAgentResolver.ResolveByCollection(ctx,
 		*participant.CollectionAddress,
 		*participant.CollectionTokenId,
 	)

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,15 +42,15 @@ func (m *MockSlackThreadRequesterInterface) EXPECT() *MockSlackThreadRequesterIn
 }
 
 // PushCompletionToThread mocks base method.
-func (m *MockSlackThreadRequesterInterface) PushCompletionToThread(completion string, slackAgent *models.SlackAgent, slackChannelId, slackThreadId string) error {
+func (m *MockSlackThreadRequesterInterface) PushCompletionToThread(ctx context.Context, completion string, slackAgent *models.SlackAgent, slackChannelId, slackThreadId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PushCompletionToThread", completion, slackAgent, slackChannelId, slackThreadId)
+	ret := m.ctrl.Call(m, "PushCompletionToThread", ctx, completion, slackAgent, slackChannelId, slackThreadId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PushCompletionToThread indicates an expected call of PushCompletionToThread.
-func (mr *MockSlackThreadRequesterInterfaceMockRecorder) PushCompletionToThread(completion, slackAgent, slackChannelId, slackThreadId any) *gomock.Call {
+func (mr *MockSlackThreadRequesterInterfaceMockRecorder) PushCompletionToThread(ctx, completion, slackAgent, slackChannelId, slackThreadId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushCompletionToThread", reflect.TypeOf((*MockSlackThreadRequesterInterface)(nil).PushCompletionToThread), completion, slackAgent, slackChannelId, slackThreadId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushCompletionToThread", reflect.TypeOf((*MockSlackThreadRequesterInterface)(nil).PushCompletionToThread), ctx, completion, slackAgent, slackChannelId, slackThreadId)
 }

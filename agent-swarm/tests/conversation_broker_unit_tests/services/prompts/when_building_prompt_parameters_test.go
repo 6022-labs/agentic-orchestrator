@@ -1,6 +1,8 @@
 package prompts_test
 
 import (
+	"context"
+
 	"bytes"
 	"testing"
 	"text/template"
@@ -51,7 +53,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingPromptParametersTestingSuite) {
 			suite.mockRegistryAgentResolver.EXPECT().
-				ResolveByEnsDomain("hermes.eth").
+				ResolveByEnsDomain(gomock.Any(), "hermes.eth").
 				Return(model_builders.NewRegistryAgentBuilder().
 					WithName("hermes").
 					WithRole("clone").
@@ -73,7 +75,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 					[]string{"hermes.eth"},
 					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
 				).
-				Build()
+				Build(context.Background())
 
 			assert.NoError(t, err)
 			rendered := renderWith(
@@ -96,7 +98,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 					[]string{"hermes.eth"},
 					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
 				).
-				Build()
+				Build(context.Background())
 
 			assert.NoError(t, err)
 			rendered := renderWith(t, `{{range .Members}}{{.Name}}={{index .Attributes "role"}}{{end}}`, parameters)
@@ -109,7 +111,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingPromptParametersTestingSuite) {
 			suite.mockRegistryAgentResolver.EXPECT().
-				ResolveByEnsDomain("pierre").
+				ResolveByEnsDomain(gomock.Any(), "pierre").
 				Return(nil, nil).
 				Times(1)
 		}
@@ -126,7 +128,7 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 					[]string{"pierre"},
 					lo.ToPtr(prompts.PromptParameterTypePotentialAgentArray),
 				).
-				Build()
+				Build(context.Background())
 
 			assert.NoError(t, err)
 			rendered := renderWith(t, `{{range .Members}}{{.Name}}:{{.IsAgent}}{{end}}`, parameters)
@@ -141,11 +143,11 @@ func TestWhenBuildingPromptParameters(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenBuildingPromptParametersBeforeEach(t)
-			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain(gomock.Any()).Times(0)
+			suite.mockRegistryAgentResolver.EXPECT().ResolveByEnsDomain(gomock.Any(), gomock.Any()).Times(0)
 
 			parameters, err := suite.sut.
 				WithParam([]string{"ChannelDescription"}, "a test channel", nil).
-				Build()
+				Build(context.Background())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "a test channel", renderWith(t, `{{.ChannelDescription}}`, parameters))

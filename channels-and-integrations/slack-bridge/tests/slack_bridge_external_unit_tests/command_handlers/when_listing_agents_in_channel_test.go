@@ -1,6 +1,8 @@
 package command_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -49,10 +51,10 @@ func TestWhenListingAgentsInChannel(t *testing.T) {
 
 		suite.slackChannelSynchronizer.
 			EXPECT().
-			Sync(request.ChannelID).
+			Sync(gomock.Any(), request.ChannelID).
 			Return(nil, assert.AnError)
 
-		agents, err := suite.sut.List(request)
+		agents, err := suite.sut.List(context.Background(), request)
 
 		assert.Error(t, err)
 		assert.Nil(t, agents)
@@ -87,10 +89,10 @@ func TestWhenListingAgentsInChannel(t *testing.T) {
 
 		suite.slackChannelSynchronizer.
 			EXPECT().
-			Sync(request.ChannelID).
+			Sync(gomock.Any(), request.ChannelID).
 			Return(slackChannel, nil)
 
-		agents, err := suite.sut.List(request)
+		agents, err := suite.sut.List(context.Background(), request)
 
 		assert.NoError(t, err)
 		assert.Len(t, agents, 2)

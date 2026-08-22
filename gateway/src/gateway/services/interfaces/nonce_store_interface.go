@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"context"
+
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -17,6 +19,6 @@ type ChallengeEntry struct {
 // NonceStoreInterface owns single-use login challenges keyed by wallet — a new
 // challenge replaces the previous one; unknown, used, or expired reads return nil.
 type NonceStoreInterface interface {
-	Generate(address common.Address, chainId uint64) (*ChallengeEntry, error)
-	Consume(address common.Address) *ChallengeEntry
+	Generate(ctx context.Context, address common.Address, chainId uint64) (*ChallengeEntry, error)
+	Consume(ctx context.Context, address common.Address) *ChallengeEntry
 }

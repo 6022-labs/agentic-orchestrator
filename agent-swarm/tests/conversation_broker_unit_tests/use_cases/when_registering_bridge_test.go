@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -56,7 +58,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			request.Kind = enums.BridgeKind("unknown")
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "kind")
@@ -69,7 +71,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			request.BaseUrl = ""
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "baseUrl")
@@ -83,7 +85,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			zero := uuid.Nil
 			request.ID = &zero
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "id")
@@ -95,7 +97,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
 			suite.mockBridgeRepository.EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -107,7 +109,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			initSuite(suite)
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -118,8 +120,8 @@ func TestWhenRegisteringBridge(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringBridgeTestingSuite, request *requests.RegisterBridgeRequest) {
 			suite.mockBridgeRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, b *models.Bridge) (*models.Bridge, error) {
 					assert.Equal(t, request.Kind, b.Kind)
 					assert.Equal(t, request.BaseUrl, b.BaseUrl)
 					return b, nil
@@ -134,7 +136,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request := generateValidRegisterBridgeRequest()
 			initSuite(suite, request)
 
-			bridge, existed, err := suite.sut.Register(request)
+			bridge, existed, err := suite.sut.Register(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.False(t, existed)
@@ -148,7 +150,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			t.Parallel()
 
 			initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge) {
-				suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
+				suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), existing.ID).Return(existing, nil).Times(1)
 				// No Save expectation — idempotent when nothing changed.
 			}
 
@@ -165,7 +167,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 				request.ID = &id
 				initSuite(suite, existing)
 
-				bridge, existed, err := suite.sut.Register(request)
+				bridge, existed, err := suite.sut.Register(context.Background(), request)
 
 				assert.NoError(t, err)
 				assert.True(t, existed)
@@ -180,10 +182,10 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			t.Parallel()
 
 			initSuite := func(suite *WhenRegisteringBridgeTestingSuite, existing *models.Bridge, newBaseUrl string) {
-				suite.mockBridgeRepository.EXPECT().GetById(existing.ID).Return(existing, nil).Times(1)
+				suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), existing.ID).Return(existing, nil).Times(1)
 				suite.mockBridgeRepository.EXPECT().
-					Save(gomock.Any()).
-					DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
+					Save(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, b *models.Bridge) (*models.Bridge, error) {
 						assert.Equal(t, existing.ID, b.ID)
 						assert.Equal(t, newBaseUrl, b.BaseUrl)
 						return b, nil
@@ -205,7 +207,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 				request.ID = &id
 				initSuite(suite, existing, request.BaseUrl)
 
-				bridge, existed, err := suite.sut.Register(request)
+				bridge, existed, err := suite.sut.Register(context.Background(), request)
 
 				assert.NoError(t, err)
 				assert.True(t, existed)
@@ -221,10 +223,10 @@ func TestWhenRegisteringBridge(t *testing.T) {
 		newId := uuid.New()
 
 		initSuite := func(suite *WhenRegisteringBridgeTestingSuite) {
-			suite.mockBridgeRepository.EXPECT().GetById(newId).Return(nil, nil).Times(1)
+			suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), newId).Return(nil, nil).Times(1)
 			suite.mockBridgeRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(b *models.Bridge) (*models.Bridge, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, b *models.Bridge) (*models.Bridge, error) {
 					assert.Equal(t, newId, b.ID)
 					return b, nil
 				}).
@@ -239,7 +241,7 @@ func TestWhenRegisteringBridge(t *testing.T) {
 			request.ID = &newId
 			initSuite(suite)
 
-			bridge, existed, err := suite.sut.Register(request)
+			bridge, existed, err := suite.sut.Register(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.False(t, existed)

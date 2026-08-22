@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -68,7 +70,7 @@ func TestWhenGettingSlackUserById(t *testing.T) {
 
 			id := "non-existing-slack-user-id"
 
-			slackUser, err := suite.sut.GetById(id)
+			slackUser, err := suite.sut.GetById(context.Background(), id)
 
 			assert.NoError(t, err)
 			assert.Nil(t, slackUser)
@@ -86,12 +88,12 @@ func TestWhenGettingSlackUserById(t *testing.T) {
 
 			slackUser := model_builders.NewSlackUserBuilder().Build()
 
-			_, err := suite.sut.Save(slackUser)
+			_, err := suite.sut.Save(context.Background(), slackUser)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			userWallet, err := suite.sut.GetById(slackUser.Id)
+			userWallet, err := suite.sut.GetById(context.Background(), slackUser.Id)
 
 			assert.Nil(t, err)
 			assert.Equal(t, slackUser, userWallet)

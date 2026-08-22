@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -53,7 +55,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			suite := WhenForceConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			assert.NoError(t, suite.sut.ForceConcludeConversation(conversationId))
+			assert.NoError(t, suite.sut.ForceConcludeConversation(context.Background(), conversationId))
 		})
 	})
 
@@ -76,7 +78,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			suite := WhenForceConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.ForceConcludeConversation(uuid.New()))
+			assert.Error(t, suite.sut.ForceConcludeConversation(context.Background(), uuid.New()))
 		})
 	})
 
@@ -96,7 +98,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			suite := WhenForceConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.ForceConcludeConversation(uuid.New()))
+			assert.Error(t, suite.sut.ForceConcludeConversation(context.Background(), uuid.New()))
 		})
 	})
 }

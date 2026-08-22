@@ -30,6 +30,7 @@ func (r *ConversationBrokerRequester) unexpectedStatus(statusCode int, body []by
 }
 
 func (r *ConversationBrokerRequester) ListConversations(
+	ctx context.Context,
 	page, elementsPerPage *uint,
 ) (*responses.ListBrokerConversationsResponse, error) {
 	params := &clients.GetConversationsParams{}
@@ -42,7 +43,7 @@ func (r *ConversationBrokerRequester) ListConversations(
 		params.ElementsPerPage = &value
 	}
 
-	rsp, err := r.client.GetConversationsWithResponse(context.Background(), params)
+	rsp, err := r.client.GetConversationsWithResponse(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +55,10 @@ func (r *ConversationBrokerRequester) ListConversations(
 }
 
 func (r *ConversationBrokerRequester) GetConversation(
+	ctx context.Context,
 	conversationId uuid.UUID,
 ) (*responses.BrokerConversationResponse, error) {
-	rsp, err := r.client.GetConversationsIdWithResponse(context.Background(), conversationId.String())
+	rsp, err := r.client.GetConversationsIdWithResponse(ctx, conversationId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +73,10 @@ func (r *ConversationBrokerRequester) GetConversation(
 }
 
 func (r *ConversationBrokerRequester) GetConversationMessages(
+	ctx context.Context,
 	conversationId uuid.UUID,
 ) ([]*responses.BrokerMessageResponse, error) {
-	rsp, err := r.client.GetConversationsIdMessagesWithResponse(context.Background(), conversationId.String())
+	rsp, err := r.client.GetConversationsIdMessagesWithResponse(ctx, conversationId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +96,10 @@ func (r *ConversationBrokerRequester) GetConversationMessages(
 }
 
 func (r *ConversationBrokerRequester) ListConversationParticipants(
+	ctx context.Context,
 	conversationId uuid.UUID,
 ) ([]*responses.BrokerParticipantResponse, error) {
-	rsp, err := r.client.GetConversationsIdParticipantsWithResponse(context.Background(), conversationId.String())
+	rsp, err := r.client.GetConversationsIdParticipantsWithResponse(ctx, conversationId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +118,8 @@ func (r *ConversationBrokerRequester) ListConversationParticipants(
 	return participants, nil
 }
 
-func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId uuid.UUID) error {
-	rsp, err := r.client.PostConversationsIdForceConcludeWithResponse(context.Background(), conversationId.String())
+func (r *ConversationBrokerRequester) ForceConcludeConversation(ctx context.Context, conversationId uuid.UUID) error {
+	rsp, err := r.client.PostConversationsIdForceConcludeWithResponse(ctx, conversationId.String())
 	if err != nil {
 		return err
 	}
@@ -129,12 +133,13 @@ func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId u
 }
 
 func (r *ConversationBrokerRequester) GetAgentPromptTemplate(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 	key string,
 ) (*responses.AgentPromptTemplateResponse, error) {
 	rsp, err := r.client.GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithResponse(
-		context.Background(),
+		ctx,
 		collectionAddress,
 		strconv.FormatUint(collectionTokenId, 10),
 		key,
@@ -153,6 +158,7 @@ func (r *ConversationBrokerRequester) GetAgentPromptTemplate(
 }
 
 func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 	key, content string,
@@ -163,7 +169,7 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
 	}
 
 	rsp, err := r.client.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		collectionAddress,
 		strconv.FormatUint(collectionTokenId, 10),
 		key,
@@ -190,8 +196,11 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
 	return (*mappings.ExternalPromptTemplateResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *ConversationBrokerRequester) GetAgentCard(ensDomain string) (*responses.AgentCardResponse, error) {
-	rsp, err := r.client.GetRemoteAgentsEnsDomainCardWithResponse(context.Background(), ensDomain)
+func (r *ConversationBrokerRequester) GetAgentCard(
+	ctx context.Context,
+	ensDomain string,
+) (*responses.AgentCardResponse, error) {
+	rsp, err := r.client.GetRemoteAgentsEnsDomainCardWithResponse(ctx, ensDomain)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +211,11 @@ func (r *ConversationBrokerRequester) GetAgentCard(ensDomain string) (*responses
 	return (*mappings.ExternalAgentCardResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *ConversationBrokerRequester) GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error) {
-	rsp, err := r.client.GetRemoteAgentsEnsDomainUrlWithResponse(context.Background(), ensDomain)
+func (r *ConversationBrokerRequester) GetAgentUrl(
+	ctx context.Context,
+	ensDomain string,
+) (*responses.AgentUrlResponse, error) {
+	rsp, err := r.client.GetRemoteAgentsEnsDomainUrlWithResponse(ctx, ensDomain)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -67,7 +69,7 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 			defer WhenCountingSearchAgentsAfterEach(suite)
 
 			params := repositories.AgentSearchParams{}
-			count, err := suite.sut.SearchCount(params)
+			count, err := suite.sut.SearchCount(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Equal(t, uint(0), count)
@@ -85,11 +87,11 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 
 			for i := 0; i < 3; i++ {
 				agent := model_builders.NewAgentBuilder().Build()
-				suite.sut.Save(agent)
+				suite.sut.Save(context.Background(), agent)
 			}
 
 			params := repositories.AgentSearchParams{}
-			count, err := suite.sut.SearchCount(params)
+			count, err := suite.sut.SearchCount(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Equal(t, uint(3), count)
@@ -101,9 +103,9 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 
 		saveMixedAgents := func(suite *WhenCountingSearchAgentsTestingSuite) {
 			for i := 0; i < 2; i++ {
-				suite.sut.Save(model_builders.NewAgentBuilder().Build())
+				suite.sut.Save(context.Background(), model_builders.NewAgentBuilder().Build())
 			}
-			suite.sut.Save(model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
+			suite.sut.Save(context.Background(), model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
 		}
 
 		t.Run("Given the filter selects minted agents", func(t *testing.T) {
@@ -115,7 +117,10 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 				defer WhenCountingSearchAgentsAfterEach(suite)
 				saveMixedAgents(suite)
 
-				count, err := suite.sut.SearchCount(repositories.AgentSearchParams{IsMinted: lo.ToPtr(true)})
+				count, err := suite.sut.SearchCount(
+					context.Background(),
+					repositories.AgentSearchParams{IsMinted: lo.ToPtr(true)},
+				)
 
 				assert.Nil(t, err)
 				assert.Equal(t, uint(2), count)
@@ -131,7 +136,10 @@ func TestWhenCountingSearchAgent(t *testing.T) {
 				defer WhenCountingSearchAgentsAfterEach(suite)
 				saveMixedAgents(suite)
 
-				count, err := suite.sut.SearchCount(repositories.AgentSearchParams{IsMinted: lo.ToPtr(false)})
+				count, err := suite.sut.SearchCount(
+					context.Background(),
+					repositories.AgentSearchParams{IsMinted: lo.ToPtr(false)},
+				)
 
 				assert.Nil(t, err)
 				assert.Equal(t, uint(1), count)

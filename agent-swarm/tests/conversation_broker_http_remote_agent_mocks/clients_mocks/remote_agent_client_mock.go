@@ -10,6 +10,7 @@
 package clients_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/models"
@@ -41,39 +42,39 @@ func (m *MockRemoteAgentClientInterface) EXPECT() *MockRemoteAgentClientInterfac
 }
 
 // CreateChatCompletion mocks base method.
-func (m *MockRemoteAgentClientInterface) CreateChatCompletion(endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error) {
+func (m *MockRemoteAgentClientInterface) CreateChatCompletion(ctx context.Context, endpointUrl, ensDomain string, request *models.ExternalChatCompletionRequest, headers *models.ExternalRequestHeaders) (*models.ExternalChatCompletionResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateChatCompletion", endpointUrl, ensDomain, request, headers)
+	ret := m.ctrl.Call(m, "CreateChatCompletion", ctx, endpointUrl, ensDomain, request, headers)
 	ret0, _ := ret[0].(*models.ExternalChatCompletionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateChatCompletion indicates an expected call of CreateChatCompletion.
-func (mr *MockRemoteAgentClientInterfaceMockRecorder) CreateChatCompletion(endpointUrl, ensDomain, request, headers any) *gomock.Call {
+func (mr *MockRemoteAgentClientInterfaceMockRecorder) CreateChatCompletion(ctx, endpointUrl, ensDomain, request, headers any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateChatCompletion", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).CreateChatCompletion), endpointUrl, ensDomain, request, headers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateChatCompletion", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).CreateChatCompletion), ctx, endpointUrl, ensDomain, request, headers)
 }
 
 // CreateResponse mocks base method.
-func (m *MockRemoteAgentClientInterface) CreateResponse(endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error) {
+func (m *MockRemoteAgentClientInterface) CreateResponse(ctx context.Context, endpointUrl, ensDomain string, request *models.ExternalCreateResponseRequest, headers *models.ExternalRequestHeaders) (*models.ExternalResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateResponse", endpointUrl, ensDomain, request, headers)
+	ret := m.ctrl.Call(m, "CreateResponse", ctx, endpointUrl, ensDomain, request, headers)
 	ret0, _ := ret[0].(*models.ExternalResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateResponse indicates an expected call of CreateResponse.
-func (mr *MockRemoteAgentClientInterfaceMockRecorder) CreateResponse(endpointUrl, ensDomain, request, headers any) *gomock.Call {
+func (mr *MockRemoteAgentClientInterfaceMockRecorder) CreateResponse(ctx, endpointUrl, ensDomain, request, headers any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateResponse", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).CreateResponse), endpointUrl, ensDomain, request, headers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateResponse", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).CreateResponse), ctx, endpointUrl, ensDomain, request, headers)
 }
 
 // GetWellKnownCard mocks base method.
-func (m *MockRemoteAgentClientInterface) GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error) {
+func (m *MockRemoteAgentClientInterface) GetWellKnownCard(ctx context.Context, agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWellKnownCard", agentUrl)
+	ret := m.ctrl.Call(m, "GetWellKnownCard", ctx, agentUrl)
 	ret0, _ := ret[0].(*models.ExternalWellKnownAgent6022)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(error)
@@ -81,7 +82,7 @@ func (m *MockRemoteAgentClientInterface) GetWellKnownCard(agentUrl string) (*mod
 }
 
 // GetWellKnownCard indicates an expected call of GetWellKnownCard.
-func (mr *MockRemoteAgentClientInterfaceMockRecorder) GetWellKnownCard(agentUrl any) *gomock.Call {
+func (mr *MockRemoteAgentClientInterfaceMockRecorder) GetWellKnownCard(ctx, agentUrl any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWellKnownCard", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).GetWellKnownCard), agentUrl)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWellKnownCard", reflect.TypeOf((*MockRemoteAgentClientInterface)(nil).GetWellKnownCard), ctx, agentUrl)
 }

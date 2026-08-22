@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -37,7 +39,7 @@ func NewMintedEventHandler(
 	}
 }
 
-func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) error {
+func (handler *MintedEventHandler) Handle(ctx context.Context, event *abi.AgentCollectionV1Minted) error {
 	handler.logger.Info("Handling Minted event for collection",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
@@ -45,6 +47,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	)
 
 	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(
+		ctx,
 		event.Raw.Address,
 		*event.TokenId,
 	)
@@ -53,7 +56,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	}
 
 	addresses := handler.typedAddresses(agentInformation.Addresses)
-	agent, err := handler.findAgentByAddresses(addresses)
+	agent, err := handler.findAgentByAddresses(ctx, addresses)
 	if err != nil {
 		return fmt.Errorf("failed to find agent by addresses: %w", err)
 	}
@@ -63,6 +66,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 	}
 
 	owner, err := handler.agentCollectionBlockchainRequester.GetAgentOwner(
+		ctx,
 		event.Raw.Address,
 		*event.TokenId,
 	)
@@ -70,7 +74,7 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 		return fmt.Errorf("failed to get agent owner: %w", err)
 	}
 
-	agentCollection, err := handler.agentCollectionRepository.GetByAddress(event.Raw.Address.Hex())
+	agentCollection, err := handler.agentCollectionRepository.GetByAddress(ctx, event.Raw.Address.Hex())
 	if err != nil {
 		return fmt.Errorf("failed to get agent collection by address: %w", err)
 	}
@@ -113,12 +117,12 @@ func (handler *MintedEventHandler) Handle(event *abi.AgentCollectionV1Minted) er
 		agent.Attributes[attribute.Key] = attribute.Value
 	}
 
-	_, err = handler.agentRepository.Save(agent)
+	_, err = handler.agentRepository.Save(ctx, agent)
 	if err != nil {
 		return fmt.Errorf("failed to save agent: %w", err)
 	}
 
-	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(ctx, agent.ID, addresses); err != nil {
 		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 

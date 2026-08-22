@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type GetConversationMessagesInterface interface {
-	Get(request *requests.ConversationIdRequest) ([]*responses.ConversationMessageResponse, error)
+	Get(ctx context.Context, request *requests.ConversationIdRequest) ([]*responses.ConversationMessageResponse, error)
 }
 
 type GetConversationMessages struct {
@@ -29,13 +31,14 @@ func NewGetConversationMessages(
 }
 
 func (uc *GetConversationMessages) Get(
+	ctx context.Context,
 	request *requests.ConversationIdRequest,
 ) ([]*responses.ConversationMessageResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
@@ -43,7 +46,7 @@ func (uc *GetConversationMessages) Get(
 		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
-	messages, err := uc.conversationMessageRepository.ListByConversationId(request.ConversationID)
+	messages, err := uc.conversationMessageRepository.ListByConversationId(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversation messages: %w", err)
 	}

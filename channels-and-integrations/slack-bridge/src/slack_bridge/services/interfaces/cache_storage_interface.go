@@ -1,11 +1,13 @@
 package interfaces
 
 import (
+	"context"
+
 	"time"
 )
 
 type CacheStorageInterface interface {
-	Store(key string, value any, expiration *time.Duration) error
-	ReadBool(key string) (*bool, error)
-	ReadString(key string) (*string, error)
+	Store(ctx context.Context, key string, value any, expiration *time.Duration) error
+	ReadBool(ctx context.Context, key string) (*bool, error)
+	ReadString(ctx context.Context, key string) (*string, error)
 }

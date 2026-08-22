@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
@@ -37,7 +39,9 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.agentRegistryRequesterMock.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
+			suite.agentRegistryRequesterMock.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -46,7 +50,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
-			resp, err := suite.sut.Get(req)
+			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.Equal(t, assert.AnError, err)
@@ -57,7 +61,9 @@ func TestWhenGettingAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.agentRegistryRequesterMock.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Return(nil, nil)
+			suite.agentRegistryRequesterMock.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil)
 		}
 
 		t.Run("Should return nil response and nil error", func(t *testing.T) {
@@ -66,7 +72,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
-			resp, err := suite.sut.Get(req)
+			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.Nil(t, err)
@@ -79,7 +85,9 @@ func TestWhenGettingAgent(t *testing.T) {
 		agent := model_builders.NewAgentBuilder().Build()
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
-			suite.agentRegistryRequesterMock.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Return(agent, nil)
+			suite.agentRegistryRequesterMock.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(agent, nil)
 		}
 
 		t.Run("Should return the agent response", func(t *testing.T) {
@@ -88,7 +96,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			initSuite(suite)
 
 			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
-			resp, err := suite.sut.Get(req)
+			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, resp)

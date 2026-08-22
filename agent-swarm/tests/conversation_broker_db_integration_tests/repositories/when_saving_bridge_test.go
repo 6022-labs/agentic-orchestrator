@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -43,12 +45,12 @@ func TestWhenSavingBridge(t *testing.T) {
 			defer WhenSavingBridgeAfterEach(suite)
 
 			entity := model_builders.NewBridgeBuilder().Build()
-			saved, err := suite.sut.Save(entity)
+			saved, err := suite.sut.Save(context.Background(), entity)
 
 			assert.NoError(t, err)
 			assert.Equal(t, entity.ID, saved.ID)
 
-			byId, err := suite.sut.GetById(entity.ID)
+			byId, err := suite.sut.GetById(context.Background(), entity.ID)
 			assert.NoError(t, err)
 			assert.Equal(t, entity.BaseUrl, byId.BaseUrl)
 		})
@@ -65,12 +67,12 @@ func TestWhenSavingBridge(t *testing.T) {
 
 			first := model_builders.NewBridgeBuilder().Build()
 			second := model_builders.NewBridgeBuilder().Build()
-			_, err := suite.sut.Save(first)
+			_, err := suite.sut.Save(context.Background(), first)
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(second)
+			_, err = suite.sut.Save(context.Background(), second)
 			assert.NoError(t, err)
 
-			list, err := suite.sut.ListByKind(enums.BridgeKindSlack)
+			list, err := suite.sut.ListByKind(context.Background(), enums.BridgeKindSlack)
 			assert.NoError(t, err)
 			assert.Len(t, list, 2)
 		})

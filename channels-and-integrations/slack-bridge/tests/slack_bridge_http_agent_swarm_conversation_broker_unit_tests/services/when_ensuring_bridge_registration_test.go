@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -82,7 +84,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 			suite := WhenEnsuringBridgeRegistrationBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.Ensure()
+			got, err := suite.sut.Ensure(context.Background())
 			assert.NoError(t, err)
 			assert.Equal(t, suite.bridgeId, got)
 		})
@@ -109,7 +111,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 			suite := WhenEnsuringBridgeRegistrationBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.Ensure()
+			got, err := suite.sut.Ensure(context.Background())
 			assert.NoError(t, err)
 			assert.Equal(t, suite.bridgeId, got)
 		})
@@ -131,7 +133,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 			suite := WhenEnsuringBridgeRegistrationBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Ensure()
+			_, err := suite.sut.Ensure(context.Background())
 
 			assert.Error(t, err)
 		})
@@ -158,7 +160,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 			suite := WhenEnsuringBridgeRegistrationBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Ensure()
+			_, err := suite.sut.Ensure(context.Background())
 
 			assert.Error(t, err)
 		})
@@ -183,7 +185,7 @@ func TestWhenEnsuringBridgeRegistration(t *testing.T) {
 			suite := WhenEnsuringBridgeRegistrationBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Ensure()
+			_, err := suite.sut.Ensure(context.Background())
 
 			assert.Error(t, err)
 		})

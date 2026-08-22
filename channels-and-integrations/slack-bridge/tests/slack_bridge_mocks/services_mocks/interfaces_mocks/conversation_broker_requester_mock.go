@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/google/uuid"
@@ -41,103 +42,103 @@ func (m *MockConversationBrokerRequesterInterface) EXPECT() *MockConversationBro
 }
 
 // AttachParticipant mocks base method.
-func (m *MockConversationBrokerRequesterInterface) AttachParticipant(conversationId, participantId uuid.UUID) error {
+func (m *MockConversationBrokerRequesterInterface) AttachParticipant(ctx context.Context, conversationId, participantId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachParticipant", conversationId, participantId)
+	ret := m.ctrl.Call(m, "AttachParticipant", ctx, conversationId, participantId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachParticipant indicates an expected call of AttachParticipant.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) AttachParticipant(conversationId, participantId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) AttachParticipant(ctx, conversationId, participantId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachParticipant", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).AttachParticipant), conversationId, participantId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachParticipant", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).AttachParticipant), ctx, conversationId, participantId)
 }
 
 // DetachParticipant mocks base method.
-func (m *MockConversationBrokerRequesterInterface) DetachParticipant(conversationId, participantId uuid.UUID) error {
+func (m *MockConversationBrokerRequesterInterface) DetachParticipant(ctx context.Context, conversationId, participantId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DetachParticipant", conversationId, participantId)
+	ret := m.ctrl.Call(m, "DetachParticipant", ctx, conversationId, participantId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DetachParticipant indicates an expected call of DetachParticipant.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) DetachParticipant(conversationId, participantId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) DetachParticipant(ctx, conversationId, participantId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachParticipant", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).DetachParticipant), conversationId, participantId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachParticipant", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).DetachParticipant), ctx, conversationId, participantId)
 }
 
 // ForceConcludeConversation mocks base method.
-func (m *MockConversationBrokerRequesterInterface) ForceConcludeConversation(conversationId uuid.UUID) error {
+func (m *MockConversationBrokerRequesterInterface) ForceConcludeConversation(ctx context.Context, conversationId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ForceConcludeConversation", conversationId)
+	ret := m.ctrl.Call(m, "ForceConcludeConversation", ctx, conversationId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ForceConcludeConversation indicates an expected call of ForceConcludeConversation.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ForceConcludeConversation(conversationId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ForceConcludeConversation(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceConcludeConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ForceConcludeConversation), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceConcludeConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ForceConcludeConversation), ctx, conversationId)
 }
 
 // IngestMessage mocks base method.
-func (m *MockConversationBrokerRequesterInterface) IngestMessage(conversationId, participantId uuid.UUID, content string) (uuid.UUID, error) {
+func (m *MockConversationBrokerRequesterInterface) IngestMessage(ctx context.Context, conversationId, participantId uuid.UUID, content string) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IngestMessage", conversationId, participantId, content)
+	ret := m.ctrl.Call(m, "IngestMessage", ctx, conversationId, participantId, content)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IngestMessage indicates an expected call of IngestMessage.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) IngestMessage(conversationId, participantId, content any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) IngestMessage(ctx, conversationId, participantId, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IngestMessage", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).IngestMessage), conversationId, participantId, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IngestMessage", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).IngestMessage), ctx, conversationId, participantId, content)
 }
 
 // RegisterAgent mocks base method.
-func (m *MockConversationBrokerRequesterInterface) RegisterAgent(collectionAddress string, collectionTokenId uint64) (uuid.UUID, error) {
+func (m *MockConversationBrokerRequesterInterface) RegisterAgent(ctx context.Context, collectionAddress string, collectionTokenId uint64) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterAgent", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "RegisterAgent", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegisterAgent indicates an expected call of RegisterAgent.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterAgent(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterAgent(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterAgent), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterAgent), ctx, collectionAddress, collectionTokenId)
 }
 
 // RegisterConversation mocks base method.
-func (m *MockConversationBrokerRequesterInterface) RegisterConversation(bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
+func (m *MockConversationBrokerRequesterInterface) RegisterConversation(ctx context.Context, bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterConversation", bridgeId, description, participantIds)
+	ret := m.ctrl.Call(m, "RegisterConversation", ctx, bridgeId, description, participantIds)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegisterConversation indicates an expected call of RegisterConversation.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterConversation(bridgeId, description, participantIds any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterConversation(ctx, bridgeId, description, participantIds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterConversation), bridgeId, description, participantIds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterConversation), ctx, bridgeId, description, participantIds)
 }
 
 // RegisterUser mocks base method.
-func (m *MockConversationBrokerRequesterInterface) RegisterUser(displayName string) (uuid.UUID, error) {
+func (m *MockConversationBrokerRequesterInterface) RegisterUser(ctx context.Context, displayName string) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterUser", displayName)
+	ret := m.ctrl.Call(m, "RegisterUser", ctx, displayName)
 	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RegisterUser indicates an expected call of RegisterUser.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterUser(displayName any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) RegisterUser(ctx, displayName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterUser), displayName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).RegisterUser), ctx, displayName)
 }

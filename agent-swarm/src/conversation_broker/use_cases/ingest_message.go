@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
@@ -14,7 +16,7 @@ import (
 )
 
 type IngestMessageInterface interface {
-	Ingest(request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error)
+	Ingest(ctx context.Context, request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error)
 }
 
 type IngestMessage struct {
@@ -39,13 +41,14 @@ func NewIngestMessage(
 }
 
 func (uc *IngestMessage) Ingest(
+	ctx context.Context,
 	request *requests.IngestMessageRequest,
 ) (*responses.ConversationMessageResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
@@ -53,7 +56,7 @@ func (uc *IngestMessage) Ingest(
 		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
-	participant, err := uc.participantRepository.GetById(request.ParticipantID)
+	participant, err := uc.participantRepository.GetById(ctx, request.ParticipantID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load participant: %w", err)
 	}
@@ -61,7 +64,7 @@ func (uc *IngestMessage) Ingest(
 		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 
-	humanAuthored, err := uc.isHumanAuthored(participant)
+	humanAuthored, err := uc.isHumanAuthored(ctx, participant)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +74,7 @@ func (uc *IngestMessage) Ingest(
 		now := time.Now()
 		conversation.Status = enums.ConversationStatusActive
 		conversation.UnconcludedAt = &now
-		if _, err := uc.conversationRepository.Save(conversation); err != nil {
+		if _, err := uc.conversationRepository.Save(ctx, conversation); err != nil {
 			return nil, fmt.Errorf("failed to reopen concluded conversation: %w", err)
 		}
 	}
@@ -82,7 +85,7 @@ func (uc *IngestMessage) Ingest(
 		Content:        request.Content,
 	}
 
-	saved, err := uc.conversationMessageRepository.Save(message)
+	saved, err := uc.conversationMessageRepository.Save(ctx, message)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save message: %w", err)
 	}
@@ -90,8 +93,8 @@ func (uc *IngestMessage) Ingest(
 }
 
 // isHumanAuthored covers plain users and the agent NFTs a person holds themselves.
-func (uc *IngestMessage) isHumanAuthored(participant *models.Participant) (bool, error) {
-	role, err := uc.participantRoleResolver.Resolve(participant)
+func (uc *IngestMessage) isHumanAuthored(ctx context.Context, participant *models.Participant) (bool, error) {
+	role, err := uc.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
 		return false, err
 	}

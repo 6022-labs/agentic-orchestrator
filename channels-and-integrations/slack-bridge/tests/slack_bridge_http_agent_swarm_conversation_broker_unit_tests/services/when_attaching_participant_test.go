@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -67,7 +69,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			suite := WhenAttachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.NoError(t, suite.sut.AttachParticipant(conversationId, participantId))
+			assert.NoError(t, suite.sut.AttachParticipant(context.Background(), conversationId, participantId))
 		})
 	})
 
@@ -90,7 +92,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			suite := WhenAttachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.AttachParticipant(uuid.New(), uuid.New()))
+			assert.Error(t, suite.sut.AttachParticipant(context.Background(), uuid.New(), uuid.New()))
 		})
 	})
 
@@ -110,7 +112,7 @@ func TestWhenAttachingParticipant(t *testing.T) {
 			suite := WhenAttachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.AttachParticipant(uuid.New(), uuid.New()))
+			assert.Error(t, suite.sut.AttachParticipant(context.Background(), uuid.New(), uuid.New()))
 		})
 	})
 }

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services"
@@ -36,7 +38,7 @@ func TestWhenIssuingWalletOwnershipChallenge(t *testing.T) {
 
 		initSuite := func(suite *WhenIssuingWalletOwnershipChallengeTestingSuite, userId string) {
 			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), userId, gomock.Any()).
+				Store(gomock.Any(), gomock.Any(), userId, gomock.Any()).
 				Return(assert.AnError)
 		}
 
@@ -49,7 +51,7 @@ func TestWhenIssuingWalletOwnershipChallenge(t *testing.T) {
 
 			initSuite(suite, userId)
 
-			_, err := suite.sut.IssueChallenge(userId)
+			_, err := suite.sut.IssueChallenge(context.Background(), userId)
 
 			assert.Error(t, err)
 		})
@@ -60,7 +62,7 @@ func TestWhenIssuingWalletOwnershipChallenge(t *testing.T) {
 
 		initSuite := func(suite *WhenIssuingWalletOwnershipChallengeTestingSuite, userId string) {
 			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), userId, gomock.Any()).
+				Store(gomock.Any(), gomock.Any(), userId, gomock.Any()).
 				Return(nil)
 		}
 
@@ -73,7 +75,7 @@ func TestWhenIssuingWalletOwnershipChallenge(t *testing.T) {
 
 			initSuite(suite, userId)
 
-			nonce, err := suite.sut.IssueChallenge(userId)
+			nonce, err := suite.sut.IssueChallenge(context.Background(), userId)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, nonce)

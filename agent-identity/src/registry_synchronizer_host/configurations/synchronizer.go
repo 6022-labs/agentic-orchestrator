@@ -1,6 +1,8 @@
 package configurations
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
@@ -40,25 +42,25 @@ func NewSynchronizer(
 	}
 }
 
-func (app *Synchronizer) Start() error {
+func (app *Synchronizer) Start(ctx context.Context) error {
 	for _, listener := range app.eventListeners {
-		if err := listener.SubscribeAll(); err != nil {
+		if err := listener.SubscribeAll(ctx); err != nil {
 			return fmt.Errorf("failed to subscribe listener: %w", err)
 		}
 
 		go func(listener registry_synchronizer_listeners.EventListenerInterface) {
-			if err := listener.Listen(); err != nil {
+			if err := listener.Listen(ctx); err != nil {
 				app.logger.Error("Listener stopped", zap.Error(err))
 				panic(err)
 			}
 		}(listener)
 	}
 
-	err := app.blockEventsGapEnqueuer.EnqueueGap()
+	err := app.blockEventsGapEnqueuer.EnqueueGap(ctx)
 	if err != nil {
 		app.logger.Error("Error syncing", zap.Error(err))
 		return err
 	}
 
-	return app.blockEventsDequeueDaemon.Start()
+	return app.blockEventsDequeueDaemon.Start(ctx)
 }

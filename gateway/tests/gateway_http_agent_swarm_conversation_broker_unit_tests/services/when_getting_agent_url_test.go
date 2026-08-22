@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -54,7 +56,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
+			result, err := suite.sut.GetAgentUrl(context.Background(), "ada.experts.80002.6022.eth")
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -82,7 +84,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
+			result, err := suite.sut.GetAgentUrl(context.Background(), "ada.experts.80002.6022.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -105,7 +107,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentUrl("ada.experts.80002.6022.eth")
+			result, err := suite.sut.GetAgentUrl(context.Background(), "ada.experts.80002.6022.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

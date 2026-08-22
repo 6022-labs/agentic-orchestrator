@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockUpdateConversationDescriptionInterface) EXPECT() *MockUpdateConvers
 }
 
 // Update mocks base method.
-func (m *MockUpdateConversationDescriptionInterface) Update(request *requests.UpdateConversationDescriptionRequest) error {
+func (m *MockUpdateConversationDescriptionInterface) Update(ctx context.Context, request *requests.UpdateConversationDescriptionRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", request)
+	ret := m.ctrl.Call(m, "Update", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUpdateConversationDescriptionInterfaceMockRecorder) Update(request any) *gomock.Call {
+func (mr *MockUpdateConversationDescriptionInterfaceMockRecorder) Update(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUpdateConversationDescriptionInterface)(nil).Update), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUpdateConversationDescriptionInterface)(nil).Update), ctx, request)
 }

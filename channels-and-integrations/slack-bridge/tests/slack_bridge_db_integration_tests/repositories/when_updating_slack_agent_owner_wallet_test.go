@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -66,7 +68,7 @@ func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {
 			suite := WhenUpdatingSlackAgentOwnerWalletBeforeEach()
 			defer WhenUpdatingSlackAgentOwnerWalletAfterEach(suite)
 
-			err := suite.sut.UpdateOwnerWallet("0x123", 1, "0x456")
+			err := suite.sut.UpdateOwnerWallet(context.Background(), "0x123", 1, "0x456")
 
 			assert.NotNil(t, err)
 		})
@@ -83,17 +85,22 @@ func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {
 
 			slackAgent := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(slackAgent)
+			_, err := suite.sut.Save(context.Background(), slackAgent)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			err = suite.sut.UpdateOwnerWallet(slackAgent.CollectionAddress, slackAgent.CollectionTokenId, "0x456")
+			err = suite.sut.UpdateOwnerWallet(
+				context.Background(),
+				slackAgent.CollectionAddress,
+				slackAgent.CollectionTokenId,
+				"0x456",
+			)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			updatedAgent, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				slackAgent.CollectionAddress,
 				slackAgent.CollectionTokenId,
 			)

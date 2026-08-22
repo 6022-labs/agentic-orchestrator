@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -74,7 +76,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			suite := WhenRegisteringConversationBeforeEach(t)
 			conversationId := initSuite(suite)
 
-			got, err := suite.sut.RegisterConversation(bridgeId, lo.ToPtr("demo"), participantIds)
+			got, err := suite.sut.RegisterConversation(context.Background(), bridgeId, lo.ToPtr("demo"), participantIds)
 
 			assert.NoError(t, err)
 			assert.Equal(t, conversationId, got)
@@ -100,7 +102,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			suite := WhenRegisteringConversationBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterConversation(uuid.New(), nil, nil)
+			got, err := suite.sut.RegisterConversation(context.Background(), uuid.New(), nil, nil)
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)
@@ -123,7 +125,7 @@ func TestWhenRegisteringConversation(t *testing.T) {
 			suite := WhenRegisteringConversationBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterConversation(uuid.New(), nil, nil)
+			got, err := suite.sut.RegisterConversation(context.Background(), uuid.New(), nil, nil)
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)

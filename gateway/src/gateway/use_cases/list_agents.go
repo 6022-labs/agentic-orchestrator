@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"sort"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -9,7 +11,7 @@ import (
 )
 
 type ListAgentsInterface interface {
-	List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error)
+	List(ctx context.Context, request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error)
 }
 
 type ListAgents struct {
@@ -20,10 +22,13 @@ func NewListAgents(agentRegistryRequester interfaces.AgentRegistryRequesterInter
 	return &ListAgents{agentRegistryRequester: agentRegistryRequester}
 }
 
-func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
+func (s *ListAgents) List(
+	ctx context.Context,
+	request *requests.ListAgentsRequest,
+) (*responses.ListAgentsResponse, error) {
 	request.Sanitize()
 
-	registryResponse, err := s.agentRegistryRequester.ListAgents(&interfaces.ListRegistryAgentsRequest{
+	registryResponse, err := s.agentRegistryRequester.ListAgents(ctx, &interfaces.ListRegistryAgentsRequest{
 		Page:            request.Page,
 		SortBy:          request.SortBy.ToDatabaseField(),
 		SortDirection:   request.SortDirection.ToDatabaseDirection(),

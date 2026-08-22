@@ -55,7 +55,7 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c *fiber.Ctx) 
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
-	err := controller.setWalletOwnershipToSlackPlayer.Set(request)
+	err := controller.setWalletOwnershipToSlackPlayer.Set(c.UserContext(), request)
 	if err != nil {
 		if errors.Is(err, requests.ErrValidation) {
 			controller.logger.Warn("Set wallet ownership failed validation", zap.Error(err))

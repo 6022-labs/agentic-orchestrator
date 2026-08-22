@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -33,8 +35,8 @@ func NewX402PaymentChallengeCache(
 	}
 }
 
-func (c *X402PaymentChallengeCache) Read(ensDomain string) (*models.X402PaymentChallenge, bool) {
-	cached, err := c.cacheStorage.Read(c.cachePath(ensDomain))
+func (c *X402PaymentChallengeCache) Read(ctx context.Context, ensDomain string) (*models.X402PaymentChallenge, bool) {
+	cached, err := c.cacheStorage.Read(ctx, c.cachePath(ensDomain))
 	if err != nil {
 		return nil, false
 	}
@@ -46,7 +48,11 @@ func (c *X402PaymentChallengeCache) Read(ensDomain string) (*models.X402PaymentC
 	return &paymentChallenge, true
 }
 
-func (c *X402PaymentChallengeCache) Store(ensDomain string, paymentChallenge *models.X402PaymentChallenge) {
+func (c *X402PaymentChallengeCache) Store(
+	ctx context.Context,
+	ensDomain string,
+	paymentChallenge *models.X402PaymentChallenge,
+) {
 	serialized, err := json.Marshal(paymentChallenge)
 	if err != nil {
 		c.logger.Warn(
@@ -58,7 +64,7 @@ func (c *X402PaymentChallengeCache) Store(ensDomain string, paymentChallenge *mo
 	}
 
 	ttl := time.Duration(c.x402PaymentSettings.ChallengeCacheTtlSeconds) * time.Second
-	if err := c.cacheStorage.Store(c.cachePath(ensDomain), string(serialized), &ttl); err != nil {
+	if err := c.cacheStorage.Store(ctx, c.cachePath(ensDomain), string(serialized), &ttl); err != nil {
 		c.logger.Warn("Failed to cache x402 payment requirements", zap.String("ensDomain", ensDomain), zap.Error(err))
 	}
 }

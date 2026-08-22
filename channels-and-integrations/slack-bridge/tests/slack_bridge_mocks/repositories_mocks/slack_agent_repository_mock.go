@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,59 +42,59 @@ func (m *MockSlackAgentRepositoryInterface) EXPECT() *MockSlackAgentRepositoryIn
 }
 
 // GetByCollectionAddressAndCollectionTokenId mocks base method.
-func (m *MockSlackAgentRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
+func (m *MockSlackAgentRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByCollectionAddressAndCollectionTokenId", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "GetByCollectionAddressAndCollectionTokenId", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.SlackAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByCollectionAddressAndCollectionTokenId indicates an expected call of GetByCollectionAddressAndCollectionTokenId.
-func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) GetByCollectionAddressAndCollectionTokenId(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).GetByCollectionAddressAndCollectionTokenId), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).GetByCollectionAddressAndCollectionTokenId), ctx, collectionAddress, collectionTokenId)
 }
 
 // Save mocks base method.
-func (m *MockSlackAgentRepositoryInterface) Save(entity *models.SlackAgent) (*models.SlackAgent, error) {
+func (m *MockSlackAgentRepositoryInterface) Save(ctx context.Context, entity *models.SlackAgent) (*models.SlackAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.SlackAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).Save), ctx, entity)
 }
 
 // UpdateIconImageCid mocks base method.
-func (m *MockSlackAgentRepositoryInterface) UpdateIconImageCid(collectionAddress string, collectionTokenId uint64, iconImageCid *string) error {
+func (m *MockSlackAgentRepositoryInterface) UpdateIconImageCid(ctx context.Context, collectionAddress string, collectionTokenId uint64, iconImageCid *string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateIconImageCid", collectionAddress, collectionTokenId, iconImageCid)
+	ret := m.ctrl.Call(m, "UpdateIconImageCid", ctx, collectionAddress, collectionTokenId, iconImageCid)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateIconImageCid indicates an expected call of UpdateIconImageCid.
-func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) UpdateIconImageCid(collectionAddress, collectionTokenId, iconImageCid any) *gomock.Call {
+func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) UpdateIconImageCid(ctx, collectionAddress, collectionTokenId, iconImageCid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIconImageCid", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).UpdateIconImageCid), collectionAddress, collectionTokenId, iconImageCid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIconImageCid", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).UpdateIconImageCid), ctx, collectionAddress, collectionTokenId, iconImageCid)
 }
 
 // UpdateOwnerWallet mocks base method.
-func (m *MockSlackAgentRepositoryInterface) UpdateOwnerWallet(collectionAddress string, collectionTokenId uint64, ownerWallet string) error {
+func (m *MockSlackAgentRepositoryInterface) UpdateOwnerWallet(ctx context.Context, collectionAddress string, collectionTokenId uint64, ownerWallet string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOwnerWallet", collectionAddress, collectionTokenId, ownerWallet)
+	ret := m.ctrl.Call(m, "UpdateOwnerWallet", ctx, collectionAddress, collectionTokenId, ownerWallet)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateOwnerWallet indicates an expected call of UpdateOwnerWallet.
-func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) UpdateOwnerWallet(collectionAddress, collectionTokenId, ownerWallet any) *gomock.Call {
+func (mr *MockSlackAgentRepositoryInterfaceMockRecorder) UpdateOwnerWallet(ctx, collectionAddress, collectionTokenId, ownerWallet any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOwnerWallet", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).UpdateOwnerWallet), collectionAddress, collectionTokenId, ownerWallet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOwnerWallet", reflect.TypeOf((*MockSlackAgentRepositoryInterface)(nil).UpdateOwnerWallet), ctx, collectionAddress, collectionTokenId, ownerWallet)
 }

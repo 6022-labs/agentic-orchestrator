@@ -36,6 +36,7 @@ func NewAgentCollectionEventSubscriptionProvider(
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1AgentAttributeUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -50,7 +51,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSub
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,6 +96,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAttributeUpdatedSub
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1AgentImageUpdated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -109,7 +111,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscri
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -154,6 +156,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageUpdatedSubscri
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1AgentImageRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -168,7 +171,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscri
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -213,6 +216,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentImageRemovedSubscri
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1MintProposalCreated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -227,7 +231,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubsc
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -272,6 +276,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalCreatedSubsc
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1MintProposalRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -286,7 +291,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -331,6 +336,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintProposalRemovedSubsc
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1AgentAddressAdded, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -345,7 +351,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscri
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -390,6 +396,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressAddedSubscri
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1AgentAddressRemoved, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -404,7 +411,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubsc
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -449,6 +456,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartAgentAddressRemovedSubsc
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1Minted, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -463,7 +471,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -508,6 +516,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartMintedSubscription(
 }
 
 func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionV1Transfer, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionV1MetaData.GetAbi()
@@ -522,7 +531,7 @@ func (s *AgentCollectionEventSubscriptionProvider) StartTransferSubscription(
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}

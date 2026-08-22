@@ -46,7 +46,7 @@ func (c *RemoteAgentsController) InitRoutes(app fiber.Router) {
 // @Failure 502 {string} string "Bad Gateway"
 // @Router /remote-agents/{ensDomain}/card [get]
 func (c *RemoteAgentsController) GetCard(ctx *fiber.Ctx) error {
-	card, err := c.getRemoteAgentCard.Get(ctx.Params("ensDomain"))
+	card, err := c.getRemoteAgentCard.Get(ctx.UserContext(), ctx.Params("ensDomain"))
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -72,7 +72,7 @@ func (c *RemoteAgentsController) GetUrl(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	url, err := c.resolveAgentUrl.Resolve(request)
+	url, err := c.resolveAgentUrl.Resolve(ctx.UserContext(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

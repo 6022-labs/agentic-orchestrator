@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/google/uuid"
@@ -41,31 +42,31 @@ func (m *MockWalletOwnershipChallengeInterface) EXPECT() *MockWalletOwnershipCha
 }
 
 // ConsumeChallenge mocks base method.
-func (m *MockWalletOwnershipChallengeInterface) ConsumeChallenge(nonce *uuid.UUID) (*string, error) {
+func (m *MockWalletOwnershipChallengeInterface) ConsumeChallenge(ctx context.Context, nonce *uuid.UUID) (*string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsumeChallenge", nonce)
+	ret := m.ctrl.Call(m, "ConsumeChallenge", ctx, nonce)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConsumeChallenge indicates an expected call of ConsumeChallenge.
-func (mr *MockWalletOwnershipChallengeInterfaceMockRecorder) ConsumeChallenge(nonce any) *gomock.Call {
+func (mr *MockWalletOwnershipChallengeInterfaceMockRecorder) ConsumeChallenge(ctx, nonce any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeChallenge", reflect.TypeOf((*MockWalletOwnershipChallengeInterface)(nil).ConsumeChallenge), nonce)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsumeChallenge", reflect.TypeOf((*MockWalletOwnershipChallengeInterface)(nil).ConsumeChallenge), ctx, nonce)
 }
 
 // IssueChallenge mocks base method.
-func (m *MockWalletOwnershipChallengeInterface) IssueChallenge(userId string) (*uuid.UUID, error) {
+func (m *MockWalletOwnershipChallengeInterface) IssueChallenge(ctx context.Context, userId string) (*uuid.UUID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IssueChallenge", userId)
+	ret := m.ctrl.Call(m, "IssueChallenge", ctx, userId)
 	ret0, _ := ret[0].(*uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IssueChallenge indicates an expected call of IssueChallenge.
-func (mr *MockWalletOwnershipChallengeInterfaceMockRecorder) IssueChallenge(userId any) *gomock.Call {
+func (mr *MockWalletOwnershipChallengeInterfaceMockRecorder) IssueChallenge(ctx, userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssueChallenge", reflect.TypeOf((*MockWalletOwnershipChallengeInterface)(nil).IssueChallenge), userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssueChallenge", reflect.TypeOf((*MockWalletOwnershipChallengeInterface)(nil).IssueChallenge), ctx, userId)
 }

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,28 +42,28 @@ func (m *MockX402PaymentChallengeCacheInterface) EXPECT() *MockX402PaymentChalle
 }
 
 // Read mocks base method.
-func (m *MockX402PaymentChallengeCacheInterface) Read(ensDomain string) (*models.X402PaymentChallenge, bool) {
+func (m *MockX402PaymentChallengeCacheInterface) Read(ctx context.Context, ensDomain string) (*models.X402PaymentChallenge, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Read", ensDomain)
+	ret := m.ctrl.Call(m, "Read", ctx, ensDomain)
 	ret0, _ := ret[0].(*models.X402PaymentChallenge)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // Read indicates an expected call of Read.
-func (mr *MockX402PaymentChallengeCacheInterfaceMockRecorder) Read(ensDomain any) *gomock.Call {
+func (mr *MockX402PaymentChallengeCacheInterfaceMockRecorder) Read(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockX402PaymentChallengeCacheInterface)(nil).Read), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockX402PaymentChallengeCacheInterface)(nil).Read), ctx, ensDomain)
 }
 
 // Store mocks base method.
-func (m *MockX402PaymentChallengeCacheInterface) Store(ensDomain string, paymentChallenge *models.X402PaymentChallenge) {
+func (m *MockX402PaymentChallengeCacheInterface) Store(ctx context.Context, ensDomain string, paymentChallenge *models.X402PaymentChallenge) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Store", ensDomain, paymentChallenge)
+	m.ctrl.Call(m, "Store", ctx, ensDomain, paymentChallenge)
 }
 
 // Store indicates an expected call of Store.
-func (mr *MockX402PaymentChallengeCacheInterfaceMockRecorder) Store(ensDomain, paymentChallenge any) *gomock.Call {
+func (mr *MockX402PaymentChallengeCacheInterfaceMockRecorder) Store(ctx, ensDomain, paymentChallenge any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockX402PaymentChallengeCacheInterface)(nil).Store), ensDomain, paymentChallenge)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockX402PaymentChallengeCacheInterface)(nil).Store), ctx, ensDomain, paymentChallenge)
 }

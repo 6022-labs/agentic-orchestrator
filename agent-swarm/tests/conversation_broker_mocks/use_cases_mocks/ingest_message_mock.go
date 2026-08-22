@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockIngestMessageInterface) EXPECT() *MockIngestMessageInterfaceMockRec
 }
 
 // Ingest mocks base method.
-func (m *MockIngestMessageInterface) Ingest(request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error) {
+func (m *MockIngestMessageInterface) Ingest(ctx context.Context, request *requests.IngestMessageRequest) (*responses.ConversationMessageResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Ingest", request)
+	ret := m.ctrl.Call(m, "Ingest", ctx, request)
 	ret0, _ := ret[0].(*responses.ConversationMessageResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Ingest indicates an expected call of Ingest.
-func (mr *MockIngestMessageInterfaceMockRecorder) Ingest(request any) *gomock.Call {
+func (mr *MockIngestMessageInterfaceMockRecorder) Ingest(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ingest", reflect.TypeOf((*MockIngestMessageInterface)(nil).Ingest), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ingest", reflect.TypeOf((*MockIngestMessageInterface)(nil).Ingest), ctx, request)
 }

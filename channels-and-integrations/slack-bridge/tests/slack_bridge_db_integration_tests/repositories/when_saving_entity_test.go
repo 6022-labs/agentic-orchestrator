@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -68,7 +70,7 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
-			createdEntity, err := suite.sut.Save(entityToCreate)
+			createdEntity, err := suite.sut.Save(context.Background(), entityToCreate)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToCreate, createdEntity)
@@ -81,7 +83,7 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			suite.dbClient.GetDB().First(entityToCreate, "id = ?", createdEntity.Id)
 
@@ -100,10 +102,10 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			entityToUpdate := model_builders.NewSlackChannelBuilder().WithId(createdEntity.Id).Build()
-			updatedEntity, err := suite.sut.Save(entityToUpdate)
+			updatedEntity, err := suite.sut.Save(context.Background(), entityToUpdate)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToUpdate, updatedEntity)
@@ -116,10 +118,10 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			entityToUpdate := model_builders.NewSlackChannelBuilder().WithId(createdEntity.Id).Build()
-			suite.sut.Save(entityToUpdate)
+			suite.sut.Save(context.Background(), entityToUpdate)
 
 			suite.dbClient.GetDB().First(entityToCreate, "id = ?", createdEntity.Id)
 

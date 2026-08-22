@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"crypto/rand"
 	"math/big"
 	"testing"
@@ -73,12 +75,12 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 					"mission": "to the moon",
 				}).
 				Build()
-			createdEntity, err := suite.sut.Save(existingEntity)
+			createdEntity, err := suite.sut.Save(context.Background(), existingEntity)
 			if err != nil {
 				t.Errorf("Error creating entity: %v", err)
 			}
 
-			fetchedEntity, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			fetchedEntity, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				createdEntity.CollectionAddress,
 				*createdEntity.CollectionTokenId,
 			)
@@ -109,7 +111,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 			nonExistantCollectionTokenId := nonExistantCollectionTokenIdBigInt.Uint64()
 			nonExistantCollectionAddress := common_tests.RandomEthAddress()
 
-			fetchedEntity, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			fetchedEntity, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				nonExistantCollectionAddress.Hex(),
 				nonExistantCollectionTokenId,
 			)

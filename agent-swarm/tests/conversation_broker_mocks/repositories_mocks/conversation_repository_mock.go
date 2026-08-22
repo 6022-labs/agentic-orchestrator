@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -43,76 +44,76 @@ func (m *MockConversationRepositoryInterface) EXPECT() *MockConversationReposito
 }
 
 // Count mocks base method.
-func (m *MockConversationRepositoryInterface) Count() (uint, error) {
+func (m *MockConversationRepositoryInterface) Count(ctx context.Context) (uint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Count")
+	ret := m.ctrl.Call(m, "Count", ctx)
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Count indicates an expected call of Count.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) Count() *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) Count(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).Count))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).Count), ctx)
 }
 
 // GetById mocks base method.
-func (m *MockConversationRepositoryInterface) GetById(id uuid.UUID) (*models.Conversation, error) {
+func (m *MockConversationRepositoryInterface) GetById(ctx context.Context, id uuid.UUID) (*models.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*models.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).GetById), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).GetById), ctx, id)
 }
 
 // List mocks base method.
-func (m *MockConversationRepositoryInterface) List(page, elementsPerPage uint) ([]*models.Conversation, error) {
+func (m *MockConversationRepositoryInterface) List(ctx context.Context, page, elementsPerPage uint) ([]*models.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", page, elementsPerPage)
+	ret := m.ctrl.Call(m, "List", ctx, page, elementsPerPage)
 	ret0, _ := ret[0].([]*models.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) List(page, elementsPerPage any) *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) List(ctx, page, elementsPerPage any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).List), page, elementsPerPage)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).List), ctx, page, elementsPerPage)
 }
 
 // ListProcessableForParticipant mocks base method.
-func (m *MockConversationRepositoryInterface) ListProcessableForParticipant(participant *models.Participant, role *enums.ParticipantRole, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error) {
+func (m *MockConversationRepositoryInterface) ListProcessableForParticipant(ctx context.Context, participant *models.Participant, role *enums.ParticipantRole, facilitatorTickIntervalSeconds uint64) ([]*models.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListProcessableForParticipant", participant, role, facilitatorTickIntervalSeconds)
+	ret := m.ctrl.Call(m, "ListProcessableForParticipant", ctx, participant, role, facilitatorTickIntervalSeconds)
 	ret0, _ := ret[0].([]*models.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListProcessableForParticipant indicates an expected call of ListProcessableForParticipant.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) ListProcessableForParticipant(participant, role, facilitatorTickIntervalSeconds any) *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) ListProcessableForParticipant(ctx, participant, role, facilitatorTickIntervalSeconds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipant", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).ListProcessableForParticipant), participant, role, facilitatorTickIntervalSeconds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipant", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).ListProcessableForParticipant), ctx, participant, role, facilitatorTickIntervalSeconds)
 }
 
 // Save mocks base method.
-func (m *MockConversationRepositoryInterface) Save(entity *models.Conversation) (*models.Conversation, error) {
+func (m *MockConversationRepositoryInterface) Save(ctx context.Context, entity *models.Conversation) (*models.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockConversationRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockConversationRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConversationRepositoryInterface)(nil).Save), ctx, entity)
 }

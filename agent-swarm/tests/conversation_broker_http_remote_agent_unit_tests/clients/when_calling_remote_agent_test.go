@@ -1,6 +1,8 @@
 package clients_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -74,7 +76,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			card, raw, err := suite.sut.GetWellKnownCard(suite.server.URL + "/")
+			card, raw, err := suite.sut.GetWellKnownCard(context.Background(), suite.server.URL+"/")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "/.well-known/6022", capturedPath)
@@ -106,7 +108,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, _, err := suite.sut.GetWellKnownCard(suite.server.URL)
+			_, _, err := suite.sut.GetWellKnownCard(context.Background(), suite.server.URL)
 
 			assert.Error(t, err)
 		})
@@ -141,7 +143,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			response, err := suite.sut.CreateResponse(
+			response, err := suite.sut.CreateResponse(context.Background(),
 				suite.server.URL+"/api/responses",
 				"agent.eth",
 				&models.ExternalCreateResponseRequest{
@@ -184,7 +186,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.CreateResponse(
+			_, err := suite.sut.CreateResponse(context.Background(),
 				suite.server.URL,
 				"agent.eth",
 				&models.ExternalCreateResponseRequest{},
@@ -216,7 +218,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.CreateResponse(
+			_, err := suite.sut.CreateResponse(context.Background(),
 				suite.server.URL,
 				"agent.eth",
 				&models.ExternalCreateResponseRequest{},
@@ -247,7 +249,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			_, err := suite.sut.CreateResponse(
+			_, err := suite.sut.CreateResponse(context.Background(),
 				suite.server.URL,
 				"agent.eth",
 				&models.ExternalCreateResponseRequest{},
@@ -276,7 +278,7 @@ func TestWhenCallingRemoteAgent(t *testing.T) {
 			defer WhenCallingRemoteAgentAfterEach(suite)
 			initSuite(suite)
 
-			response, err := suite.sut.CreateChatCompletion(
+			response, err := suite.sut.CreateChatCompletion(context.Background(),
 				suite.server.URL,
 				"agent.eth",
 				&models.ExternalChatCompletionRequest{},

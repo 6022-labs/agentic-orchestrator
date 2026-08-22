@@ -38,7 +38,7 @@ func (controller *AgentCollectionController) RegisterRoutes(app fiber.Router) {
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent-collections [get]
 func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) error {
-	collections, err := controller.listAgentCollections.List()
+	collections, err := controller.listAgentCollections.List(c.UserContext())
 	if err != nil {
 		controller.logger.Error("Failed to list agent collections", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

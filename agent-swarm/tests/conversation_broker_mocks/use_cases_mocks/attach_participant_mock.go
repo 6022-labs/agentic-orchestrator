@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockAttachParticipantInterface) EXPECT() *MockAttachParticipantInterfac
 }
 
 // Attach mocks base method.
-func (m *MockAttachParticipantInterface) Attach(request *requests.ConversationParticipantRequest) error {
+func (m *MockAttachParticipantInterface) Attach(ctx context.Context, request *requests.ConversationParticipantRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Attach", request)
+	ret := m.ctrl.Call(m, "Attach", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Attach indicates an expected call of Attach.
-func (mr *MockAttachParticipantInterfaceMockRecorder) Attach(request any) *gomock.Call {
+func (mr *MockAttachParticipantInterfaceMockRecorder) Attach(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Attach", reflect.TypeOf((*MockAttachParticipantInterface)(nil).Attach), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Attach", reflect.TypeOf((*MockAttachParticipantInterface)(nil).Attach), ctx, request)
 }

@@ -15,19 +15,19 @@ func NewRedisStorage(redisClient *redis.Client) *RedisStorage {
 	return &RedisStorage{redisClient: redisClient}
 }
 
-func (rs *RedisStorage) Store(key string, value string, expiration *time.Duration) error {
+func (rs *RedisStorage) Store(ctx context.Context, key string, value string, expiration *time.Duration) error {
 	if expiration == nil {
 		defaultValue := time.Duration(0)
 		expiration = &defaultValue
 	}
 
-	return rs.redisClient.Set(context.Background(), key, value, *expiration).Err()
+	return rs.redisClient.Set(ctx, key, value, *expiration).Err()
 }
 
-func (rs *RedisStorage) Read(key string) (string, error) {
-	return rs.redisClient.Get(context.Background(), key).Result()
+func (rs *RedisStorage) Read(ctx context.Context, key string) (string, error) {
+	return rs.redisClient.Get(ctx, key).Result()
 }
 
-func (rs *RedisStorage) Delete(key string) error {
-	return rs.redisClient.Del(context.Background(), key).Err()
+func (rs *RedisStorage) Delete(ctx context.Context, key string) error {
+	return rs.redisClient.Del(ctx, key).Err()
 }

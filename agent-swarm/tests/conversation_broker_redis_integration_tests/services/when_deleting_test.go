@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_redis/services"
@@ -45,10 +47,10 @@ func TestWhenDeleting(t *testing.T) {
 			defer WhenDeletingAfterEach(suite)
 
 			key := uuid.New().String()
-			err := suite.sut.Store(key, "test-value", nil)
+			err := suite.sut.Store(context.Background(), key, "test-value", nil)
 			assert.Nil(t, err)
 
-			err = suite.sut.Delete(key)
+			err = suite.sut.Delete(context.Background(), key)
 			assert.Nil(t, err)
 		})
 
@@ -59,13 +61,13 @@ func TestWhenDeleting(t *testing.T) {
 			defer WhenDeletingAfterEach(suite)
 
 			key := uuid.New().String()
-			err := suite.sut.Store(key, "test-value", nil)
+			err := suite.sut.Store(context.Background(), key, "test-value", nil)
 			assert.Nil(t, err)
 
-			err = suite.sut.Delete(key)
+			err = suite.sut.Delete(context.Background(), key)
 			assert.Nil(t, err)
 
-			value, err := suite.sut.Read(key)
+			value, err := suite.sut.Read(context.Background(), key)
 			assert.NotNil(t, err)
 			assert.Empty(t, value)
 		})
@@ -81,7 +83,7 @@ func TestWhenDeleting(t *testing.T) {
 			defer WhenDeletingAfterEach(suite)
 
 			key := uuid.New().String()
-			err := suite.sut.Delete(key)
+			err := suite.sut.Delete(context.Background(), key)
 			assert.Nil(t, err)
 		})
 	})

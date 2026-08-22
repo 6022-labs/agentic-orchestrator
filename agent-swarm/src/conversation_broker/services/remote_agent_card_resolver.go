@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -49,11 +51,11 @@ func NewRemoteAgentCardResolver(
 	}
 }
 
-func (r *RemoteAgentCardResolver) ResolveCard(ensDomain string) (*models.RemoteAgentCard, error) {
+func (r *RemoteAgentCardResolver) ResolveCard(ctx context.Context, ensDomain string) (*models.RemoteAgentCard, error) {
 	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 	cachePath := fmt.Sprintf(remoteAgentCardCachePathTemplate, ensDomain)
 
-	if card, ok := r.readCachedCard(cachePath); ok {
+	if card, ok := r.readCachedCard(ctx, cachePath); ok {
 		return card, nil
 	}
 
@@ -62,15 +64,18 @@ func (r *RemoteAgentCardResolver) ResolveCard(ensDomain string) (*models.RemoteA
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if card, ok := r.readCachedCard(cachePath); ok {
+	if card, ok := r.readCachedCard(ctx, cachePath); ok {
 		return card, nil
 	}
 
-	return r.resolveAndCacheCard(ensDomain, cachePath)
+	return r.resolveAndCacheCard(ctx, ensDomain, cachePath)
 }
 
-func (r *RemoteAgentCardResolver) readCachedCard(cachePath string) (*models.RemoteAgentCard, bool) {
-	cached, err := r.cacheStorage.Read(cachePath)
+func (r *RemoteAgentCardResolver) readCachedCard(
+	ctx context.Context,
+	cachePath string,
+) (*models.RemoteAgentCard, bool) {
+	cached, err := r.cacheStorage.Read(ctx, cachePath)
 	if err != nil {
 		return nil, false
 	}
@@ -83,15 +88,16 @@ func (r *RemoteAgentCardResolver) readCachedCard(cachePath string) (*models.Remo
 }
 
 func (r *RemoteAgentCardResolver) resolveAndCacheCard(
+	ctx context.Context,
 	ensDomain string,
 	cachePath string,
 ) (*models.RemoteAgentCard, error) {
-	agentUrl, err := r.agentUrlResolver.ResolveUrl(ensDomain)
+	agentUrl, err := r.agentUrlResolver.ResolveUrl(ctx, ensDomain)
 	if err != nil {
 		return nil, err
 	}
 
-	card, raw, err := r.remoteAgentCardRequester.GetCard(agentUrl)
+	card, raw, err := r.remoteAgentCardRequester.GetCard(ctx, agentUrl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch 6022 card for %s: %w", ensDomain, err)
 	}
@@ -99,13 +105,13 @@ func (r *RemoteAgentCardResolver) resolveAndCacheCard(
 		return nil, fmt.Errorf("no 6022 card served for %s", ensDomain)
 	}
 
-	if err := r.verifySignatures(ensDomain, card, raw); err != nil {
+	if err := r.verifySignatures(ctx, ensDomain, card, raw); err != nil {
 		return nil, err
 	}
 
 	if serialized, err := json.Marshal(card); err == nil {
 		ttl := time.Duration(r.remoteAgentResolutionSettings.CacheTtlSeconds) * time.Second
-		if err := r.cacheStorage.Store(cachePath, string(serialized), &ttl); err != nil {
+		if err := r.cacheStorage.Store(ctx, cachePath, string(serialized), &ttl); err != nil {
 			r.logger.Warn("Failed to cache remote agent card", zap.String("ensDomain", ensDomain), zap.Error(err))
 		}
 	}
@@ -114,14 +120,19 @@ func (r *RemoteAgentCardResolver) resolveAndCacheCard(
 }
 
 // verifySignatures resolves the expected signer only when a claim was made, so unsigned cards cost nothing.
-func (r *RemoteAgentCardResolver) verifySignatures(ensDomain string, card *models.RemoteAgentCard, raw []byte) error {
+func (r *RemoteAgentCardResolver) verifySignatures(
+	ctx context.Context,
+	ensDomain string,
+	card *models.RemoteAgentCard,
+	raw []byte,
+) error {
 	if len(card.Signatures) == 0 {
 		r.logger.Info("Remote agent card carries no signature",
 			zap.String("ensDomain", ensDomain), zap.String("result", "unsigned"))
 		return nil
 	}
 
-	expectedSigner, err := r.resolveExpectedSigner(ensDomain)
+	expectedSigner, err := r.resolveExpectedSigner(ctx, ensDomain)
 	if err != nil {
 		r.logger.Warn("Failed to resolve the expected agent card signer",
 			zap.String("ensDomain", ensDomain), zap.String("result", "anchor_unresolved"), zap.Error(err))
@@ -142,8 +153,8 @@ func (r *RemoteAgentCardResolver) verifySignatures(ensDomain string, card *model
 
 // resolveExpectedSigner reads the wallet the registry holds for the agent; a card claiming a
 // signature we cannot anchor is rejected rather than waved through.
-func (r *RemoteAgentCardResolver) resolveExpectedSigner(ensDomain string) (string, error) {
-	agent, err := r.registryAgentResolver.ResolveByEnsDomain(ensDomain)
+func (r *RemoteAgentCardResolver) resolveExpectedSigner(ctx context.Context, ensDomain string) (string, error) {
+	agent, err := r.registryAgentResolver.ResolveByEnsDomain(ctx, ensDomain)
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve the expected signer for %s: %w", ensDomain, err)
 	}

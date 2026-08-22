@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"sync"
@@ -65,14 +67,17 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(registryAgentEnsCachePath).Return("", errors.New("miss")).Times(2)
+			suite.mockCacheStorage.EXPECT().
+				Read(gomock.Any(), registryAgentEnsCachePath).
+				Return("", errors.New("miss")).
+				Times(2)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain("hermes.agents6022.eth").
+				GetMintedAgentByEnsDomain(gomock.Any(), "hermes.agents6022.eth").
 				Return(registryAgentForTest(), nil).
 				Times(1)
 			suite.mockCacheStorage.EXPECT().
-				Store(registryAgentEnsCachePath, gomock.Any(), gomock.Any()).
-				DoAndReturn(func(key, value string, ttl *time.Duration) error {
+				Store(gomock.Any(), registryAgentEnsCachePath, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
 					assert.Equal(t, 60*time.Second, *ttl)
 					assert.Contains(t, value, "facilitator")
 					return nil
@@ -80,7 +85,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 				Times(1)
 			// One fetch warms the other lookup path too.
 			suite.mockCacheStorage.EXPECT().
-				Store(registryAgentCollectionCachePath, gomock.Any(), gomock.Any()).
+				Store(gomock.Any(), registryAgentCollectionCachePath, gomock.Any(), gomock.Any()).
 				Return(nil).
 				Times(1)
 		}
@@ -91,7 +96,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
 
-			agent, err := suite.sut.ResolveByEnsDomain("hermes.agents6022.eth")
+			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "hermes.agents6022.eth")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "hermes", agent.Name)
@@ -103,7 +108,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
 
-			agent, err := suite.sut.ResolveByEnsDomain("  Hermes.Agents6022.ETH  ")
+			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "  Hermes.Agents6022.ETH  ")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "hermes", agent.Name)
@@ -116,7 +121,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
 			cached, err := json.Marshal(registryAgentForTest())
 			assert.NoError(t, err)
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return(string(cached), nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return(string(cached), nil).Times(1)
 		}
 
 		t.Run("Should serve it without touching the registry", func(t *testing.T) {
@@ -124,9 +129,9 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
-			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Times(0)
+			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			agent, err := suite.sut.ResolveByCollection("0xABC", 1)
+			agent, err := suite.sut.ResolveByCollection(context.Background(), "0xABC", 1)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "hermes", agent.Name)
@@ -137,8 +142,11 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().GetAgent("0xabc", uint64(1)).Return(nil, nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				Return(nil, nil).
+				Times(1)
 		}
 
 		t.Run("Should not cache the miss, so a freshly minted agent is visible at once", func(t *testing.T) {
@@ -146,9 +154,9 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			agent, err := suite.sut.ResolveByCollection("0xabc", 1)
+			agent, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
 
 			assert.NoError(t, err)
 			assert.Nil(t, agent)
@@ -159,9 +167,9 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -171,9 +179,9 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			_, err := suite.sut.ResolveByCollection("0xabc", 1)
+			_, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
 
 			assert.Error(t, err)
 		})
@@ -183,12 +191,15 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("not-json", nil).Times(2)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("not-json", nil).Times(2)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(registryAgentForTest(), nil).
 				Times(1)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil).
+				Times(2)
 		}
 
 		t.Run("Should fall back to a full resolution", func(t *testing.T) {
@@ -197,7 +208,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
 
-			agent, err := suite.sut.ResolveByCollection("0xabc", 1)
+			agent, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "hermes", agent.Name)
@@ -218,8 +229,8 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			misses := make(chan struct{}, 3)
 
 			suite.mockCacheStorage.EXPECT().
-				Read(gomock.Any()).
-				DoAndReturn(func(string) (string, error) {
+				Read(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(context.Context, string) (string, error) {
 					storeMutex.Lock()
 					defer storeMutex.Unlock()
 					if stored == "" {
@@ -230,15 +241,15 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 				}).
 				AnyTimes()
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(string, uint64) (*models.RegistryAgent, error) {
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(context.Context, string, uint64) (*models.RegistryAgent, error) {
 					<-release
 					return registryAgentForTest(), nil
 				}).
 				Times(1)
 			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any()).
-				DoAndReturn(func(key, value string, ttl *time.Duration) error {
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
 					storeMutex.Lock()
 					defer storeMutex.Unlock()
 					stored = value
@@ -252,7 +263,7 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 				wg.Add(1)
 				go func(i int) {
 					defer wg.Done()
-					agent, err := suite.sut.ResolveByCollection("0xabc", 1)
+					agent, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
 					assert.NoError(t, err)
 					results[i] = agent
 				}(i)
@@ -282,8 +293,8 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			var mutex sync.Mutex
 			store := map[string]string{}
 			suite.mockCacheStorage.EXPECT().
-				Read(gomock.Any()).
-				DoAndReturn(func(key string) (string, error) {
+				Read(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key string) (string, error) {
 					mutex.Lock()
 					defer mutex.Unlock()
 					if value, ok := store[key]; ok {
@@ -293,8 +304,8 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 				}).
 				AnyTimes()
 			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any()).
-				DoAndReturn(func(key, value string, ttl *time.Duration) error {
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
 					mutex.Lock()
 					defer mutex.Unlock()
 					store[key] = value
@@ -303,15 +314,15 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 				AnyTimes()
 
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain("hermes.agents6022.eth").
+				GetMintedAgentByEnsDomain(gomock.Any(), "hermes.agents6022.eth").
 				Return(registryAgentForTest(), nil).
 				Times(1)
-			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any()).Times(0)
+			suite.mockAgentRegistryRequester.EXPECT().GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			byEns, err := suite.sut.ResolveByEnsDomain("hermes.agents6022.eth")
+			byEns, err := suite.sut.ResolveByEnsDomain(context.Background(), "hermes.agents6022.eth")
 			assert.NoError(t, err)
 
-			byCollection, err := suite.sut.ResolveByCollection("0xABC", 1)
+			byCollection, err := suite.sut.ResolveByCollection(context.Background(), "0xABC", 1)
 			assert.NoError(t, err)
 
 			assert.Equal(t, byEns.Name, byCollection.Name)

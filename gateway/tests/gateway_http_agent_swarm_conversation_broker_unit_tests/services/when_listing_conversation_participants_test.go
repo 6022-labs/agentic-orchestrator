@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	stderrors "errors"
 	"net/http"
 	"testing"
@@ -65,7 +67,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			conversationId := uuid.New()
 			participantId := initSuite(suite, conversationId)
 
-			result, err := suite.sut.ListConversationParticipants(conversationId)
+			result, err := suite.sut.ListConversationParticipants(context.Background(), conversationId)
 
 			assert.NoError(t, err)
 			if assert.Len(t, result, 1) {
@@ -100,7 +102,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.ListConversationParticipants(conversationId)
+			result, err := suite.sut.ListConversationParticipants(context.Background(), conversationId)
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
@@ -128,7 +130,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.ListConversationParticipants(conversationId)
+			result, err := suite.sut.ListConversationParticipants(context.Background(), conversationId)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -152,7 +154,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.ListConversationParticipants(conversationId)
+			result, err := suite.sut.ListConversationParticipants(context.Background(), conversationId)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

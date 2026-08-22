@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -42,46 +43,46 @@ func (m *MockAgentPromptTemplateRepositoryInterface) EXPECT() *MockAgentPromptTe
 }
 
 // GetByAgentAndKey mocks base method.
-func (m *MockAgentPromptTemplateRepositoryInterface) GetByAgentAndKey(collectionAddress string, collectionTokenId uint64, key enums.AgentPromptTemplateKey) (*models.AgentPromptTemplate, error) {
+func (m *MockAgentPromptTemplateRepositoryInterface) GetByAgentAndKey(ctx context.Context, collectionAddress string, collectionTokenId uint64, key enums.AgentPromptTemplateKey) (*models.AgentPromptTemplate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByAgentAndKey", collectionAddress, collectionTokenId, key)
+	ret := m.ctrl.Call(m, "GetByAgentAndKey", ctx, collectionAddress, collectionTokenId, key)
 	ret0, _ := ret[0].(*models.AgentPromptTemplate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByAgentAndKey indicates an expected call of GetByAgentAndKey.
-func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) GetByAgentAndKey(collectionAddress, collectionTokenId, key any) *gomock.Call {
+func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) GetByAgentAndKey(ctx, collectionAddress, collectionTokenId, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByAgentAndKey", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).GetByAgentAndKey), collectionAddress, collectionTokenId, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByAgentAndKey", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).GetByAgentAndKey), ctx, collectionAddress, collectionTokenId, key)
 }
 
 // ListByAgent mocks base method.
-func (m *MockAgentPromptTemplateRepositoryInterface) ListByAgent(collectionAddress string, collectionTokenId uint64) ([]*models.AgentPromptTemplate, error) {
+func (m *MockAgentPromptTemplateRepositoryInterface) ListByAgent(ctx context.Context, collectionAddress string, collectionTokenId uint64) ([]*models.AgentPromptTemplate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByAgent", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "ListByAgent", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].([]*models.AgentPromptTemplate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListByAgent indicates an expected call of ListByAgent.
-func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) ListByAgent(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) ListByAgent(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAgent", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).ListByAgent), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAgent", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).ListByAgent), ctx, collectionAddress, collectionTokenId)
 }
 
 // Save mocks base method.
-func (m *MockAgentPromptTemplateRepositoryInterface) Save(entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
+func (m *MockAgentPromptTemplateRepositoryInterface) Save(ctx context.Context, entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.AgentPromptTemplate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockAgentPromptTemplateRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentPromptTemplateRepositoryInterface)(nil).Save), ctx, entity)
 }

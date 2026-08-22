@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"strings"
 	"testing"
@@ -79,13 +81,13 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
 				Return(agent, nil).
 				Times(1)
 
 			suite.agentCollectionBlockchainRequesterMock.
 				EXPECT().
-				GetAgentInformation(collectionAddress, gomock.Any()).
+				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{Addresses: []abi.AgentAddress{
 					{AddressType: "btc", Value: "bc1qexampleonly"},
 				}}, nil).
@@ -93,7 +95,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetAllByAgentId(agent.ID).
+				GetAllByAgentId(gomock.Any(), agent.ID).
 				Return([]*models.AgentAddress{
 					model_builders.NewAgentAddressBuilder().
 						WithAgentId(agent.ID).
@@ -109,7 +111,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				ReplaceAllForAgent(agent.ID, map[enums.AddressType]string{
+				ReplaceAllForAgent(gomock.Any(), agent.ID, map[enums.AddressType]string{
 					enums.AddressTypeBtc: "bc1qexampleonly",
 				}).
 				Return(nil).
@@ -124,7 +126,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAddressRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})
@@ -142,13 +144,13 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
 				Return(agent, nil).
 				Times(1)
 
 			suite.agentCollectionBlockchainRequesterMock.
 				EXPECT().
-				GetAgentInformation(collectionAddress, gomock.Any()).
+				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
 				Return(&abi.AgentInformation{Addresses: []abi.AgentAddress{
 					{AddressType: "btc", Value: "bc1qexampleonly"},
 					{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
@@ -157,7 +159,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetAllByAgentId(agent.ID).
+				GetAllByAgentId(gomock.Any(), agent.ID).
 				Return([]*models.AgentAddress{
 					model_builders.NewAgentAddressBuilder().
 						WithAgentId(agent.ID).
@@ -180,7 +182,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAddressRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})
@@ -195,7 +197,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
 				Return(nil, assert.AnError).
 				Times(1)
 
@@ -208,7 +210,7 @@ func TestWhenHandlingAgentAddressRemovedEvent(t *testing.T) {
 			suite := WhenHandlingAgentAddressRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to get agent by collection")

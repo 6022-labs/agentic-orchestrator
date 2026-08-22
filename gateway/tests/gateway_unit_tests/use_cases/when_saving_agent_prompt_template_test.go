@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -57,7 +59,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			request.Content = " "
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -68,7 +70,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockConversationBrokerRequester.EXPECT().
-				SaveAgentPromptTemplate("0xabc", uint64(1), "clone-system", request.Content).
+				SaveAgentPromptTemplate(gomock.Any(), "0xabc", uint64(1), "clone-system", request.Content).
 				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: request.Content}, nil).
 				Times(1)
 		}
@@ -80,7 +82,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request)
 
-			response, err := suite.sut.Save(request)
+			response, err := suite.sut.Save(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, response.Content)
@@ -92,7 +94,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
 			suite.mockConversationBrokerRequester.EXPECT().
-				SaveAgentPromptTemplate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				SaveAgentPromptTemplate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -103,7 +105,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Save(generateValidSaveAgentPromptTemplateRequest())
+			_, err := suite.sut.Save(context.Background(), generateValidSaveAgentPromptTemplateRequest())
 
 			assert.Error(t, err)
 		})

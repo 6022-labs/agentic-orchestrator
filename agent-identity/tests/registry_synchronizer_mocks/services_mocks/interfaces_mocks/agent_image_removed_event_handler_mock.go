@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -41,15 +42,15 @@ func (m *MockAgentImageRemovedEventHandlerInterface) EXPECT() *MockAgentImageRem
 }
 
 // Handle mocks base method.
-func (m *MockAgentImageRemovedEventHandlerInterface) Handle(event *abi.AgentCollectionV1AgentImageRemoved) error {
+func (m *MockAgentImageRemovedEventHandlerInterface) Handle(ctx context.Context, event *abi.AgentCollectionV1AgentImageRemoved) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Handle", event)
+	ret := m.ctrl.Call(m, "Handle", ctx, event)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Handle indicates an expected call of Handle.
-func (mr *MockAgentImageRemovedEventHandlerInterfaceMockRecorder) Handle(event any) *gomock.Call {
+func (mr *MockAgentImageRemovedEventHandlerInterfaceMockRecorder) Handle(ctx, event any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockAgentImageRemovedEventHandlerInterface)(nil).Handle), event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockAgentImageRemovedEventHandlerInterface)(nil).Handle), ctx, event)
 }

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -43,7 +45,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach()
 			defer WhenListingConversationsAfterEach(suite)
 
-			conversations, err := suite.sut.List(1, 10)
+			conversations, err := suite.sut.List(context.Background(), 1, 10)
 
 			assert.NoError(t, err)
 			assert.Empty(t, conversations)
@@ -60,26 +62,26 @@ func TestWhenListingConversations(t *testing.T) {
 			defer WhenListingConversationsAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, err := suite.bridges.Save(bridge)
+			_, err := suite.bridges.Save(context.Background(), bridge)
 			assert.NoError(t, err)
 
 			for i := 0; i < 5; i++ {
 				entity := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-				_, err = suite.sut.Save(entity)
+				_, err = suite.sut.Save(context.Background(), entity)
 				assert.NoError(t, err)
 			}
 
 			// The last saved conversation carries the freshest updated_at.
 			latest := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, err = suite.sut.Save(latest)
+			_, err = suite.sut.Save(context.Background(), latest)
 			assert.NoError(t, err)
 
-			firstPage, err := suite.sut.List(1, 4)
+			firstPage, err := suite.sut.List(context.Background(), 1, 4)
 			assert.NoError(t, err)
 			assert.Len(t, firstPage, 4)
 			assert.Equal(t, latest.ID, firstPage[0].ID)
 
-			secondPage, err := suite.sut.List(2, 4)
+			secondPage, err := suite.sut.List(context.Background(), 2, 4)
 			assert.NoError(t, err)
 			assert.Len(t, secondPage, 2)
 		})

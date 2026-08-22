@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type GetAgentUrlInterface interface {
-	Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentUrlResponse, error)
+	Get(ctx context.Context, request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentUrlResponse, error)
 }
 
 type GetAgentUrl struct {
@@ -28,8 +30,15 @@ func NewGetAgentUrl(
 	}
 }
 
-func (uc *GetAgentUrl) Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentUrlResponse, error) {
-	agent, err := uc.agentRegistryRequester.GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId)
+func (uc *GetAgentUrl) Get(
+	ctx context.Context,
+	request *requests.AgentByCollectionTokenIdRequest,
+) (*responses.AgentUrlResponse, error) {
+	agent, err := uc.agentRegistryRequester.GetAgent(
+		ctx,
+		request.AgentCollectionAddress,
+		request.AgentCollectionTokenId,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load agent: %w", err)
 	}
@@ -40,5 +49,5 @@ func (uc *GetAgentUrl) Get(request *requests.AgentByCollectionTokenIdRequest) (*
 		return nil, errors.NewNotFoundError("agent has no ens domain: " + request.AgentCollectionAddress)
 	}
 
-	return uc.conversationBrokerRequester.GetAgentUrl(agent.EnsDomain)
+	return uc.conversationBrokerRequester.GetAgentUrl(ctx, agent.EnsDomain)
 }

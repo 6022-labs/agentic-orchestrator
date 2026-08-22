@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -68,17 +70,23 @@ func TestWhenGettingAllAgentAddressesByAgentIds(t *testing.T) {
 			firstAgentId := uuid.New()
 			secondAgentId := uuid.New()
 			excludedAgentId := uuid.New()
-			assert.Nil(t, suite.sut.ReplaceAllForAgent(firstAgentId, map[enums.AddressType]string{
+			assert.Nil(t, suite.sut.ReplaceAllForAgent(context.Background(), firstAgentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 			}))
-			assert.Nil(t, suite.sut.ReplaceAllForAgent(secondAgentId, map[enums.AddressType]string{
-				enums.AddressTypeBtc: "bc1qexampleonly",
-			}))
-			assert.Nil(t, suite.sut.ReplaceAllForAgent(excludedAgentId, map[enums.AddressType]string{
-				enums.AddressTypeEvm: "0xead1a8eec112a20a8fc08beb5202aaa6538232df",
-			}))
+			assert.Nil(
+				t,
+				suite.sut.ReplaceAllForAgent(context.Background(), secondAgentId, map[enums.AddressType]string{
+					enums.AddressTypeBtc: "bc1qexampleonly",
+				}),
+			)
+			assert.Nil(
+				t,
+				suite.sut.ReplaceAllForAgent(context.Background(), excludedAgentId, map[enums.AddressType]string{
+					enums.AddressTypeEvm: "0xead1a8eec112a20a8fc08beb5202aaa6538232df",
+				}),
+			)
 
-			rows, err := suite.sut.GetAllByAgentIds([]uuid.UUID{firstAgentId, secondAgentId})
+			rows, err := suite.sut.GetAllByAgentIds(context.Background(), []uuid.UUID{firstAgentId, secondAgentId})
 
 			assert.Nil(t, err)
 			assert.Len(t, rows, 2)

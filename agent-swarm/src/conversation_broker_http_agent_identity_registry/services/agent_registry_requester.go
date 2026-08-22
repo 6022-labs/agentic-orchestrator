@@ -19,11 +19,12 @@ func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *Age
 }
 
 func (r *AgentRegistryRequester) GetAgent(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.RegistryAgent, error) {
 	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
-		context.Background(),
+		ctx,
 		collectionAddress,
 		int(collectionTokenId),
 	)
@@ -41,8 +42,11 @@ func (r *AgentRegistryRequester) GetAgent(
 	return (*mappings.ExternalAgentResponse)(rsp.JSON200).ToRegistryAgent(), nil
 }
 
-func (r *AgentRegistryRequester) GetMintedAgentByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
-	rsp, err := r.client.GetAgentEnsEnsDomainWithResponse(context.Background(), ensDomain)
+func (r *AgentRegistryRequester) GetMintedAgentByEnsDomain(
+	ctx context.Context,
+	ensDomain string,
+) (*models.RegistryAgent, error) {
+	rsp, err := r.client.GetAgentEnsEnsDomainWithResponse(ctx, ensDomain)
 	if err != nil {
 		return nil, err
 	}

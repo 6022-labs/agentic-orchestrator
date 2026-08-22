@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,16 +42,16 @@ func (m *MockRemoteAgentCardResolverInterface) EXPECT() *MockRemoteAgentCardReso
 }
 
 // ResolveCard mocks base method.
-func (m *MockRemoteAgentCardResolverInterface) ResolveCard(ensDomain string) (*models.RemoteAgentCard, error) {
+func (m *MockRemoteAgentCardResolverInterface) ResolveCard(ctx context.Context, ensDomain string) (*models.RemoteAgentCard, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolveCard", ensDomain)
+	ret := m.ctrl.Call(m, "ResolveCard", ctx, ensDomain)
 	ret0, _ := ret[0].(*models.RemoteAgentCard)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResolveCard indicates an expected call of ResolveCard.
-func (mr *MockRemoteAgentCardResolverInterfaceMockRecorder) ResolveCard(ensDomain any) *gomock.Call {
+func (mr *MockRemoteAgentCardResolverInterfaceMockRecorder) ResolveCard(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveCard", reflect.TypeOf((*MockRemoteAgentCardResolverInterface)(nil).ResolveCard), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveCard", reflect.TypeOf((*MockRemoteAgentCardResolverInterface)(nil).ResolveCard), ctx, ensDomain)
 }

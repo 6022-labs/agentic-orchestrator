@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -56,7 +58,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -65,7 +67,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("channelId")
+			_, err := suite.sut.Sync(context.Background(), "channelId")
 			assert.Error(t, err)
 		})
 	})
@@ -75,8 +77,10 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(slackChannel, nil)
-			suite.mockSlackChannelRequester.EXPECT().GetChannelInformation(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(slackChannel, nil)
+			suite.mockSlackChannelRequester.EXPECT().
+				GetChannelInformation(gomock.Any(), gomock.Any()).
+				Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -85,7 +89,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("channelId")
+			_, err := suite.sut.Sync(context.Background(), "channelId")
 			assert.Error(t, err)
 		})
 	})
@@ -94,11 +98,11 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(nil, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(nil, nil)
 			suite.mockSlackChannelRequester.EXPECT().
-				GetChannelInformation(gomock.Any()).
+				GetChannelInformation(gomock.Any(), gomock.Any()).
 				Return(&interfaces.ChannelInformation{IsMember: false}, nil)
-			suite.mockSlackChannelRequester.EXPECT().JoinChannel(gomock.Any()).Return(assert.AnError)
+			suite.mockSlackChannelRequester.EXPECT().JoinChannel(gomock.Any(), gomock.Any()).Return(assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -107,7 +111,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("channelId")
+			_, err := suite.sut.Sync(context.Background(), "channelId")
 			assert.Error(t, err)
 		})
 	})
@@ -117,16 +121,16 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(slackChannel, nil)
 			suite.mockSlackChannelRequester.EXPECT().
-				GetChannelInformation(gomock.Any()).
+				GetChannelInformation(gomock.Any(), gomock.Any()).
 				Return(&interfaces.ChannelInformation{
 					IsMember:    true,
 					Id:          slackChannel.Id,
 					Name:        slackChannel.Name,
 					Description: slackChannel.Description,
 				}, nil)
-			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(nil, assert.AnError)
+			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -135,7 +139,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("channelId")
+			_, err := suite.sut.Sync(context.Background(), "channelId")
 			assert.Error(t, err)
 		})
 	})
@@ -145,9 +149,9 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any()).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), gomock.Any()).Return(slackChannel, nil)
 			suite.mockSlackChannelRequester.EXPECT().
-				GetChannelInformation(gomock.Any()).
+				GetChannelInformation(gomock.Any(), gomock.Any()).
 				Return(&interfaces.ChannelInformation{
 					IsMember:    true,
 					Id:          slackChannel.Id,
@@ -155,7 +159,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 					Description: slackChannel.Description,
 					UserIds:     nil,
 				}, nil)
-			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(slackChannel, nil)
 		}
 
 		t.Run("Should not touch the user repository or the user synchronizer", func(t *testing.T) {
@@ -164,7 +168,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("channelId")
+			_, err := suite.sut.Sync(context.Background(), "channelId")
 			assert.NoError(t, err)
 		})
 	})
@@ -177,9 +181,9 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenSynchronizingSlackChannelTestingSuite) {
 			slackChannel := model_builders.NewSlackChannelBuilder().WithId(channelId).Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(channelId).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), channelId).Return(slackChannel, nil)
 			suite.mockSlackChannelRequester.EXPECT().
-				GetChannelInformation(channelId).
+				GetChannelInformation(gomock.Any(), channelId).
 				Return(&interfaces.ChannelInformation{
 					IsMember:    true,
 					Id:          channelId,
@@ -187,14 +191,16 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 					Description: slackChannel.Description,
 					UserIds:     userIds,
 				}, nil)
-			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any()).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(slackChannel, nil)
 
 			u1 := model_builders.NewSlackUserBuilder().WithId("U1").Build()
 			u2 := model_builders.NewSlackUserBuilder().WithId("U2").Build()
-			suite.mockSlackUserRepository.EXPECT().ListByIds(userIds).Return([]*models.SlackUser{u1, u2}, nil)
+			suite.mockSlackUserRepository.EXPECT().
+				ListByIds(gomock.Any(), userIds).
+				Return([]*models.SlackUser{u1, u2}, nil)
 
-			suite.mockSlackChannelRepository.EXPECT().AddUser(channelId, "U1").Return(nil)
-			suite.mockSlackChannelRepository.EXPECT().AddUser(channelId, "U2").Return(nil)
+			suite.mockSlackChannelRepository.EXPECT().AddUser(gomock.Any(), channelId, "U1").Return(nil)
+			suite.mockSlackChannelRepository.EXPECT().AddUser(gomock.Any(), channelId, "U2").Return(nil)
 		}
 
 		t.Run("Should attach each member synchronously without syncing them from Slack", func(t *testing.T) {
@@ -203,7 +209,7 @@ func TestWhenSynchronizingSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync(channelId)
+			_, err := suite.sut.Sync(context.Background(), channelId)
 			assert.NoError(t, err)
 		})
 	})

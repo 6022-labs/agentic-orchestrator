@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -42,30 +43,30 @@ func (m *MockNonceStoreInterface) EXPECT() *MockNonceStoreInterfaceMockRecorder 
 }
 
 // Consume mocks base method.
-func (m *MockNonceStoreInterface) Consume(address common.Address) *interfaces.ChallengeEntry {
+func (m *MockNonceStoreInterface) Consume(ctx context.Context, address common.Address) *interfaces.ChallengeEntry {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Consume", address)
+	ret := m.ctrl.Call(m, "Consume", ctx, address)
 	ret0, _ := ret[0].(*interfaces.ChallengeEntry)
 	return ret0
 }
 
 // Consume indicates an expected call of Consume.
-func (mr *MockNonceStoreInterfaceMockRecorder) Consume(address any) *gomock.Call {
+func (mr *MockNonceStoreInterfaceMockRecorder) Consume(ctx, address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockNonceStoreInterface)(nil).Consume), address)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockNonceStoreInterface)(nil).Consume), ctx, address)
 }
 
 // Generate mocks base method.
-func (m *MockNonceStoreInterface) Generate(address common.Address, chainId uint64) (*interfaces.ChallengeEntry, error) {
+func (m *MockNonceStoreInterface) Generate(ctx context.Context, address common.Address, chainId uint64) (*interfaces.ChallengeEntry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generate", address, chainId)
+	ret := m.ctrl.Call(m, "Generate", ctx, address, chainId)
 	ret0, _ := ret[0].(*interfaces.ChallengeEntry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Generate indicates an expected call of Generate.
-func (mr *MockNonceStoreInterfaceMockRecorder) Generate(address, chainId any) *gomock.Call {
+func (mr *MockNonceStoreInterfaceMockRecorder) Generate(ctx, address, chainId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockNonceStoreInterface)(nil).Generate), address, chainId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockNonceStoreInterface)(nil).Generate), ctx, address, chainId)
 }

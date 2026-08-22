@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -8,7 +10,7 @@ import (
 )
 
 type GetAuthChallengeInterface interface {
-	Execute(request *requests.GetAuthChallengeRequest) (*responses.GetAuthChallengeResponse, error)
+	Execute(ctx context.Context, request *requests.GetAuthChallengeRequest) (*responses.GetAuthChallengeResponse, error)
 }
 
 type GetAuthChallenge struct {
@@ -27,6 +29,7 @@ func NewGetAuthChallenge(
 }
 
 func (uc *GetAuthChallenge) Execute(
+	ctx context.Context,
 	request *requests.GetAuthChallengeRequest,
 ) (*responses.GetAuthChallengeResponse, error) {
 	if err := request.Validate(); err != nil {
@@ -34,7 +37,7 @@ func (uc *GetAuthChallenge) Execute(
 	}
 
 	address := common.HexToAddress(request.Address)
-	entry, err := uc.nonceStore.Generate(address, request.ChainId)
+	entry, err := uc.nonceStore.Generate(ctx, address, request.ChainId)
 	if err != nil {
 		return nil, err
 	}

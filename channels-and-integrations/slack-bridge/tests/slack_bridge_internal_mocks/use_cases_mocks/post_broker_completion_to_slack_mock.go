@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockPostBrokerCompletionToSlackInterface) EXPECT() *MockPostBrokerCompl
 }
 
 // Post mocks base method.
-func (m *MockPostBrokerCompletionToSlackInterface) Post(request *requests.PostBrokerCompletionToSlackRequest) error {
+func (m *MockPostBrokerCompletionToSlackInterface) Post(ctx context.Context, request *requests.PostBrokerCompletionToSlackRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Post", request)
+	ret := m.ctrl.Call(m, "Post", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Post indicates an expected call of Post.
-func (mr *MockPostBrokerCompletionToSlackInterfaceMockRecorder) Post(request any) *gomock.Call {
+func (mr *MockPostBrokerCompletionToSlackInterfaceMockRecorder) Post(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Post", reflect.TypeOf((*MockPostBrokerCompletionToSlackInterface)(nil).Post), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Post", reflect.TypeOf((*MockPostBrokerCompletionToSlackInterface)(nil).Post), ctx, request)
 }

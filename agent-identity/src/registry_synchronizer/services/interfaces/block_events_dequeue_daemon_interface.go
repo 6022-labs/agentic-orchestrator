@@ -1,6 +1,8 @@
 package interfaces
 
+import "context"
+
 type BlockEventsDequeueDaemonInterface interface {
-	Start() error
+	Start(ctx context.Context) error
 	Stop() error
 }

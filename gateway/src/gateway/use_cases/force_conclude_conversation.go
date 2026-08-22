@@ -1,12 +1,14 @@
 package use_cases
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/google/uuid"
 )
 
 type ForceConcludeConversationInterface interface {
-	Conclude(conversationId uuid.UUID) error
+	Conclude(ctx context.Context, conversationId uuid.UUID) error
 }
 
 type ForceConcludeConversation struct {
@@ -19,6 +21,6 @@ func NewForceConcludeConversation(
 	return &ForceConcludeConversation{conversationBrokerRequester: conversationBrokerRequester}
 }
 
-func (uc *ForceConcludeConversation) Conclude(conversationId uuid.UUID) error {
-	return uc.conversationBrokerRequester.ForceConcludeConversation(conversationId)
+func (uc *ForceConcludeConversation) Conclude(ctx context.Context, conversationId uuid.UUID) error {
+	return uc.conversationBrokerRequester.ForceConcludeConversation(ctx, conversationId)
 }

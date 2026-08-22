@@ -164,7 +164,7 @@ func (controller *EventHandlerController) handleMessageCreatedEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.messageCreatedHandler.Handle(request)
+	err := controller.messageCreatedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -181,7 +181,7 @@ func (controller *EventHandlerController) handleMessageChangedEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.messageChangedHandler.Handle(request)
+	err := controller.messageChangedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -198,7 +198,7 @@ func (controller *EventHandlerController) handleMessageDeletedEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.messageDeletedHandler.Handle(request)
+	err := controller.messageDeletedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -215,7 +215,7 @@ func (controller *EventHandlerController) handleChannelCreatedEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.channelCreatedHandler.Handle(request)
+	err := controller.channelCreatedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -232,7 +232,7 @@ func (controller *EventHandlerController) handleChannelDeletedEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.channelDeletedHandler.Handle(request)
+	err := controller.channelDeletedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -249,7 +249,7 @@ func (controller *EventHandlerController) handleChannelArchiveEvent(c *fiber.Ctx
 		return err
 	}
 
-	err := controller.channelArchiveHandler.Handle(request)
+	err := controller.channelArchiveHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -266,7 +266,7 @@ func (controller *EventHandlerController) handleChannelLeftEvent(c *fiber.Ctx) e
 		return err
 	}
 
-	err := controller.channelLeftHandler.Handle(request)
+	err := controller.channelLeftHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -283,7 +283,7 @@ func (controller *EventHandlerController) handleChannelIdChangedEvent(c *fiber.C
 		return err
 	}
 
-	err := controller.channelIdChangedHandler.Handle(request)
+	err := controller.channelIdChangedHandler.Handle(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -38,19 +40,20 @@ func NewRemoteAgentCompletionsRequester(
 }
 
 func (r *RemoteAgentCompletionsRequester) RequestCompletions(
+	ctx context.Context,
 	card *models.RemoteAgentCard,
 	input *models.RemoteAgentInput,
 ) ([]string, error) {
 	ensDomain := input.Metadata["ensDomain"]
 
 	if card.Endpoints.Responses != "" {
-		return r.requestWithFreeCallRetry(ensDomain, func(paymentSignature string) ([]string, error) {
-			return r.requestResponsesTurn(card.Endpoints.Responses, ensDomain, input, paymentSignature)
+		return r.requestWithFreeCallRetry(ctx, ensDomain, func(paymentSignature string) ([]string, error) {
+			return r.requestResponsesTurn(ctx, card.Endpoints.Responses, ensDomain, input, paymentSignature)
 		})
 	}
 	if card.Endpoints.ChatCompletions != "" {
-		return r.requestWithFreeCallRetry(ensDomain, func(paymentSignature string) ([]string, error) {
-			return r.requestChatCompletionTurn(card.Endpoints.ChatCompletions, ensDomain, input, paymentSignature)
+		return r.requestWithFreeCallRetry(ctx, ensDomain, func(paymentSignature string) ([]string, error) {
+			return r.requestChatCompletionTurn(ctx, card.Endpoints.ChatCompletions, ensDomain, input, paymentSignature)
 		})
 	}
 	return nil, fmt.Errorf("card advertises no endpoint")
@@ -59,10 +62,11 @@ func (r *RemoteAgentCompletionsRequester) RequestCompletions(
 // requestWithFreeCallRetry pre-signs from cache, then after a 402 caches the fresh challenge and retries once
 // signed — unless the node just rejected these exact terms, where a retry would fail identically.
 func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
+	ctx context.Context,
 	ensDomain string,
 	request func(paymentSignature string) ([]string, error),
 ) ([]string, error) {
-	cachedChallenge, _ := r.x402PaymentChallengeCache.Read(ensDomain)
+	cachedChallenge, _ := r.x402PaymentChallengeCache.Read(ctx, ensDomain)
 
 	completions, err := request(r.freeCallHeader(ensDomain, cachedChallenge))
 
@@ -76,7 +80,7 @@ func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
 		r.logger.Warn("free-call x402 retry skipped", zap.String("ensDomain", ensDomain), zap.Error(decodeErr))
 		return nil, err
 	}
-	r.x402PaymentChallengeCache.Store(ensDomain, challenge)
+	r.x402PaymentChallengeCache.Store(ctx, ensDomain, challenge)
 
 	if reflect.DeepEqual(challenge, cachedChallenge) {
 		return nil, err
@@ -147,6 +151,7 @@ func (r *RemoteAgentCompletionsRequester) signFreeCallHeader(
 }
 
 func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(
+	ctx context.Context,
 	endpointUrl, ensDomain string,
 	turn *models.RemoteAgentInput,
 	paymentSignature string,
@@ -160,11 +165,17 @@ func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(
 		}
 	}
 
-	response, err := r.client.CreateResponse(endpointUrl, ensDomain, &http_node_models.ExternalCreateResponseRequest{
-		Instructions: turn.Instructions,
-		Input:        input,
-		Metadata:     turn.Metadata,
-	}, r.requestHeaders(paymentSignature))
+	response, err := r.client.CreateResponse(
+		ctx,
+		endpointUrl,
+		ensDomain,
+		&http_node_models.ExternalCreateResponseRequest{
+			Instructions: turn.Instructions,
+			Input:        input,
+			Metadata:     turn.Metadata,
+		},
+		r.requestHeaders(paymentSignature),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -193,6 +204,7 @@ func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(
 }
 
 func (r *RemoteAgentCompletionsRequester) requestChatCompletionTurn(
+	ctx context.Context,
 	endpointUrl, ensDomain string,
 	turn *models.RemoteAgentInput,
 	paymentSignature string,
@@ -211,7 +223,7 @@ func (r *RemoteAgentCompletionsRequester) requestChatCompletionTurn(
 		})
 	}
 
-	response, err := r.client.CreateChatCompletion(
+	response, err := r.client.CreateChatCompletion(ctx,
 		endpointUrl,
 		ensDomain,
 		&http_node_models.ExternalChatCompletionRequest{

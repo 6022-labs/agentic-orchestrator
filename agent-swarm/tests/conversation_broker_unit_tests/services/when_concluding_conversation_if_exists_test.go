@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -44,7 +46,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 
 		initSuite := func(suite *WhenConcludingConversationIfExistsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversationId).
+				GetById(gomock.Any(), conversationId).
 				Return(nil, nil).
 				Times(1)
 			// No Save expectation — best-effort: missing conversation is a no-op.
@@ -56,7 +58,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 			suite := WhenConcludingConversationIfExistsBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.ConcludeIfExists(conversationId)
+			err := suite.sut.ConcludeIfExists(context.Background(), conversationId)
 
 			assert.NoError(t, err)
 		})
@@ -68,9 +70,12 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenConcludingConversationIfExistsTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -81,7 +86,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 			suite := WhenConcludingConversationIfExistsBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.ConcludeIfExists(conversation.ID)
+			err := suite.sut.ConcludeIfExists(context.Background(), conversation.ID)
 
 			assert.Error(t, err)
 		})
@@ -93,10 +98,13 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenConcludingConversationIfExistsTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.Equal(t, enums.ConversationStatusConcluded, c.Status)
 					assert.NotNil(t, c.ConcludedAt)
 					assert.Nil(t, c.UnconcludedAt)
@@ -111,7 +119,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 			suite := WhenConcludingConversationIfExistsBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.ConcludeIfExists(conversation.ID)
+			err := suite.sut.ConcludeIfExists(context.Background(), conversation.ID)
 
 			assert.NoError(t, err)
 		})
@@ -125,7 +133,11 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 			Build()
 
 		initSuite := func(suite *WhenConcludingConversationIfExistsTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+
 			// No Save expectation — idempotent.
 		}
 
@@ -135,7 +147,7 @@ func TestWhenConcludingConversationIfExists(t *testing.T) {
 			suite := WhenConcludingConversationIfExistsBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.ConcludeIfExists(conversation.ID)
+			err := suite.sut.ConcludeIfExists(context.Background(), conversation.ID)
 
 			assert.NoError(t, err)
 		})

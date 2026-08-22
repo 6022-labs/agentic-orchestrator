@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type ListConversationParticipantsInterface interface {
-	List(request *requests.ConversationIdRequest) ([]*responses.ParticipantResponse, error)
+	List(ctx context.Context, request *requests.ConversationIdRequest) ([]*responses.ParticipantResponse, error)
 }
 
 type ListConversationParticipants struct {
@@ -29,13 +31,14 @@ func NewListConversationParticipants(
 }
 
 func (uc *ListConversationParticipants) List(
+	ctx context.Context,
 	request *requests.ConversationIdRequest,
 ) ([]*responses.ParticipantResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
@@ -43,7 +46,7 @@ func (uc *ListConversationParticipants) List(
 		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
-	participants, err := uc.participantRepository.ListByConversationId(request.ConversationID)
+	participants, err := uc.participantRepository.ListByConversationId(ctx, request.ConversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversation participants: %w", err)
 	}

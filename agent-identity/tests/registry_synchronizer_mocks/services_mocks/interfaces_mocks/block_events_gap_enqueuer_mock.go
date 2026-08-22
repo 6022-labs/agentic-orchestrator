@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,15 +41,15 @@ func (m *MockBlockEventsGapEnqueuerInterface) EXPECT() *MockBlockEventsGapEnqueu
 }
 
 // EnqueueGap mocks base method.
-func (m *MockBlockEventsGapEnqueuerInterface) EnqueueGap() error {
+func (m *MockBlockEventsGapEnqueuerInterface) EnqueueGap(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnqueueGap")
+	ret := m.ctrl.Call(m, "EnqueueGap", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnqueueGap indicates an expected call of EnqueueGap.
-func (mr *MockBlockEventsGapEnqueuerInterfaceMockRecorder) EnqueueGap() *gomock.Call {
+func (mr *MockBlockEventsGapEnqueuerInterfaceMockRecorder) EnqueueGap(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueueGap", reflect.TypeOf((*MockBlockEventsGapEnqueuerInterface)(nil).EnqueueGap))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnqueueGap", reflect.TypeOf((*MockBlockEventsGapEnqueuerInterface)(nil).EnqueueGap), ctx)
 }

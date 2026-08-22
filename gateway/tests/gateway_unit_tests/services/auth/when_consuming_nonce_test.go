@@ -1,6 +1,8 @@
 package auth_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"testing"
@@ -49,7 +51,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
-			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return(string(payload), nil).Times(1)
+			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return(string(payload), nil).Times(1)
 			return suite
 		}
 
@@ -58,7 +60,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 			suite := initSuite()
 
-			entry := suite.sut.Consume(wallet)
+			entry := suite.sut.Consume(context.Background(), wallet)
 
 			if assert.NotNil(t, entry) {
 				assert.Equal(t, stored.Nonce, entry.Nonce)
@@ -74,7 +76,10 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
-			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return("", errors.New("redis: nil")).Times(1)
+			suite.cacheStorageMock.EXPECT().
+				ReadAndDelete(gomock.Any(), cachePath).
+				Return("", errors.New("redis: nil")).
+				Times(1)
 			return suite
 		}
 
@@ -83,7 +88,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 			suite := initSuite()
 
-			assert.Nil(t, suite.sut.Consume(wallet))
+			assert.Nil(t, suite.sut.Consume(context.Background(), wallet))
 		})
 	})
 
@@ -92,7 +97,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
-			suite.cacheStorageMock.EXPECT().ReadAndDelete(cachePath).Return("not-json", nil).Times(1)
+			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return("not-json", nil).Times(1)
 			return suite
 		}
 
@@ -101,7 +106,7 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 			suite := initSuite()
 
-			assert.Nil(t, suite.sut.Consume(wallet))
+			assert.Nil(t, suite.sut.Consume(context.Background(), wallet))
 		})
 	})
 }

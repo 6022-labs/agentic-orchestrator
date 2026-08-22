@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -68,7 +70,7 @@ func TestWhenSavingSlackMessage(t *testing.T) {
 				CreatedAt:       time.Now(),
 			}
 
-			_, err := suite.sut.Save(entity)
+			_, err := suite.sut.Save(context.Background(), entity)
 
 			assert.NoError(t, err)
 		})

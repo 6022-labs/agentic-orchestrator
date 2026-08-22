@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
@@ -41,30 +42,30 @@ func (m *MockSlackChannelRequesterInterface) EXPECT() *MockSlackChannelRequester
 }
 
 // GetChannelInformation mocks base method.
-func (m *MockSlackChannelRequesterInterface) GetChannelInformation(channelId string) (*interfaces.ChannelInformation, error) {
+func (m *MockSlackChannelRequesterInterface) GetChannelInformation(ctx context.Context, channelId string) (*interfaces.ChannelInformation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetChannelInformation", channelId)
+	ret := m.ctrl.Call(m, "GetChannelInformation", ctx, channelId)
 	ret0, _ := ret[0].(*interfaces.ChannelInformation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetChannelInformation indicates an expected call of GetChannelInformation.
-func (mr *MockSlackChannelRequesterInterfaceMockRecorder) GetChannelInformation(channelId any) *gomock.Call {
+func (mr *MockSlackChannelRequesterInterfaceMockRecorder) GetChannelInformation(ctx, channelId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChannelInformation", reflect.TypeOf((*MockSlackChannelRequesterInterface)(nil).GetChannelInformation), channelId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChannelInformation", reflect.TypeOf((*MockSlackChannelRequesterInterface)(nil).GetChannelInformation), ctx, channelId)
 }
 
 // JoinChannel mocks base method.
-func (m *MockSlackChannelRequesterInterface) JoinChannel(channelId string) error {
+func (m *MockSlackChannelRequesterInterface) JoinChannel(ctx context.Context, channelId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JoinChannel", channelId)
+	ret := m.ctrl.Call(m, "JoinChannel", ctx, channelId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // JoinChannel indicates an expected call of JoinChannel.
-func (mr *MockSlackChannelRequesterInterfaceMockRecorder) JoinChannel(channelId any) *gomock.Call {
+func (mr *MockSlackChannelRequesterInterfaceMockRecorder) JoinChannel(ctx, channelId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JoinChannel", reflect.TypeOf((*MockSlackChannelRequesterInterface)(nil).JoinChannel), channelId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JoinChannel", reflect.TypeOf((*MockSlackChannelRequesterInterface)(nil).JoinChannel), ctx, channelId)
 }

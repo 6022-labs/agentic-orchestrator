@@ -1,6 +1,8 @@
 package command_handlers
 
 import (
+	"context"
+
 	"fmt"
 	"net/url"
 
@@ -17,7 +19,7 @@ const (
 )
 
 type VerifyWalletOwnershipInterface interface {
-	Verify(request *requests.VerifyWalletOwnershipRequest) (*string, error)
+	Verify(ctx context.Context, request *requests.VerifyWalletOwnershipRequest) (*string, error)
 }
 
 type VerifyWalletOwnership struct {
@@ -41,18 +43,21 @@ func NewVerifyWalletOwnership(
 	}
 }
 
-func (h *VerifyWalletOwnership) Verify(request *requests.VerifyWalletOwnershipRequest) (*string, error) {
+func (h *VerifyWalletOwnership) Verify(
+	ctx context.Context,
+	request *requests.VerifyWalletOwnershipRequest,
+) (*string, error) {
 	err := request.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	userToVerify, err := h.slackUserSynchronizerCached.Sync(request.UserId)
+	userToVerify, err := h.slackUserSynchronizerCached.Sync(ctx, request.UserId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to sync requester user : %w", err)
 	}
 
-	challenge, err := h.walletOwnershipChallenge.IssueChallenge(userToVerify.Id)
+	challenge, err := h.walletOwnershipChallenge.IssueChallenge(ctx, userToVerify.Id)
 	if err != nil {
 		return nil, err
 	}

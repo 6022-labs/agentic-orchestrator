@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -23,14 +25,17 @@ func NewAgentImageRemovedEventHandler(
 	}
 }
 
-func (handler *AgentImageRemovedEventHandler) Handle(event *abi.AgentCollectionV1AgentImageRemoved) error {
+func (handler *AgentImageRemovedEventHandler) Handle(
+	ctx context.Context,
+	event *abi.AgentCollectionV1AgentImageRemoved,
+) error {
 	handler.logger.Info("Handling AgentImageRemoved event",
 		zap.String("agentCollection", event.Raw.Address.Hex()),
 		zap.Uint64("agentId", event.TokenId.Uint64()),
 		zap.String("key", event.Key.Hex()),
 	)
 
-	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		event.Raw.Address.Hex(),
 		event.TokenId.Uint64(),
 	)
@@ -56,7 +61,7 @@ func (handler *AgentImageRemovedEventHandler) Handle(event *abi.AgentCollectionV
 
 	delete(agent.Images, event.Key.String())
 
-	_, err = handler.agentRepository.Save(agent)
+	_, err = handler.agentRepository.Save(ctx, agent)
 	if err != nil {
 		return fmt.Errorf("failed to update agent: %w", err)
 	}

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,31 +42,31 @@ func (m *MockRegistryAgentResolverInterface) EXPECT() *MockRegistryAgentResolver
 }
 
 // ResolveByCollection mocks base method.
-func (m *MockRegistryAgentResolverInterface) ResolveByCollection(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
+func (m *MockRegistryAgentResolverInterface) ResolveByCollection(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolveByCollection", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "ResolveByCollection", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.RegistryAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResolveByCollection indicates an expected call of ResolveByCollection.
-func (mr *MockRegistryAgentResolverInterfaceMockRecorder) ResolveByCollection(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockRegistryAgentResolverInterfaceMockRecorder) ResolveByCollection(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveByCollection", reflect.TypeOf((*MockRegistryAgentResolverInterface)(nil).ResolveByCollection), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveByCollection", reflect.TypeOf((*MockRegistryAgentResolverInterface)(nil).ResolveByCollection), ctx, collectionAddress, collectionTokenId)
 }
 
 // ResolveByEnsDomain mocks base method.
-func (m *MockRegistryAgentResolverInterface) ResolveByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
+func (m *MockRegistryAgentResolverInterface) ResolveByEnsDomain(ctx context.Context, ensDomain string) (*models.RegistryAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolveByEnsDomain", ensDomain)
+	ret := m.ctrl.Call(m, "ResolveByEnsDomain", ctx, ensDomain)
 	ret0, _ := ret[0].(*models.RegistryAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResolveByEnsDomain indicates an expected call of ResolveByEnsDomain.
-func (mr *MockRegistryAgentResolverInterfaceMockRecorder) ResolveByEnsDomain(ensDomain any) *gomock.Call {
+func (mr *MockRegistryAgentResolverInterfaceMockRecorder) ResolveByEnsDomain(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveByEnsDomain", reflect.TypeOf((*MockRegistryAgentResolverInterface)(nil).ResolveByEnsDomain), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveByEnsDomain", reflect.TypeOf((*MockRegistryAgentResolverInterface)(nil).ResolveByEnsDomain), ctx, ensDomain)
 }

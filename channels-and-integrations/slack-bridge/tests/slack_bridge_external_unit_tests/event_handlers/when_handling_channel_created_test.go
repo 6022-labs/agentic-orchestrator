@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
@@ -53,7 +55,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 		initSuite := func(suite *WhenHandlingChannelCreatedTestingSuite) {
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Times(0)
 		}
 
@@ -64,7 +66,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 
 			initSuite(suite)
 
-			err := suite.sut.Handle(&requests.ChannelCreatedRequest{
+			err := suite.sut.Handle(context.Background(), &requests.ChannelCreatedRequest{
 				Event: requests.ChannelCreatedEvent{
 					Channel: requests.ChannelCreatedEventChannel{
 						Id:   "channel_id",
@@ -83,7 +85,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 		initSuite := func(suite *WhenHandlingChannelCreatedTestingSuite) {
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 		}
 
@@ -94,7 +96,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 
 			initSuite(suite)
 
-			err := suite.sut.Handle(&requests.ChannelCreatedRequest{
+			err := suite.sut.Handle(context.Background(), &requests.ChannelCreatedRequest{
 				Event: requests.ChannelCreatedEvent{
 					Channel: requests.ChannelCreatedEventChannel{
 						Id:   "channel_id",
@@ -113,7 +115,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 		initSuite := func(suite *WhenHandlingChannelCreatedTestingSuite) {
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 		}
 
@@ -124,7 +126,7 @@ func TestWhenHandlingChannelCreated(t *testing.T) {
 
 			initSuite(suite)
 
-			err := suite.sut.Handle(&requests.ChannelCreatedRequest{
+			err := suite.sut.Handle(context.Background(), &requests.ChannelCreatedRequest{
 				Event: requests.ChannelCreatedEvent{
 					Channel: requests.ChannelCreatedEventChannel{
 						Id:   "channel_id",

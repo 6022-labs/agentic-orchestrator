@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -56,7 +58,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			request := generateValidGetAgentPromptTemplateRequest()
 			request.CollectionAddress = ""
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -68,7 +70,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			request := generateValidGetAgentPromptTemplateRequest()
 			request.CollectionTokenId = "abc"
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -80,7 +82,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			request := generateValidGetAgentPromptTemplateRequest()
 			request.Key = "unknown-key"
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -91,7 +93,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -102,7 +104,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -118,7 +120,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey("0xabc", uint64(1), template.Key).
+				GetByAgentAndKey(gomock.Any(), "0xabc", uint64(1), template.Key).
 				Return(template, nil).
 				Times(1)
 		}
@@ -129,7 +131,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
+			got, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, template.ID, got.ID)
@@ -141,7 +143,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -152,7 +154,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.Error(t, err)
 		})

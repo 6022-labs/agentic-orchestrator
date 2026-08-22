@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	stderrors "errors"
 	"net/http"
 	"testing"
@@ -63,7 +65,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+			result, err := suite.sut.GetAgentPromptTemplate(context.Background(), "0xabc", 7, "clone-system")
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -98,7 +100,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+			result, err := suite.sut.GetAgentPromptTemplate(context.Background(), "0xabc", 7, "clone-system")
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
@@ -130,7 +132,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+			result, err := suite.sut.GetAgentPromptTemplate(context.Background(), "0xabc", 7, "clone-system")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -158,7 +160,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgentPromptTemplate("0xabc", 7, "clone-system")
+			result, err := suite.sut.GetAgentPromptTemplate(context.Background(), "0xabc", 7, "clone-system")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

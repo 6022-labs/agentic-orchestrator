@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -68,11 +70,11 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 			firstAgent := model_builders.NewAgentBuilder().Build()
 			secondAgent := model_builders.NewAgentBuilder().Build()
-			suite.sut.Save(firstAgent)
-			suite.sut.Save(secondAgent)
+			suite.sut.Save(context.Background(), firstAgent)
+			suite.sut.Save(context.Background(), secondAgent)
 
 			params := repositories.AgentSearchParamsWithPagination{}
-			agents, err := suite.sut.Search(params)
+			agents, err := suite.sut.Search(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Len(t, agents, 2)
@@ -89,14 +91,14 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 			for i := 0; i < 5; i++ {
 				agent := model_builders.NewAgentBuilder().Build()
-				suite.sut.Save(agent)
+				suite.sut.Save(context.Background(), agent)
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
 				ElementsPerPage: lo.ToPtr(uint(2)),
 				Page:            lo.ToPtr(uint(1)),
 			}
-			agents, err := suite.sut.Search(params)
+			agents, err := suite.sut.Search(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Len(t, agents, 2)
@@ -109,14 +111,14 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 			for i := 0; i < 5; i++ {
 				agent := model_builders.NewAgentBuilder().Build()
-				suite.sut.Save(agent)
+				suite.sut.Save(context.Background(), agent)
 			}
 
 			params := repositories.AgentSearchParamsWithPagination{
 				ElementsPerPage: lo.ToPtr(uint(2)),
 				Page:            lo.ToPtr(uint(2)),
 			}
-			agents, err := suite.sut.Search(params)
+			agents, err := suite.sut.Search(context.Background(), params)
 
 			assert.Nil(t, err)
 			assert.Len(t, agents, 2)
@@ -128,9 +130,9 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 		saveMixedAgents := func(suite *WhenSearchingAgentsTestingSuite) {
 			for i := 0; i < 2; i++ {
-				suite.sut.Save(model_builders.NewAgentBuilder().Build())
+				suite.sut.Save(context.Background(), model_builders.NewAgentBuilder().Build())
 			}
-			suite.sut.Save(model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
+			suite.sut.Save(context.Background(), model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build())
 		}
 
 		t.Run("Given the filter selects minted agents", func(t *testing.T) {
@@ -145,7 +147,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 				params := repositories.AgentSearchParamsWithPagination{
 					AgentSearchParams: repositories.AgentSearchParams{IsMinted: lo.ToPtr(true)},
 				}
-				agents, err := suite.sut.Search(params)
+				agents, err := suite.sut.Search(context.Background(), params)
 
 				assert.Nil(t, err)
 				assert.Len(t, agents, 2)
@@ -164,7 +166,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 				params := repositories.AgentSearchParamsWithPagination{
 					AgentSearchParams: repositories.AgentSearchParams{IsMinted: lo.ToPtr(false)},
 				}
-				agents, err := suite.sut.Search(params)
+				agents, err := suite.sut.Search(context.Background(), params)
 
 				assert.Nil(t, err)
 				assert.Len(t, agents, 1)

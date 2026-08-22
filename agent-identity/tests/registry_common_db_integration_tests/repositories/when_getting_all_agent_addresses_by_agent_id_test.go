@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -67,15 +69,15 @@ func TestWhenGettingAllAgentAddressesByAgentId(t *testing.T) {
 
 			agentId := uuid.New()
 			otherAgentId := uuid.New()
-			assert.Nil(t, suite.sut.ReplaceAllForAgent(agentId, map[enums.AddressType]string{
+			assert.Nil(t, suite.sut.ReplaceAllForAgent(context.Background(), agentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 				enums.AddressTypeBtc: "bc1qexampleonly",
 			}))
-			assert.Nil(t, suite.sut.ReplaceAllForAgent(otherAgentId, map[enums.AddressType]string{
+			assert.Nil(t, suite.sut.ReplaceAllForAgent(context.Background(), otherAgentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0xead1a8eec112a20a8fc08beb5202aaa6538232df",
 			}))
 
-			rows, err := suite.sut.GetAllByAgentId(agentId)
+			rows, err := suite.sut.GetAllByAgentId(context.Background(), agentId)
 
 			assert.Nil(t, err)
 			assert.Len(t, rows, 2)
@@ -92,7 +94,7 @@ func TestWhenGettingAllAgentAddressesByAgentId(t *testing.T) {
 			suite := WhenGettingAllAgentAddressesByAgentIdBeforeEach()
 			defer WhenGettingAllAgentAddressesByAgentIdAfterEach(suite)
 
-			rows, err := suite.sut.GetAllByAgentId(uuid.New())
+			rows, err := suite.sut.GetAllByAgentId(context.Background(), uuid.New())
 
 			assert.Nil(t, err)
 			assert.Empty(t, rows)

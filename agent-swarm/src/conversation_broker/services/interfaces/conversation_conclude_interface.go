@@ -1,6 +1,10 @@
 package interfaces
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // ConversationConcludeInterface marks a conversation as concluded.
 //   - Conclude: returns NotFoundError when the conversation is missing.
@@ -9,6 +13,6 @@ import "github.com/google/uuid"
 // Both are idempotent: an already-concluded conversation is left untouched
 // (preserves the original concluded_at).
 type ConversationConcludeInterface interface {
-	Conclude(conversationId uuid.UUID) error
-	ConcludeIfExists(conversationId uuid.UUID) error
+	Conclude(ctx context.Context, conversationId uuid.UUID) error
+	ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) error
 }

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -60,7 +62,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgent("0xabc", 7)
+			result, err := suite.sut.GetAgent(context.Background(), "0xabc", 7)
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -95,7 +97,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgent("0xabc", 7)
+			result, err := suite.sut.GetAgent(context.Background(), "0xabc", 7)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -121,7 +123,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgent("0xabc", 7)
+			result, err := suite.sut.GetAgent(context.Background(), "0xabc", 7)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -144,7 +146,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetAgent("0xabc", 7)
+			result, err := suite.sut.GetAgent(context.Background(), "0xabc", 7)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

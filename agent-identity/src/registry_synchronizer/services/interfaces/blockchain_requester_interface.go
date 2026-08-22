@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type BlockchainRequesterInterface interface {
-	GetCurrentBlockNumber() (*uint64, error)
+	GetCurrentBlockNumber(ctx context.Context) (*uint64, error)
 }

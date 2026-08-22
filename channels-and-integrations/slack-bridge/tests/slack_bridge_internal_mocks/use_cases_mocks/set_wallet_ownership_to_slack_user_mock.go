@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockSetWalletOwnershipToSlackUserInterface) EXPECT() *MockSetWalletOwne
 }
 
 // Set mocks base method.
-func (m *MockSetWalletOwnershipToSlackUserInterface) Set(request *requests.SetWalletOwnershipToSlackUserRequest) error {
+func (m *MockSetWalletOwnershipToSlackUserInterface) Set(ctx context.Context, request *requests.SetWalletOwnershipToSlackUserRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", request)
+	ret := m.ctrl.Call(m, "Set", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockSetWalletOwnershipToSlackUserInterfaceMockRecorder) Set(request any) *gomock.Call {
+func (mr *MockSetWalletOwnershipToSlackUserInterfaceMockRecorder) Set(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockSetWalletOwnershipToSlackUserInterface)(nil).Set), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockSetWalletOwnershipToSlackUserInterface)(nil).Set), ctx, request)
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"strings"
 
@@ -32,15 +34,15 @@ func NewSlackUserSynchronizer(
 	}
 }
 
-func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
+func (s *SlackUserSynchronizer) Sync(ctx context.Context, id string) (*models.SlackUser, error) {
 	s.logger.Debug("Starting user synchronization", zap.String("id", id))
 
-	existingUserInDatabase, err := s.slackUserRepository.GetById(id)
+	existingUserInDatabase, err := s.slackUserRepository.GetById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	existingUserInSlack, err := s.slackUserRequester.GetUserInformation(id)
+	existingUserInSlack, err := s.slackUserRequester.GetUserInformation(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 	existingUserInDatabase.RealName = existingUserInSlack.RealName
 
 	if existingUserInDatabase.BrokerParticipantId == nil {
-		brokerParticipantId, err := s.conversationBrokerRequester.RegisterUser(
+		brokerParticipantId, err := s.conversationBrokerRequester.RegisterUser(ctx,
 			s.pickDisplayName(existingUserInDatabase),
 		)
 		if err != nil {
@@ -67,7 +69,7 @@ func (s *SlackUserSynchronizer) Sync(id string) (*models.SlackUser, error) {
 		existingUserInDatabase.BrokerParticipantId = &brokerParticipantId
 	}
 
-	saved, err := s.slackUserRepository.Save(existingUserInDatabase)
+	saved, err := s.slackUserRepository.Save(ctx, existingUserInDatabase)
 	if err != nil {
 		return nil, err
 	}

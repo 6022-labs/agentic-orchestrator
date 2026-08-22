@@ -24,6 +24,7 @@ func NewConversationBrokerRequester(client clients.ClientWithResponsesInterface)
 }
 
 func (r *ConversationBrokerRequester) RegisterAgent(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (uuid.UUID, error) {
@@ -36,7 +37,7 @@ func (r *ConversationBrokerRequester) RegisterAgent(
 	}
 
 	rsp, err := r.client.PostParticipantsAgentsWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		jsonContentType,
 		bytes.NewReader(body),
 	)
@@ -55,14 +56,14 @@ func (r *ConversationBrokerRequester) RegisterAgent(
 	return helpers.ParseUuid(payload.Id), nil
 }
 
-func (r *ConversationBrokerRequester) RegisterUser(displayName string) (uuid.UUID, error) {
+func (r *ConversationBrokerRequester) RegisterUser(ctx context.Context, displayName string) (uuid.UUID, error) {
 	body, err := json.Marshal(clients.RequestsRegisterUserRequest{DisplayName: &displayName})
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	rsp, err := r.client.PostParticipantsUsersWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		jsonContentType,
 		bytes.NewReader(body),
 	)
@@ -76,6 +77,7 @@ func (r *ConversationBrokerRequester) RegisterUser(displayName string) (uuid.UUI
 }
 
 func (r *ConversationBrokerRequester) RegisterConversation(
+	ctx context.Context,
 	bridgeId uuid.UUID,
 	description *string,
 	participantIds []uuid.UUID,
@@ -91,7 +93,7 @@ func (r *ConversationBrokerRequester) RegisterConversation(
 	}
 
 	rsp, err := r.client.PostConversationsWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		jsonContentType,
 		bytes.NewReader(body),
 	)
@@ -105,6 +107,7 @@ func (r *ConversationBrokerRequester) RegisterConversation(
 }
 
 func (r *ConversationBrokerRequester) IngestMessage(
+	ctx context.Context,
 	conversationId uuid.UUID,
 	participantId uuid.UUID,
 	content string,
@@ -118,7 +121,7 @@ func (r *ConversationBrokerRequester) IngestMessage(
 	}
 
 	rsp, err := r.client.PostConversationsIdMessagesWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		conversationId.String(),
 		jsonContentType,
 		bytes.NewReader(body),
@@ -132,8 +135,8 @@ func (r *ConversationBrokerRequester) IngestMessage(
 	return helpers.ParseUuid(rsp.JSON201.Id), nil
 }
 
-func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId uuid.UUID) error {
-	rsp, err := r.client.PostConversationsIdForceConcludeWithResponse(context.Background(), conversationId.String())
+func (r *ConversationBrokerRequester) ForceConcludeConversation(ctx context.Context, conversationId uuid.UUID) error {
+	rsp, err := r.client.PostConversationsIdForceConcludeWithResponse(ctx, conversationId.String())
 	if err != nil {
 		return err
 	}
@@ -143,7 +146,11 @@ func (r *ConversationBrokerRequester) ForceConcludeConversation(conversationId u
 	return nil
 }
 
-func (r *ConversationBrokerRequester) AttachParticipant(conversationId uuid.UUID, participantId uuid.UUID) error {
+func (r *ConversationBrokerRequester) AttachParticipant(
+	ctx context.Context,
+	conversationId uuid.UUID,
+	participantId uuid.UUID,
+) error {
 	body, err := json.Marshal(
 		clients.RequestsConversationParticipantRequest{ParticipantId: lo.ToPtr(participantId.String())},
 	)
@@ -152,7 +159,7 @@ func (r *ConversationBrokerRequester) AttachParticipant(conversationId uuid.UUID
 	}
 
 	rsp, err := r.client.PostConversationsIdParticipantsWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		conversationId.String(),
 		jsonContentType,
 		bytes.NewReader(body),
@@ -166,9 +173,13 @@ func (r *ConversationBrokerRequester) AttachParticipant(conversationId uuid.UUID
 	return nil
 }
 
-func (r *ConversationBrokerRequester) DetachParticipant(conversationId uuid.UUID, participantId uuid.UUID) error {
+func (r *ConversationBrokerRequester) DetachParticipant(
+	ctx context.Context,
+	conversationId uuid.UUID,
+	participantId uuid.UUID,
+) error {
 	rsp, err := r.client.DeleteConversationsIdParticipantsParticipantIdWithResponse(
-		context.Background(),
+		ctx,
 		conversationId.String(),
 		participantId.String(),
 	)

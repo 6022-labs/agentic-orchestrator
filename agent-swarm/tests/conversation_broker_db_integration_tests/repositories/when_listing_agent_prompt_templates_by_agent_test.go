@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -42,7 +44,7 @@ func TestWhenListingAgentPromptTemplatesByAgent(t *testing.T) {
 			suite := WhenListingAgentPromptTemplatesByAgentBeforeEach()
 			defer WhenListingAgentPromptTemplatesByAgentAfterEach(suite)
 
-			templates, err := suite.sut.ListByAgent("0xabc", 1)
+			templates, err := suite.sut.ListByAgent(context.Background(), "0xabc", 1)
 
 			assert.NoError(t, err)
 			assert.Empty(t, templates)
@@ -74,14 +76,14 @@ func TestWhenListingAgentPromptTemplatesByAgent(t *testing.T) {
 				WithKey(enums.AgentPromptTemplateKeyCloneSystem).
 				Build()
 
-			_, err := suite.sut.Save(first)
+			_, err := suite.sut.Save(context.Background(), first)
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(second)
+			_, err = suite.sut.Save(context.Background(), second)
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(other)
+			_, err = suite.sut.Save(context.Background(), other)
 			assert.NoError(t, err)
 
-			templates, err := suite.sut.ListByAgent("0xabc", 1)
+			templates, err := suite.sut.ListByAgent(context.Background(), "0xabc", 1)
 
 			assert.NoError(t, err)
 			assert.Len(t, templates, 2)

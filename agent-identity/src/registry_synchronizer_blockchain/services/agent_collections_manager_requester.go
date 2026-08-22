@@ -32,6 +32,7 @@ func NewAgentCollectionsManagerRequester(
 }
 
 func (a *AgentCollectionsManagerRequester) GetAgentCollectionsManagerCollectionCreatedEvent(
+	ctx context.Context,
 	from, to uint64,
 ) ([]*registry_abi.AgentCollectionsManagerCollectionCreated, error) {
 	agentCollectionsManager, err := registry_abi.NewAgentCollectionsManager(
@@ -45,7 +46,7 @@ func (a *AgentCollectionsManagerRequester) GetAgentCollectionsManagerCollectionC
 	iter, err := agentCollectionsManager.FilterCollectionCreated(&bind.FilterOpts{
 		Start:   from,
 		End:     &to,
-		Context: context.Background(),
+		Context: ctx,
 	}, nil)
 	if err != nil {
 		return nil, err

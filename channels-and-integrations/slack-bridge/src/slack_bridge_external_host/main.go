@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"fmt"
 
 	orchestrator_slack_bridge_configurations "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/configurations"
@@ -35,7 +37,7 @@ func main() {
 		hostSettings *settings.HostSettings,
 		bridgeRegistrar interfaces.BridgeRegistrarInterface,
 	) error {
-		if _, err := bridgeRegistrar.Ensure(); err != nil {
+		if _, err := bridgeRegistrar.Ensure(context.Background()); err != nil {
 			return fmt.Errorf("failed to register bridge with conversation broker: %w", err)
 		}
 

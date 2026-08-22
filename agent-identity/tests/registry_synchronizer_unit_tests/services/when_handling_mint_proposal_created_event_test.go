@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"strings"
 	"testing"
@@ -105,7 +107,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 1, 100)
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(100)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(100)).
 				Return(nil, assert.AnError)
 
 			return event
@@ -117,7 +119,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to get mint proposal")
@@ -134,7 +136,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal.Addresses = []abi.AgentAddress{{AddressType: "solana", Value: "unknown-type-value"}}
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(200)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(200)).
 				Return(proposal, nil)
 
 			return event
@@ -146,7 +148,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "no known agent address found")
@@ -163,11 +165,11 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal := newMintProposal(3, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(300)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(300)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(nil, assert.AnError)
 
 			return event
@@ -179,7 +181,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to get agent")
@@ -203,15 +205,15 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(800)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(800)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(model_builders.NewAgentAddressBuilder().WithAgentId(mintedAgent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetById(mintedAgent.ID).
+				GetById(gomock.Any(), mintedAgent.ID).
 				Return(mintedAgent, nil)
 
 			return event
@@ -223,7 +225,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})
@@ -240,15 +242,15 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(900)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(900)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(model_builders.NewAgentAddressBuilder().Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			return event
@@ -260,7 +262,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to get agent by address")
@@ -277,19 +279,19 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal := newMintProposal(5, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(500)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(500)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(nil, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly").
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeBtc, "bc1qexampleonly").
 				Return(nil, nil)
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
-				GetByAddress(collectionAddress.Hex()).
+				GetByAddress(gomock.Any(), collectionAddress.Hex()).
 				Return(model_builders.NewAgentCollectionBuilder().WithName("Genesis").Build(), nil)
 			suite.decentralizedDomainNameBuilderMock.
 				EXPECT().
@@ -297,8 +299,8 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				Return("testagent.genesis.eth")
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
 					assert.Equal(t, collectionAddress.Hex(), saved.CollectionAddress)
 					assert.Equal(t, "TestAgent", saved.Name)
 					assert.Equal(t, "testagent.genesis.eth", saved.EnsDomain)
@@ -312,7 +314,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				})
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				ReplaceAllForAgent(gomock.Any(), map[enums.AddressType]string{
+				ReplaceAllForAgent(gomock.Any(), gomock.Any(), map[enums.AddressType]string{
 					enums.AddressTypeEvm: strings.ToLower(agentWallet.Hex()),
 					enums.AddressTypeBtc: "bc1qexampleonly",
 				}).
@@ -327,7 +329,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event, _ := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})
@@ -347,19 +349,19 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal := newMintProposal(6, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(600)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(600)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetById(agent.ID).
+				GetById(gomock.Any(), agent.ID).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
+				Save(gomock.Any(), agent).
 				Return(nil, assert.AnError)
 
 			return event
@@ -371,7 +373,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to save agent")
@@ -392,20 +394,20 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			proposal := newMintProposal(7, []common.Address{agentWallet})
 			suite.agentCollectionRequesterMock.
 				EXPECT().
-				GetMintProposal(collectionAddress, gomock.Any(), uint64(700)).
+				GetMintProposal(gomock.Any(), collectionAddress, gomock.Any(), uint64(700)).
 				Return(proposal, nil)
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
+				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(agentWallet.Hex())).
 				Return(model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).Build(), nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetById(agent.ID).
+				GetById(gomock.Any(), agent.ID).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
-				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
+				Save(gomock.Any(), agent).
+				DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
 					if assert.NotNil(t, saved.ProposalId) {
 						assert.Equal(t, uint64(7), *saved.ProposalId)
 					}
@@ -413,7 +415,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 				})
 			suite.agentAddressRepositoryMock.
 				EXPECT().
-				ReplaceAllForAgent(agent.ID, map[enums.AddressType]string{
+				ReplaceAllForAgent(gomock.Any(), agent.ID, map[enums.AddressType]string{
 					enums.AddressTypeEvm: strings.ToLower(agentWallet.Hex()),
 					enums.AddressTypeBtc: "bc1qexampleonly",
 				}).
@@ -427,7 +429,7 @@ func TestWhenHandlingMintProposalCreatedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})

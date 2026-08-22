@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -44,7 +46,7 @@ func TestWhenStoring(t *testing.T) {
 			suite := WhenStoringBeforeEach()
 			defer WhenStoringAfterEach(suite)
 
-			err := suite.sut.Store("test-key-1", "test-value", nil)
+			err := suite.sut.Store(context.Background(), "test-key-1", "test-value", nil)
 			assert.Nil(t, err)
 		})
 	})
@@ -60,10 +62,10 @@ func TestWhenStoring(t *testing.T) {
 
 			duration := time.Second
 
-			err := suite.sut.Store("test-key-2", "test-value", &duration)
+			err := suite.sut.Store(context.Background(), "test-key-2", "test-value", &duration)
 			assert.Nil(t, err)
 
-			secret, err := suite.sut.Read("test-key-2")
+			secret, err := suite.sut.Read(context.Background(), "test-key-2")
 			assert.Nil(t, err)
 			assert.Equal(t, "test-value", secret)
 		})
@@ -76,12 +78,12 @@ func TestWhenStoring(t *testing.T) {
 
 			duration := time.Second
 
-			err := suite.sut.Store("test-key-3", "test-value", &duration)
+			err := suite.sut.Store(context.Background(), "test-key-3", "test-value", &duration)
 			assert.Nil(t, err)
 
 			time.Sleep(duration * 2)
 
-			secret, err := suite.sut.Read("test-key-3")
+			secret, err := suite.sut.Read(context.Background(), "test-key-3")
 			assert.NotNil(t, err)
 			assert.Empty(t, secret)
 		})

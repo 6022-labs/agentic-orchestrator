@@ -1,6 +1,8 @@
 package command_handlers
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -12,7 +14,7 @@ import (
 )
 
 type AddAgentToChannelInterface interface {
-	Add(request *requests.AddAgentToChannelRequest) error
+	Add(ctx context.Context, request *requests.AddAgentToChannelRequest) error
 }
 
 type AddAgentToChannel struct {
@@ -39,8 +41,8 @@ func NewAddAgentToChannel(
 	}
 }
 
-func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) error {
-	slackChannel, err := h.slackChannelRepository.GetById(request.ChannelID)
+func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentToChannelRequest) error {
+	slackChannel, err := h.slackChannelRepository.GetById(ctx, request.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to get channel with ID %s: %w", request.ChannelID, err)
 	}
@@ -55,12 +57,12 @@ func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) erro
 		}
 	}
 
-	slackChannel, err = h.slackChannelSynchronizer.Sync(request.ChannelID)
+	slackChannel, err = h.slackChannelSynchronizer.Sync(ctx, request.ChannelID)
 	if err != nil {
 		return err
 	}
 
-	slackAgent, err := h.slackAgentSynchronizer.Sync(request.CollectionAddress, request.CollectionTokenId)
+	slackAgent, err := h.slackAgentSynchronizer.Sync(ctx, request.CollectionAddress, request.CollectionTokenId)
 	if err != nil {
 		return fmt.Errorf("failed to sync agent with collection address %s and token ID %d: %w",
 			request.CollectionAddress,
@@ -73,16 +75,16 @@ func (h *AddAgentToChannel) Add(request *requests.AddAgentToChannelRequest) erro
 			slackAgent.CollectionAddress, slackAgent.CollectionTokenId)
 	}
 
-	if _, err := h.slackChannelRepository.AddAgent(slackChannel, slackAgent); err != nil {
+	if _, err := h.slackChannelRepository.AddAgent(ctx, slackChannel, slackAgent); err != nil {
 		return fmt.Errorf("failed to add agent to channel: %w", err)
 	}
 
-	conversations, err := h.slackConversationRepository.ListByChannelId(request.ChannelID)
+	conversations, err := h.slackConversationRepository.ListByChannelId(ctx, request.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to list slack conversations for channel %s: %w", request.ChannelID, err)
 	}
 	for _, conversation := range conversations {
-		if err := h.conversationBrokerRequester.AttachParticipant(
+		if err := h.conversationBrokerRequester.AttachParticipant(ctx,
 			conversation.BrokerConversationID,
 			*slackAgent.BrokerParticipantId,
 		); err != nil {

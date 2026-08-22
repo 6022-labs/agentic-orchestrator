@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	responses "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/responses"
@@ -41,16 +42,16 @@ func (m *MockGetRemoteAgentCardInterface) EXPECT() *MockGetRemoteAgentCardInterf
 }
 
 // Get mocks base method.
-func (m *MockGetRemoteAgentCardInterface) Get(ensDomain string) (*responses.RemoteAgentCardResponse, error) {
+func (m *MockGetRemoteAgentCardInterface) Get(ctx context.Context, ensDomain string) (*responses.RemoteAgentCardResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ensDomain)
+	ret := m.ctrl.Call(m, "Get", ctx, ensDomain)
 	ret0, _ := ret[0].(*responses.RemoteAgentCardResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockGetRemoteAgentCardInterfaceMockRecorder) Get(ensDomain any) *gomock.Call {
+func (mr *MockGetRemoteAgentCardInterfaceMockRecorder) Get(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetRemoteAgentCardInterface)(nil).Get), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetRemoteAgentCardInterface)(nil).Get), ctx, ensDomain)
 }

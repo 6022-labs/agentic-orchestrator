@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/clients"
 	http_slack_models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_slack/models"
@@ -18,8 +20,8 @@ func NewSlackUserRequester(
 	}
 }
 
-func (s *SlackUserRequester) GetUserInformation(userId string) (*models.SlackUser, error) {
-	userInfoResponse, err := s.client.GetUsersInfo(&http_slack_models.ExternalGetUsersInfoRequest{
+func (s *SlackUserRequester) GetUserInformation(ctx context.Context, userId string) (*models.SlackUser, error) {
+	userInfoResponse, err := s.client.GetUsersInfo(ctx, &http_slack_models.ExternalGetUsersInfoRequest{
 		User: userId,
 	})
 	if err != nil {

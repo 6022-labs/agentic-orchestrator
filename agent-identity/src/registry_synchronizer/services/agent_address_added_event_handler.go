@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"maps"
 
@@ -31,7 +33,10 @@ func NewAgentAddressAddedEventHandler(
 	}
 }
 
-func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV1AgentAddressAdded) error {
+func (handler *AgentAddressAddedEventHandler) Handle(
+	ctx context.Context,
+	event *abi.AgentCollectionV1AgentAddressAdded,
+) error {
 	handler.logger.Info("Handling AgentAddressAdded event",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
@@ -39,7 +44,7 @@ func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV
 		zap.String("value", event.Value),
 	)
 
-	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		event.Raw.Address.Hex(),
 		event.TokenId.Uint64(),
 	)
@@ -54,7 +59,7 @@ func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV
 		)
 	}
 
-	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(
+	agentInformation, err := handler.agentCollectionBlockchainRequester.GetAgentInformation(ctx,
 		event.Raw.Address,
 		*event.TokenId,
 	)
@@ -64,7 +69,7 @@ func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV
 
 	addresses := handler.typedAddresses(agentInformation.Addresses)
 
-	currentRows, err := handler.agentAddressRepository.GetAllByAgentId(agent.ID)
+	currentRows, err := handler.agentAddressRepository.GetAllByAgentId(ctx, agent.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get agent addresses: %w", err)
 	}
@@ -76,7 +81,7 @@ func (handler *AgentAddressAddedEventHandler) Handle(event *abi.AgentCollectionV
 		return nil
 	}
 
-	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(ctx, agent.ID, addresses); err != nil {
 		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 

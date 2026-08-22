@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -33,7 +35,7 @@ func TestWhenGettingAgentOwner(t *testing.T) {
 			suite := WhenGettingAgentOwnerBeforeEach(t)
 			suite.fixture.mintAgent("owned-agent")
 
-			owner, err := suite.sut.GetAgentOwner(suite.fixture.stack.Collection, *big.NewInt(1))
+			owner, err := suite.sut.GetAgentOwner(context.Background(), suite.fixture.stack.Collection, *big.NewInt(1))
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, owner) {
@@ -49,7 +51,7 @@ func TestWhenGettingAgentOwner(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingAgentOwnerBeforeEach(t)
 
-			_, err := suite.sut.GetAgentOwner(suite.fixture.stack.Collection, *big.NewInt(999))
+			_, err := suite.sut.GetAgentOwner(context.Background(), suite.fixture.stack.Collection, *big.NewInt(999))
 
 			assert.Error(t, err)
 		})
@@ -62,7 +64,7 @@ func TestWhenGettingAgentOwner(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingAgentOwnerBeforeEach(t)
 
-			_, err := suite.sut.GetAgentOwner(common_tests.RandomEthAddress(), *big.NewInt(1))
+			_, err := suite.sut.GetAgentOwner(context.Background(), common_tests.RandomEthAddress(), *big.NewInt(1))
 
 			assert.Error(t, err)
 		})

@@ -1,6 +1,8 @@
 package registry_synchronizer_listeners
 
 import (
+	"context"
+
 	"sync"
 
 	"github.com/ethereum/go-ethereum"
@@ -12,7 +14,7 @@ type AbstractUpdatableSubscriptionListener struct {
 	lastBlockSeen    uint64
 	needsRebuild     bool
 
-	rebuildSubscription func() error
+	rebuildSubscription func(ctx context.Context) error
 
 	mu    sync.Mutex
 	errCh chan error
@@ -20,7 +22,7 @@ type AbstractUpdatableSubscriptionListener struct {
 }
 
 func NewAbstractUpdatableSubscriptionListener(
-	rebuildSubscription func() error,
+	rebuildSubscription func(ctx context.Context) error,
 ) *AbstractUpdatableSubscriptionListener {
 	return &AbstractUpdatableSubscriptionListener{
 		oldSubscriptions: []ethereum.Subscription{},
@@ -30,8 +32,17 @@ func NewAbstractUpdatableSubscriptionListener(
 	}
 }
 
-func (l *AbstractUpdatableSubscriptionListener) Listen() error {
-	err := <-l.errCh
+func (l *AbstractUpdatableSubscriptionListener) Listen(ctx context.Context) error {
+	var err error
+	select {
+	case err = <-l.errCh:
+	case <-ctx.Done():
+		// Graceful stop, but a subscription error already queued still wins.
+		select {
+		case err = <-l.errCh:
+		default:
+		}
+	}
 
 	l.mu.Lock()
 	if l.subscription != nil {
@@ -47,7 +58,7 @@ func (l *AbstractUpdatableSubscriptionListener) Listen() error {
 	return err
 }
 
-func (l *AbstractUpdatableSubscriptionListener) OnBlockProcessed(blockNumber uint64) {
+func (l *AbstractUpdatableSubscriptionListener) OnBlockProcessed(ctx context.Context, blockNumber uint64) {
 	l.onBlockSeen(blockNumber)
 
 	l.mu.Lock()
@@ -58,7 +69,7 @@ func (l *AbstractUpdatableSubscriptionListener) OnBlockProcessed(blockNumber uin
 	l.needsRebuild = false
 	l.mu.Unlock()
 
-	if err := l.rebuildSubscription(); err != nil {
+	if err := l.rebuildSubscription(ctx); err != nil {
 		select {
 		case l.errCh <- err:
 		default:

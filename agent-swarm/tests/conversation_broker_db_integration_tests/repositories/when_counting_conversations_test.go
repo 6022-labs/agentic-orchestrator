@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -43,7 +45,7 @@ func TestWhenCountingConversations(t *testing.T) {
 			suite := WhenCountingConversationsBeforeEach()
 			defer WhenCountingConversationsAfterEach(suite)
 
-			count, err := suite.sut.Count()
+			count, err := suite.sut.Count(context.Background())
 
 			assert.NoError(t, err)
 			assert.Equal(t, uint(0), count)
@@ -60,16 +62,16 @@ func TestWhenCountingConversations(t *testing.T) {
 			defer WhenCountingConversationsAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, err := suite.bridges.Save(bridge)
+			_, err := suite.bridges.Save(context.Background(), bridge)
 			assert.NoError(t, err)
 
 			for i := 0; i < 3; i++ {
 				entity := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-				_, err = suite.sut.Save(entity)
+				_, err = suite.sut.Save(context.Background(), entity)
 				assert.NoError(t, err)
 			}
 
-			count, err := suite.sut.Count()
+			count, err := suite.sut.Count(context.Background())
 
 			assert.NoError(t, err)
 			assert.Equal(t, uint(3), count)

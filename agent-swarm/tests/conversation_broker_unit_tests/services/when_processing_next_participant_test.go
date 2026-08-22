@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -70,7 +72,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -82,7 +84,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			initSuite(suite)
 
 			// No panics, no further interactions — mock controller enforces it.
-			suite.sut.Tick()
+			suite.sut.Tick(context.Background())
 		})
 	})
 
@@ -93,27 +95,27 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(participant).
+				Resolve(gomock.Any(), participant).
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(p *models.Participant) (*models.Participant, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
 					assert.True(t, p.IsProcessing)
 					return p, nil
 				}).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
+				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(p *models.Participant) (*models.Participant, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
 					assert.False(t, p.IsProcessing)
 					assert.NotNil(t, p.LastProcessedAt)
 					return p, nil
@@ -127,7 +129,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
 
-			suite.sut.Tick()
+			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()
 		})
 	})
@@ -141,21 +143,27 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(participant).
+				Resolve(gomock.Any(), participant).
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
+				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv1, conv2}, nil).
 				Times(1)
-			suite.mockConversationProcessor.EXPECT().ProcessConversation(participant, conv1).Return(nil).Times(1)
-			suite.mockConversationProcessor.EXPECT().ProcessConversation(participant, conv2).Return(nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockConversationProcessor.EXPECT().
+				ProcessConversation(gomock.Any(), participant, conv1).
+				Return(nil).
+				Times(1)
+			suite.mockConversationProcessor.EXPECT().
+				ProcessConversation(gomock.Any(), participant, conv2).
+				Return(nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 		}
 
 		t.Run("Should dispatch each conversation to the processor", func(t *testing.T) {
@@ -164,7 +172,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
 
-			suite.sut.Tick()
+			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()
 		})
 	})
@@ -177,23 +185,23 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(participant).
+				Resolve(gomock.Any(), participant).
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any()).
+				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				ListProcessableForParticipant(participant, gomock.Any(), uint64(30)).
+				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv}, nil).
 				Times(1)
 			suite.mockConversationProcessor.EXPECT().
-				ProcessConversation(participant, conv).
+				ProcessConversation(gomock.Any(), participant, conv).
 				Return(errors.New("boom")).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 		}
 
 		t.Run("Should still release the participant cleanly", func(t *testing.T) {
@@ -202,7 +210,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
 
-			suite.sut.Tick()
+			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()
 		})
 	})

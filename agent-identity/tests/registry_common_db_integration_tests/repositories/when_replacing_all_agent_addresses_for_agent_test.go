@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -66,14 +68,14 @@ func TestWhenReplacingAllAgentAddressesForAgent(t *testing.T) {
 			defer WhenReplacingAllAgentAddressesForAgentAfterEach(suite)
 
 			agentId := uuid.New()
-			err := suite.sut.ReplaceAllForAgent(agentId, map[enums.AddressType]string{
+			err := suite.sut.ReplaceAllForAgent(context.Background(), agentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 				enums.AddressTypeBtc: "bc1qexampleonly",
 			})
 
 			assert.Nil(t, err)
 
-			rows, err := suite.sut.GetAllByAgentId(agentId)
+			rows, err := suite.sut.GetAllByAgentId(context.Background(), agentId)
 			assert.Nil(t, err)
 			assert.Len(t, rows, 2)
 		})
@@ -87,18 +89,18 @@ func TestWhenReplacingAllAgentAddressesForAgent(t *testing.T) {
 			defer WhenReplacingAllAgentAddressesForAgentAfterEach(suite)
 
 			agentId := uuid.New()
-			err := suite.sut.ReplaceAllForAgent(agentId, map[enums.AddressType]string{
+			err := suite.sut.ReplaceAllForAgent(context.Background(), agentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 				enums.AddressTypeBtc: "bc1qexampleonly",
 			})
 			assert.Nil(t, err)
 
-			err = suite.sut.ReplaceAllForAgent(agentId, map[enums.AddressType]string{
+			err = suite.sut.ReplaceAllForAgent(context.Background(), agentId, map[enums.AddressType]string{
 				enums.AddressTypeBtc: "bc1qanothervalue",
 			})
 			assert.Nil(t, err)
 
-			rows, err := suite.sut.GetAllByAgentId(agentId)
+			rows, err := suite.sut.GetAllByAgentId(context.Background(), agentId)
 			assert.Nil(t, err)
 			if assert.Len(t, rows, 1) {
 				assert.Equal(t, enums.AddressTypeBtc, rows[0].Type)

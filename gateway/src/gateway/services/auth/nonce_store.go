@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -31,7 +33,11 @@ func NewNonceStore(cacheStorage interfaces.CacheStorageInterface, jwtSettings *s
 	}
 }
 
-func (s *NonceStore) Generate(address common.Address, chainId uint64) (*interfaces.ChallengeEntry, error) {
+func (s *NonceStore) Generate(
+	ctx context.Context,
+	address common.Address,
+	chainId uint64,
+) (*interfaces.ChallengeEntry, error) {
 	buf := make([]byte, nonceByteLength)
 	if _, err := rand.Read(buf); err != nil {
 		return nil, fmt.Errorf("failed to generate nonce: %w", err)
@@ -50,15 +56,15 @@ func (s *NonceStore) Generate(address common.Address, chainId uint64) (*interfac
 	}
 
 	ttl := s.ttl
-	if err := s.cacheStorage.Store(s.cachePath(address), string(payload), &ttl); err != nil {
+	if err := s.cacheStorage.Store(ctx, s.cachePath(address), string(payload), &ttl); err != nil {
 		return nil, fmt.Errorf("failed to store challenge: %w", err)
 	}
 
 	return &entry, nil
 }
 
-func (s *NonceStore) Consume(address common.Address) *interfaces.ChallengeEntry {
-	payload, err := s.cacheStorage.ReadAndDelete(s.cachePath(address))
+func (s *NonceStore) Consume(ctx context.Context, address common.Address) *interfaces.ChallengeEntry {
+	payload, err := s.cacheStorage.ReadAndDelete(ctx, s.cachePath(address))
 	if err != nil {
 		return nil
 	}

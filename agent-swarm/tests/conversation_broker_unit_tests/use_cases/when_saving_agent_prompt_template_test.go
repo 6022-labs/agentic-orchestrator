@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -64,7 +66,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			request.Content = "  "
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -75,7 +77,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest, role string) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(
 					model_builders.NewRegistryAgentBuilder().
 						WithRole(role).
@@ -93,7 +95,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request, "facilitator")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -105,7 +107,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request, "human")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -118,7 +120,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request.Key = "facilitator-system"
 			initSuite(suite, request, "human")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -130,7 +132,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request, "banana")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -141,7 +143,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest, role string) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(
 					model_builders.NewRegistryAgentBuilder().
 						WithRole(role).
@@ -151,12 +153,12 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
+				GetByAgentAndKey(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
 					return entity, nil
 				}).
 				Times(1)
@@ -170,7 +172,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request.Key = "expert-system"
 			initSuite(suite, request, "banana")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -183,7 +185,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request.Key = "expert-default"
 			initSuite(suite, request, "human")
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -194,7 +196,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -206,7 +208,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -217,7 +219,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -229,7 +231,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -240,7 +242,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(
 					model_builders.NewRegistryAgentBuilder().
 						WithRole("clone").
@@ -250,12 +252,12 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
+				GetByAgentAndKey(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, entity *models.AgentPromptTemplate) (*models.AgentPromptTemplate, error) {
 					assert.Equal(t, request.CollectionAddress, entity.CollectionAddress)
 					assert.Equal(t, request.ParsedCollectionTokenId(), entity.CollectionTokenId)
 					assert.Equal(t, request.ParsedKey(), entity.Key)
@@ -272,7 +274,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request)
 
-			saved, err := suite.sut.Save(request)
+			saved, err := suite.sut.Save(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, saved.Content)
@@ -291,7 +293,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				Build()
 
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(
 					model_builders.NewRegistryAgentBuilder().
 						WithRole("clone").
@@ -301,11 +303,11 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
+				GetByAgentAndKey(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId(), request.ParsedKey()).
 				Return(existing, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				Save(existing).
+				Save(gomock.Any(), existing).
 				Return(existing, nil).
 				Times(1)
 
@@ -319,7 +321,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			existing := initSuite(suite, request)
 
-			saved, err := suite.sut.Save(request)
+			saved, err := suite.sut.Save(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, existing.ID, saved.ID)
@@ -332,7 +334,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId()).
+				GetAgent(gomock.Any(), request.CollectionAddress, request.ParsedCollectionTokenId()).
 				Return(
 					model_builders.NewRegistryAgentBuilder().
 						WithRole("clone").
@@ -342,11 +344,11 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -358,7 +360,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			request := generateValidSaveAgentPromptTemplateRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Save(request)
+			_, err := suite.sut.Save(context.Background(), request)
 
 			assert.Error(t, err)
 		})

@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
@@ -8,7 +10,7 @@ import (
 )
 
 type DetachParticipantInterface interface {
-	Detach(request *requests.ConversationParticipantRequest) error
+	Detach(ctx context.Context, request *requests.ConversationParticipantRequest) error
 }
 
 type DetachParticipant struct {
@@ -21,11 +23,11 @@ func NewDetachParticipant(
 	return &DetachParticipant{conversationParticipantRepository: conversationParticipantRepository}
 }
 
-func (uc *DetachParticipant) Detach(request *requests.ConversationParticipantRequest) error {
+func (uc *DetachParticipant) Detach(ctx context.Context, request *requests.ConversationParticipantRequest) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
-	if err := uc.conversationParticipantRepository.DeleteByConversationIdAndParticipantId(
+	if err := uc.conversationParticipantRepository.DeleteByConversationIdAndParticipantId(ctx,
 		request.ConversationID,
 		request.ParticipantID,
 	); err != nil {

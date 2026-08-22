@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -43,7 +45,7 @@ func TestWhenListingAgents(t *testing.T) {
 		initSuite := func(suite *WhenListingAgentsTestingSuite) *requests.ListAgentsRequest {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
-				ListAgents(gomock.Any()).
+				ListAgents(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			return &requests.ListAgentsRequest{}
@@ -55,7 +57,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			req := initSuite(suite)
 
-			_, err := suite.sut.List(req)
+			_, err := suite.sut.List(context.Background(), req)
 
 			assert.Equal(t, assert.AnError, err)
 		})
@@ -72,7 +74,7 @@ func TestWhenListingAgents(t *testing.T) {
 
 			suite.agentRegistryRequesterMock.
 				EXPECT().
-				ListAgents(gomock.Any()).
+				ListAgents(gomock.Any(), gomock.Any()).
 				Return(&responses.ListAgentsResponse{
 					PaginateResponse: responses.PaginateResponse{
 						Page:            1,
@@ -91,7 +93,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			agents := initSuite(suite)
 
-			resp, err := suite.sut.List(&requests.ListAgentsRequest{})
+			resp, err := suite.sut.List(context.Background(), &requests.ListAgentsRequest{})
 
 			assert.Nil(t, err)
 			assert.Len(t, resp.Agents, len(agents))
@@ -105,8 +107,8 @@ func TestWhenListingAgents(t *testing.T) {
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
-				ListAgents(gomock.Any()).
-				DoAndReturn(func(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+				ListAgents(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
 					assert.Equal(t, lo.ToPtr(true), request.IsMinted)
 					return &responses.ListAgentsResponse{}, nil
 				})
@@ -118,7 +120,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.List(&requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)})
+			_, err := suite.sut.List(context.Background(), &requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)})
 
 			assert.Nil(t, err)
 		})
@@ -130,8 +132,8 @@ func TestWhenListingAgents(t *testing.T) {
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.agentRegistryRequesterMock.
 				EXPECT().
-				ListAgents(gomock.Any()).
-				DoAndReturn(func(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+				ListAgents(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
 					assert.Equal(t, lo.ToPtr("name"), request.SortBy)
 					assert.Equal(t, lo.ToPtr("desc"), request.SortDirection)
 					return &responses.ListAgentsResponse{}, nil
@@ -144,7 +146,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.List(&requests.ListAgentsRequest{
+			_, err := suite.sut.List(context.Background(), &requests.ListAgentsRequest{
 				PaginateRequest: requests.PaginateRequest{
 					SortDirection: lo.ToPtr(requests.SortDirectionDesc),
 				},

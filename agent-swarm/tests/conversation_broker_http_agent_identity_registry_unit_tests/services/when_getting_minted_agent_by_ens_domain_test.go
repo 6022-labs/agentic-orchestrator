@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -61,7 +63,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			suite := WhenGettingMintedAgentByEnsDomainBeforeEach(t)
 			agentId := initSuite(suite)
 
-			result, err := suite.sut.GetMintedAgentByEnsDomain("ada.eth")
+			result, err := suite.sut.GetMintedAgentByEnsDomain(context.Background(), "ada.eth")
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -89,7 +91,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			suite := WhenGettingMintedAgentByEnsDomainBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetMintedAgentByEnsDomain("ada.eth")
+			result, err := suite.sut.GetMintedAgentByEnsDomain(context.Background(), "ada.eth")
 
 			assert.NoError(t, err)
 			assert.Nil(t, result)
@@ -115,7 +117,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			suite := WhenGettingMintedAgentByEnsDomainBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetMintedAgentByEnsDomain("ada.eth")
+			result, err := suite.sut.GetMintedAgentByEnsDomain(context.Background(), "ada.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -138,7 +140,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			suite := WhenGettingMintedAgentByEnsDomainBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.GetMintedAgentByEnsDomain("ada.eth")
+			result, err := suite.sut.GetMintedAgentByEnsDomain(context.Background(), "ada.eth")
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

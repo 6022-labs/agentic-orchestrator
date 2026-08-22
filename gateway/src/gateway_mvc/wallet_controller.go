@@ -68,7 +68,7 @@ func (controller *WalletController) VerifyWalletForBridge(c *fiber.Ctx) error {
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
-	err := controller.verifyWalletForBridge.Verify(request)
+	err := controller.verifyWalletForBridge.Verify(c.UserContext(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	stderrors "errors"
 	"io"
 	"net/http"
@@ -75,7 +77,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			sentBody := initSuite(suite)
 
-			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				"0xabc",
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
 
 			assert.NoError(t, err)
 			assert.JSONEq(t, `{"content":"You are {{name}}"}`, *sentBody)
@@ -114,7 +122,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				"0xabc",
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
 
 			assert.Nil(t, result)
 			validationErr := &errors.ValidationError{}
@@ -150,7 +164,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				"0xabc",
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
 
 			assert.Nil(t, result)
 			assert.IsType(t, &errors.NotFoundError{}, err)
@@ -183,7 +203,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				"0xabc",
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -213,7 +239,13 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.SaveAgentPromptTemplate("0xabc", 7, "clone-system", "You are {{name}}")
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				"0xabc",
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

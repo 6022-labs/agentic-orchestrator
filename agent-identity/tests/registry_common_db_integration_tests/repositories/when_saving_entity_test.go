@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -69,7 +71,7 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, err := suite.sut.Save(entityToCreate)
+			createdEntity, err := suite.sut.Save(context.Background(), entityToCreate)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToCreate, createdEntity)
@@ -82,9 +84,9 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
-			fetchedEntity, _ := suite.sut.GetById(createdEntity.ID)
+			fetchedEntity, _ := suite.sut.GetById(context.Background(), createdEntity.ID)
 
 			assert.Equal(t, createdEntity.ID, fetchedEntity.ID)
 			assert.Equal(t, createdEntity.Name, fetchedEntity.Name)
@@ -102,10 +104,10 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			entityToUpdate := model_builders.NewAgentBuilder().WithID(createdEntity.ID).Build()
-			updatedEntity, err := suite.sut.Save(entityToUpdate)
+			updatedEntity, err := suite.sut.Save(context.Background(), entityToUpdate)
 
 			assert.Nil(t, err)
 			assert.Equal(t, entityToUpdate, updatedEntity)
@@ -118,12 +120,12 @@ func TestWhenSavingEntity(t *testing.T) {
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entityToCreate)
+			createdEntity, _ := suite.sut.Save(context.Background(), entityToCreate)
 
 			entityToUpdate := model_builders.NewAgentBuilder().WithID(createdEntity.ID).Build()
-			suite.sut.Save(entityToUpdate)
+			suite.sut.Save(context.Background(), entityToUpdate)
 
-			entityToCreate, _ = suite.sut.GetById(createdEntity.ID)
+			entityToCreate, _ = suite.sut.GetById(context.Background(), createdEntity.ID)
 
 			assert.Equal(t, entityToCreate.ID, entityToUpdate.ID)
 			assert.Equal(t, entityToCreate.Name, entityToUpdate.Name)

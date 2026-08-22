@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -66,13 +68,13 @@ func TestWhenGettingAgentAddressByTypeAndAddress(t *testing.T) {
 			defer WhenGettingAgentAddressByTypeAndAddressAfterEach(suite)
 
 			agentId := uuid.New()
-			err := suite.sut.ReplaceAllForAgent(agentId, map[enums.AddressType]string{
+			err := suite.sut.ReplaceAllForAgent(context.Background(), agentId, map[enums.AddressType]string{
 				enums.AddressTypeEvm: "0x2f0ddd93040c19863527b0553feceb696862ea7d",
 				enums.AddressTypeBtc: "bc1qexampleonly",
 			})
 			assert.Nil(t, err)
 
-			row, err := suite.sut.GetByTypeAndAddress(enums.AddressTypeBtc, "bc1qexampleonly")
+			row, err := suite.sut.GetByTypeAndAddress(context.Background(), enums.AddressTypeBtc, "bc1qexampleonly")
 
 			assert.Nil(t, err)
 			assert.Equal(t, agentId, row.AgentId)
@@ -87,7 +89,7 @@ func TestWhenGettingAgentAddressByTypeAndAddress(t *testing.T) {
 			suite := WhenGettingAgentAddressByTypeAndAddressBeforeEach()
 			defer WhenGettingAgentAddressByTypeAndAddressAfterEach(suite)
 
-			row, err := suite.sut.GetByTypeAndAddress(enums.AddressTypeEvm, "0xunknown")
+			row, err := suite.sut.GetByTypeAndAddress(context.Background(), enums.AddressTypeEvm, "0xunknown")
 
 			assert.Nil(t, row)
 			assert.Nil(t, err)

@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -46,11 +48,11 @@ func TestWhenHandlingChannelLeft(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite, channelId string) {
 			suite.mockSlackConversationRepository.EXPECT().
-				ListByChannelId(channelId).
+				ListByChannelId(gomock.Any(), channelId).
 				Return([]*models.SlackConversation{
 					{SlackChannelId: channelId, SlackThreadTs: "1.0", BrokerConversationID: convId},
 				}, nil)
-			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(gomock.Any(), convId).Return(nil)
 		}
 
 		t.Run("Should force-conclude the broker conversation", func(t *testing.T) {
@@ -62,7 +64,7 @@ func TestWhenHandlingChannelLeft(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})
@@ -71,7 +73,7 @@ func TestWhenHandlingChannelLeft(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingChannelLeftTestingSuite, channelId string) {
-			suite.mockSlackConversationRepository.EXPECT().ListByChannelId(channelId).Return(nil, nil)
+			suite.mockSlackConversationRepository.EXPECT().ListByChannelId(gomock.Any(), channelId).Return(nil, nil)
 		}
 
 		t.Run("Should not call the broker", func(t *testing.T) {
@@ -83,7 +85,7 @@ func TestWhenHandlingChannelLeft(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})

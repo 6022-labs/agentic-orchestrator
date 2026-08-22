@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 	"time"
@@ -48,11 +50,17 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read("agent-urls/agent.eth").Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
 			suite.mockCacheStorage.EXPECT().
-				Store("agent-urls/agent.eth", "https://node.example", gomock.Any()).
-				DoAndReturn(func(key, value string, ttl *time.Duration) error {
+				Read(gomock.Any(), "agent-urls/agent.eth").
+				Return("", errors.New("miss")).
+				Times(2)
+			suite.mockEnsUrlResolver.EXPECT().
+				ResolveUrl(gomock.Any(), "agent.eth").
+				Return("https://node.example", nil).
+				Times(1)
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), "agent-urls/agent.eth", "https://node.example", gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
 					assert.Equal(t, 300*time.Second, *ttl)
 					return nil
 				}).
@@ -65,7 +73,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			url, err := suite.sut.ResolveUrl("Agent.eth")
+			url, err := suite.sut.ResolveUrl(context.Background(), "Agent.eth")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)
@@ -76,7 +84,10 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read("agent-urls/agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockCacheStorage.EXPECT().
+				Read(gomock.Any(), "agent-urls/agent.eth").
+				Return("https://node.example", nil).
+				Times(1)
 		}
 
 		t.Run("Should serve the url from the cache without resolving", func(t *testing.T) {
@@ -85,7 +96,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			url, err := suite.sut.ResolveUrl("agent.eth")
+			url, err := suite.sut.ResolveUrl(context.Background(), "agent.eth")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)
@@ -96,8 +107,11 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", errors.New("boom")).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockEnsUrlResolver.EXPECT().
+				ResolveUrl(gomock.Any(), "agent.eth").
+				Return("", errors.New("boom")).
+				Times(1)
 		}
 
 		t.Run("Should propagate the error and cache nothing", func(t *testing.T) {
@@ -106,7 +120,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl("agent.eth")
+			_, err := suite.sut.ResolveUrl(context.Background(), "agent.eth")
 
 			assert.Error(t, err)
 		})
@@ -116,8 +130,8 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("", nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockEnsUrlResolver.EXPECT().ResolveUrl(gomock.Any(), "agent.eth").Return("", nil).Times(1)
 		}
 
 		t.Run("Should return an error and cache nothing", func(t *testing.T) {
@@ -126,7 +140,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl("agent.eth")
+			_, err := suite.sut.ResolveUrl(context.Background(), "agent.eth")
 
 			assert.Error(t, err)
 		})
@@ -136,10 +150,13 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockEnsUrlResolver.EXPECT().ResolveUrl("agent.eth").Return("https://node.example", nil).Times(1)
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockEnsUrlResolver.EXPECT().
+				ResolveUrl(gomock.Any(), "agent.eth").
+				Return("https://node.example", nil).
+				Times(1)
 			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any()).
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(errors.New("boom")).
 				Times(1)
 		}
@@ -150,7 +167,7 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 			suite := WhenResolvingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			url, err := suite.sut.ResolveUrl("agent.eth")
+			url, err := suite.sut.ResolveUrl(context.Background(), "agent.eth")
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)

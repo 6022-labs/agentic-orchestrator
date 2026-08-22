@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/google/uuid"
@@ -41,29 +42,29 @@ func (m *MockConversationConcludeInterface) EXPECT() *MockConversationConcludeIn
 }
 
 // Conclude mocks base method.
-func (m *MockConversationConcludeInterface) Conclude(conversationId uuid.UUID) error {
+func (m *MockConversationConcludeInterface) Conclude(ctx context.Context, conversationId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Conclude", conversationId)
+	ret := m.ctrl.Call(m, "Conclude", ctx, conversationId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Conclude indicates an expected call of Conclude.
-func (mr *MockConversationConcludeInterfaceMockRecorder) Conclude(conversationId any) *gomock.Call {
+func (mr *MockConversationConcludeInterfaceMockRecorder) Conclude(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conclude", reflect.TypeOf((*MockConversationConcludeInterface)(nil).Conclude), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conclude", reflect.TypeOf((*MockConversationConcludeInterface)(nil).Conclude), ctx, conversationId)
 }
 
 // ConcludeIfExists mocks base method.
-func (m *MockConversationConcludeInterface) ConcludeIfExists(conversationId uuid.UUID) error {
+func (m *MockConversationConcludeInterface) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConcludeIfExists", conversationId)
+	ret := m.ctrl.Call(m, "ConcludeIfExists", ctx, conversationId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConcludeIfExists indicates an expected call of ConcludeIfExists.
-func (mr *MockConversationConcludeInterfaceMockRecorder) ConcludeIfExists(conversationId any) *gomock.Call {
+func (mr *MockConversationConcludeInterfaceMockRecorder) ConcludeIfExists(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConcludeIfExists", reflect.TypeOf((*MockConversationConcludeInterface)(nil).ConcludeIfExists), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConcludeIfExists", reflect.TypeOf((*MockConversationConcludeInterface)(nil).ConcludeIfExists), ctx, conversationId)
 }

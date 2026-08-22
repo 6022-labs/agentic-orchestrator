@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -42,14 +44,14 @@ func TestWhenSavingParticipant(t *testing.T) {
 			defer WhenSavingParticipantAfterEach(suite)
 
 			entity := model_builders.NewAgentParticipantBuilder().Build()
-			_, err := suite.sut.Save(entity)
+			_, err := suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
-			byId, err := suite.sut.GetById(entity.ID)
+			byId, err := suite.sut.GetById(context.Background(), entity.ID)
 			assert.NoError(t, err)
 			assert.Equal(t, entity.ID, byId.ID)
 
-			byKey, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(
+			byKey, err := suite.sut.GetByCollectionAddressAndCollectionTokenId(context.Background(),
 				*entity.CollectionAddress, *entity.CollectionTokenId,
 			)
 			assert.NoError(t, err)
@@ -67,10 +69,10 @@ func TestWhenSavingParticipant(t *testing.T) {
 			defer WhenSavingParticipantAfterEach(suite)
 
 			entity := model_builders.NewUserParticipantBuilder().Build()
-			_, err := suite.sut.Save(entity)
+			_, err := suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetById(entity.ID)
+			got, err := suite.sut.GetById(context.Background(), entity.ID)
 			assert.NoError(t, err)
 			assert.Equal(t, entity.ID, got.ID)
 			assert.NotNil(t, got.DisplayName)

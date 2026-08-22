@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -55,7 +57,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			request := generateValidDetachParticipantRequest()
 			request.ConversationID = uuid.Nil
 
-			err := suite.sut.Detach(request)
+			err := suite.sut.Detach(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "conversationId")
@@ -67,7 +69,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenDetachingParticipantTestingSuite, request *requests.ConversationParticipantRequest) {
 			suite.mockConversationParticipantRepository.EXPECT().
-				DeleteByConversationIdAndParticipantId(request.ConversationID, request.ParticipantID).
+				DeleteByConversationIdAndParticipantId(gomock.Any(), request.ConversationID, request.ParticipantID).
 				Return(errors.New("boom")).
 				Times(1)
 		}
@@ -79,7 +81,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			request := generateValidDetachParticipantRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Detach(request)
+			err := suite.sut.Detach(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -90,7 +92,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenDetachingParticipantTestingSuite, request *requests.ConversationParticipantRequest) {
 			suite.mockConversationParticipantRepository.EXPECT().
-				DeleteByConversationIdAndParticipantId(request.ConversationID, request.ParticipantID).
+				DeleteByConversationIdAndParticipantId(gomock.Any(), request.ConversationID, request.ParticipantID).
 				Return(nil).
 				Times(1)
 		}
@@ -102,7 +104,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			request := generateValidDetachParticipantRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Detach(request)
+			err := suite.sut.Detach(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

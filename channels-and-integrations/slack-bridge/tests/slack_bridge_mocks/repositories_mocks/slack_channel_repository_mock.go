@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,89 +42,89 @@ func (m *MockSlackChannelRepositoryInterface) EXPECT() *MockSlackChannelReposito
 }
 
 // AddAgent mocks base method.
-func (m *MockSlackChannelRepositoryInterface) AddAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
+func (m *MockSlackChannelRepositoryInterface) AddAgent(ctx context.Context, entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAgent", entity, agent)
+	ret := m.ctrl.Call(m, "AddAgent", ctx, entity, agent)
 	ret0, _ := ret[0].(*models.SlackChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddAgent indicates an expected call of AddAgent.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddAgent(entity, agent any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddAgent(ctx, entity, agent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgent", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddAgent), entity, agent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAgent", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddAgent), ctx, entity, agent)
 }
 
 // AddUser mocks base method.
-func (m *MockSlackChannelRepositoryInterface) AddUser(channelId, userId string) error {
+func (m *MockSlackChannelRepositoryInterface) AddUser(ctx context.Context, channelId, userId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUser", channelId, userId)
+	ret := m.ctrl.Call(m, "AddUser", ctx, channelId, userId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddUser indicates an expected call of AddUser.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddUser(channelId, userId any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) AddUser(ctx, channelId, userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddUser), channelId, userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).AddUser), ctx, channelId, userId)
 }
 
 // GetById mocks base method.
-func (m *MockSlackChannelRepositoryInterface) GetById(id string) (*models.SlackChannel, error) {
+func (m *MockSlackChannelRepositoryInterface) GetById(ctx context.Context, id string) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*models.SlackChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).GetById), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).GetById), ctx, id)
 }
 
 // RemoveAgent mocks base method.
-func (m *MockSlackChannelRepositoryInterface) RemoveAgent(entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
+func (m *MockSlackChannelRepositoryInterface) RemoveAgent(ctx context.Context, entity *models.SlackChannel, agent *models.SlackAgent) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveAgent", entity, agent)
+	ret := m.ctrl.Call(m, "RemoveAgent", ctx, entity, agent)
 	ret0, _ := ret[0].(*models.SlackChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RemoveAgent indicates an expected call of RemoveAgent.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) RemoveAgent(entity, agent any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) RemoveAgent(ctx, entity, agent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAgent", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).RemoveAgent), entity, agent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAgent", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).RemoveAgent), ctx, entity, agent)
 }
 
 // Save mocks base method.
-func (m *MockSlackChannelRepositoryInterface) Save(entity *models.SlackChannel) (*models.SlackChannel, error) {
+func (m *MockSlackChannelRepositoryInterface) Save(ctx context.Context, entity *models.SlackChannel) (*models.SlackChannel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.SlackChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).Save), ctx, entity)
 }
 
 // UpdateId mocks base method.
-func (m *MockSlackChannelRepositoryInterface) UpdateId(oldId, newId string) error {
+func (m *MockSlackChannelRepositoryInterface) UpdateId(ctx context.Context, oldId, newId string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateId", oldId, newId)
+	ret := m.ctrl.Call(m, "UpdateId", ctx, oldId, newId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateId indicates an expected call of UpdateId.
-func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) UpdateId(oldId, newId any) *gomock.Call {
+func (mr *MockSlackChannelRepositoryInterfaceMockRecorder) UpdateId(ctx, oldId, newId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateId", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).UpdateId), oldId, newId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateId", reflect.TypeOf((*MockSlackChannelRepositoryInterface)(nil).UpdateId), ctx, oldId, newId)
 }

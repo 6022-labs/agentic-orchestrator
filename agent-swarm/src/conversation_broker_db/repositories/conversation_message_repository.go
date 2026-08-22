@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
@@ -18,10 +20,11 @@ func NewConversationMessageRepository(client db_clients.DatabaseClientInterface)
 }
 
 func (r *ConversationMessageRepository) ListByConversationId(
+	ctx context.Context,
 	conversationId uuid.UUID,
 ) ([]*models.ConversationMessage, error) {
 	var entities []*models.ConversationMessage
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("conversation_id = ?", conversationId).
 		Order("created_at ASC").
 		Find(&entities).
@@ -33,11 +36,12 @@ func (r *ConversationMessageRepository) ListByConversationId(
 }
 
 func (r *ConversationMessageRepository) ListProcessableForParticipantAndConversation(
+	ctx context.Context,
 	participant *models.Participant,
 	role *enums.ParticipantRole,
 	conversationId uuid.UUID,
 ) ([]*models.ConversationMessage, error) {
-	query := r.client.GetDB().Model(&models.ConversationMessage{}).
+	query := r.client.GetDB().WithContext(ctx).Model(&models.ConversationMessage{}).
 		Where("conversation_id = ?", conversationId)
 
 	// A nil role is a user, whose messages are not filtered.

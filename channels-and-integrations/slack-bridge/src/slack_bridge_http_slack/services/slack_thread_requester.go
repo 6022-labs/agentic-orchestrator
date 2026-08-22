@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"encoding/json"
 	"fmt"
 
@@ -27,6 +29,7 @@ func NewSlackThreadRequester(
 }
 
 func (s *SlackThreadRequester) PushCompletionToThread(
+	ctx context.Context,
 	completion string,
 	slackAgent *models.SlackAgent,
 	slackChannelId, slackThreadId string,
@@ -62,7 +65,7 @@ func (s *SlackThreadRequester) PushCompletionToThread(
 		request.IconUrl = &iconUrl
 	}
 
-	_, err := s.client.PostMessage(request)
+	_, err := s.client.PostMessage(ctx, request)
 	if err != nil {
 		return fmt.Errorf("failed to post message: %w", err)
 	}

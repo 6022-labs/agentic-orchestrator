@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_redis/services"
@@ -45,10 +47,10 @@ func TestWhenReading(t *testing.T) {
 			defer WhenReadingAfterEach(suite)
 
 			key := uuid.New().String()
-			err := suite.sut.Store(key, "test-value", nil)
+			err := suite.sut.Store(context.Background(), key, "test-value", nil)
 			assert.Nil(t, err)
 
-			value, err := suite.sut.Read(key)
+			value, err := suite.sut.Read(context.Background(), key)
 			assert.Nil(t, err)
 			assert.Equal(t, "test-value", value)
 		})
@@ -64,7 +66,7 @@ func TestWhenReading(t *testing.T) {
 			defer WhenReadingAfterEach(suite)
 
 			key := uuid.New().String()
-			value, err := suite.sut.Read(key)
+			value, err := suite.sut.Read(context.Background(), key)
 			assert.NotNil(t, err)
 			assert.Empty(t, value)
 		})

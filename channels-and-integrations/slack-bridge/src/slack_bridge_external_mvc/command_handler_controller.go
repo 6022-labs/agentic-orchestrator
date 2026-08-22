@@ -83,7 +83,7 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fi
 			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
-	if err := controller.addAgentToChannel.Add(addRequest); err != nil {
+	if err := controller.addAgentToChannel.Add(c.UserContext(), addRequest); err != nil {
 		controller.logger.Error("Failed to handle add agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}
@@ -121,7 +121,7 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
 	}
 
-	result, err := controller.listAgentsInChannel.List(listRequest)
+	result, err := controller.listAgentsInChannel.List(c.UserContext(), listRequest)
 	if err != nil {
 		controller.logger.Error("Failed to handle list agents command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
@@ -169,7 +169,7 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
-	if err := controller.removeAgentFromChannel.Remove(removeRequest); err != nil {
+	if err := controller.removeAgentFromChannel.Remove(c.UserContext(), removeRequest); err != nil {
 		controller.logger.Error("Failed to handle remove agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}
@@ -207,7 +207,7 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
 	}
 
-	resp, err := controller.verifyWalletOwnership.Verify(verifyWalletOwnershipRequest)
+	resp, err := controller.verifyWalletOwnership.Verify(c.UserContext(), verifyWalletOwnershipRequest)
 	if err != nil {
 		controller.logger.Error("Failed to verify wallet ownership", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
@@ -248,7 +248,7 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 				"[slack user ID] [human agent collection address] [human agent collection token ID]")
 	}
 
-	if err := controller.pairSlackUserToHumanAgent.Pair(pairRequest); err != nil {
+	if err := controller.pairSlackUserToHumanAgent.Pair(c.UserContext(), pairRequest); err != nil {
 		controller.logger.Error("Failed to handle pair slack user to human agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}

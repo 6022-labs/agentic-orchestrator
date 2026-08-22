@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"math/big"
 
@@ -40,12 +42,15 @@ func NewMintProposalCreatedEventHandler(
 	}
 }
 
-func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectionV1MintProposalCreated) error {
+func (handler *MintProposalCreatedEventHandler) Handle(
+	ctx context.Context,
+	event *abi.AgentCollectionV1MintProposalCreated,
+) error {
 	collectionAddress := common.HexToAddress(event.Raw.Address.Hex())
 	proposalId := new(big.Int).SetUint64(event.ProposalId.Uint64())
 
 	atBlock := event.Raw.BlockNumber
-	mintProposal, err := handler.agentCollectionRequester.GetMintProposal(collectionAddress, proposalId, atBlock)
+	mintProposal, err := handler.agentCollectionRequester.GetMintProposal(ctx, collectionAddress, proposalId, atBlock)
 	if err != nil {
 		return fmt.Errorf("failed to get mint proposal for collection address %s and proposal id %d: %w",
 			collectionAddress.Hex(),
@@ -62,7 +67,7 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		)
 	}
 
-	agent, err := handler.findAgentByAddresses(addresses)
+	agent, err := handler.findAgentByAddresses(ctx, addresses)
 	if err != nil {
 		return fmt.Errorf("failed to get agent by address: %w", err)
 	}
@@ -73,7 +78,7 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 	}
 
 	if agent == nil {
-		agentCollection, err := handler.agentCollectionRepository.GetByAddress(collectionAddress.Hex())
+		agentCollection, err := handler.agentCollectionRepository.GetByAddress(ctx, collectionAddress.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to get agent collection by address %s: %w", collectionAddress.Hex(), err)
 		}
@@ -108,7 +113,7 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 	}
 
 	agent.ProposalId = lo.ToPtr(proposalId.Uint64())
-	_, err = handler.agentRepository.Save(agent)
+	_, err = handler.agentRepository.Save(ctx, agent)
 	if err != nil {
 		return fmt.Errorf("failed to save agent with collection address %s and proposal id %d: %w",
 			collectionAddress.Hex(),
@@ -117,7 +122,7 @@ func (handler *MintProposalCreatedEventHandler) Handle(event *abi.AgentCollectio
 		)
 	}
 
-	if err := handler.agentAddressRepository.ReplaceAllForAgent(agent.ID, addresses); err != nil {
+	if err := handler.agentAddressRepository.ReplaceAllForAgent(ctx, agent.ID, addresses); err != nil {
 		return fmt.Errorf("failed to save agent addresses: %w", err)
 	}
 

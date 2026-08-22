@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type OnBlockProcessedHandlerInterface interface {
-	OnBlockProcessed(blockNumber uint64)
+	OnBlockProcessed(ctx context.Context, blockNumber uint64)
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -27,13 +29,17 @@ func NewSlackAgentSynchronizer(
 	}
 }
 
-func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
-	agentIdentity, err := s.agentRequester.GetAgent(collectionAddress, collectionTokenId)
+func (s *SlackAgentSynchronizer) Sync(
+	ctx context.Context,
+	collectionAddress string,
+	collectionTokenId uint64,
+) (*models.SlackAgent, error) {
+	agentIdentity, err := s.agentRequester.GetAgent(ctx, collectionAddress, collectionTokenId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent from orchestrator: %w", err)
 	}
 
-	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		collectionAddress,
 		collectionTokenId,
 	)
@@ -42,7 +48,11 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 	}
 
 	if slackAgentInDatabase == nil {
-		brokerParticipantId, err := s.conversationBrokerRequester.RegisterAgent(collectionAddress, collectionTokenId)
+		brokerParticipantId, err := s.conversationBrokerRequester.RegisterAgent(
+			ctx,
+			collectionAddress,
+			collectionTokenId,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to register agent participant with broker: %w", err)
 		}
@@ -57,7 +67,7 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 			BrokerParticipantId: &brokerParticipantId,
 		}
 
-		slackAgentInDatabase, err = s.slackAgentRepository.Save(slackAgentInDatabase)
+		slackAgentInDatabase, err = s.slackAgentRepository.Save(ctx, slackAgentInDatabase)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +77,12 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 
 	if slackAgentInDatabase.OwnerWallet != agentIdentity.OwnerWallet {
 		slackAgentInDatabase.OwnerWallet = agentIdentity.OwnerWallet
-		err = s.slackAgentRepository.UpdateOwnerWallet(collectionAddress, collectionTokenId, agentIdentity.OwnerWallet)
+		err = s.slackAgentRepository.UpdateOwnerWallet(
+			ctx,
+			collectionAddress,
+			collectionTokenId,
+			agentIdentity.OwnerWallet,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +92,7 @@ func (s *SlackAgentSynchronizer) Sync(collectionAddress string, collectionTokenI
 		(slackAgentInDatabase.IconImageCid != nil && agentIdentity.IconImageCid != nil &&
 			*slackAgentInDatabase.IconImageCid != *agentIdentity.IconImageCid) {
 		slackAgentInDatabase.IconImageCid = agentIdentity.IconImageCid
-		err = s.slackAgentRepository.UpdateIconImageCid(
+		err = s.slackAgentRepository.UpdateIconImageCid(ctx,
 			collectionAddress,
 			collectionTokenId,
 			agentIdentity.IconImageCid,

@@ -37,8 +37,6 @@ func NewConversationProcessorDaemon(
 	conversationRepository repositories.ConversationRepositoryInterface,
 	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *ConversationProcessorDaemon {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	return &ConversationProcessorDaemon{
 		logger:                 logger,
 		processingSettings:     processingSettings,
@@ -47,23 +45,25 @@ func NewConversationProcessorDaemon(
 		conversationRepository: conversationRepository,
 
 		participantRoleResolver: participantRoleResolver,
-
-		ctx:    ctx,
-		cancel: cancel,
 	}
 }
 
-func (d *ConversationProcessorDaemon) Start() {
+func (d *ConversationProcessorDaemon) Start(ctx context.Context) {
 	d.startOnce.Do(func() {
+		// Cancellable by the caller's ctx or by Stop().
+		d.ctx, d.cancel = context.WithCancel(ctx)
+
 		d.logger.Info("Starting conversation processor daemon")
-		go d.runLoop()
+		go d.runLoop(d.ctx)
 	})
 }
 
 func (d *ConversationProcessorDaemon) Stop() {
 	d.stopOnce.Do(func() {
 		d.logger.Info("Stopping conversation processor daemon")
-		d.cancel()
+		if d.cancel != nil {
+			d.cancel()
+		}
 		d.processingWg.Wait()
 		d.logger.Info("Conversation processor daemon stopped cleanly")
 	})
@@ -71,8 +71,8 @@ func (d *ConversationProcessorDaemon) Stop() {
 
 // Tick runs exactly one daemon tick synchronously. Exposed for unit tests
 // that want to drive the loop without spawning the ticker.
-func (d *ConversationProcessorDaemon) Tick() {
-	d.processNextParticipant()
+func (d *ConversationProcessorDaemon) Tick(ctx context.Context) {
+	d.processNextParticipant(ctx)
 }
 
 // WaitForInFlight blocks until every goroutine spawned by Tick/Start has
@@ -81,7 +81,7 @@ func (d *ConversationProcessorDaemon) WaitForInFlight() {
 	d.processingWg.Wait()
 }
 
-func (d *ConversationProcessorDaemon) runLoop() {
+func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -91,13 +91,13 @@ func (d *ConversationProcessorDaemon) runLoop() {
 			d.logger.Info("Shutting down conversation processor daemon")
 			return
 		case <-ticker.C:
-			d.processNextParticipant()
+			d.processNextParticipant(ctx)
 		}
 	}
 }
 
-func (d *ConversationProcessorDaemon) processNextParticipant() {
-	participant, err := d.participantRepository.GetNextAgentToProcess(
+func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context) {
+	participant, err := d.participantRepository.GetNextAgentToProcess(ctx,
 		d.processingSettings.ParticipantProcessingInterval,
 	)
 	if err != nil {
@@ -109,7 +109,7 @@ func (d *ConversationProcessorDaemon) processNextParticipant() {
 		return
 	}
 
-	if err := d.setParticipantIsProcessing(participant); err != nil {
+	if err := d.setParticipantIsProcessing(ctx, participant); err != nil {
 		d.logger.Error("Failed to mark participant as processing",
 			d.participantLogFields(participant, zap.Error(err))...,
 		)
@@ -117,20 +117,23 @@ func (d *ConversationProcessorDaemon) processNextParticipant() {
 	}
 
 	d.processingWg.Add(1)
-	go d.processConversationsForParticipant(participant)
+	go d.processConversationsForParticipant(ctx, participant)
 }
 
-func (d *ConversationProcessorDaemon) processConversationsForParticipant(participant *models.Participant) {
+func (d *ConversationProcessorDaemon) processConversationsForParticipant(
+	ctx context.Context,
+	participant *models.Participant,
+) {
 	defer func() {
 		d.processingWg.Done()
-		if err := d.setParticipantIsNotProcessing(participant); err != nil {
+		if err := d.setParticipantIsNotProcessing(ctx, participant); err != nil {
 			d.logger.Error("Failed to mark participant as not processing",
 				d.participantLogFields(participant, zap.Error(err))...,
 			)
 		}
 	}()
 
-	role, err := d.participantRoleResolver.Resolve(participant)
+	role, err := d.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
 		d.logger.Error("Failed to resolve participant role",
 			d.participantLogFields(participant, zap.Error(err))...,
@@ -138,7 +141,7 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 		return
 	}
 
-	conversations, err := d.conversationRepository.ListProcessableForParticipant(
+	conversations, err := d.conversationRepository.ListProcessableForParticipant(ctx,
 		participant,
 		role,
 		d.processingSettings.FacilitatorTickInterval,
@@ -171,11 +174,10 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 				d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()))...,
 			)
 
-			if err := d.conversationProcessor.ProcessConversation(participant, conv); err != nil {
+			if err := d.conversationProcessor.ProcessConversation(ctx, participant, conv); err != nil {
 				d.logger.Error(
 					"Failed to process conversation for participant",
-					d.participantLogFields(
-						participant,
+					d.participantLogFields(participant,
 						zap.String("conversationId", conv.ID.String()),
 						zap.Error(err),
 					)...,
@@ -192,21 +194,27 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(partici
 	wg.Wait()
 }
 
-func (d *ConversationProcessorDaemon) setParticipantIsProcessing(participant *models.Participant) error {
+func (d *ConversationProcessorDaemon) setParticipantIsProcessing(
+	ctx context.Context,
+	participant *models.Participant,
+) error {
 	participant.IsProcessing = true
 
-	if _, err := d.participantRepository.Save(participant); err != nil {
+	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
 		return fmt.Errorf("failed to set participant %s as processing: %w", participant.ID, err)
 	}
 	return nil
 }
 
-func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(participant *models.Participant) error {
+func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(
+	ctx context.Context,
+	participant *models.Participant,
+) error {
 	participant.IsProcessing = false
 	now := time.Now()
 	participant.LastProcessedAt = &now
 
-	if _, err := d.participantRepository.Save(participant); err != nil {
+	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
 		return fmt.Errorf("failed to set participant %s as not processing: %w", participant.ID, err)
 	}
 	return nil

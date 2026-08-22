@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -67,9 +69,9 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
 			checkpoint := model_builders.NewSyncCheckpointBuilder().WithBlock(123).Build()
-			suite.sut.Save(checkpoint)
+			suite.sut.Save(context.Background(), checkpoint)
 
-			fetchedCheckpoint, err := suite.sut.Get()
+			fetchedCheckpoint, err := suite.sut.Get(context.Background())
 
 			assert.Nil(t, err)
 			assert.Equal(t, uint64(123), fetchedCheckpoint.Block)
@@ -85,7 +87,7 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 			suite := WhenGettingSyncCheckpointBeforeEach()
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
-			checkpoint, err := suite.sut.Get()
+			checkpoint, err := suite.sut.Get(context.Background())
 
 			assert.Nil(t, err)
 			assert.Nil(t, checkpoint)

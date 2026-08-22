@@ -10,6 +10,7 @@
 package command_handlers_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
@@ -41,15 +42,15 @@ func (m *MockAddAgentToChannelInterface) EXPECT() *MockAddAgentToChannelInterfac
 }
 
 // Add mocks base method.
-func (m *MockAddAgentToChannelInterface) Add(request *requests.AddAgentToChannelRequest) error {
+func (m *MockAddAgentToChannelInterface) Add(ctx context.Context, request *requests.AddAgentToChannelRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", request)
+	ret := m.ctrl.Call(m, "Add", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Add indicates an expected call of Add.
-func (mr *MockAddAgentToChannelInterfaceMockRecorder) Add(request any) *gomock.Call {
+func (mr *MockAddAgentToChannelInterfaceMockRecorder) Add(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockAddAgentToChannelInterface)(nil).Add), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockAddAgentToChannelInterface)(nil).Add), ctx, request)
 }

@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -44,180 +45,180 @@ func (m *MockAgentRepositoryInterface) EXPECT() *MockAgentRepositoryInterfaceMoc
 }
 
 // ExistsByCollectionAddressAndCollectionTokenId mocks base method.
-func (m *MockAgentRepositoryInterface) ExistsByCollectionAddressAndCollectionTokenId(address string, tokenId uint64) (bool, error) {
+func (m *MockAgentRepositoryInterface) ExistsByCollectionAddressAndCollectionTokenId(ctx context.Context, address string, tokenId uint64) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExistsByCollectionAddressAndCollectionTokenId", address, tokenId)
+	ret := m.ctrl.Call(m, "ExistsByCollectionAddressAndCollectionTokenId", ctx, address, tokenId)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExistsByCollectionAddressAndCollectionTokenId indicates an expected call of ExistsByCollectionAddressAndCollectionTokenId.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) ExistsByCollectionAddressAndCollectionTokenId(address, tokenId any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) ExistsByCollectionAddressAndCollectionTokenId(ctx, address, tokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).ExistsByCollectionAddressAndCollectionTokenId), address, tokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).ExistsByCollectionAddressAndCollectionTokenId), ctx, address, tokenId)
 }
 
 // GetAll mocks base method.
-func (m *MockAgentRepositoryInterface) GetAll() ([]*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetAll(ctx context.Context) ([]*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetAll", ctx)
 	ret0, _ := ret[0].([]*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetAll() *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetAll), ctx)
 }
 
 // GetByCollectionAddressAndCollectionTokenId mocks base method.
-func (m *MockAgentRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByCollectionAddressAndCollectionTokenId", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "GetByCollectionAddressAndCollectionTokenId", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByCollectionAddressAndCollectionTokenId indicates an expected call of GetByCollectionAddressAndCollectionTokenId.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByCollectionAddressAndCollectionTokenId(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByCollectionAddressAndCollectionTokenId(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByCollectionAddressAndCollectionTokenId), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCollectionAddressAndCollectionTokenId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByCollectionAddressAndCollectionTokenId), ctx, collectionAddress, collectionTokenId)
 }
 
 // GetByEnsDomains mocks base method.
-func (m *MockAgentRepositoryInterface) GetByEnsDomains(ensDomains []string) ([]*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetByEnsDomains(ctx context.Context, ensDomains []string) ([]*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEnsDomains", ensDomains)
+	ret := m.ctrl.Call(m, "GetByEnsDomains", ctx, ensDomains)
 	ret0, _ := ret[0].([]*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByEnsDomains indicates an expected call of GetByEnsDomains.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByEnsDomains(ensDomains any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetByEnsDomains(ctx, ensDomains any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEnsDomains", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByEnsDomains), ensDomains)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEnsDomains", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetByEnsDomains), ctx, ensDomains)
 }
 
 // GetById mocks base method.
-func (m *MockAgentRepositoryInterface) GetById(id uuid.UUID) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetById(ctx context.Context, id uuid.UUID) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetById), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetById), ctx, id)
 }
 
 // GetMintedByEnsDomain mocks base method.
-func (m *MockAgentRepositoryInterface) GetMintedByEnsDomain(ensDomain string) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetMintedByEnsDomain(ctx context.Context, ensDomain string) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMintedByEnsDomain", ensDomain)
+	ret := m.ctrl.Call(m, "GetMintedByEnsDomain", ctx, ensDomain)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMintedByEnsDomain indicates an expected call of GetMintedByEnsDomain.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetMintedByEnsDomain(ensDomain any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetMintedByEnsDomain(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedByEnsDomain", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetMintedByEnsDomain), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedByEnsDomain", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetMintedByEnsDomain), ctx, ensDomain)
 }
 
 // GetNotYetMintedByCollectionAddressAndProposalId mocks base method.
-func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress string, proposalId uint64) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressAndProposalId(ctx context.Context, collectionAddress string, proposalId uint64) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNotYetMintedByCollectionAddressAndProposalId", collectionAddress, proposalId)
+	ret := m.ctrl.Call(m, "GetNotYetMintedByCollectionAddressAndProposalId", ctx, collectionAddress, proposalId)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNotYetMintedByCollectionAddressAndProposalId indicates an expected call of GetNotYetMintedByCollectionAddressAndProposalId.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress, proposalId any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressAndProposalId(ctx, collectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressAndProposalId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressAndProposalId), collectionAddress, proposalId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressAndProposalId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressAndProposalId), ctx, collectionAddress, proposalId)
 }
 
 // Remove mocks base method.
-func (m *MockAgentRepositoryInterface) Remove(agent *models.Agent) error {
+func (m *MockAgentRepositoryInterface) Remove(ctx context.Context, agent *models.Agent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Remove", agent)
+	ret := m.ctrl.Call(m, "Remove", ctx, agent)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Remove indicates an expected call of Remove.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) Remove(agent any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) Remove(ctx, agent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Remove), agent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Remove), ctx, agent)
 }
 
 // Save mocks base method.
-func (m *MockAgentRepositoryInterface) Save(entity *models.Agent) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) Save(ctx context.Context, entity *models.Agent) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Save), ctx, entity)
 }
 
 // SaveUsingTransaction mocks base method.
-func (m *MockAgentRepositoryInterface) SaveUsingTransaction(entity *models.Agent, tx *gorm.DB) (*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) SaveUsingTransaction(ctx context.Context, entity *models.Agent, tx *gorm.DB) (*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUsingTransaction", entity, tx)
+	ret := m.ctrl.Call(m, "SaveUsingTransaction", ctx, entity, tx)
 	ret0, _ := ret[0].(*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUsingTransaction indicates an expected call of SaveUsingTransaction.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) SaveUsingTransaction(entity, tx any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) SaveUsingTransaction(ctx, entity, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).SaveUsingTransaction), entity, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).SaveUsingTransaction), ctx, entity, tx)
 }
 
 // Search mocks base method.
-func (m *MockAgentRepositoryInterface) Search(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+func (m *MockAgentRepositoryInterface) Search(ctx context.Context, params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Search", params)
+	ret := m.ctrl.Call(m, "Search", ctx, params)
 	ret0, _ := ret[0].([]*models.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Search indicates an expected call of Search.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) Search(params any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) Search(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Search), params)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).Search), ctx, params)
 }
 
 // SearchCount mocks base method.
-func (m *MockAgentRepositoryInterface) SearchCount(params repositories.AgentSearchParams) (uint, error) {
+func (m *MockAgentRepositoryInterface) SearchCount(ctx context.Context, params repositories.AgentSearchParams) (uint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchCount", params)
+	ret := m.ctrl.Call(m, "SearchCount", ctx, params)
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchCount indicates an expected call of SearchCount.
-func (mr *MockAgentRepositoryInterfaceMockRecorder) SearchCount(params any) *gomock.Call {
+func (mr *MockAgentRepositoryInterfaceMockRecorder) SearchCount(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCount", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).SearchCount), params)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCount", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).SearchCount), ctx, params)
 }

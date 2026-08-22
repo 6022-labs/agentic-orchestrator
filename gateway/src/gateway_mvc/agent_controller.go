@@ -77,7 +77,7 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgent.Get(request)
+	response, err := controller.getAgent.Get(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to get agent", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -108,7 +108,7 @@ func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	resp, err := controller.listAgents.List(request)
+	resp, err := controller.listAgents.List(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to list agents", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -142,7 +142,7 @@ func (controller *AgentController) GetAgentCard(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentCard.Get(request)
+	response, err := controller.getAgentCard.Get(c.UserContext(), request)
 	if err != nil {
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
@@ -172,7 +172,7 @@ func (controller *AgentController) GetAgentUrl(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentUrl.Get(request)
+	response, err := controller.getAgentUrl.Get(c.UserContext(), request)
 	if err != nil {
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
@@ -203,7 +203,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentPromptTemplate.Get(request)
+	response, err := controller.getAgentPromptTemplate.Get(c.UserContext(), request)
 	if err != nil {
 		return controller.writeUseCaseError(c, err)
 	}
@@ -235,7 +235,7 @@ func (controller *AgentController) SaveAgentPromptTemplate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.saveAgentPromptTemplate.Save(request)
+	response, err := controller.saveAgentPromptTemplate.Save(c.UserContext(), request)
 	if err != nil {
 		return controller.writeUseCaseError(c, err)
 	}

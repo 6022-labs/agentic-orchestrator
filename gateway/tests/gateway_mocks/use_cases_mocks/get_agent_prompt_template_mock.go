@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockGetAgentPromptTemplateInterface) EXPECT() *MockGetAgentPromptTempla
 }
 
 // Get mocks base method.
-func (m *MockGetAgentPromptTemplateInterface) Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (m *MockGetAgentPromptTemplateInterface) Get(ctx context.Context, request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", request)
+	ret := m.ctrl.Call(m, "Get", ctx, request)
 	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockGetAgentPromptTemplateInterfaceMockRecorder) Get(request any) *gomock.Call {
+func (mr *MockGetAgentPromptTemplateInterfaceMockRecorder) Get(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetAgentPromptTemplateInterface)(nil).Get), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetAgentPromptTemplateInterface)(nil).Get), ctx, request)
 }

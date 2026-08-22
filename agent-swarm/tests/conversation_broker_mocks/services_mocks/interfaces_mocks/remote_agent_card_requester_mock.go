@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,9 +42,9 @@ func (m *MockRemoteAgentCardRequesterInterface) EXPECT() *MockRemoteAgentCardReq
 }
 
 // GetCard mocks base method.
-func (m *MockRemoteAgentCardRequesterInterface) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
+func (m *MockRemoteAgentCardRequesterInterface) GetCard(ctx context.Context, agentUrl string) (*models.RemoteAgentCard, []byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCard", agentUrl)
+	ret := m.ctrl.Call(m, "GetCard", ctx, agentUrl)
 	ret0, _ := ret[0].(*models.RemoteAgentCard)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(error)
@@ -51,7 +52,7 @@ func (m *MockRemoteAgentCardRequesterInterface) GetCard(agentUrl string) (*model
 }
 
 // GetCard indicates an expected call of GetCard.
-func (mr *MockRemoteAgentCardRequesterInterfaceMockRecorder) GetCard(agentUrl any) *gomock.Call {
+func (mr *MockRemoteAgentCardRequesterInterfaceMockRecorder) GetCard(ctx, agentUrl any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCard", reflect.TypeOf((*MockRemoteAgentCardRequesterInterface)(nil).GetCard), agentUrl)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCard", reflect.TypeOf((*MockRemoteAgentCardRequesterInterface)(nil).GetCard), ctx, agentUrl)
 }

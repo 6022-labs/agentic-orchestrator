@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -41,14 +43,18 @@ func TestWhenStoringX402PaymentChallenge(t *testing.T) {
 
 			suite := WhenStoringX402PaymentChallengeBeforeEach(t)
 			suite.cacheStorage.EXPECT().
-				Store("x402-payment-challenges/agent.eth", gomock.Any(), gomock.Any()).
-				DoAndReturn(func(key, value string, expiration *time.Duration) error {
+				Store(gomock.Any(), "x402-payment-challenges/agent.eth", gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, expiration *time.Duration) error {
 					assert.Contains(t, value, `"x402Version":2`)
 					assert.Equal(t, 120*time.Second, *expiration)
 					return nil
 				})
 
-			suite.sut.Store(" Agent.ETH ", &models.X402PaymentChallenge{X402Version: models.X402Version})
+			suite.sut.Store(
+				context.Background(),
+				" Agent.ETH ",
+				&models.X402PaymentChallenge{X402Version: models.X402Version},
+			)
 		})
 	})
 
@@ -60,10 +66,14 @@ func TestWhenStoringX402PaymentChallenge(t *testing.T) {
 
 			suite := WhenStoringX402PaymentChallengeBeforeEach(t)
 			suite.cacheStorage.EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any()).
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(assert.AnError)
 
-			suite.sut.Store("agent.eth", &models.X402PaymentChallenge{X402Version: models.X402Version})
+			suite.sut.Store(
+				context.Background(),
+				"agent.eth",
+				&models.X402PaymentChallenge{X402Version: models.X402Version},
+			)
 		})
 	})
 }

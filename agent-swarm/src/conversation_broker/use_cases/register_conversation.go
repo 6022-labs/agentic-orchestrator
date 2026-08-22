@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -11,7 +13,10 @@ import (
 )
 
 type RegisterConversationInterface interface {
-	Register(request *requests.RegisterConversationRequest) (*responses.ConversationResponse, error)
+	Register(
+		ctx context.Context,
+		request *requests.RegisterConversationRequest,
+	) (*responses.ConversationResponse, error)
 }
 
 type RegisterConversation struct {
@@ -36,13 +41,14 @@ func NewRegisterConversation(
 }
 
 func (uc *RegisterConversation) Register(
+	ctx context.Context,
 	request *requests.RegisterConversationRequest,
 ) (*responses.ConversationResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	bridge, err := uc.bridgeRepository.GetById(request.BridgeID)
+	bridge, err := uc.bridgeRepository.GetById(ctx, request.BridgeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load bridge: %w", err)
 	}
@@ -51,7 +57,7 @@ func (uc *RegisterConversation) Register(
 	}
 
 	for _, pid := range request.ParticipantIDs {
-		participant, err := uc.participantRepository.GetById(pid)
+		participant, err := uc.participantRepository.GetById(ctx, pid)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load participant %s: %w", pid, err)
 		}
@@ -64,7 +70,7 @@ func (uc *RegisterConversation) Register(
 		BridgeID:    request.BridgeID,
 		Description: request.Description,
 	}
-	saved, err := uc.conversationRepository.Save(conversation)
+	saved, err := uc.conversationRepository.Save(ctx, conversation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save conversation: %w", err)
 	}
@@ -74,7 +80,7 @@ func (uc *RegisterConversation) Register(
 			ConversationID: saved.ID,
 			ParticipantID:  pid,
 		}
-		if _, err := uc.conversationParticipantRepository.Save(link); err != nil {
+		if _, err := uc.conversationParticipantRepository.Save(ctx, link); err != nil {
 			return nil, fmt.Errorf("failed to attach participant %s: %w", pid, err)
 		}
 	}

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
@@ -32,7 +34,7 @@ func TestWhenGettingCurrentBlockNumber(t *testing.T) {
 			// Parallel tests share the chain, so the head only ever moves forward.
 			minimumBlock := suite.fixture.currentBlock()
 
-			blockNumber, err := suite.sut.GetCurrentBlockNumber()
+			blockNumber, err := suite.sut.GetCurrentBlockNumber(context.Background())
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, blockNumber) {
@@ -44,12 +46,12 @@ func TestWhenGettingCurrentBlockNumber(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingCurrentBlockNumberBeforeEach(t)
 
-			before, err := suite.sut.GetCurrentBlockNumber()
+			before, err := suite.sut.GetCurrentBlockNumber(context.Background())
 			assert.NoError(t, err)
 
 			suite.fixture.mintAgent("block-number-agent")
 
-			after, err := suite.sut.GetCurrentBlockNumber()
+			after, err := suite.sut.GetCurrentBlockNumber(context.Background())
 			assert.NoError(t, err)
 			if assert.NotNil(t, before) && assert.NotNil(t, after) {
 				assert.Greater(t, *after, *before)

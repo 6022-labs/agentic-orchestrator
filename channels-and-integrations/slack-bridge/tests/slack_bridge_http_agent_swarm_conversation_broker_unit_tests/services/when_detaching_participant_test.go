@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -58,7 +60,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			suite := WhenDetachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.NoError(t, suite.sut.DetachParticipant(conversationId, participantId))
+			assert.NoError(t, suite.sut.DetachParticipant(context.Background(), conversationId, participantId))
 		})
 	})
 
@@ -81,7 +83,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			suite := WhenDetachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.DetachParticipant(uuid.New(), uuid.New()))
+			assert.Error(t, suite.sut.DetachParticipant(context.Background(), uuid.New(), uuid.New()))
 		})
 	})
 
@@ -101,7 +103,7 @@ func TestWhenDetachingParticipant(t *testing.T) {
 			suite := WhenDetachingParticipantBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.DetachParticipant(uuid.New(), uuid.New()))
+			assert.Error(t, suite.sut.DetachParticipant(context.Background(), uuid.New(), uuid.New()))
 		})
 	})
 }

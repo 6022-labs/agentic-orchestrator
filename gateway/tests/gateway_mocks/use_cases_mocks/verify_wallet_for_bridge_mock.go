@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockVerifyWalletForBridgeInterface) EXPECT() *MockVerifyWalletForBridge
 }
 
 // Verify mocks base method.
-func (m *MockVerifyWalletForBridgeInterface) Verify(request *requests.VerifyWalletForBridgeRequest) error {
+func (m *MockVerifyWalletForBridgeInterface) Verify(ctx context.Context, request *requests.VerifyWalletForBridgeRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Verify", request)
+	ret := m.ctrl.Call(m, "Verify", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Verify indicates an expected call of Verify.
-func (mr *MockVerifyWalletForBridgeInterfaceMockRecorder) Verify(request any) *gomock.Call {
+func (mr *MockVerifyWalletForBridgeInterfaceMockRecorder) Verify(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockVerifyWalletForBridgeInterface)(nil).Verify), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockVerifyWalletForBridgeInterface)(nil).Verify), ctx, request)
 }

@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -76,7 +78,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			request := generateValidIngestMessageRequest()
 			request.Content = ""
 
-			_, err := suite.sut.Ingest(request)
+			_, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "content")
@@ -89,7 +91,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			request := generateValidIngestMessageRequest()
 			request.ParticipantID = uuid.Nil
 
-			_, err := suite.sut.Ingest(request)
+			_, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "participantId")
@@ -101,7 +103,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -113,7 +115,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			request := generateValidIngestMessageRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Ingest(request)
+			_, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -125,9 +127,12 @@ func TestWhenIngestingMessage(t *testing.T) {
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetById(request.ParticipantID).
+				GetById(gomock.Any(), request.ParticipantID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -143,7 +148,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			_, err := suite.sut.Ingest(request)
+			_, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -157,19 +162,27 @@ func TestWhenIngestingMessage(t *testing.T) {
 		userParticipant := model_builders.NewUserParticipantBuilder().Build()
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
-			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any()).Return(nil, nil).Times(1)
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(userParticipant.ID).Return(userParticipant, nil).Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().Resolve(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), userParticipant.ID).
+				Return(userParticipant, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.Equal(t, enums.ConversationStatusActive, c.Status)
 					assert.NotNil(t, c.UnconcludedAt)
 					return c, nil
 				}).
 				Times(1)
-			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
-				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.ConversationMessage) (*models.ConversationMessage, error) {
+					return m, nil
+				}).
 				Times(1)
 		}
 
@@ -184,7 +197,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			message, err := suite.sut.Ingest(request)
+			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, message.Content)
@@ -200,21 +213,29 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(gomock.Any()).
+				Resolve(gomock.Any(), gomock.Any()).
 				Return(lo.ToPtr(enums.ParticipantRoleHuman), nil).
 				Times(1)
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(humanAgent.ID).Return(humanAgent, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), humanAgent.ID).
+				Return(humanAgent, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.Equal(t, enums.ConversationStatusActive, c.Status)
 					assert.NotNil(t, c.UnconcludedAt)
 					return c, nil
 				}).
 				Times(1)
-			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
-				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.ConversationMessage) (*models.ConversationMessage, error) {
+					return m, nil
+				}).
 				Times(1)
 		}
 
@@ -229,7 +250,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			message, err := suite.sut.Ingest(request)
+			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, message.Content)
@@ -245,14 +266,19 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(gomock.Any()).
+				Resolve(gomock.Any(), gomock.Any()).
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(aiAgent.ID).Return(aiAgent, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().GetById(gomock.Any(), aiAgent.ID).Return(aiAgent, nil).Times(1)
 			// No Save on the conversation repository — AI agents must not reopen.
-			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any()).
-				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) { return m, nil }).
+			suite.mockConversationMessageRepository.EXPECT().Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.ConversationMessage) (*models.ConversationMessage, error) {
+					return m, nil
+				}).
 				Times(1)
 		}
 
@@ -267,7 +293,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			message, err := suite.sut.Ingest(request)
+			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, message.Content)
@@ -282,14 +308,20 @@ func TestWhenIngestingMessage(t *testing.T) {
 
 		initSuite := func(suite *WhenIngestingMessageTestingSuite, request *requests.IngestMessageRequest) {
 			suite.mockParticipantRoleResolver.EXPECT().
-				Resolve(gomock.Any()).
+				Resolve(gomock.Any(), gomock.Any()).
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
-			suite.mockParticipantRepository.EXPECT().GetById(participant.ID).Return(participant, nil).Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				GetById(gomock.Any(), participant.ID).
+				Return(participant, nil).
+				Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(m *models.ConversationMessage) (*models.ConversationMessage, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.ConversationMessage) (*models.ConversationMessage, error) {
 					assert.Equal(t, conversation.ID, m.ConversationID)
 					assert.Equal(t, participant.ID, m.ParticipantID)
 					assert.Equal(t, request.Content, m.Content)
@@ -309,7 +341,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			message, err := suite.sut.Ingest(request)
+			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, request.Content, message.Content)

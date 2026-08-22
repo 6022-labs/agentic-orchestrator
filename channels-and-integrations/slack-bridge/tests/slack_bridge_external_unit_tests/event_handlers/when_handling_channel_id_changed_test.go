@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
@@ -43,7 +45,7 @@ func TestWhenHandlingChannelIdChanged(t *testing.T) {
 		initSuite := func(suite *WhenHandlingChannelIdChangedTestingSuite) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				UpdateId(gomock.Any(), gomock.Any()).
+				UpdateId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(assert.AnError)
 		}
 
@@ -53,7 +55,7 @@ func TestWhenHandlingChannelIdChanged(t *testing.T) {
 			suite := WhenHandlingChannelIdChangedBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Handle(&requests.ChannelIdChangedRequest{
+			err := suite.sut.Handle(context.Background(), &requests.ChannelIdChangedRequest{
 				Event: requests.ChannelIdChangedEvent{
 					OldChannelId: "channel_id",
 					NewChannelId: "new_channel_id",
@@ -70,7 +72,7 @@ func TestWhenHandlingChannelIdChanged(t *testing.T) {
 		initSuite := func(suite *WhenHandlingChannelIdChangedTestingSuite) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				UpdateId(gomock.Any(), gomock.Any()).
+				UpdateId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil)
 		}
 
@@ -80,7 +82,7 @@ func TestWhenHandlingChannelIdChanged(t *testing.T) {
 			suite := WhenHandlingChannelIdChangedBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Handle(&requests.ChannelIdChangedRequest{
+			err := suite.sut.Handle(context.Background(), &requests.ChannelIdChangedRequest{
 				Event: requests.ChannelIdChangedEvent{
 					OldChannelId: "channel_id",
 					NewChannelId: "new_channel_id",

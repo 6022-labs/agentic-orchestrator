@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -22,10 +24,10 @@ func NewSyncCheckpointRepository(client db_clients.DatabaseClientInterface) *Syn
 	}
 }
 
-func (r *SyncCheckpointRepository) Get() (*models.SyncCheckpoint, error) {
+func (r *SyncCheckpointRepository) Get(ctx context.Context) (*models.SyncCheckpoint, error) {
 	checkpoint := &models.SyncCheckpoint{}
 
-	tx := r.client.GetDB().First(checkpoint)
+	tx := r.client.GetDB().WithContext(ctx).First(checkpoint)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}

@@ -1,6 +1,8 @@
 package prompts_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -64,11 +66,21 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyCloneSystem).
+				GetByAgentAndKey(
+					gomock.Any(),
+					*agent.CollectionAddress,
+					*agent.CollectionTokenId,
+					enums.AgentPromptTemplateKeyCloneSystem,
+				).
 				Return(model_builders.NewAgentPromptTemplateBuilder().WithContent("SYSTEM {{.ChannelDescription}}").Build(), nil).
 				Times(1)
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(*agent.CollectionAddress, *agent.CollectionTokenId, enums.AgentPromptTemplateKeyCloneDefault).
+				GetByAgentAndKey(
+					gomock.Any(),
+					*agent.CollectionAddress,
+					*agent.CollectionTokenId,
+					enums.AgentPromptTemplateKeyCloneDefault,
+				).
 				Return(
 					model_builders.NewAgentPromptTemplateBuilder().
 						WithContent("REPLY TO {{.LatestRequest.Content}}").
@@ -78,7 +90,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				Times(1)
 			// ChannelMembers + Latest/Initial authors resolve through the registry.
 			suite.mockRegistryAgentResolver.EXPECT().
-				ResolveByEnsDomain(gomock.Any()).
+				ResolveByEnsDomain(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -89,7 +101,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput(
+			turn, err := suite.sut.BuildInput(context.Background(),
 				"slack",
 				agent,
 				lo.ToPtr(enums.ParticipantRoleClone),
@@ -127,11 +139,11 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(2)
 			suite.mockRegistryAgentResolver.EXPECT().
-				ResolveByEnsDomain(gomock.Any()).
+				ResolveByEnsDomain(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -142,7 +154,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			turn, err := suite.sut.BuildInput(
+			turn, err := suite.sut.BuildInput(context.Background(),
 				"web",
 				agent,
 				lo.ToPtr(enums.ParticipantRoleClone),
@@ -177,7 +189,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 		initSuite := func(suite *WhenBuildingConversationPromptsTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(
+				GetByAgentAndKey(gomock.Any(),
 					*agent.CollectionAddress,
 					*agent.CollectionTokenId,
 					enums.AgentPromptTemplateKeyFacilitatorConclude,
@@ -185,7 +197,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 				Return(nil, nil).
 				Times(1)
 			suite.mockRegistryAgentResolver.EXPECT().
-				ResolveByEnsDomain(gomock.Any()).
+				ResolveByEnsDomain(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 		}
@@ -196,7 +208,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 			initSuite(suite)
 
-			concludeTurn, err := suite.sut.BuildConcludeInput(
+			concludeTurn, err := suite.sut.BuildConcludeInput(context.Background(),
 				baseTurn,
 				[]string{"first completion"},
 				agent,
@@ -228,7 +240,7 @@ func TestWhenBuildingConversationPrompts(t *testing.T) {
 
 			suite := WhenBuildingConversationPromptsBeforeEach(t)
 
-			_, err := suite.sut.BuildInput(
+			_, err := suite.sut.BuildInput(context.Background(),
 				"web",
 				agent,
 				lo.ToPtr(enums.ParticipantRoleHuman),

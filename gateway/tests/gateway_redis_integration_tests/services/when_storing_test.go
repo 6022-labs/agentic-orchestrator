@@ -45,7 +45,7 @@ func TestWhenStoring(t *testing.T) {
 			suite := WhenStoringBeforeEach()
 			defer WhenStoringAfterEach(suite)
 
-			err := suite.sut.Store("test-key-1", "test-value", nil)
+			err := suite.sut.Store(context.Background(), "test-key-1", "test-value", nil)
 			assert.Nil(t, err)
 		})
 	})
@@ -61,7 +61,7 @@ func TestWhenStoring(t *testing.T) {
 
 			duration := time.Second
 
-			err := suite.sut.Store("test-key-2", "test-value", &duration)
+			err := suite.sut.Store(context.Background(), "test-key-2", "test-value", &duration)
 			assert.Nil(t, err)
 
 			secret, err := suite.redisClient.Get(context.Background(), "test-key-2").Result()
@@ -77,7 +77,7 @@ func TestWhenStoring(t *testing.T) {
 
 			duration := time.Second
 
-			err := suite.sut.Store("test-key-3", "test-value", &duration)
+			err := suite.sut.Store(context.Background(), "test-key-3", "test-value", &duration)
 			assert.Nil(t, err)
 
 			time.Sleep(duration * 2)

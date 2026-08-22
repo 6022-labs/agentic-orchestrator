@@ -1,6 +1,8 @@
 package registry_synchronizer_listeners
 
 import (
+	"context"
+
 	"fmt"
 	"slices"
 
@@ -44,12 +46,12 @@ func NewAgentCollectionAgentImageRemovedListener(
 	return el
 }
 
-func (listener *AgentCollectionAgentImageRemovedListener) Listen() error {
-	return listener.AbstractUpdatableSubscriptionListener.Listen()
+func (listener *AgentCollectionAgentImageRemovedListener) Listen(ctx context.Context) error {
+	return listener.AbstractUpdatableSubscriptionListener.Listen(ctx)
 }
 
-func (listener *AgentCollectionAgentImageRemovedListener) SubscribeAll() error {
-	collections, err := listener.agentCollectionRepository.GetAll()
+func (listener *AgentCollectionAgentImageRemovedListener) SubscribeAll(ctx context.Context) error {
+	collections, err := listener.agentCollectionRepository.GetAll(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collections: %w", err)
 	}
@@ -72,6 +74,7 @@ func (listener *AgentCollectionAgentImageRemovedListener) SubscribeAll() error {
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageRemovedSubscription(
+		ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -82,7 +85,7 @@ func (listener *AgentCollectionAgentImageRemovedListener) SubscribeAll() error {
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"subscribed to AgentCollection.AgentImageRemoved events",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -104,12 +107,13 @@ func (listener *AgentCollectionAgentImageRemovedListener) Subscribe(collectionAd
 	return nil
 }
 
-func (listener *AgentCollectionAgentImageRemovedListener) rebuildSubscription() error {
+func (listener *AgentCollectionAgentImageRemovedListener) rebuildSubscription(ctx context.Context) error {
 	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
 	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartAgentImageRemovedSubscription(
+		ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -123,7 +127,7 @@ func (listener *AgentCollectionAgentImageRemovedListener) rebuildSubscription() 
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"rebuilt AgentCollection.AgentImageRemoved subscription",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -131,7 +135,7 @@ func (listener *AgentCollectionAgentImageRemovedListener) rebuildSubscription() 
 	return nil
 }
 
-func (listener *AgentCollectionAgentImageRemovedListener) startSubscriptionHandler(
+func (listener *AgentCollectionAgentImageRemovedListener) startSubscriptionHandler(ctx context.Context,
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionV1AgentImageRemoved,
 ) {
@@ -161,6 +165,8 @@ func (listener *AgentCollectionAgentImageRemovedListener) startSubscriptionHandl
 				}
 
 				listener.onBlockSeen(event.Raw.BlockNumber)
+			case <-ctx.Done():
+				return
 			case err := <-subscription.Err():
 				if err == nil {
 					return

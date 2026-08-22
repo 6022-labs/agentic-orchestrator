@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -48,14 +50,14 @@ func (s *WhenListingProcessableConversationsForParticipantTestingSuite) seedConv
 	bridgeId uuid.UUID,
 ) *models.Conversation {
 	conv := model_builders.NewConversationBuilder().WithBridgeID(bridgeId).Build()
-	_, _ = s.sut.Save(conv)
+	_, _ = s.sut.Save(context.Background(), conv)
 	return conv
 }
 
 func (s *WhenListingProcessableConversationsForParticipantTestingSuite) attach(
 	conversationId, participantId uuid.UUID,
 ) {
-	_, _ = s.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
+	_, _ = s.conversationParticipants.Save(context.Background(), model_builders.NewConversationParticipantBuilder().
 		WithConversationID(conversationId).
 		WithParticipantID(participantId).
 		Build())
@@ -66,7 +68,7 @@ func (s *WhenListingProcessableConversationsForParticipantTestingSuite) postMess
 	content string,
 	createdAt time.Time,
 ) {
-	_, _ = s.messages.Save(model_builders.NewConversationMessageBuilder().
+	_, _ = s.messages.Save(context.Background(), model_builders.NewConversationMessageBuilder().
 		WithConversationID(conversationId).
 		WithParticipantID(participantId).
 		WithContent(content).
@@ -88,9 +90,9 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 
 			facilitator := model_builders.NewAgentParticipantBuilder().
 				Build()
-			_, _ = suite.participants.Save(facilitator)
+			_, _ = suite.participants.Save(context.Background(), facilitator)
 
-			result, err := suite.sut.ListProcessableForParticipant(
+			result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 				facilitator,
 				lo.ToPtr(enums.ParticipantRoleFacilitator),
 				uint64(30),
@@ -111,20 +113,20 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 
 			facilitator := model_builders.NewAgentParticipantBuilder().
 				Build()
-			_, _ = suite.participants.Save(facilitator)
+			_, _ = suite.participants.Save(context.Background(), facilitator)
 
 			concluded := model_builders.NewConversationBuilder().
 				WithBridgeID(bridge.ID).
 				WithStatus(enums.ConversationStatusConcluded).
 				Build()
-			_, _ = suite.sut.Save(concluded)
+			_, _ = suite.sut.Save(context.Background(), concluded)
 			suite.attach(concluded.ID, facilitator.ID)
 
-			result, err := suite.sut.ListProcessableForParticipant(
+			result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 				facilitator,
 				lo.ToPtr(enums.ParticipantRoleFacilitator),
 				uint64(30),
@@ -148,14 +150,14 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				facilitator := model_builders.NewAgentParticipantBuilder().
 					Build()
-				_, _ = suite.participants.Save(facilitator)
+				_, _ = suite.participants.Save(context.Background(), facilitator)
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, facilitator.ID)
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					facilitator,
 					lo.ToPtr(enums.ParticipantRoleFacilitator),
 					uint64(30),
@@ -176,15 +178,15 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				facilitator := model_builders.NewAgentParticipantBuilder().
 					Build()
-				_, _ = suite.participants.Save(facilitator)
+				_, _ = suite.participants.Save(context.Background(), facilitator)
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, facilitator.ID)
 				suite.postMessage(conv.ID, facilitator.ID, "recent", time.Now().Add(-5*time.Second))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					facilitator,
 					lo.ToPtr(enums.ParticipantRoleFacilitator),
 					uint64(30),
@@ -205,15 +207,15 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				facilitator := model_builders.NewAgentParticipantBuilder().
 					Build()
-				_, _ = suite.participants.Save(facilitator)
+				_, _ = suite.participants.Save(context.Background(), facilitator)
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, facilitator.ID)
 				suite.postMessage(conv.ID, facilitator.ID, "ancient", time.Now().Add(-10*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					facilitator,
 					lo.ToPtr(enums.ParticipantRoleFacilitator),
 					uint64(30),
@@ -238,20 +240,20 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				human := model_builders.NewAgentParticipantBuilder().
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
-				_, _ = suite.participants.Save(human)
+				_, _ = suite.participants.Save(context.Background(), human)
 
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, other.ID, "unrelated chatter", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					human,
 					lo.ToPtr(enums.ParticipantRoleHuman),
 					uint64(30),
@@ -272,19 +274,19 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				human := model_builders.NewAgentParticipantBuilder().
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
-				_, _ = suite.participants.Save(human)
+				_, _ = suite.participants.Save(context.Background(), human)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, other.ID, "hey pierre.eth check this", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					human,
 					lo.ToPtr(enums.ParticipantRoleHuman),
 					uint64(30),
@@ -305,17 +307,17 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				human := model_builders.NewAgentParticipantBuilder().
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
-				_, _ = suite.participants.Save(human)
+				_, _ = suite.participants.Save(context.Background(), human)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, human.ID, "hello team", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					human,
 					lo.ToPtr(enums.ParticipantRoleHuman),
 					uint64(30),
@@ -336,20 +338,20 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				human := model_builders.NewAgentParticipantBuilder().
 					Build()
 				human.EnsDomain = lo.ToPtr("pierre.eth")
-				_, _ = suite.participants.Save(human)
+				_, _ = suite.participants.Save(context.Background(), human)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, human.ID)
 				suite.postMessage(conv.ID, human.ID, "first post", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, other.ID, "pierre.eth follow up", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					human,
 					lo.ToPtr(enums.ParticipantRoleHuman),
 					uint64(30),
@@ -374,18 +376,18 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
-				_, _ = suite.participants.Save(agent)
+				_, _ = suite.participants.Save(context.Background(), agent)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, other.ID, "unrelated", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					agent,
 					lo.ToPtr(enums.ParticipantRoleClone),
 					uint64(30),
@@ -406,19 +408,19 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
-				_, _ = suite.participants.Save(agent)
+				_, _ = suite.participants.Save(context.Background(), agent)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, other.ID, "helper.eth ping", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, agent.ID, "on it", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					agent,
 					lo.ToPtr(enums.ParticipantRoleClone),
 					uint64(30),
@@ -439,12 +441,12 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
-				_, _ = suite.participants.Save(agent)
+				_, _ = suite.participants.Save(context.Background(), agent)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, agent.ID)
@@ -452,7 +454,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				suite.postMessage(conv.ID, agent.ID, "on it", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, other.ID, "helper.eth follow up", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					agent,
 					lo.ToPtr(enums.ParticipantRoleClone),
 					uint64(30),
@@ -473,17 +475,17 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
-				_, _ = suite.participants.Save(agent)
+				_, _ = suite.participants.Save(context.Background(), agent)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, agent.ID, "hi I am helper.eth", time.Now().Add(-2*time.Minute))
 				suite.postMessage(conv.ID, agent.ID, "still helper.eth here", time.Now().Add(-1*time.Minute))
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					agent,
 					lo.ToPtr(enums.ParticipantRoleClone),
 					uint64(30),
@@ -504,18 +506,18 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
-				_, _ = suite.bridges.Save(bridge)
+				_, _ = suite.bridges.Save(context.Background(), bridge)
 				agent := model_builders.NewAgentParticipantBuilder().Build()
 				agent.EnsDomain = lo.ToPtr("helper.eth")
-				_, _ = suite.participants.Save(agent)
+				_, _ = suite.participants.Save(context.Background(), agent)
 				other := model_builders.NewAgentParticipantBuilder().Build()
-				_, _ = suite.participants.Save(other)
+				_, _ = suite.participants.Save(context.Background(), other)
 
 				conv := suite.seedConversation(bridge.ID)
 				suite.attach(conv.ID, agent.ID)
 				suite.postMessage(conv.ID, other.ID, "helper.eth are you there?", time.Now())
 
-				result, err := suite.sut.ListProcessableForParticipant(
+				result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 					agent,
 					lo.ToPtr(enums.ParticipantRoleClone),
 					uint64(30),
@@ -537,19 +539,19 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 			facilitator := model_builders.NewAgentParticipantBuilder().
 				Build()
 			outsider := model_builders.NewAgentParticipantBuilder().Build()
-			_, _ = suite.participants.Save(facilitator)
-			_, _ = suite.participants.Save(outsider)
+			_, _ = suite.participants.Save(context.Background(), facilitator)
+			_, _ = suite.participants.Save(context.Background(), outsider)
 
 			convA := suite.seedConversation(bridge.ID)
 			convB := suite.seedConversation(bridge.ID)
 			suite.attach(convA.ID, facilitator.ID)
 			suite.attach(convB.ID, outsider.ID)
 
-			result, err := suite.sut.ListProcessableForParticipant(
+			result, err := suite.sut.ListProcessableForParticipant(context.Background(),
 				facilitator,
 				lo.ToPtr(enums.ParticipantRoleFacilitator),
 				uint64(30),

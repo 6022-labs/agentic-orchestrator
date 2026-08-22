@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -70,7 +72,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			agentId := initSuite(suite)
 
-			result, err := suite.sut.ListAgents(&interfaces.ListRegistryAgentsRequest{
+			result, err := suite.sut.ListAgents(context.Background(), &interfaces.ListRegistryAgentsRequest{
 				Page:            lo.ToPtr(uint(2)),
 				ElementsPerPage: lo.ToPtr(uint(10)),
 			})
@@ -114,7 +116,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListAgents(&interfaces.ListRegistryAgentsRequest{})
+			result, err := suite.sut.ListAgents(context.Background(), &interfaces.ListRegistryAgentsRequest{})
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -137,7 +139,7 @@ func TestWhenListingAgents(t *testing.T) {
 			suite := WhenListingAgentsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListAgents(&interfaces.ListRegistryAgentsRequest{})
+			result, err := suite.sut.ListAgents(context.Background(), &interfaces.ListRegistryAgentsRequest{})
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

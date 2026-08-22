@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
@@ -9,7 +11,7 @@ import (
 )
 
 type ListConversationsInterface interface {
-	List(request *requests.ListConversationsRequest) (*responses.ListConversationsResponse, error)
+	List(ctx context.Context, request *requests.ListConversationsRequest) (*responses.ListConversationsResponse, error)
 }
 
 type ListConversations struct {
@@ -21,16 +23,17 @@ func NewListConversations(conversationRepository repositories.ConversationReposi
 }
 
 func (uc *ListConversations) List(
+	ctx context.Context,
 	request *requests.ListConversationsRequest,
 ) (*responses.ListConversationsResponse, error) {
 	request.Sanitize()
 
-	conversations, err := uc.conversationRepository.List(*request.Page, *request.ElementsPerPage)
+	conversations, err := uc.conversationRepository.List(ctx, *request.Page, *request.ElementsPerPage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversations: %w", err)
 	}
 
-	totalElements, err := uc.conversationRepository.Count()
+	totalElements, err := uc.conversationRepository.Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count conversations: %w", err)
 	}

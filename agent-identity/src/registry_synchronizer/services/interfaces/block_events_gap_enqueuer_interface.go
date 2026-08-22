@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type BlockEventsGapEnqueuerInterface interface {
-	EnqueueGap() error
+	EnqueueGap(ctx context.Context) error
 }

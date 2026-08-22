@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -42,7 +44,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
 
-			events, subscription, err := suite.sut.StartMintedSubscription(
+			events, subscription, err := suite.sut.StartMintedSubscription(context.Background(),
 				[]common.Address{suite.fixture.stack.Collection},
 			)
 			assert.NoError(t, err)
@@ -73,7 +75,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
 
-			events, subscription, err := suite.sut.StartMintedSubscription(
+			events, subscription, err := suite.sut.StartMintedSubscription(context.Background(),
 				[]common.Address{suite.fixture.stack.Collection},
 			)
 			assert.NoError(t, err)
@@ -99,7 +101,7 @@ func TestWhenSubscribingToMintedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenSubscribingToMintedEventsBeforeEach(t)
 
-			events, subscription, err := suite.sut.StartMintedSubscription(
+			events, subscription, err := suite.sut.StartMintedSubscription(context.Background(),
 				[]common.Address{common_tests.RandomEthAddress()},
 			)
 			assert.NoError(t, err)

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -42,31 +43,31 @@ func (m *MockConversationPromptBuilderInterface) EXPECT() *MockConversationPromp
 }
 
 // BuildConcludeInput mocks base method.
-func (m *MockConversationPromptBuilderInterface) BuildConcludeInput(turn *models.RemoteAgentInput, completions []string, agent *models.Participant, role *enums.ParticipantRole, conversation *models.Conversation, messages []*models.ConversationMessage, participants []*models.Participant) (*models.RemoteAgentInput, error) {
+func (m *MockConversationPromptBuilderInterface) BuildConcludeInput(ctx context.Context, turn *models.RemoteAgentInput, completions []string, agent *models.Participant, role *enums.ParticipantRole, conversation *models.Conversation, messages []*models.ConversationMessage, participants []*models.Participant) (*models.RemoteAgentInput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildConcludeInput", turn, completions, agent, role, conversation, messages, participants)
+	ret := m.ctrl.Call(m, "BuildConcludeInput", ctx, turn, completions, agent, role, conversation, messages, participants)
 	ret0, _ := ret[0].(*models.RemoteAgentInput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildConcludeInput indicates an expected call of BuildConcludeInput.
-func (mr *MockConversationPromptBuilderInterfaceMockRecorder) BuildConcludeInput(turn, completions, agent, role, conversation, messages, participants any) *gomock.Call {
+func (mr *MockConversationPromptBuilderInterfaceMockRecorder) BuildConcludeInput(ctx, turn, completions, agent, role, conversation, messages, participants any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildConcludeInput", reflect.TypeOf((*MockConversationPromptBuilderInterface)(nil).BuildConcludeInput), turn, completions, agent, role, conversation, messages, participants)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildConcludeInput", reflect.TypeOf((*MockConversationPromptBuilderInterface)(nil).BuildConcludeInput), ctx, turn, completions, agent, role, conversation, messages, participants)
 }
 
 // BuildInput mocks base method.
-func (m *MockConversationPromptBuilderInterface) BuildInput(platform string, agent *models.Participant, role *enums.ParticipantRole, conversation *models.Conversation, messages []*models.ConversationMessage, participants []*models.Participant) (*models.RemoteAgentInput, error) {
+func (m *MockConversationPromptBuilderInterface) BuildInput(ctx context.Context, platform string, agent *models.Participant, role *enums.ParticipantRole, conversation *models.Conversation, messages []*models.ConversationMessage, participants []*models.Participant) (*models.RemoteAgentInput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildInput", platform, agent, role, conversation, messages, participants)
+	ret := m.ctrl.Call(m, "BuildInput", ctx, platform, agent, role, conversation, messages, participants)
 	ret0, _ := ret[0].(*models.RemoteAgentInput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildInput indicates an expected call of BuildInput.
-func (mr *MockConversationPromptBuilderInterfaceMockRecorder) BuildInput(platform, agent, role, conversation, messages, participants any) *gomock.Call {
+func (mr *MockConversationPromptBuilderInterfaceMockRecorder) BuildInput(ctx, platform, agent, role, conversation, messages, participants any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildInput", reflect.TypeOf((*MockConversationPromptBuilderInterface)(nil).BuildInput), platform, agent, role, conversation, messages, participants)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildInput", reflect.TypeOf((*MockConversationPromptBuilderInterface)(nil).BuildInput), ctx, platform, agent, role, conversation, messages, participants)
 }

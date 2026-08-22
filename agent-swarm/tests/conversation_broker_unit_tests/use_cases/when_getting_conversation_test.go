@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -53,7 +55,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			request := generateValidGetConversationRequest()
 			request.ConversationID = uuid.Nil
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "conversationId")
@@ -65,7 +67,7 @@ func TestWhenGettingConversation(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -77,7 +79,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			request := generateValidGetConversationRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -88,7 +90,7 @@ func TestWhenGettingConversation(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -100,7 +102,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			request := generateValidGetConversationRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -113,7 +115,7 @@ func TestWhenGettingConversation(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversation.ID).
+				GetById(gomock.Any(), conversation.ID).
 				Return(conversation, nil).
 				Times(1)
 		}
@@ -125,7 +127,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			request := &requests.ConversationIdRequest{ConversationID: conversation.ID}
 			initSuite(suite)
 
-			got, err := suite.sut.Get(request)
+			got, err := suite.sut.Get(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, conversation.ID, got.ID)

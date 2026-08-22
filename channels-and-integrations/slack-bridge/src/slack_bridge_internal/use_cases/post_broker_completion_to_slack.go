@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"errors"
 	"fmt"
 
@@ -18,7 +20,7 @@ var ErrConversationLinkNotFound = errors.New("slack conversation link not found"
 var ErrSlackAgentNotFound = errors.New("slack agent not found")
 
 type PostBrokerCompletionToSlackInterface interface {
-	Post(request *requests.PostBrokerCompletionToSlackRequest) error
+	Post(ctx context.Context, request *requests.PostBrokerCompletionToSlackRequest) error
 }
 
 type PostBrokerCompletionToSlack struct {
@@ -39,12 +41,15 @@ func NewPostBrokerCompletionToSlack(
 	}
 }
 
-func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompletionToSlackRequest) error {
+func (uc *PostBrokerCompletionToSlack) Post(
+	ctx context.Context,
+	request *requests.PostBrokerCompletionToSlackRequest,
+) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
 
-	link, err := uc.slackConversationRepository.GetByBrokerConversationId(request.ConversationId)
+	link, err := uc.slackConversationRepository.GetByBrokerConversationId(ctx, request.ConversationId)
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack conversation link: %w", err)
 	}
@@ -52,7 +57,7 @@ func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompleti
 		return ErrConversationLinkNotFound
 	}
 
-	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		request.CollectionAddress,
 		request.CollectionTokenId,
 	)
@@ -63,7 +68,7 @@ func (uc *PostBrokerCompletionToSlack) Post(request *requests.PostBrokerCompleti
 		return ErrSlackAgentNotFound
 	}
 
-	if err := uc.slackThreadRequester.PushCompletionToThread(
+	if err := uc.slackThreadRequester.PushCompletionToThread(ctx,
 		request.Content,
 		slackAgent,
 		link.SlackChannelId,

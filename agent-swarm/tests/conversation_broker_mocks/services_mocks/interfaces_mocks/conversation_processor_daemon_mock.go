@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,15 +41,15 @@ func (m *MockConversationProcessorDaemonInterface) EXPECT() *MockConversationPro
 }
 
 // Start mocks base method.
-func (m *MockConversationProcessorDaemonInterface) Start() {
+func (m *MockConversationProcessorDaemonInterface) Start(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Start")
+	m.ctrl.Call(m, "Start", ctx)
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockConversationProcessorDaemonInterfaceMockRecorder) Start() *gomock.Call {
+func (mr *MockConversationProcessorDaemonInterfaceMockRecorder) Start(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConversationProcessorDaemonInterface)(nil).Start))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockConversationProcessorDaemonInterface)(nil).Start), ctx)
 }
 
 // Stop mocks base method.

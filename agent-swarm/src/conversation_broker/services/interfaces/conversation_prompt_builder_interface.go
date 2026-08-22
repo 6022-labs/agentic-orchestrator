@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 )
@@ -11,6 +13,7 @@ import (
 // facilitator conclude prompt.
 type ConversationPromptBuilderInterface interface {
 	BuildInput(
+		ctx context.Context,
 		platform string,
 		agent *models.Participant,
 		role *enums.ParticipantRole,
@@ -19,6 +22,7 @@ type ConversationPromptBuilderInterface interface {
 		participants []*models.Participant,
 	) (*models.RemoteAgentInput, error)
 	BuildConcludeInput(
+		ctx context.Context,
 		turn *models.RemoteAgentInput,
 		completions []string,
 		agent *models.Participant,

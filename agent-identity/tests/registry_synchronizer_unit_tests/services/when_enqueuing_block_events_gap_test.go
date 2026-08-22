@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -77,7 +79,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 
 		initSuite := func(suite *WhenEnqueuingBlockEventsGapTestingSuite) {
 			suite.mockBlockchainRequester.EXPECT().
-				GetCurrentBlockNumber().
+				GetCurrentBlockNumber(gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -87,7 +89,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 			basics := WhenEnqueuingBlockEventsGapBeforeEach(t)
 			initSuite(basics)
 
-			err := basics.sut.EnqueueGap()
+			err := basics.sut.EnqueueGap(context.Background())
 
 			assert.NotNil(t, err)
 			assert.ErrorContains(t, err, "error getting current block number")
@@ -100,12 +102,12 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 		initSuite := func(suite *WhenEnqueuingBlockEventsGapTestingSuite) {
 			toBlock := uint64(200)
 			suite.mockBlockchainRequester.EXPECT().
-				GetCurrentBlockNumber().
+				GetCurrentBlockNumber(gomock.Any()).
 				Return(&toBlock, nil).
 				Times(1)
 
 			suite.mockSyncCheckpointRepository.EXPECT().
-				Get().
+				Get(gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -115,7 +117,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 			basics := WhenEnqueuingBlockEventsGapBeforeEach(t)
 			initSuite(basics)
 
-			err := basics.sut.EnqueueGap()
+			err := basics.sut.EnqueueGap(context.Background())
 
 			assert.NotNil(t, err)
 			assert.ErrorContains(t, err, "failed to get sync checkpoint")
@@ -128,17 +130,17 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 		initSuite := func(suite *WhenEnqueuingBlockEventsGapTestingSuite) {
 			toBlock := uint64(200)
 			suite.mockBlockchainRequester.EXPECT().
-				GetCurrentBlockNumber().
+				GetCurrentBlockNumber(gomock.Any()).
 				Return(&toBlock, nil).
 				Times(1)
 
 			suite.mockSyncCheckpointRepository.EXPECT().
-				Get().
+				Get(gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().
-				GetAgentCollectionsManagerCollectionCreatedEvent(gomock.Any(), gomock.Any()).
+				GetAgentCollectionsManagerCollectionCreatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -148,7 +150,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 			basics := WhenEnqueuingBlockEventsGapBeforeEach(t)
 			initSuite(basics)
 
-			err := basics.sut.EnqueueGap()
+			err := basics.sut.EnqueueGap(context.Background())
 
 			assert.NotNil(t, err)
 			assert.ErrorContains(t, err, "failed to get agent collections manager collection created events")
@@ -161,67 +163,67 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 		initSuite := func(suite *WhenEnqueuingBlockEventsGapTestingSuite) {
 			toBlock := uint64(100)
 			suite.mockBlockchainRequester.EXPECT().
-				GetCurrentBlockNumber().
+				GetCurrentBlockNumber(gomock.Any()).
 				Return(&toBlock, nil).
 				Times(1)
 
 			suite.mockSyncCheckpointRepository.EXPECT().
-				Get().
+				Get(gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionsManagerBlockchainRequester.EXPECT().
-				GetAgentCollectionsManagerCollectionCreatedEvent(gomock.Any(), gomock.Any()).
+				GetAgentCollectionsManagerCollectionCreatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return([]*abi.AgentCollectionsManagerCollectionCreated{}, nil).
 				Times(1)
 
 			suite.mockAgentCollectionRepository.EXPECT().
-				GetAll().
+				GetAll(gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1MintedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1MintedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1TransferEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1TransferEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentImageUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentImageUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentImageRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentImageRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentAttributeUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentAttributeUpdatedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentAddressAddedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentAddressAddedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1AgentAddressRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1AgentAddressRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1MintProposalCreatedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1MintProposalCreatedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			suite.mockAgentCollectionBlockchainRequester.EXPECT().
-				GetAgentCollectionV1MintProposalRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentCollectionV1MintProposalRemovedEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -231,7 +233,7 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 			basics := WhenEnqueuingBlockEventsGapBeforeEach(t)
 			initSuite(basics)
 
-			err := basics.sut.EnqueueGap()
+			err := basics.sut.EnqueueGap(context.Background())
 
 			assert.Nil(t, err)
 		})

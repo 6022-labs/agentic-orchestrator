@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,16 +42,16 @@ func (m *MockRemoteAgentCompletionsRequesterInterface) EXPECT() *MockRemoteAgent
 }
 
 // RequestCompletions mocks base method.
-func (m *MockRemoteAgentCompletionsRequesterInterface) RequestCompletions(card *models.RemoteAgentCard, input *models.RemoteAgentInput) ([]string, error) {
+func (m *MockRemoteAgentCompletionsRequesterInterface) RequestCompletions(ctx context.Context, card *models.RemoteAgentCard, input *models.RemoteAgentInput) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RequestCompletions", card, input)
+	ret := m.ctrl.Call(m, "RequestCompletions", ctx, card, input)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RequestCompletions indicates an expected call of RequestCompletions.
-func (mr *MockRemoteAgentCompletionsRequesterInterfaceMockRecorder) RequestCompletions(card, input any) *gomock.Call {
+func (mr *MockRemoteAgentCompletionsRequesterInterfaceMockRecorder) RequestCompletions(ctx, card, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestCompletions", reflect.TypeOf((*MockRemoteAgentCompletionsRequesterInterface)(nil).RequestCompletions), card, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestCompletions", reflect.TypeOf((*MockRemoteAgentCompletionsRequesterInterface)(nil).RequestCompletions), ctx, card, input)
 }

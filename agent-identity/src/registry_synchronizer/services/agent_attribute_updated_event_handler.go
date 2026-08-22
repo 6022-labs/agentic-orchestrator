@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -23,7 +25,10 @@ func NewAgentAttributeUpdatedEventHandler(
 	}
 }
 
-func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollectionV1AgentAttributeUpdated) error {
+func (handler *AgentAttributeUpdatedEventHandler) Handle(
+	ctx context.Context,
+	event *abi.AgentCollectionV1AgentAttributeUpdated,
+) error {
 	handler.logger.Info("Handling AgentAttributeUpdated event",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
@@ -32,7 +37,7 @@ func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollect
 		zap.String("oldValue", event.OldValue),
 	)
 
-	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		event.Raw.Address.Hex(),
 		event.TokenId.Uint64(),
 	)
@@ -58,7 +63,7 @@ func (handler *AgentAttributeUpdatedEventHandler) Handle(event *abi.AgentCollect
 
 	agent.Attributes[event.Key.String()] = event.NewValue
 
-	_, err = handler.agentRepository.Save(agent)
+	_, err = handler.agentRepository.Save(ctx, agent)
 	if err != nil {
 		return fmt.Errorf("failed to update agent: %w", err)
 	}

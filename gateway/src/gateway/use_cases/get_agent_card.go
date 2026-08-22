@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type GetAgentCardInterface interface {
-	Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentCardResponse, error)
+	Get(ctx context.Context, request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentCardResponse, error)
 }
 
 type GetAgentCard struct {
@@ -28,8 +30,15 @@ func NewGetAgentCard(
 	}
 }
 
-func (uc *GetAgentCard) Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentCardResponse, error) {
-	agent, err := uc.agentRegistryRequester.GetAgent(request.AgentCollectionAddress, request.AgentCollectionTokenId)
+func (uc *GetAgentCard) Get(
+	ctx context.Context,
+	request *requests.AgentByCollectionTokenIdRequest,
+) (*responses.AgentCardResponse, error) {
+	agent, err := uc.agentRegistryRequester.GetAgent(
+		ctx,
+		request.AgentCollectionAddress,
+		request.AgentCollectionTokenId,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load agent: %w", err)
 	}
@@ -40,5 +49,5 @@ func (uc *GetAgentCard) Get(request *requests.AgentByCollectionTokenIdRequest) (
 		return nil, errors.NewNotFoundError("agent has no ens domain: " + request.AgentCollectionAddress)
 	}
 
-	return uc.conversationBrokerRequester.GetAgentCard(agent.EnsDomain)
+	return uc.conversationBrokerRequester.GetAgentCard(ctx, agent.EnsDomain)
 }

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,16 +41,16 @@ func (m *MockEnsUrlResolverInterface) EXPECT() *MockEnsUrlResolverInterfaceMockR
 }
 
 // ResolveUrl mocks base method.
-func (m *MockEnsUrlResolverInterface) ResolveUrl(ensDomain string) (string, error) {
+func (m *MockEnsUrlResolverInterface) ResolveUrl(ctx context.Context, ensDomain string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolveUrl", ensDomain)
+	ret := m.ctrl.Call(m, "ResolveUrl", ctx, ensDomain)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResolveUrl indicates an expected call of ResolveUrl.
-func (mr *MockEnsUrlResolverInterfaceMockRecorder) ResolveUrl(ensDomain any) *gomock.Call {
+func (mr *MockEnsUrlResolverInterfaceMockRecorder) ResolveUrl(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveUrl", reflect.TypeOf((*MockEnsUrlResolverInterface)(nil).ResolveUrl), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveUrl", reflect.TypeOf((*MockEnsUrlResolverInterface)(nil).ResolveUrl), ctx, ensDomain)
 }

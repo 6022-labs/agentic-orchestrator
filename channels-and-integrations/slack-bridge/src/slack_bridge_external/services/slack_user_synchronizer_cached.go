@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -37,14 +39,14 @@ func NewSlackUserSynchronizerCached(
 	}
 }
 
-func (s *SlackUserSynchronizerCached) Sync(id string) (*models.SlackUser, error) {
-	inDatabaseUser, err := s.slackUserRepository.GetById(id)
+func (s *SlackUserSynchronizerCached) Sync(ctx context.Context, id string) (*models.SlackUser, error) {
+	inDatabaseUser, err := s.slackUserRepository.GetById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting user %s from database: %w", id, err)
 	}
 
 	userSyncKey := fmt.Sprintf(USER_SYNC_CACHE_KEY_TEMPLATE, id)
-	isUserSyncInCache, err := s.cacheStorage.ReadBool(userSyncKey)
+	isUserSyncInCache, err := s.cacheStorage.ReadBool(ctx, userSyncKey)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cache for user %s: %w", id, err)
 	}
@@ -52,12 +54,12 @@ func (s *SlackUserSynchronizerCached) Sync(id string) (*models.SlackUser, error)
 	if isUserSyncInCache == nil || !*isUserSyncInCache || inDatabaseUser == nil {
 		s.logger.Debug("User sync not found in cache, syncing from Slack", zap.String("id", id))
 
-		inDatabaseUser, err = s.slackUserSynchronizer.Sync(id)
+		inDatabaseUser, err = s.slackUserSynchronizer.Sync(ctx, id)
 		if err != nil {
 			return nil, fmt.Errorf("error syncing user %s: %w", id, err)
 		}
 
-		s.cacheStorage.Store(userSyncKey, true, &s.cacheSettings.SlackUserSynchronizerTTLMinutes)
+		s.cacheStorage.Store(ctx, userSyncKey, true, &s.cacheSettings.SlackUserSynchronizerTTLMinutes)
 	}
 
 	return inDatabaseUser, nil

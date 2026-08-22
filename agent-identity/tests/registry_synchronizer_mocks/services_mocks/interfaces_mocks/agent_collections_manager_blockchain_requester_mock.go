@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -41,16 +42,16 @@ func (m *MockAgentCollectionsManagerBlockchainRequesterInterface) EXPECT() *Mock
 }
 
 // GetAgentCollectionsManagerCollectionCreatedEvent mocks base method.
-func (m *MockAgentCollectionsManagerBlockchainRequesterInterface) GetAgentCollectionsManagerCollectionCreatedEvent(from, to uint64) ([]*abi.AgentCollectionsManagerCollectionCreated, error) {
+func (m *MockAgentCollectionsManagerBlockchainRequesterInterface) GetAgentCollectionsManagerCollectionCreatedEvent(ctx context.Context, from, to uint64) ([]*abi.AgentCollectionsManagerCollectionCreated, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentCollectionsManagerCollectionCreatedEvent", from, to)
+	ret := m.ctrl.Call(m, "GetAgentCollectionsManagerCollectionCreatedEvent", ctx, from, to)
 	ret0, _ := ret[0].([]*abi.AgentCollectionsManagerCollectionCreated)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentCollectionsManagerCollectionCreatedEvent indicates an expected call of GetAgentCollectionsManagerCollectionCreatedEvent.
-func (mr *MockAgentCollectionsManagerBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionsManagerCollectionCreatedEvent(from, to any) *gomock.Call {
+func (mr *MockAgentCollectionsManagerBlockchainRequesterInterfaceMockRecorder) GetAgentCollectionsManagerCollectionCreatedEvent(ctx, from, to any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionsManagerCollectionCreatedEvent", reflect.TypeOf((*MockAgentCollectionsManagerBlockchainRequesterInterface)(nil).GetAgentCollectionsManagerCollectionCreatedEvent), from, to)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCollectionsManagerCollectionCreatedEvent", reflect.TypeOf((*MockAgentCollectionsManagerBlockchainRequesterInterface)(nil).GetAgentCollectionsManagerCollectionCreatedEvent), ctx, from, to)
 }

@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -10,7 +12,7 @@ import (
 )
 
 type AttachParticipantInterface interface {
-	Attach(request *requests.ConversationParticipantRequest) error
+	Attach(ctx context.Context, request *requests.ConversationParticipantRequest) error
 }
 
 type AttachParticipant struct {
@@ -31,11 +33,11 @@ func NewAttachParticipant(
 	}
 }
 
-func (uc *AttachParticipant) Attach(request *requests.ConversationParticipantRequest) error {
+func (uc *AttachParticipant) Attach(ctx context.Context, request *requests.ConversationParticipantRequest) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
-	conversation, err := uc.conversationRepository.GetById(request.ConversationID)
+	conversation, err := uc.conversationRepository.GetById(ctx, request.ConversationID)
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
 	}
@@ -43,7 +45,7 @@ func (uc *AttachParticipant) Attach(request *requests.ConversationParticipantReq
 		return cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
 	}
 
-	participant, err := uc.participantRepository.GetById(request.ParticipantID)
+	participant, err := uc.participantRepository.GetById(ctx, request.ParticipantID)
 	if err != nil {
 		return fmt.Errorf("failed to load participant: %w", err)
 	}
@@ -55,7 +57,7 @@ func (uc *AttachParticipant) Attach(request *requests.ConversationParticipantReq
 		ConversationID: request.ConversationID,
 		ParticipantID:  request.ParticipantID,
 	}
-	if _, err := uc.conversationParticipantRepository.Save(link); err != nil {
+	if _, err := uc.conversationParticipantRepository.Save(ctx, link); err != nil {
 		return fmt.Errorf("failed to attach participant: %w", err)
 	}
 	return nil

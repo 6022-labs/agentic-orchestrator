@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -56,7 +58,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 			suite := WhenListingAgentCollectionsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListAgentCollections()
+			result, err := suite.sut.ListAgentCollections(context.Background())
 
 			assert.NoError(t, err)
 			if assert.Len(t, result, 1) {
@@ -86,7 +88,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 			suite := WhenListingAgentCollectionsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListAgentCollections()
+			result, err := suite.sut.ListAgentCollections(context.Background())
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -109,7 +111,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 			suite := WhenListingAgentCollectionsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListAgentCollections()
+			result, err := suite.sut.ListAgentCollections(context.Background())
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

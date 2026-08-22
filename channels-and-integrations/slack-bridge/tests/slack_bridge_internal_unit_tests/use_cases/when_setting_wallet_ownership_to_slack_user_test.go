@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -61,7 +63,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 			request := generateValidSetWalletOwnershipToSlackUserRequest()
 			request.Challenge = uuid.Nil
 
-			err := suite.sut.Set(request)
+			err := suite.sut.Set(context.Background(), request)
 
 			assert.NotNil(t, err)
 		})
@@ -73,7 +75,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 			request := generateValidSetWalletOwnershipToSlackUserRequest()
 			request.WalletAddress = "invalid_address"
 
-			err := suite.sut.Set(request)
+			err := suite.sut.Set(context.Background(), request)
 
 			assert.NotNil(t, err)
 		})
@@ -86,11 +88,11 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 			userId := "some-user-id"
 
 			suite.mockWalletOwnershipChallenge.EXPECT().
-				ConsumeChallenge(&request.Challenge).
+				ConsumeChallenge(gomock.Any(), &request.Challenge).
 				Return(&userId, nil)
 
 			suite.mockSlackUserRepository.EXPECT().
-				GetById(userId).
+				GetById(gomock.Any(), userId).
 				Return(nil, errors.New("some error"))
 		}
 
@@ -102,7 +104,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Set(request)
+			err := suite.sut.Set(context.Background(), request)
 
 			assert.NotNil(t, err)
 		})
@@ -115,7 +117,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 			userId := "some-user-id"
 
 			suite.mockWalletOwnershipChallenge.EXPECT().
-				ConsumeChallenge(&request.Challenge).
+				ConsumeChallenge(gomock.Any(), &request.Challenge).
 				Return(&userId, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
@@ -123,11 +125,11 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 				WithWalletAddress(&request.WalletAddress).
 				Build()
 			suite.mockSlackUserRepository.EXPECT().
-				GetById(userId).
+				GetById(gomock.Any(), userId).
 				Return(slackUser, nil)
 
 			suite.mockSlackUserRepository.EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("some error"))
 		}
 
@@ -139,7 +141,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Set(request)
+			err := suite.sut.Set(context.Background(), request)
 
 			assert.NotNil(t, err)
 		})
@@ -152,7 +154,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 			userId := "some-user-id"
 
 			suite.mockWalletOwnershipChallenge.EXPECT().
-				ConsumeChallenge(&request.Challenge).
+				ConsumeChallenge(gomock.Any(), &request.Challenge).
 				Return(&userId, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
@@ -160,11 +162,11 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 				WithWalletAddress(&request.WalletAddress).
 				Build()
 			suite.mockSlackUserRepository.EXPECT().
-				GetById(userId).
+				GetById(gomock.Any(), userId).
 				Return(slackUser, nil)
 
 			suite.mockSlackUserRepository.EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 		}
 
@@ -176,7 +178,7 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Set(request)
+			err := suite.sut.Set(context.Background(), request)
 
 			assert.Nil(t, err)
 		})

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -69,7 +71,7 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 		initSuite := func(suite *WhenPostingCompletionCallbackTestingSuite) {
 			suite.mockClient.EXPECT().
 				PostBrokerCallbackWithBodyWithResponse(gomock.Any(), "application/json", gomock.Any()).
-				DoAndReturn(func(_ any, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostBrokerCallbackResponse, error) {
+				DoAndReturn(func(_ context.Context, _ string, body io.Reader, _ ...clients.RequestEditorFn) (*clients.PostBrokerCallbackResponse, error) {
 					var request clients.RequestsPostBrokerCompletionToSlackRequest
 					assert.NoError(t, json.NewDecoder(body).Decode(&request))
 					assert.Equal(t, suite.conversation.ID.String(), *request.ConversationId)
@@ -90,7 +92,13 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 			suite := WhenPostingCompletionCallbackBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PostCompletion(suite.bridge, suite.conversation, suite.agent, "hello")
+			err := suite.sut.PostCompletion(
+				context.Background(),
+				suite.bridge,
+				suite.conversation,
+				suite.agent,
+				"hello",
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "http://slack-bridge.local", *suite.capturedBaseUrl)
@@ -116,7 +124,13 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 			suite := WhenPostingCompletionCallbackBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PostCompletion(suite.bridge, suite.conversation, suite.agent, "hello")
+			err := suite.sut.PostCompletion(
+				context.Background(),
+				suite.bridge,
+				suite.conversation,
+				suite.agent,
+				"hello",
+			)
 
 			assert.Error(t, err)
 		})
@@ -135,7 +149,13 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 			suite := WhenPostingCompletionCallbackBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PostCompletion(suite.bridge, suite.conversation, suite.agent, "hello")
+			err := suite.sut.PostCompletion(
+				context.Background(),
+				suite.bridge,
+				suite.conversation,
+				suite.agent,
+				"hello",
+			)
 
 			assert.Error(t, err)
 		})
@@ -157,7 +177,13 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 			suite := WhenPostingCompletionCallbackBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PostCompletion(suite.bridge, suite.conversation, suite.agent, "hello")
+			err := suite.sut.PostCompletion(
+				context.Background(),
+				suite.bridge,
+				suite.conversation,
+				suite.agent,
+				"hello",
+			)
 
 			assert.Error(t, err)
 		})
@@ -176,7 +202,13 @@ func TestWhenPostingCompletionCallback(t *testing.T) {
 			suite := WhenPostingCompletionCallbackBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.PostCompletion(suite.bridge, suite.conversation, suite.agent, "hello")
+			err := suite.sut.PostCompletion(
+				context.Background(),
+				suite.bridge,
+				suite.conversation,
+				suite.agent,
+				"hello",
+			)
 
 			assert.Error(t, err)
 			assert.Empty(t, *suite.capturedBaseUrl)

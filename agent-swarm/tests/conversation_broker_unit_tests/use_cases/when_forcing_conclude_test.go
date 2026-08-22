@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -52,7 +54,7 @@ func TestWhenForcingConclude(t *testing.T) {
 			request := generateValidForceConcludeRequest()
 			request.ConversationID = uuid.Nil
 
-			err := suite.sut.Conclude(request)
+			err := suite.sut.Conclude(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "conversationId")
@@ -64,7 +66,7 @@ func TestWhenForcingConclude(t *testing.T) {
 
 		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationConclude.EXPECT().
-				ConcludeIfExists(request.ConversationID).
+				ConcludeIfExists(gomock.Any(), request.ConversationID).
 				Return(errors.New("boom")).
 				Times(1)
 		}
@@ -76,7 +78,7 @@ func TestWhenForcingConclude(t *testing.T) {
 			request := generateValidForceConcludeRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Conclude(request)
+			err := suite.sut.Conclude(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -87,7 +89,7 @@ func TestWhenForcingConclude(t *testing.T) {
 
 		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationConclude.EXPECT().
-				ConcludeIfExists(request.ConversationID).
+				ConcludeIfExists(gomock.Any(), request.ConversationID).
 				Return(nil).
 				Times(1)
 		}
@@ -99,7 +101,7 @@ func TestWhenForcingConclude(t *testing.T) {
 			request := generateValidForceConcludeRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Conclude(request)
+			err := suite.sut.Conclude(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

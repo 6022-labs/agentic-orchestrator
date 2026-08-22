@@ -1,6 +1,8 @@
 package event_handlers
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -10,7 +12,7 @@ import (
 )
 
 type MessageChangedHandlerInterface interface {
-	Handle(request *requests.MessageChangedRequest) error
+	Handle(ctx context.Context, request *requests.MessageChangedRequest) error
 }
 
 type MessageChangedHandler struct {
@@ -31,7 +33,7 @@ func NewMessageChangedHandler(
 	}
 }
 
-func (h *MessageChangedHandler) Handle(request *requests.MessageChangedRequest) error {
+func (h *MessageChangedHandler) Handle(ctx context.Context, request *requests.MessageChangedRequest) error {
 	messageTs := request.Event.PreviousMessage.TS
 
 	h.logger.Debug("Handling message changed event", zap.String("message_ts", messageTs))
@@ -40,7 +42,7 @@ func (h *MessageChangedHandler) Handle(request *requests.MessageChangedRequest) 
 		return nil
 	}
 
-	conversation, err := h.slackConversationRepository.GetBySlackIds(request.Event.Channel, messageTs)
+	conversation, err := h.slackConversationRepository.GetBySlackIds(ctx, request.Event.Channel, messageTs)
 	if err != nil {
 		return fmt.Errorf("failed to lookup slack conversation: %w", err)
 	}
@@ -48,7 +50,10 @@ func (h *MessageChangedHandler) Handle(request *requests.MessageChangedRequest) 
 		return nil
 	}
 
-	if err := h.conversationBrokerRequester.ForceConcludeConversation(conversation.BrokerConversationID); err != nil {
+	if err := h.conversationBrokerRequester.ForceConcludeConversation(
+		ctx,
+		conversation.BrokerConversationID,
+	); err != nil {
 		return fmt.Errorf("failed to force-conclude broker conversation %s: %w", conversation.BrokerConversationID, err)
 	}
 

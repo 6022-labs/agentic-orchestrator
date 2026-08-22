@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -52,7 +54,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			request := generateValidRegisterUserRequest()
 			request.DisplayName = ""
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "displayName")
@@ -64,7 +66,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringUserTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -76,7 +78,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			request := generateValidRegisterUserRequest()
 			initSuite(suite)
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -87,8 +89,8 @@ func TestWhenRegisteringUser(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringUserTestingSuite, request *requests.RegisterUserRequest) {
 			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(p *models.Participant) (*models.Participant, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
 					assert.NotNil(t, p.DisplayName)
 					assert.Equal(t, request.DisplayName, *p.DisplayName)
 					assert.Nil(t, p.CollectionAddress)
@@ -106,7 +108,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			request := generateValidRegisterUserRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Register(request)
+			_, err := suite.sut.Register(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

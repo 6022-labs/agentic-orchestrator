@@ -74,7 +74,7 @@ func (controller *ConversationController) List(c *fiber.Ctx) error {
 		elementsPerPage = lo.ToPtr(uint(v))
 	}
 
-	response, err := controller.listConversations.List(page, elementsPerPage)
+	response, err := controller.listConversations.List(c.UserContext(), page, elementsPerPage)
 	if err != nil {
 		controller.logger.Error("Failed to list conversations", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -98,7 +98,7 @@ func (controller *ConversationController) Get(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversation.Get(id)
+	response, err := controller.getConversation.Get(c.UserContext(), id)
 	if err != nil {
 		controller.logger.Error("Failed to get conversation", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -122,7 +122,7 @@ func (controller *ConversationController) GetMessages(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversationMessages.Get(id)
+	response, err := controller.getConversationMessages.Get(c.UserContext(), id)
 	if err != nil {
 		controller.logger.Error("Failed to get conversation messages", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -146,7 +146,7 @@ func (controller *ConversationController) ListParticipants(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.listConversationParticipants.List(id)
+	response, err := controller.listConversationParticipants.List(c.UserContext(), id)
 	if err != nil {
 		controller.logger.Error("Failed to list conversation participants", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -169,7 +169,7 @@ func (controller *ConversationController) ForceConclude(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	if err := controller.forceConcludeConversation.Conclude(id); err != nil {
+	if err := controller.forceConcludeConversation.Conclude(c.UserContext(), id); err != nil {
 		controller.logger.Error("Failed to force conclude conversation", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}

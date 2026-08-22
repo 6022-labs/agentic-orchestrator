@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -44,7 +46,12 @@ func TestWhenGettingAgentPromptTemplateByAgentAndKey(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach()
 			defer WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(suite)
 
-			template, err := suite.sut.GetByAgentAndKey("0xabc", 1, enums.AgentPromptTemplateKeyCloneSystem)
+			template, err := suite.sut.GetByAgentAndKey(
+				context.Background(),
+				"0xabc",
+				1,
+				enums.AgentPromptTemplateKeyCloneSystem,
+			)
 
 			assert.Nil(t, err)
 			assert.Nil(t, template)
@@ -71,12 +78,17 @@ func TestWhenGettingAgentPromptTemplateByAgentAndKey(t *testing.T) {
 				WithKey(enums.AgentPromptTemplateKeyCloneDefault).
 				Build()
 
-			_, err := suite.sut.Save(system)
+			_, err := suite.sut.Save(context.Background(), system)
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(defaultPrompt)
+			_, err = suite.sut.Save(context.Background(), defaultPrompt)
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetByAgentAndKey("0xabc", 1, enums.AgentPromptTemplateKeyCloneDefault)
+			got, err := suite.sut.GetByAgentAndKey(
+				context.Background(),
+				"0xabc",
+				1,
+				enums.AgentPromptTemplateKeyCloneDefault,
+			)
 
 			assert.NoError(t, err)
 			assert.Equal(t, defaultPrompt.ID, got.ID)

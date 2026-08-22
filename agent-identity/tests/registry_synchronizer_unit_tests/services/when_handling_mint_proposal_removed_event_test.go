@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -64,7 +66,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 1)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress.Hex(), uint64(1)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(1)).
 				Return(nil, assert.AnError)
 			return event
 		}
@@ -75,7 +77,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Equal(t, assert.AnError, err)
 		})
@@ -89,7 +91,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 2)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress.Hex(), uint64(2)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(2)).
 				Return(nil, nil)
 			return event
 		}
@@ -100,7 +102,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})
@@ -116,11 +118,11 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress.Hex(), uint64(3)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(3)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Remove(agent).
+				Remove(gomock.Any(), agent).
 				Return(assert.AnError)
 
 			return event
@@ -132,7 +134,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to remove agent from proposal")
@@ -149,11 +151,11 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(collectionAddress.Hex(), uint64(4)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(4)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Remove(agent).
+				Remove(gomock.Any(), agent).
 				Return(nil)
 
 			return event
@@ -165,7 +167,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			suite := WhenHandlingMintProposalRemovedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})

@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -41,15 +42,15 @@ func (m *MockDetachParticipantInterface) EXPECT() *MockDetachParticipantInterfac
 }
 
 // Detach mocks base method.
-func (m *MockDetachParticipantInterface) Detach(request *requests.ConversationParticipantRequest) error {
+func (m *MockDetachParticipantInterface) Detach(ctx context.Context, request *requests.ConversationParticipantRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Detach", request)
+	ret := m.ctrl.Call(m, "Detach", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Detach indicates an expected call of Detach.
-func (mr *MockDetachParticipantInterfaceMockRecorder) Detach(request any) *gomock.Call {
+func (mr *MockDetachParticipantInterfaceMockRecorder) Detach(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Detach", reflect.TypeOf((*MockDetachParticipantInterface)(nil).Detach), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Detach", reflect.TypeOf((*MockDetachParticipantInterface)(nil).Detach), ctx, request)
 }

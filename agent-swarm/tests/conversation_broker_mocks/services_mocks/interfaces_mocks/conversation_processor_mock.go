@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,15 +42,15 @@ func (m *MockConversationProcessorInterface) EXPECT() *MockConversationProcessor
 }
 
 // ProcessConversation mocks base method.
-func (m *MockConversationProcessorInterface) ProcessConversation(participant *models.Participant, conversation *models.Conversation) error {
+func (m *MockConversationProcessorInterface) ProcessConversation(ctx context.Context, participant *models.Participant, conversation *models.Conversation) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProcessConversation", participant, conversation)
+	ret := m.ctrl.Call(m, "ProcessConversation", ctx, participant, conversation)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ProcessConversation indicates an expected call of ProcessConversation.
-func (mr *MockConversationProcessorInterfaceMockRecorder) ProcessConversation(participant, conversation any) *gomock.Call {
+func (mr *MockConversationProcessorInterfaceMockRecorder) ProcessConversation(ctx, participant, conversation any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessConversation", reflect.TypeOf((*MockConversationProcessorInterface)(nil).ProcessConversation), participant, conversation)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessConversation", reflect.TypeOf((*MockConversationProcessorInterface)(nil).ProcessConversation), ctx, participant, conversation)
 }

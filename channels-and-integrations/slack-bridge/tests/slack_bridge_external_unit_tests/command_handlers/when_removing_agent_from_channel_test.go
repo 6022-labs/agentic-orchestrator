@@ -1,6 +1,8 @@
 package command_handlers_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -65,7 +67,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(nil, assert.AnError)
 		}
 
@@ -82,7 +84,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -96,7 +98,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 		}
 
@@ -113,7 +115,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -134,12 +136,12 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(nil, errors.New("sync error"))
 		}
 
@@ -156,7 +158,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -177,17 +179,17 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(nil, errors.New("repo error"))
 		}
 
@@ -204,7 +206,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -225,17 +227,17 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(nil, nil)
 		}
 
@@ -252,7 +254,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -264,18 +266,18 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(nil, nil)
 
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(nil, nil)
 		}
 
@@ -292,7 +294,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -313,22 +315,22 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
 
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				RemoveAgent(slackChannel, slackAgent).
+				RemoveAgent(gomock.Any(), slackChannel, slackAgent).
 				Return(nil, errors.New("save error"))
 		}
 
@@ -345,7 +347,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -367,22 +369,24 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				WithAgents([]models.SlackAgent{*slackAgent}).
 				Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(slackChannel, nil)
-			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
 			suite.mockSlackAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, request.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
-			suite.mockSlackChannelRepository.EXPECT().RemoveAgent(slackChannel, slackAgent).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().
+				RemoveAgent(gomock.Any(), slackChannel, slackAgent).
+				Return(slackChannel, nil)
 
 			suite.mockSlackConversationRepository.EXPECT().
-				ListByChannelId(request.ChannelID).
+				ListByChannelId(gomock.Any(), request.ChannelID).
 				Return([]*models.SlackConversation{
 					{SlackChannelId: request.ChannelID, SlackThreadTs: "1.0", BrokerConversationID: convId1},
 					{SlackChannelId: request.ChannelID, SlackThreadTs: "2.0", BrokerConversationID: convId2},
 				}, nil)
 
-			suite.mockBrokerRequester.EXPECT().DetachParticipant(convId1, brokerAgentId).Return(nil)
-			suite.mockBrokerRequester.EXPECT().DetachParticipant(convId2, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().DetachParticipant(gomock.Any(), convId1, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().DetachParticipant(gomock.Any(), convId2, brokerAgentId).Return(nil)
 		}
 
 		t.Run("Should detach the agent from every existing broker conversation in the channel", func(t *testing.T) {
@@ -398,7 +402,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Remove(request)
+			err := suite.sut.Remove(context.Background(), request)
 			assert.NoError(t, err)
 		})
 	})

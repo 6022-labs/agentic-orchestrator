@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -10,7 +12,7 @@ import (
 )
 
 type RegisterUserInterface interface {
-	Register(request *requests.RegisterUserRequest) (*responses.ParticipantResponse, error)
+	Register(ctx context.Context, request *requests.RegisterUserRequest) (*responses.ParticipantResponse, error)
 }
 
 // RegisterUser always creates a new participant. There is no natural key for
@@ -24,7 +26,10 @@ func NewRegisterUser(participantRepository repositories.ParticipantRepositoryInt
 	return &RegisterUser{participantRepository: participantRepository}
 }
 
-func (uc *RegisterUser) Register(request *requests.RegisterUserRequest) (*responses.ParticipantResponse, error) {
+func (uc *RegisterUser) Register(
+	ctx context.Context,
+	request *requests.RegisterUserRequest,
+) (*responses.ParticipantResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
@@ -34,7 +39,7 @@ func (uc *RegisterUser) Register(request *requests.RegisterUserRequest) (*respon
 		DisplayName: &displayName,
 	}
 
-	saved, err := uc.participantRepository.Save(participant)
+	saved, err := uc.participantRepository.Save(ctx, participant)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save user participant: %w", err)
 	}

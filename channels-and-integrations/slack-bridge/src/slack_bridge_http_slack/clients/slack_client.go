@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -14,15 +16,26 @@ import (
 )
 
 type SlackClientInterface interface {
-	PostMessage(request *models.ExternalPostMessageRequest) (*models.ExternalPostMessageResponse, error)
-	JoinConversation(request *models.ExternalJoinConversationRequest) (*models.ExternalJoinConversationResponse, error)
+	PostMessage(
+		ctx context.Context,
+		request *models.ExternalPostMessageRequest,
+	) (*models.ExternalPostMessageResponse, error)
+	JoinConversation(
+		ctx context.Context,
+		request *models.ExternalJoinConversationRequest,
+	) (*models.ExternalJoinConversationResponse, error)
 	GetConversationInfo(
+		ctx context.Context,
 		request *models.ExternalGetConversationInfoRequest,
 	) (*models.ExternalGetConversationInfoResponse, error)
 	GetConversationMembers(
+		ctx context.Context,
 		request *models.ExternalGetConversationMembersRequest,
 	) (*models.ExternalGetConversationMembersResponse, error)
-	GetUsersInfo(request *models.ExternalGetUsersInfoRequest) (*models.ExternalGetUsersInfoResponse, error)
+	GetUsersInfo(
+		ctx context.Context,
+		request *models.ExternalGetUsersInfoRequest,
+	) (*models.ExternalGetUsersInfoResponse, error)
 }
 
 const (
@@ -58,6 +71,7 @@ func NewSlackClient(
 }
 
 func (s *SlackClient) PostMessage(
+	ctx context.Context,
 	request *models.ExternalPostMessageRequest,
 ) (*models.ExternalPostMessageResponse, error) {
 	url := s.slackSettings.ApiBaseURL + POST_MESSAGE_ENDPOINT
@@ -74,7 +88,7 @@ func (s *SlackClient) PostMessage(
 		zap.String("token", s.slackSettings.BotToken),
 	)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +131,7 @@ func (s *SlackClient) PostMessage(
 }
 
 func (s *SlackClient) JoinConversation(
+	ctx context.Context,
 	request *models.ExternalJoinConversationRequest,
 ) (*models.ExternalJoinConversationResponse, error) {
 	url := s.slackSettings.ApiBaseURL + JOIN_CONVERSATION_ENDPOINT
@@ -133,7 +148,7 @@ func (s *SlackClient) JoinConversation(
 		zap.String("token", s.slackSettings.BotToken),
 	)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, err
 	}
@@ -176,6 +191,7 @@ func (s *SlackClient) JoinConversation(
 }
 
 func (s *SlackClient) GetConversationInfo(
+	ctx context.Context,
 	request *models.ExternalGetConversationInfoRequest,
 ) (*models.ExternalGetConversationInfoResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_CONVERSATION_INFO_ENDPOINT + "?channel=" + request.Channel
@@ -187,7 +203,7 @@ func (s *SlackClient) GetConversationInfo(
 		zap.String("token", s.slackSettings.BotToken),
 	)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -231,6 +247,7 @@ func (s *SlackClient) GetConversationInfo(
 }
 
 func (s *SlackClient) GetConversationMembers(
+	ctx context.Context,
 	request *models.ExternalGetConversationMembersRequest,
 ) (*models.ExternalGetConversationMembersResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_CONVERSATION_MEMBERS_ENDPOINT + "?channel=" + request.Channel
@@ -242,7 +259,7 @@ func (s *SlackClient) GetConversationMembers(
 		zap.String("token", s.slackSettings.BotToken),
 	)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -286,6 +303,7 @@ func (s *SlackClient) GetConversationMembers(
 }
 
 func (s *SlackClient) GetUsersInfo(
+	ctx context.Context,
 	request *models.ExternalGetUsersInfoRequest,
 ) (*models.ExternalGetUsersInfoResponse, error) {
 	url := s.slackSettings.ApiBaseURL + GET_USERS_INFO_ENDPOINT + "?user=" + request.User
@@ -297,7 +315,7 @@ func (s *SlackClient) GetUsersInfo(
 		zap.String("token", s.slackSettings.BotToken),
 	)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

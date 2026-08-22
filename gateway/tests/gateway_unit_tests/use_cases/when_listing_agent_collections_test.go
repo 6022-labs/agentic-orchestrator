@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"fmt"
 	"testing"
 
@@ -41,7 +43,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenListingAgentCollectionsTestingSuite) {
-			suite.agentRegistryRequesterMock.EXPECT().ListAgentCollections().Return(nil, assert.AnError)
+			suite.agentRegistryRequesterMock.EXPECT().ListAgentCollections(gomock.Any()).Return(nil, assert.AnError)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -50,7 +52,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 			basics := WhenListingAgentCollectionsBeforeEach(t)
 			initSuite(basics)
 
-			_, err := basics.sut.List()
+			_, err := basics.sut.List(context.Background())
 
 			assert.NotNil(t, err)
 			assert.Equal(t, assert.AnError, err)
@@ -72,7 +74,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 				collections = append(collections, collection)
 			}
 
-			suite.agentRegistryRequesterMock.EXPECT().ListAgentCollections().Return(collections, nil)
+			suite.agentRegistryRequesterMock.EXPECT().ListAgentCollections(gomock.Any()).Return(collections, nil)
 
 			return collections
 		}
@@ -83,7 +85,7 @@ func TestWhenListingAgentCollections(t *testing.T) {
 			basics := WhenListingAgentCollectionsBeforeEach(t)
 			existingCollections := initSuite(basics)
 
-			fetchedCollections, err := basics.sut.List()
+			fetchedCollections, err := basics.sut.List(context.Background())
 
 			assert.Nil(t, err)
 			assert.Len(t, fetchedCollections, len(existingCollections))

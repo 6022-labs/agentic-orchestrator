@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -59,7 +61,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, msgTs string) {
 			suite.mockSlackMessageRepository.EXPECT().
-				GetBySlackIds(channelId, msgTs).
+				GetBySlackIds(gomock.Any(), channelId, msgTs).
 				Return(&models.SlackMessage{}, nil)
 		}
 
@@ -74,7 +76,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel.Id, "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "hi", user, nil)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "hi", user, nil)
 			assert.NoError(t, err)
 		})
 	})
@@ -87,20 +89,20 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerMsgId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(gomock.Any(), channelId, msgTs).Return(nil, nil)
 			suite.mockSlackConversationRepository.EXPECT().
-				GetBySlackIds(channelId, threadTs).
+				GetBySlackIds(gomock.Any(), channelId, threadTs).
 				Return(&models.SlackConversation{
 					SlackChannelId:       channelId,
 					SlackThreadTs:        threadTs,
 					BrokerConversationID: brokerConvId,
 				}, nil)
 			suite.mockBrokerRequester.EXPECT().
-				IngestMessage(brokerConvId, brokerAgentId, "agent reply").
+				IngestMessage(gomock.Any(), brokerConvId, brokerAgentId, "agent reply").
 				Return(brokerMsgId, nil)
 			suite.mockSlackMessageRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(m *models.SlackMessage) (*models.SlackMessage, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.SlackMessage) (*models.SlackMessage, error) {
 					assert.Equal(t, channelId, m.SlackChannelId)
 					assert.Equal(t, msgTs, m.SlackMessageTs)
 					assert.Equal(t, brokerMsgId, m.BrokerMessageID)
@@ -118,7 +120,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel.Id, "thread.1", "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "agent reply", nil, agent)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "agent reply", nil, agent)
 			assert.NoError(t, err)
 		})
 	})
@@ -131,29 +133,31 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerMsgId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channel *models.SlackChannel, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channel.Id, msgTs).Return(nil, nil)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(gomock.Any(), channel.Id, msgTs).Return(nil, nil)
 
 			// No existing conversation → register with channel agents + author.
-			suite.mockSlackConversationRepository.EXPECT().GetBySlackIds(channel.Id, threadTs).Return(nil, nil)
+			suite.mockSlackConversationRepository.EXPECT().
+				GetBySlackIds(gomock.Any(), channel.Id, threadTs).
+				Return(nil, nil)
 			suite.mockBrokerRequester.EXPECT().
-				RegisterConversation(gomock.Any(), gomock.Any(), gomock.Any()).
-				DoAndReturn(func(bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
+				RegisterConversation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, bridgeId uuid.UUID, description *string, participantIds []uuid.UUID) (uuid.UUID, error) {
 					assert.Equal(t, suite.bridgeId, bridgeId)
 					assert.Contains(t, participantIds, brokerUserId)
 					return brokerConvId, nil
 				})
 			suite.mockSlackConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.SlackConversation) (*models.SlackConversation, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.SlackConversation) (*models.SlackConversation, error) {
 					assert.Equal(t, brokerConvId, c.BrokerConversationID)
 					return c, nil
 				})
 
 			suite.mockBrokerRequester.EXPECT().
-				IngestMessage(brokerConvId, brokerUserId, "hello").
+				IngestMessage(gomock.Any(), brokerConvId, brokerUserId, "hello").
 				Return(brokerMsgId, nil)
-			suite.mockSlackMessageRepository.EXPECT().Save(gomock.Any()).
-				DoAndReturn(func(m *models.SlackMessage) (*models.SlackMessage, error) { return m, nil })
+			suite.mockSlackMessageRepository.EXPECT().Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, m *models.SlackMessage) (*models.SlackMessage, error) { return m, nil })
 		}
 
 		t.Run("Should register the conversation, ingest, and save the message mapping", func(t *testing.T) {
@@ -166,7 +170,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel, "thread.1", "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "hello", user, nil)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "hello", user, nil)
 			assert.NoError(t, err)
 		})
 	})
@@ -175,7 +179,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(gomock.Any(), channelId, msgTs).Return(nil, nil)
 		}
 
 		t.Run("Should return an error — SlackUserSynchronizer must populate the id upstream", func(t *testing.T) {
@@ -187,7 +191,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel.Id, "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "hello", user, nil)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "hello", user, nil)
 			assert.Error(t, err)
 		})
 	})
@@ -196,7 +200,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(gomock.Any(), channelId, msgTs).Return(nil, nil)
 		}
 
 		t.Run("Should return an error — SlackAgentSynchronizer must populate the id upstream", func(t *testing.T) {
@@ -208,7 +212,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel.Id, "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "hi", nil, agent)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "hi", nil, agent)
 			assert.Error(t, err)
 		})
 	})
@@ -220,12 +224,12 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 		brokerConvId := uuid.New()
 
 		initSuite := func(suite *WhenForwardingMessageToBrokerTestingSuite, channelId, threadTs, msgTs string) {
-			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(channelId, msgTs).Return(nil, nil)
+			suite.mockSlackMessageRepository.EXPECT().GetBySlackIds(gomock.Any(), channelId, msgTs).Return(nil, nil)
 			suite.mockSlackConversationRepository.EXPECT().
-				GetBySlackIds(channelId, threadTs).
+				GetBySlackIds(gomock.Any(), channelId, threadTs).
 				Return(&models.SlackConversation{BrokerConversationID: brokerConvId}, nil)
 			suite.mockBrokerRequester.EXPECT().
-				IngestMessage(brokerConvId, brokerUserId, "hi").
+				IngestMessage(gomock.Any(), brokerConvId, brokerUserId, "hi").
 				Return(uuid.Nil, errors.New("boom"))
 		}
 
@@ -239,7 +243,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 
 			initSuite(suite, channel.Id, "thread.1", "msg.1")
 
-			err := suite.sut.Forward(channel, "thread.1", "msg.1", "hi", user, nil)
+			err := suite.sut.Forward(context.Background(), channel, "thread.1", "msg.1", "hi", user, nil)
 			assert.Error(t, err)
 		})
 	})

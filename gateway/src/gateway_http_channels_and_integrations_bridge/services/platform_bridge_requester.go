@@ -26,6 +26,7 @@ func NewPlatformBridgeRequester(
 }
 
 func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(
+	ctx context.Context,
 	platform enums.BridgePlatform,
 	challenge, walletAddress string,
 ) error {
@@ -43,7 +44,7 @@ func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(
 	}
 
 	rsp, err := client.PostWalletSetOwnershipToSlackUserWithBodyWithResponse(
-		context.Background(),
+		ctx,
 		jsonContentType,
 		bytes.NewReader(body),
 	)

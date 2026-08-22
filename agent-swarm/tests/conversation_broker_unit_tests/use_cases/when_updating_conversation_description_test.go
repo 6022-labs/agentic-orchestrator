@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -55,7 +57,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 			request := generateValidUpdateConversationDescriptionRequest()
 			request.ConversationID = uuid.Nil
 
-			err := suite.sut.Update(request)
+			err := suite.sut.Update(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "conversationId")
@@ -67,7 +69,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 
 		initSuite := func(suite *WhenUpdatingConversationDescriptionTestingSuite, request *requests.UpdateConversationDescriptionRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -79,7 +81,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 			request := generateValidUpdateConversationDescriptionRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Update(request)
+			err := suite.sut.Update(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -92,10 +94,13 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 		newDescription := "renamed channel"
 
 		initSuite := func(suite *WhenUpdatingConversationDescriptionTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.NotNil(t, c.Description)
 					assert.Equal(t, newDescription, *c.Description)
 					return c, nil
@@ -113,7 +118,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 			}
 			initSuite(suite)
 
-			err := suite.sut.Update(request)
+			err := suite.sut.Update(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -125,10 +130,13 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 		conversation := model_builders.NewConversationBuilder().Build()
 
 		initSuite := func(suite *WhenUpdatingConversationDescriptionTestingSuite) {
-			suite.mockConversationRepository.EXPECT().GetById(conversation.ID).Return(conversation, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(c *models.Conversation) (*models.Conversation, error) {
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, c *models.Conversation) (*models.Conversation, error) {
 					assert.Nil(t, c.Description)
 					return c, nil
 				}).
@@ -145,7 +153,7 @@ func TestWhenUpdatingConversationDescription(t *testing.T) {
 			}
 			initSuite(suite)
 
-			err := suite.sut.Update(request)
+			err := suite.sut.Update(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

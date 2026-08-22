@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"errors"
 	"fmt"
 
@@ -24,7 +26,7 @@ func NewTransferEventHandler(
 	}
 }
 
-func (handler *TransferEventHandler) Handle(event *abi.AgentCollectionV1Transfer) error {
+func (handler *TransferEventHandler) Handle(ctx context.Context, event *abi.AgentCollectionV1Transfer) error {
 	handler.logger.Info("Handling Transfer event for collection",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
@@ -33,6 +35,7 @@ func (handler *TransferEventHandler) Handle(event *abi.AgentCollectionV1Transfer
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
+		ctx,
 		event.Raw.Address.Hex(),
 		event.TokenId.Uint64(),
 	)
@@ -46,7 +49,7 @@ func (handler *TransferEventHandler) Handle(event *abi.AgentCollectionV1Transfer
 	ownerHex := event.To.Hex()
 	agent.Owner = &ownerHex
 
-	_, err = handler.agentRepository.Save(agent)
+	_, err = handler.agentRepository.Save(ctx, agent)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -65,7 +67,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			req.ConversationId = uuid.Nil
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.ErrorIs(t, err, requests.ErrValidation)
 		})
 
@@ -76,7 +78,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			req.Content = ""
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.ErrorIs(t, err, requests.ErrValidation)
 		})
 	})
@@ -86,7 +88,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetByBrokerConversationId(req.ConversationId).
+				GetByBrokerConversationId(gomock.Any(), req.ConversationId).
 				Return(nil, nil)
 		}
 
@@ -97,7 +99,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			initSuite(suite, req)
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.ErrorIs(t, err, use_cases.ErrConversationLinkNotFound)
 		})
 	})
@@ -107,14 +109,14 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetByBrokerConversationId(req.ConversationId).
+				GetByBrokerConversationId(gomock.Any(), req.ConversationId).
 				Return(&models.SlackConversation{
 					SlackChannelId:       "C-target",
 					SlackThreadTs:        "1.0",
 					BrokerConversationID: req.ConversationId,
 				}, nil)
 			suite.mockSlackAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), req.CollectionAddress, req.CollectionTokenId).
 				Return(nil, nil)
 		}
 
@@ -125,7 +127,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			initSuite(suite, req)
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.ErrorIs(t, err, use_cases.ErrSlackAgentNotFound)
 		})
 	})
@@ -135,7 +137,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetByBrokerConversationId(req.ConversationId).
+				GetByBrokerConversationId(gomock.Any(), req.ConversationId).
 				Return(&models.SlackConversation{
 					SlackChannelId:       "C-target",
 					SlackThreadTs:        "1.0",
@@ -146,10 +148,10 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				CollectionTokenId: req.CollectionTokenId,
 			}
 			suite.mockSlackAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), req.CollectionAddress, req.CollectionTokenId).
 				Return(slackAgent, nil)
 			suite.mockSlackThreadRequester.EXPECT().
-				PushCompletionToThread(req.Content, slackAgent, "C-target", "1.0").
+				PushCompletionToThread(gomock.Any(), req.Content, slackAgent, "C-target", "1.0").
 				Return(errors.New("slack down"))
 		}
 
@@ -160,7 +162,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			initSuite(suite, req)
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.Error(t, err)
 		})
 	})
@@ -170,7 +172,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 
 		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
 			suite.mockSlackConversationRepository.EXPECT().
-				GetByBrokerConversationId(req.ConversationId).
+				GetByBrokerConversationId(gomock.Any(), req.ConversationId).
 				Return(&models.SlackConversation{
 					SlackChannelId:       "C-target",
 					SlackThreadTs:        "1.0",
@@ -181,10 +183,10 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				CollectionTokenId: req.CollectionTokenId,
 			}
 			suite.mockSlackAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(req.CollectionAddress, req.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), req.CollectionAddress, req.CollectionTokenId).
 				Return(slackAgent, nil)
 			suite.mockSlackThreadRequester.EXPECT().
-				PushCompletionToThread(req.Content, slackAgent, "C-target", "1.0").
+				PushCompletionToThread(gomock.Any(), req.Content, slackAgent, "C-target", "1.0").
 				Return(nil)
 		}
 
@@ -195,7 +197,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req := generateValidPostBrokerCompletionToSlackRequest()
 			initSuite(suite, req)
 
-			err := suite.sut.Post(req)
+			err := suite.sut.Post(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})

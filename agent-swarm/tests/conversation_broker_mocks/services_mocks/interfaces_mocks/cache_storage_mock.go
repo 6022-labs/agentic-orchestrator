@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -41,44 +42,44 @@ func (m *MockCacheStorageInterface) EXPECT() *MockCacheStorageInterfaceMockRecor
 }
 
 // Delete mocks base method.
-func (m *MockCacheStorageInterface) Delete(key string) error {
+func (m *MockCacheStorageInterface) Delete(ctx context.Context, key string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", key)
+	ret := m.ctrl.Call(m, "Delete", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockCacheStorageInterfaceMockRecorder) Delete(key any) *gomock.Call {
+func (mr *MockCacheStorageInterfaceMockRecorder) Delete(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCacheStorageInterface)(nil).Delete), key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCacheStorageInterface)(nil).Delete), ctx, key)
 }
 
 // Read mocks base method.
-func (m *MockCacheStorageInterface) Read(key string) (string, error) {
+func (m *MockCacheStorageInterface) Read(ctx context.Context, key string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Read", key)
+	ret := m.ctrl.Call(m, "Read", ctx, key)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Read indicates an expected call of Read.
-func (mr *MockCacheStorageInterfaceMockRecorder) Read(key any) *gomock.Call {
+func (mr *MockCacheStorageInterfaceMockRecorder) Read(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockCacheStorageInterface)(nil).Read), key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockCacheStorageInterface)(nil).Read), ctx, key)
 }
 
 // Store mocks base method.
-func (m *MockCacheStorageInterface) Store(key, value string, expiration *time.Duration) error {
+func (m *MockCacheStorageInterface) Store(ctx context.Context, key, value string, expiration *time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Store", key, value, expiration)
+	ret := m.ctrl.Call(m, "Store", ctx, key, value, expiration)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Store indicates an expected call of Store.
-func (mr *MockCacheStorageInterfaceMockRecorder) Store(key, value, expiration any) *gomock.Call {
+func (mr *MockCacheStorageInterfaceMockRecorder) Store(ctx, key, value, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCacheStorageInterface)(nil).Store), key, value, expiration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCacheStorageInterface)(nil).Store), ctx, key, value, expiration)
 }

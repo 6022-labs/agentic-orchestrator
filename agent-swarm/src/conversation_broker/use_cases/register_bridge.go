@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -12,7 +14,7 @@ import (
 type RegisterBridgeInterface interface {
 	// Register upserts a bridge. The second return value is true when the
 	// caller-supplied id already existed (caller can surface 200 vs 201).
-	Register(request *requests.RegisterBridgeRequest) (*responses.BridgeResponse, bool, error)
+	Register(ctx context.Context, request *requests.RegisterBridgeRequest) (*responses.BridgeResponse, bool, error)
 }
 
 type RegisterBridge struct {
@@ -23,13 +25,16 @@ func NewRegisterBridge(bridgeRepository repositories.BridgeRepositoryInterface) 
 	return &RegisterBridge{bridgeRepository: bridgeRepository}
 }
 
-func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*responses.BridgeResponse, bool, error) {
+func (uc *RegisterBridge) Register(
+	ctx context.Context,
+	request *requests.RegisterBridgeRequest,
+) (*responses.BridgeResponse, bool, error) {
 	if err := request.Validate(); err != nil {
 		return nil, false, err
 	}
 
 	if request.ID != nil {
-		existing, err := uc.bridgeRepository.GetById(*request.ID)
+		existing, err := uc.bridgeRepository.GetById(ctx, *request.ID)
 		if err != nil {
 			return nil, false, fmt.Errorf("failed to load existing bridge: %w", err)
 		}
@@ -39,7 +44,7 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*re
 			}
 			existing.BaseUrl = request.BaseUrl
 			existing.Kind = request.Kind
-			saved, err := uc.bridgeRepository.Save(existing)
+			saved, err := uc.bridgeRepository.Save(ctx, existing)
 			if err != nil {
 				return nil, false, fmt.Errorf("failed to update existing bridge: %w", err)
 			}
@@ -55,7 +60,7 @@ func (uc *RegisterBridge) Register(request *requests.RegisterBridgeRequest) (*re
 		bridge.ID = *request.ID
 	}
 
-	saved, err := uc.bridgeRepository.Save(bridge)
+	saved, err := uc.bridgeRepository.Save(ctx, bridge)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to save bridge: %w", err)
 	}

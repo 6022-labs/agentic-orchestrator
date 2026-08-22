@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"fmt"
@@ -23,11 +25,12 @@ func NewSlackAgentRepository(
 }
 
 func (r *SlackAgentRepository) GetByCollectionAddressAndCollectionTokenId(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.SlackAgent, error) {
 	var entity models.SlackAgent
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(&entity).
 		Error
@@ -42,11 +45,13 @@ func (r *SlackAgentRepository) GetByCollectionAddressAndCollectionTokenId(
 }
 
 func (r *SlackAgentRepository) UpdateOwnerWallet(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 	ownerWallet string,
 ) error {
-	result := r.client.Model(&models.SlackAgent{}).
+	result := r.client.WithContext(ctx).
+		Model(&models.SlackAgent{}).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		Update("owner_wallet", ownerWallet)
 
@@ -62,11 +67,13 @@ func (r *SlackAgentRepository) UpdateOwnerWallet(
 }
 
 func (r *SlackAgentRepository) UpdateIconImageCid(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 	iconImageCid *string,
 ) error {
-	result := r.client.Model(&models.SlackAgent{}).
+	result := r.client.WithContext(ctx).
+		Model(&models.SlackAgent{}).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		Update("icon_image_cid", iconImageCid)
 

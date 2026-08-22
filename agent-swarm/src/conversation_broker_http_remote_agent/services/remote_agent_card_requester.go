@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/clients"
 )
@@ -13,8 +15,11 @@ func NewRemoteAgentCardRequester(client clients.RemoteAgentClientInterface) *Rem
 	return &RemoteAgentCardRequester{client: client}
 }
 
-func (r *RemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
-	external, raw, err := r.client.GetWellKnownCard(agentUrl)
+func (r *RemoteAgentCardRequester) GetCard(
+	ctx context.Context,
+	agentUrl string,
+) (*models.RemoteAgentCard, []byte, error) {
+	external, raw, err := r.client.GetWellKnownCard(ctx, agentUrl)
 	if err != nil {
 		return nil, nil, err
 	}

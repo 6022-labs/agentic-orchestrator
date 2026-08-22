@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
@@ -65,9 +67,9 @@ func TestWhenGettingEntityById(t *testing.T) {
 			defer WhenGettingEntityByIdBeforeEachAfterEach(suite)
 
 			entity := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entity)
+			createdEntity, _ := suite.sut.Save(context.Background(), entity)
 
-			fetchedEntity, err := suite.sut.GetById(createdEntity.ID)
+			fetchedEntity, err := suite.sut.GetById(context.Background(), createdEntity.ID)
 
 			assert.Nil(t, err)
 			assert.Equal(t, createdEntity.ID, fetchedEntity.ID)
@@ -85,7 +87,7 @@ func TestWhenGettingEntityById(t *testing.T) {
 			defer WhenGettingEntityByIdBeforeEachAfterEach(suite)
 
 			nonExistentID := uuid.New()
-			fetchedAgent, err := suite.sut.GetById(nonExistentID)
+			fetchedAgent, err := suite.sut.GetById(context.Background(), nonExistentID)
 
 			assert.Nil(t, err)
 			assert.Nil(t, fetchedAgent)

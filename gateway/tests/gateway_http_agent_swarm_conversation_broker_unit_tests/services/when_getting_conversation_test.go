@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	stderrors "errors"
 	"net/http"
 	"testing"
@@ -58,7 +60,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.GetConversation(conversationId)
+			result, err := suite.sut.GetConversation(context.Background(), conversationId)
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -87,7 +89,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.GetConversation(conversationId)
+			result, err := suite.sut.GetConversation(context.Background(), conversationId)
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
@@ -115,7 +117,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.GetConversation(conversationId)
+			result, err := suite.sut.GetConversation(context.Background(), conversationId)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -139,7 +141,7 @@ func TestWhenGettingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			result, err := suite.sut.GetConversation(conversationId)
+			result, err := suite.sut.GetConversation(context.Background(), conversationId)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

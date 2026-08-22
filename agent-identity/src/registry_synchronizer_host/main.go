@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	common_configurations "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_host/configurations"
 	"github.com/joho/godotenv"
@@ -35,7 +37,7 @@ func main() {
 	) error {
 		logger.Info("Starting synchronizer application", zap.String("name", appName))
 
-		return synchronizer.Start()
+		return synchronizer.Start(context.Background())
 	})
 	if err != nil {
 		panic(err)

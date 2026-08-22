@@ -45,7 +45,11 @@ func TestWhenGettingCollectionCreatedEvents(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingCollectionCreatedEventsBeforeEach(t)
 
-			events, err := suite.sut.GetAgentCollectionsManagerCollectionCreatedEvent(0, suite.fixture.currentBlock())
+			events, err := suite.sut.GetAgentCollectionsManagerCollectionCreatedEvent(
+				context.Background(),
+				0,
+				suite.fixture.currentBlock(),
+			)
 
 			assert.NoError(t, err)
 			if assert.Len(t, events, 1) {
@@ -65,7 +69,7 @@ func TestWhenGettingCollectionCreatedEvents(t *testing.T) {
 			checkpoint := suite.fixture.currentBlock()
 			suite.createCollection("others")
 
-			events, err := suite.sut.GetAgentCollectionsManagerCollectionCreatedEvent(
+			events, err := suite.sut.GetAgentCollectionsManagerCollectionCreatedEvent(context.Background(),
 				checkpoint+1,
 				suite.fixture.currentBlock(),
 			)

@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -75,20 +77,20 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			agent := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(channel)
+			_, err := suite.sut.Save(context.Background(), channel)
 			if err != nil {
 				t.Fatalf("Failed to save channel: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agent)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agent)
 			if err != nil {
 				t.Fatalf("Failed to save agent: %v", err)
 			}
 
-			_, err = suite.sut.AddAgent(channel, agent)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agent)
 			assert.NoError(t, err)
 
-			channel, err = suite.sut.GetById(channel.Id)
+			channel, err = suite.sut.GetById(context.Background(), channel.Id)
 
 			assert.NoError(t, err)
 
@@ -108,23 +110,23 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			agent := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(channel)
+			_, err := suite.sut.Save(context.Background(), channel)
 			if err != nil {
 				t.Fatalf("Failed to save channel: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agent)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agent)
 			if err != nil {
 				t.Fatalf("Failed to save agent: %v", err)
 			}
 
-			_, err = suite.sut.AddAgent(channel, agent)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agent)
 			assert.NoError(t, err)
 
-			_, err = suite.sut.AddAgent(channel, agent)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agent)
 			assert.NoError(t, err)
 
-			channel, err = suite.sut.GetById(channel.Id)
+			channel, err = suite.sut.GetById(context.Background(), channel.Id)
 			if err != nil {
 				t.Fatalf("Failed to get channel: %v", err)
 			}

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
@@ -42,46 +43,46 @@ func (m *MockAgentRegistryRequesterInterface) EXPECT() *MockAgentRegistryRequest
 }
 
 // GetAgent mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetAgent(agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.AgentResponse, error) {
+func (m *MockAgentRegistryRequesterInterface) GetAgent(ctx context.Context, agentCollectionAddress string, agentCollectionTokenId uint64) (*responses.AgentResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgent", agentCollectionAddress, agentCollectionTokenId)
+	ret := m.ctrl.Call(m, "GetAgent", ctx, agentCollectionAddress, agentCollectionTokenId)
 	ret0, _ := ret[0].(*responses.AgentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgent indicates an expected call of GetAgent.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(ctx, agentCollectionAddress, agentCollectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), agentCollectionAddress, agentCollectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), ctx, agentCollectionAddress, agentCollectionTokenId)
 }
 
 // ListAgentCollections mocks base method.
-func (m *MockAgentRegistryRequesterInterface) ListAgentCollections() ([]*responses.AgentCollectionResponse, error) {
+func (m *MockAgentRegistryRequesterInterface) ListAgentCollections(ctx context.Context) ([]*responses.AgentCollectionResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAgentCollections")
+	ret := m.ctrl.Call(m, "ListAgentCollections", ctx)
 	ret0, _ := ret[0].([]*responses.AgentCollectionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAgentCollections indicates an expected call of ListAgentCollections.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) ListAgentCollections() *gomock.Call {
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) ListAgentCollections(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAgentCollections", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).ListAgentCollections))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAgentCollections", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).ListAgentCollections), ctx)
 }
 
 // ListAgents mocks base method.
-func (m *MockAgentRegistryRequesterInterface) ListAgents(request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
+func (m *MockAgentRegistryRequesterInterface) ListAgents(ctx context.Context, request *interfaces.ListRegistryAgentsRequest) (*responses.ListAgentsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAgents", request)
+	ret := m.ctrl.Call(m, "ListAgents", ctx, request)
 	ret0, _ := ret[0].(*responses.ListAgentsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAgents indicates an expected call of ListAgents.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) ListAgents(request any) *gomock.Call {
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) ListAgents(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAgents", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).ListAgents), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAgents", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).ListAgents), ctx, request)
 }

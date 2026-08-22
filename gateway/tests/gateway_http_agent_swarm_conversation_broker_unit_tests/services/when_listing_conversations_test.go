@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -68,7 +70,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			conversationId := initSuite(suite)
 
-			result, err := suite.sut.ListConversations(lo.ToPtr(uint(1)), lo.ToPtr(uint(20)))
+			result, err := suite.sut.ListConversations(context.Background(), lo.ToPtr(uint(1)), lo.ToPtr(uint(20)))
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, result) {
@@ -104,7 +106,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListConversations(nil, nil)
+			result, err := suite.sut.ListConversations(context.Background(), nil, nil)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)
@@ -127,7 +129,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			result, err := suite.sut.ListConversations(nil, nil)
+			result, err := suite.sut.ListConversations(context.Background(), nil, nil)
 
 			assert.Error(t, err)
 			assert.Nil(t, result)

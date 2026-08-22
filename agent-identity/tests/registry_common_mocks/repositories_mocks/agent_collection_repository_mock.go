@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -42,76 +43,76 @@ func (m *MockAgentCollectionRepositoryInterface) EXPECT() *MockAgentCollectionRe
 }
 
 // ExistsByCollectionAddress mocks base method.
-func (m *MockAgentCollectionRepositoryInterface) ExistsByCollectionAddress(address string) (bool, error) {
+func (m *MockAgentCollectionRepositoryInterface) ExistsByCollectionAddress(ctx context.Context, address string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExistsByCollectionAddress", address)
+	ret := m.ctrl.Call(m, "ExistsByCollectionAddress", ctx, address)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExistsByCollectionAddress indicates an expected call of ExistsByCollectionAddress.
-func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) ExistsByCollectionAddress(address any) *gomock.Call {
+func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) ExistsByCollectionAddress(ctx, address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByCollectionAddress", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).ExistsByCollectionAddress), address)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByCollectionAddress", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).ExistsByCollectionAddress), ctx, address)
 }
 
 // GetAll mocks base method.
-func (m *MockAgentCollectionRepositoryInterface) GetAll() ([]*models.AgentCollection, error) {
+func (m *MockAgentCollectionRepositoryInterface) GetAll(ctx context.Context) ([]*models.AgentCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetAll", ctx)
 	ret0, _ := ret[0].([]*models.AgentCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) GetAll() *gomock.Call {
+func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) GetAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).GetAll), ctx)
 }
 
 // GetByAddress mocks base method.
-func (m *MockAgentCollectionRepositoryInterface) GetByAddress(address string) (*models.AgentCollection, error) {
+func (m *MockAgentCollectionRepositoryInterface) GetByAddress(ctx context.Context, address string) (*models.AgentCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByAddress", address)
+	ret := m.ctrl.Call(m, "GetByAddress", ctx, address)
 	ret0, _ := ret[0].(*models.AgentCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByAddress indicates an expected call of GetByAddress.
-func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) GetByAddress(address any) *gomock.Call {
+func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) GetByAddress(ctx, address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByAddress", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).GetByAddress), address)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByAddress", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).GetByAddress), ctx, address)
 }
 
 // Save mocks base method.
-func (m *MockAgentCollectionRepositoryInterface) Save(entity *models.AgentCollection) (*models.AgentCollection, error) {
+func (m *MockAgentCollectionRepositoryInterface) Save(ctx context.Context, entity *models.AgentCollection) (*models.AgentCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.AgentCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).Save), ctx, entity)
 }
 
 // SaveUsingTransaction mocks base method.
-func (m *MockAgentCollectionRepositoryInterface) SaveUsingTransaction(entity *models.AgentCollection, tx *gorm.DB) (*models.AgentCollection, error) {
+func (m *MockAgentCollectionRepositoryInterface) SaveUsingTransaction(ctx context.Context, entity *models.AgentCollection, tx *gorm.DB) (*models.AgentCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUsingTransaction", entity, tx)
+	ret := m.ctrl.Call(m, "SaveUsingTransaction", ctx, entity, tx)
 	ret0, _ := ret[0].(*models.AgentCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUsingTransaction indicates an expected call of SaveUsingTransaction.
-func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) SaveUsingTransaction(entity, tx any) *gomock.Call {
+func (mr *MockAgentCollectionRepositoryInterfaceMockRecorder) SaveUsingTransaction(ctx, entity, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).SaveUsingTransaction), entity, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockAgentCollectionRepositoryInterface)(nil).SaveUsingTransaction), ctx, entity, tx)
 }

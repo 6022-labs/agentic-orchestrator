@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,31 +42,31 @@ func (m *MockAgentRegistryRequesterInterface) EXPECT() *MockAgentRegistryRequest
 }
 
 // GetAgent mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
+func (m *MockAgentRegistryRequesterInterface) GetAgent(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.RegistryAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgent", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "GetAgent", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.RegistryAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgent indicates an expected call of GetAgent.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetAgent(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetAgent), ctx, collectionAddress, collectionTokenId)
 }
 
 // GetMintedAgentByEnsDomain mocks base method.
-func (m *MockAgentRegistryRequesterInterface) GetMintedAgentByEnsDomain(ensDomain string) (*models.RegistryAgent, error) {
+func (m *MockAgentRegistryRequesterInterface) GetMintedAgentByEnsDomain(ctx context.Context, ensDomain string) (*models.RegistryAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMintedAgentByEnsDomain", ensDomain)
+	ret := m.ctrl.Call(m, "GetMintedAgentByEnsDomain", ctx, ensDomain)
 	ret0, _ := ret[0].(*models.RegistryAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMintedAgentByEnsDomain indicates an expected call of GetMintedAgentByEnsDomain.
-func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetMintedAgentByEnsDomain(ensDomain any) *gomock.Call {
+func (mr *MockAgentRegistryRequesterInterfaceMockRecorder) GetMintedAgentByEnsDomain(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedAgentByEnsDomain", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetMintedAgentByEnsDomain), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMintedAgentByEnsDomain", reflect.TypeOf((*MockAgentRegistryRequesterInterface)(nil).GetMintedAgentByEnsDomain), ctx, ensDomain)
 }

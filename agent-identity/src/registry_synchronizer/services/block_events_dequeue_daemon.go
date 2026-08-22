@@ -36,11 +36,11 @@ func NewBlockEventsDequeueDaemon(
 	}
 }
 
-func (d *BlockEventsDequeueDaemon) Start() error {
+func (d *BlockEventsDequeueDaemon) Start(ctx context.Context) error {
 	if d.running {
 		return errors.New("block events dequeue synchronizer daemon already running")
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	d.cancel = cancel
 	d.running = true
 

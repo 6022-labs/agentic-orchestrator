@@ -45,7 +45,7 @@ func (controller *AgentCollectionController) InitUnauthenticatedRoutes(app fiber
 func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) error {
 	controller.logger.Info("List agent collections request received")
 
-	collections, err := controller.listAgentCollections.List()
+	collections, err := controller.listAgentCollections.List(c.UserContext())
 	if err != nil {
 		controller.logger.Error("Failed to list agent collections", zap.Error(err))
 

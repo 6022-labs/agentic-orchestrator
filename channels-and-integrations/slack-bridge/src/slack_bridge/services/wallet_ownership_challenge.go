@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
@@ -25,12 +27,12 @@ func NewWalletOwnershipChallenge(
 	}
 }
 
-func (w *WalletOwnershipChallenge) IssueChallenge(userId string) (*uuid.UUID, error) {
+func (w *WalletOwnershipChallenge) IssueChallenge(ctx context.Context, userId string) (*uuid.UUID, error) {
 	nonce := uuid.New()
 
 	duration := time.Duration(WALLET_OWNERSHIP_CHALLENGE_EXPIRATION) * time.Second
 
-	err := w.cacheStorage.Store(
+	err := w.cacheStorage.Store(ctx,
 		fmt.Sprintf(WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String()),
 		userId,
 		&duration,
@@ -42,12 +44,12 @@ func (w *WalletOwnershipChallenge) IssueChallenge(userId string) (*uuid.UUID, er
 	return &nonce, nil
 }
 
-func (w *WalletOwnershipChallenge) ConsumeChallenge(nonce *uuid.UUID) (*string, error) {
+func (w *WalletOwnershipChallenge) ConsumeChallenge(ctx context.Context, nonce *uuid.UUID) (*string, error) {
 	if nonce == nil {
 		return nil, fmt.Errorf("nonce cannot be nil")
 	}
 
-	userId, err := w.cacheStorage.ReadString(fmt.Sprintf(WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String()))
+	userId, err := w.cacheStorage.ReadString(ctx, fmt.Sprintf(WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read challenge for nonce %s: %w", nonce.String(), err)
 	}

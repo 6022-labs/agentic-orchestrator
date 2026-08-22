@@ -25,8 +25,8 @@ func NewBlockchainRequester(
 	}
 }
 
-func (r *BlockchainRequester) GetCurrentBlockNumber() (*uint64, error) {
-	blockNumber, err := r.client.BlockNumber(context.Background())
+func (r *BlockchainRequester) GetCurrentBlockNumber(ctx context.Context) (*uint64, error) {
+	blockNumber, err := r.client.BlockNumber(ctx)
 	if err != nil {
 		return nil, err
 	}

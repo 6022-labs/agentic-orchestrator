@@ -54,7 +54,7 @@ func (c *PromptTemplatesController) Get(ctx *fiber.Ctx) error {
 		CollectionTokenId: ctx.Params("collectionTokenId"),
 		Key:               ctx.Params("key"),
 	}
-	template, err := c.getAgentPromptTemplate.Get(req)
+	template, err := c.getAgentPromptTemplate.Get(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -91,7 +91,7 @@ func (c *PromptTemplatesController) Save(ctx *fiber.Ctx) error {
 	req.CollectionTokenId = ctx.Params("collectionTokenId")
 	req.Key = ctx.Params("key")
 
-	template, err := c.saveAgentPromptTemplate.Save(req)
+	template, err := c.saveAgentPromptTemplate.Save(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,61 +42,61 @@ func (m *MockSlackUserRepositoryInterface) EXPECT() *MockSlackUserRepositoryInte
 }
 
 // GetById mocks base method.
-func (m *MockSlackUserRepositoryInterface) GetById(id string) (*models.SlackUser, error) {
+func (m *MockSlackUserRepositoryInterface) GetById(ctx context.Context, id string) (*models.SlackUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetById", id)
+	ret := m.ctrl.Call(m, "GetById", ctx, id)
 	ret0, _ := ret[0].(*models.SlackUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockSlackUserRepositoryInterfaceMockRecorder) GetById(id any) *gomock.Call {
+func (mr *MockSlackUserRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).GetById), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).GetById), ctx, id)
 }
 
 // GetByPairedHumanAgent mocks base method.
-func (m *MockSlackUserRepositoryInterface) GetByPairedHumanAgent(collectionAddress string, collectionTokenId uint64) (*models.SlackUser, error) {
+func (m *MockSlackUserRepositoryInterface) GetByPairedHumanAgent(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.SlackUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByPairedHumanAgent", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "GetByPairedHumanAgent", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.SlackUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByPairedHumanAgent indicates an expected call of GetByPairedHumanAgent.
-func (mr *MockSlackUserRepositoryInterfaceMockRecorder) GetByPairedHumanAgent(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockSlackUserRepositoryInterfaceMockRecorder) GetByPairedHumanAgent(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPairedHumanAgent", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).GetByPairedHumanAgent), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPairedHumanAgent", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).GetByPairedHumanAgent), ctx, collectionAddress, collectionTokenId)
 }
 
 // ListByIds mocks base method.
-func (m *MockSlackUserRepositoryInterface) ListByIds(ids []string) ([]*models.SlackUser, error) {
+func (m *MockSlackUserRepositoryInterface) ListByIds(ctx context.Context, ids []string) ([]*models.SlackUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByIds", ids)
+	ret := m.ctrl.Call(m, "ListByIds", ctx, ids)
 	ret0, _ := ret[0].([]*models.SlackUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListByIds indicates an expected call of ListByIds.
-func (mr *MockSlackUserRepositoryInterfaceMockRecorder) ListByIds(ids any) *gomock.Call {
+func (mr *MockSlackUserRepositoryInterfaceMockRecorder) ListByIds(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByIds", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).ListByIds), ids)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByIds", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).ListByIds), ctx, ids)
 }
 
 // Save mocks base method.
-func (m *MockSlackUserRepositoryInterface) Save(entity *models.SlackUser) (*models.SlackUser, error) {
+func (m *MockSlackUserRepositoryInterface) Save(ctx context.Context, entity *models.SlackUser) (*models.SlackUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.SlackUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockSlackUserRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockSlackUserRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSlackUserRepositoryInterface)(nil).Save), ctx, entity)
 }

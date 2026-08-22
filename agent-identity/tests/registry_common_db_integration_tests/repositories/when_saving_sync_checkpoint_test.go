@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -67,7 +69,7 @@ func TestWhenSavingSyncCheckpoint(t *testing.T) {
 			defer WhenSavingSyncCheckpointAfterEach(suite)
 
 			checkpoint := model_builders.NewSyncCheckpointBuilder().WithBlock(42).Build()
-			savedCheckpoint, err := suite.sut.Save(checkpoint)
+			savedCheckpoint, err := suite.sut.Save(context.Background(), checkpoint)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, savedCheckpoint)

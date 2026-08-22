@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -32,7 +34,11 @@ func TestWhenGettingAgentInformation(t *testing.T) {
 			suite := WhenGettingAgentInformationBeforeEach(t)
 			suite.fixture.mintAgent("described-agent")
 
-			information, err := suite.sut.GetAgentInformation(suite.fixture.stack.Collection, *big.NewInt(1))
+			information, err := suite.sut.GetAgentInformation(
+				context.Background(),
+				suite.fixture.stack.Collection,
+				*big.NewInt(1),
+			)
 
 			assert.NoError(t, err)
 			if assert.NotNil(t, information) {
@@ -60,7 +66,11 @@ func TestWhenGettingAgentInformation(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingAgentInformationBeforeEach(t)
 
-			_, err := suite.sut.GetAgentInformation(suite.fixture.stack.Collection, *big.NewInt(999))
+			_, err := suite.sut.GetAgentInformation(
+				context.Background(),
+				suite.fixture.stack.Collection,
+				*big.NewInt(999),
+			)
 
 			assert.Error(t, err)
 		})

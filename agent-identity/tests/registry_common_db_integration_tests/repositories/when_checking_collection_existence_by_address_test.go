@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -64,12 +66,12 @@ func TestWhenCheckingCollectionExistenceByAddress(t *testing.T) {
 			defer WhenCheckingCollectionExistenceByAddressAfterEach(suite)
 
 			existingCollection := model_builders.NewAgentCollectionBuilder().Build()
-			createdCollection, err := suite.sut.Save(existingCollection)
+			createdCollection, err := suite.sut.Save(context.Background(), existingCollection)
 			if err != nil {
 				t.Errorf("Error creating collection: %v", err)
 			}
 
-			exists, err := suite.sut.ExistsByCollectionAddress(createdCollection.Address)
+			exists, err := suite.sut.ExistsByCollectionAddress(context.Background(), createdCollection.Address)
 
 			assert.Nil(t, err)
 			assert.True(t, exists)
@@ -85,7 +87,7 @@ func TestWhenCheckingCollectionExistenceByAddress(t *testing.T) {
 
 			nonExistentAddress := "0x000000000000000000000000000000000000dead"
 
-			exists, err := suite.sut.ExistsByCollectionAddress(nonExistentAddress)
+			exists, err := suite.sut.ExistsByCollectionAddress(context.Background(), nonExistentAddress)
 
 			assert.Nil(t, err)
 			assert.False(t, exists)

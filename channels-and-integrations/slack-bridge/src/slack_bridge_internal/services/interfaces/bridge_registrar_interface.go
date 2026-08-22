@@ -1,7 +1,11 @@
 package interfaces
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type BridgeRegistrarInterface interface {
-	Ensure() (uuid.UUID, error)
+	Ensure(ctx context.Context) (uuid.UUID, error)
 }

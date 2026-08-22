@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockGetConversationMessagesInterface) EXPECT() *MockGetConversationMess
 }
 
 // Get mocks base method.
-func (m *MockGetConversationMessagesInterface) Get(request *requests.ConversationIdRequest) ([]*responses.ConversationMessageResponse, error) {
+func (m *MockGetConversationMessagesInterface) Get(ctx context.Context, request *requests.ConversationIdRequest) ([]*responses.ConversationMessageResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", request)
+	ret := m.ctrl.Call(m, "Get", ctx, request)
 	ret0, _ := ret[0].([]*responses.ConversationMessageResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockGetConversationMessagesInterfaceMockRecorder) Get(request any) *gomock.Call {
+func (mr *MockGetConversationMessagesInterfaceMockRecorder) Get(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetConversationMessagesInterface)(nil).Get), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetConversationMessagesInterface)(nil).Get), ctx, request)
 }

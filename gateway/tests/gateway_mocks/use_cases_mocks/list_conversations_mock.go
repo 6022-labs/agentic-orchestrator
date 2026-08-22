@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -41,16 +42,16 @@ func (m *MockListConversationsInterface) EXPECT() *MockListConversationsInterfac
 }
 
 // List mocks base method.
-func (m *MockListConversationsInterface) List(page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
+func (m *MockListConversationsInterface) List(ctx context.Context, page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", page, elementsPerPage)
+	ret := m.ctrl.Call(m, "List", ctx, page, elementsPerPage)
 	ret0, _ := ret[0].(*responses.ListBrokerConversationsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockListConversationsInterfaceMockRecorder) List(page, elementsPerPage any) *gomock.Call {
+func (mr *MockListConversationsInterfaceMockRecorder) List(ctx, page, elementsPerPage any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationsInterface)(nil).List), page, elementsPerPage)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationsInterface)(nil).List), ctx, page, elementsPerPage)
 }

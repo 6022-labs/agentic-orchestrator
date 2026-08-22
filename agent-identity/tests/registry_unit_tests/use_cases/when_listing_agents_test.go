@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
@@ -45,7 +47,7 @@ func TestWhenListingAgents(t *testing.T) {
 
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
+				Search(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -56,7 +58,7 @@ func TestWhenListingAgents(t *testing.T) {
 			initSuite(basics)
 
 			req := &requests.ListAgentsRequest{}
-			_, err := basics.sut.List(req)
+			_, err := basics.sut.List(context.Background(), req)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, assert.AnError, err)
@@ -68,11 +70,11 @@ func TestWhenListingAgents(t *testing.T) {
 
 		initSuite := func(suite *WhenListingAgentsTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
+				Search(gomock.Any(), gomock.Any()).
 				Return([]*models.Agent{}, nil).
 				Times(1)
 			suite.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
+				SearchCount(gomock.Any(), gomock.Any()).
 				Return(uint(0), assert.AnError).
 				Times(1)
 		}
@@ -83,7 +85,7 @@ func TestWhenListingAgents(t *testing.T) {
 			initSuite(basics)
 
 			req := &requests.ListAgentsRequest{}
-			_, err := basics.sut.List(req)
+			_, err := basics.sut.List(context.Background(), req)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, assert.AnError, err)
@@ -104,16 +106,16 @@ func TestWhenListingAgents(t *testing.T) {
 			}
 
 			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
+				Search(gomock.Any(), gomock.Any()).
 				Return(agents, nil).
 				Times(1)
 			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
+				SearchCount(gomock.Any(), gomock.Any()).
 				Return(uint(len(agents)), nil).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentIds(gomock.Any()).
+				GetAllByAgentIds(gomock.Any(), gomock.Any()).
 				Return([]*models.AgentAddress{
 					model_builders.NewAgentAddressBuilder().
 						WithAgentId(agents[0].ID).
@@ -131,7 +133,7 @@ func TestWhenListingAgents(t *testing.T) {
 				},
 			}
 
-			response, err := basics.sut.List(req)
+			response, err := basics.sut.List(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, response)
@@ -163,26 +165,26 @@ func TestWhenListingAgents(t *testing.T) {
 			basics := WhenListingAgentsBeforeEach(t)
 
 			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+				Search(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 					assert.Equal(t, lo.ToPtr(uint(1)), params.Page)
 					assert.Equal(t, lo.ToPtr(uint(10)), params.ElementsPerPage)
 					return []*models.Agent{}, nil
 				}).
 				Times(1)
 			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
+				SearchCount(gomock.Any(), gomock.Any()).
 				Return(uint(0), nil).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentIds(gomock.Any()).
+				GetAllByAgentIds(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			req := &requests.ListAgentsRequest{}
 
-			response, err := basics.sut.List(req)
+			response, err := basics.sut.List(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, response)
@@ -199,28 +201,28 @@ func TestWhenListingAgents(t *testing.T) {
 			basics := WhenListingAgentsBeforeEach(t)
 
 			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+				Search(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
 					return []*models.Agent{}, nil
 				}).
 				Times(1)
 			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParams) (uint, error) {
+				SearchCount(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, params repositories.AgentSearchParams) (uint, error) {
 					assert.Equal(t, lo.ToPtr(true), params.IsMinted)
 					return uint(0), nil
 				}).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentIds(gomock.Any()).
+				GetAllByAgentIds(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
 			req := &requests.ListAgentsRequest{IsMinted: lo.ToPtr(true)}
 
-			_, err := basics.sut.List(req)
+			_, err := basics.sut.List(context.Background(), req)
 
 			assert.Nil(t, err)
 		})
@@ -234,20 +236,20 @@ func TestWhenListingAgents(t *testing.T) {
 			basics := WhenListingAgentsBeforeEach(t)
 
 			basics.mockAgentRepository.EXPECT().
-				Search(gomock.Any()).
-				DoAndReturn(func(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+				Search(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
 					assert.Equal(t, lo.ToPtr("name"), params.SortBy)
 					assert.Equal(t, lo.ToPtr("desc"), params.SortDirection)
 					return []*models.Agent{}, nil
 				}).
 				Times(1)
 			basics.mockAgentRepository.EXPECT().
-				SearchCount(gomock.Any()).
+				SearchCount(gomock.Any(), gomock.Any()).
 				Return(uint(0), nil).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentIds(gomock.Any()).
+				GetAllByAgentIds(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 
@@ -258,7 +260,7 @@ func TestWhenListingAgents(t *testing.T) {
 				SortBy: lo.ToPtr(requests.ListAgentSortByName),
 			}
 
-			_, err := basics.sut.List(req)
+			_, err := basics.sut.List(context.Background(), req)
 
 			assert.Nil(t, err)
 		})

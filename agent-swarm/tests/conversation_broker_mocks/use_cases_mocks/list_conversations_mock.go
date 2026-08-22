@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockListConversationsInterface) EXPECT() *MockListConversationsInterfac
 }
 
 // List mocks base method.
-func (m *MockListConversationsInterface) List(request *requests.ListConversationsRequest) (*responses.ListConversationsResponse, error) {
+func (m *MockListConversationsInterface) List(ctx context.Context, request *requests.ListConversationsRequest) (*responses.ListConversationsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", request)
+	ret := m.ctrl.Call(m, "List", ctx, request)
 	ret0, _ := ret[0].(*responses.ListConversationsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockListConversationsInterfaceMockRecorder) List(request any) *gomock.Call {
+func (mr *MockListConversationsInterfaceMockRecorder) List(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationsInterface)(nil).List), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationsInterface)(nil).List), ctx, request)
 }

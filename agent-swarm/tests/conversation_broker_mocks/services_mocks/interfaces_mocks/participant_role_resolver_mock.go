@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -42,16 +43,16 @@ func (m *MockParticipantRoleResolverInterface) EXPECT() *MockParticipantRoleReso
 }
 
 // Resolve mocks base method.
-func (m *MockParticipantRoleResolverInterface) Resolve(participant *models.Participant) (*enums.ParticipantRole, error) {
+func (m *MockParticipantRoleResolverInterface) Resolve(ctx context.Context, participant *models.Participant) (*enums.ParticipantRole, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Resolve", participant)
+	ret := m.ctrl.Call(m, "Resolve", ctx, participant)
 	ret0, _ := ret[0].(*enums.ParticipantRole)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Resolve indicates an expected call of Resolve.
-func (mr *MockParticipantRoleResolverInterfaceMockRecorder) Resolve(participant any) *gomock.Call {
+func (mr *MockParticipantRoleResolverInterfaceMockRecorder) Resolve(ctx, participant any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resolve", reflect.TypeOf((*MockParticipantRoleResolverInterface)(nil).Resolve), participant)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resolve", reflect.TypeOf((*MockParticipantRoleResolverInterface)(nil).Resolve), ctx, participant)
 }

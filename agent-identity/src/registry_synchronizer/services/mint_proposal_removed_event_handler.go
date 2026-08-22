@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -26,13 +28,16 @@ func NewMintProposalRemovedEventHandler(
 	}
 }
 
-func (handler *MintProposalRemovedEventHandler) Handle(event *abi.AgentCollectionV1MintProposalRemoved) error {
+func (handler *MintProposalRemovedEventHandler) Handle(
+	ctx context.Context,
+	event *abi.AgentCollectionV1MintProposalRemoved,
+) error {
 	handler.logger.Info("Handling MintProposalRemoved event",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("proposalId", event.ProposalId.Uint64()),
 	)
 
-	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(
+	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(ctx,
 		event.Raw.Address.Hex(),
 		event.ProposalId.Uint64(),
 	)
@@ -48,7 +53,7 @@ func (handler *MintProposalRemovedEventHandler) Handle(event *abi.AgentCollectio
 		return nil
 	}
 
-	err = handler.agentRepository.Remove(agent)
+	err = handler.agentRepository.Remove(ctx, agent)
 	if err != nil {
 		return fmt.Errorf("failed to remove agent from proposal: %w", err)
 	}

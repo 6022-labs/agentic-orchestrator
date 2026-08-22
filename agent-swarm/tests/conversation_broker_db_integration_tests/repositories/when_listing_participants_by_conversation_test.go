@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -49,28 +51,37 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 			defer WhenListingParticipantsByConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 
 			conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
 			otherConv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, _ = suite.conversations.Save(conv)
-			_, _ = suite.conversations.Save(otherConv)
+			_, _ = suite.conversations.Save(context.Background(), conv)
+			_, _ = suite.conversations.Save(context.Background(), otherConv)
 
 			agent := model_builders.NewAgentParticipantBuilder().Build()
 			human := model_builders.NewUserParticipantBuilder().Build()
 			outsider := model_builders.NewAgentParticipantBuilder().Build()
-			_, _ = suite.sut.Save(agent)
-			_, _ = suite.sut.Save(human)
-			_, _ = suite.sut.Save(outsider)
+			_, _ = suite.sut.Save(context.Background(), agent)
+			_, _ = suite.sut.Save(context.Background(), human)
+			_, _ = suite.sut.Save(context.Background(), outsider)
 
-			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
-				WithConversationID(conv.ID).WithParticipantID(agent.ID).Build())
-			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
-				WithConversationID(conv.ID).WithParticipantID(human.ID).Build())
-			_, _ = suite.conversationParticipants.Save(model_builders.NewConversationParticipantBuilder().
-				WithConversationID(otherConv.ID).WithParticipantID(outsider.ID).Build())
+			_, _ = suite.conversationParticipants.Save(
+				context.Background(),
+				model_builders.NewConversationParticipantBuilder().
+					WithConversationID(conv.ID).WithParticipantID(agent.ID).Build(),
+			)
+			_, _ = suite.conversationParticipants.Save(
+				context.Background(),
+				model_builders.NewConversationParticipantBuilder().
+					WithConversationID(conv.ID).WithParticipantID(human.ID).Build(),
+			)
+			_, _ = suite.conversationParticipants.Save(
+				context.Background(),
+				model_builders.NewConversationParticipantBuilder().
+					WithConversationID(otherConv.ID).WithParticipantID(outsider.ID).Build(),
+			)
 
-			result, err := suite.sut.ListByConversationId(conv.ID)
+			result, err := suite.sut.ListByConversationId(context.Background(), conv.ID)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 2)
@@ -92,11 +103,11 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 			defer WhenListingParticipantsByConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 			conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, _ = suite.conversations.Save(conv)
+			_, _ = suite.conversations.Save(context.Background(), conv)
 
-			result, err := suite.sut.ListByConversationId(conv.ID)
+			result, err := suite.sut.ListByConversationId(context.Background(), conv.ID)
 
 			assert.NoError(t, err)
 			assert.Len(t, result, 0)

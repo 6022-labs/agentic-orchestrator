@@ -1,5 +1,7 @@
 package interfaces
 
+import "context"
+
 type ChannelInformation struct {
 	Id          string
 	Name        string
@@ -9,6 +11,6 @@ type ChannelInformation struct {
 }
 
 type SlackChannelRequesterInterface interface {
-	JoinChannel(channelId string) error
-	GetChannelInformation(channelId string) (*ChannelInformation, error)
+	JoinChannel(ctx context.Context, channelId string) error
+	GetChannelInformation(ctx context.Context, channelId string) (*ChannelInformation, error)
 }

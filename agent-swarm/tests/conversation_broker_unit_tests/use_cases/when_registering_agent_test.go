@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -58,7 +60,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			request.CollectionAddress = ""
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "collectionAddress")
@@ -71,7 +73,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			request.CollectionTokenId = ""
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "collectionTokenId")
@@ -84,7 +86,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			request.CollectionTokenId = "abc"
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 			assert.Contains(t, err.Error(), "collectionTokenId")
@@ -98,7 +100,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(existing, nil).
 				Times(1)
 		}
@@ -112,7 +114,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 				request := generateValidRegisterAgentRequest()
 				initSuite(suite, request)
 
-				participant, existed, err := suite.sut.Register(request)
+				participant, existed, err := suite.sut.Register(context.Background(), request)
 
 				assert.NoError(t, err)
 				assert.True(t, existed)
@@ -126,7 +128,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -138,7 +140,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			initSuite(suite, request)
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -149,11 +151,11 @@ func TestWhenRegisteringAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, uint64(1)).
+				GetAgent(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -165,7 +167,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			initSuite(suite, request)
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -176,11 +178,11 @@ func TestWhenRegisteringAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
 			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, uint64(1)).
+				GetAgent(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -192,7 +194,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			initSuite(suite, request)
 
-			_, _, err := suite.sut.Register(request)
+			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -212,15 +214,15 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			expected := registryAgent.ToParticipant()
 
 			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(request.CollectionAddress, uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(request.CollectionAddress, uint64(1)).
+				GetAgent(gomock.Any(), request.CollectionAddress, uint64(1)).
 				Return(registryAgent, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				Save(expected).
+				Save(gomock.Any(), expected).
 				Return(expected, nil).
 				Times(1)
 
@@ -234,7 +236,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			request := generateValidRegisterAgentRequest()
 			initSuite(suite, request, fromRegistry)
 
-			participant, existed, err := suite.sut.Register(request)
+			participant, existed, err := suite.sut.Register(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.False(t, existed)

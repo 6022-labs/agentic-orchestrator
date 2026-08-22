@@ -36,7 +36,7 @@ func NewBridgeRegistrar(
 	}
 }
 
-func (r *BridgeRegistrar) Ensure() (uuid.UUID, error) {
+func (r *BridgeRegistrar) Ensure(ctx context.Context) (uuid.UUID, error) {
 	r.logger.Info("Upserting slack bridge with conversation broker",
 		zap.String("bridgeId", r.conversationBrokerSettings.BridgeID.String()),
 		zap.String("baseUrl", r.conversationBrokerSettings.CallbackUrl),
@@ -51,7 +51,7 @@ func (r *BridgeRegistrar) Ensure() (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 
-	rsp, err := r.client.PostBridgesWithBodyWithResponse(context.Background(), jsonContentType, bytes.NewReader(body))
+	rsp, err := r.client.PostBridgesWithBodyWithResponse(ctx, jsonContentType, bytes.NewReader(body))
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to upsert bridge with broker: %w", err)
 	}

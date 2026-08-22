@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -54,7 +56,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			request := generateValidGetAgentPromptTemplateRequest()
 			request.AgentCollectionTokenId = "abc"
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -65,7 +67,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockConversationBrokerRequester.EXPECT().
-				GetAgentPromptTemplate("0xabc", uint64(1), "clone-system").
+				GetAgentPromptTemplate(gomock.Any(), "0xabc", uint64(1), "clone-system").
 				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: "tpl"}, nil).
 				Times(1)
 		}
@@ -76,7 +78,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
+			response, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "tpl", response.Content)
@@ -88,7 +90,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockConversationBrokerRequester.EXPECT().
-				GetAgentPromptTemplate(gomock.Any(), gomock.Any(), gomock.Any()).
+				GetAgentPromptTemplate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -99,7 +101,7 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentPromptTemplateRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.Error(t, err)
 		})

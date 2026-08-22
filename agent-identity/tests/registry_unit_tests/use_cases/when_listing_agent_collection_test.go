@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
@@ -38,7 +40,7 @@ func TestWhenListingAgentCollection(t *testing.T) {
 
 		initSuite := func(suite *WhenListingAgentCollectionTestingSuite) {
 			suite.mockAgentCollectionRepository.EXPECT().
-				GetAll().
+				GetAll(gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -48,7 +50,7 @@ func TestWhenListingAgentCollection(t *testing.T) {
 			basics := WhenListingAgentCollectionBeforeEach(t)
 			initSuite(basics)
 
-			_, err := basics.sut.List()
+			_, err := basics.sut.List(context.Background())
 
 			assert.NotNil(t, err)
 			assert.Equal(t, assert.AnError, err)
@@ -69,11 +71,11 @@ func TestWhenListingAgentCollection(t *testing.T) {
 			}
 
 			basics.mockAgentCollectionRepository.EXPECT().
-				GetAll().
+				GetAll(gomock.Any()).
 				Return(collections, nil).
 				Times(1)
 
-			result, err := basics.sut.List()
+			result, err := basics.sut.List(context.Background())
 
 			assert.Nil(t, err)
 			assert.Len(t, result, len(collections))
@@ -94,11 +96,11 @@ func TestWhenListingAgentCollection(t *testing.T) {
 			basics := WhenListingAgentCollectionBeforeEach(t)
 
 			basics.mockAgentCollectionRepository.EXPECT().
-				GetAll().
+				GetAll(gomock.Any()).
 				Return([]*models.AgentCollection{}, nil).
 				Times(1)
 
-			result, err := basics.sut.List()
+			result, err := basics.sut.List(context.Background())
 
 			assert.Nil(t, err)
 			assert.Empty(t, result)

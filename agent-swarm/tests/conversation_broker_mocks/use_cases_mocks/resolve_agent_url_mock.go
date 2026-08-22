@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockResolveAgentUrlInterface) EXPECT() *MockResolveAgentUrlInterfaceMoc
 }
 
 // Resolve mocks base method.
-func (m *MockResolveAgentUrlInterface) Resolve(request *requests.ResolveAgentUrlRequest) (*responses.AgentUrlResponse, error) {
+func (m *MockResolveAgentUrlInterface) Resolve(ctx context.Context, request *requests.ResolveAgentUrlRequest) (*responses.AgentUrlResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Resolve", request)
+	ret := m.ctrl.Call(m, "Resolve", ctx, request)
 	ret0, _ := ret[0].(*responses.AgentUrlResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Resolve indicates an expected call of Resolve.
-func (mr *MockResolveAgentUrlInterfaceMockRecorder) Resolve(request any) *gomock.Call {
+func (mr *MockResolveAgentUrlInterfaceMockRecorder) Resolve(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resolve", reflect.TypeOf((*MockResolveAgentUrlInterface)(nil).Resolve), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resolve", reflect.TypeOf((*MockResolveAgentUrlInterface)(nil).Resolve), ctx, request)
 }

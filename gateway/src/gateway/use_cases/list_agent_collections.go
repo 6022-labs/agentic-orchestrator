@@ -1,12 +1,14 @@
 package use_cases
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
 
 type ListAgentCollectionsInterface interface {
-	List() ([]*responses.AgentCollectionResponse, error)
+	List(ctx context.Context) ([]*responses.AgentCollectionResponse, error)
 }
 
 type ListAgentCollections struct {
@@ -19,8 +21,8 @@ func NewListAgentCollections(agentRegistryRequester interfaces.AgentRegistryRequ
 	}
 }
 
-func (s *ListAgentCollections) List() ([]*responses.AgentCollectionResponse, error) {
-	agentCollections, err := s.agentRegistryRequester.ListAgentCollections()
+func (s *ListAgentCollections) List(ctx context.Context) ([]*responses.AgentCollectionResponse, error) {
+	agentCollections, err := s.agentRegistryRequester.ListAgentCollections(ctx)
 	if err != nil {
 		return nil, err
 	}

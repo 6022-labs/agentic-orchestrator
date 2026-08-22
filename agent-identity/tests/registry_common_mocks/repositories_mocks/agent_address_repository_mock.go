@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -43,60 +44,60 @@ func (m *MockAgentAddressRepositoryInterface) EXPECT() *MockAgentAddressReposito
 }
 
 // GetAllByAgentId mocks base method.
-func (m *MockAgentAddressRepositoryInterface) GetAllByAgentId(agentId uuid.UUID) ([]*models.AgentAddress, error) {
+func (m *MockAgentAddressRepositoryInterface) GetAllByAgentId(ctx context.Context, agentId uuid.UUID) ([]*models.AgentAddress, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllByAgentId", agentId)
+	ret := m.ctrl.Call(m, "GetAllByAgentId", ctx, agentId)
 	ret0, _ := ret[0].([]*models.AgentAddress)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllByAgentId indicates an expected call of GetAllByAgentId.
-func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetAllByAgentId(agentId any) *gomock.Call {
+func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetAllByAgentId(ctx, agentId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByAgentId", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetAllByAgentId), agentId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByAgentId", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetAllByAgentId), ctx, agentId)
 }
 
 // GetAllByAgentIds mocks base method.
-func (m *MockAgentAddressRepositoryInterface) GetAllByAgentIds(agentIds []uuid.UUID) ([]*models.AgentAddress, error) {
+func (m *MockAgentAddressRepositoryInterface) GetAllByAgentIds(ctx context.Context, agentIds []uuid.UUID) ([]*models.AgentAddress, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllByAgentIds", agentIds)
+	ret := m.ctrl.Call(m, "GetAllByAgentIds", ctx, agentIds)
 	ret0, _ := ret[0].([]*models.AgentAddress)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllByAgentIds indicates an expected call of GetAllByAgentIds.
-func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetAllByAgentIds(agentIds any) *gomock.Call {
+func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetAllByAgentIds(ctx, agentIds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByAgentIds", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetAllByAgentIds), agentIds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByAgentIds", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetAllByAgentIds), ctx, agentIds)
 }
 
 // GetByTypeAndAddress mocks base method.
-func (m *MockAgentAddressRepositoryInterface) GetByTypeAndAddress(addressType enums.AddressType, address string) (*models.AgentAddress, error) {
+func (m *MockAgentAddressRepositoryInterface) GetByTypeAndAddress(ctx context.Context, addressType enums.AddressType, address string) (*models.AgentAddress, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByTypeAndAddress", addressType, address)
+	ret := m.ctrl.Call(m, "GetByTypeAndAddress", ctx, addressType, address)
 	ret0, _ := ret[0].(*models.AgentAddress)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByTypeAndAddress indicates an expected call of GetByTypeAndAddress.
-func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetByTypeAndAddress(addressType, address any) *gomock.Call {
+func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) GetByTypeAndAddress(ctx, addressType, address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTypeAndAddress", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetByTypeAndAddress), addressType, address)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTypeAndAddress", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).GetByTypeAndAddress), ctx, addressType, address)
 }
 
 // ReplaceAllForAgent mocks base method.
-func (m *MockAgentAddressRepositoryInterface) ReplaceAllForAgent(agentId uuid.UUID, addresses map[enums.AddressType]string) error {
+func (m *MockAgentAddressRepositoryInterface) ReplaceAllForAgent(ctx context.Context, agentId uuid.UUID, addresses map[enums.AddressType]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReplaceAllForAgent", agentId, addresses)
+	ret := m.ctrl.Call(m, "ReplaceAllForAgent", ctx, agentId, addresses)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReplaceAllForAgent indicates an expected call of ReplaceAllForAgent.
-func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) ReplaceAllForAgent(agentId, addresses any) *gomock.Call {
+func (mr *MockAgentAddressRepositoryInterfaceMockRecorder) ReplaceAllForAgent(ctx, agentId, addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceAllForAgent", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).ReplaceAllForAgent), agentId, addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceAllForAgent", reflect.TypeOf((*MockAgentAddressRepositoryInterface)(nil).ReplaceAllForAgent), ctx, agentId, addresses)
 }

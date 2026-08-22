@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"sort"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
@@ -12,7 +14,7 @@ import (
 )
 
 type ListAgentsInterface interface {
-	List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error)
+	List(ctx context.Context, request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error)
 }
 
 type ListAgents struct {
@@ -30,12 +32,15 @@ func NewListAgents(
 	}
 }
 
-func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
+func (s *ListAgents) List(
+	ctx context.Context,
+	request *requests.ListAgentsRequest,
+) (*responses.ListAgentsResponse, error) {
 	request.Sanitize()
 
 	searchParams := repositories.AgentSearchParams{IsMinted: request.IsMinted}
 
-	agents, err := s.agentRepository.Search(repositories.AgentSearchParamsWithPagination{
+	agents, err := s.agentRepository.Search(ctx, repositories.AgentSearchParamsWithPagination{
 		AgentSearchParams: searchParams,
 		Page:              request.Page,
 		SortBy:            request.SortBy.ToDatabaseField(),
@@ -46,7 +51,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 		return nil, err
 	}
 
-	totalCount, err := s.agentRepository.SearchCount(searchParams)
+	totalCount, err := s.agentRepository.SearchCount(ctx, searchParams)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +59,7 @@ func (s *ListAgents) List(request *requests.ListAgentsRequest) (*responses.ListA
 	agentIds := lo.Map(agents, func(agent *models.Agent, _ int) uuid.UUID {
 		return agent.ID
 	})
-	agentAddresses, err := s.agentAddressRepository.GetAllByAgentIds(agentIds)
+	agentAddresses, err := s.agentAddressRepository.GetAllByAgentIds(ctx, agentIds)
 	if err != nil {
 		return nil, err
 	}

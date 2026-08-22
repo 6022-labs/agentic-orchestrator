@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"fmt"
 	"testing"
 
@@ -38,7 +40,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 		initSuite := func(suite *WhenConsumingWalletOwnershipChallengeTestingSuite, nonce uuid.UUID) {
 			suite.mockCacheStorage.EXPECT().
-				ReadString(fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
+				ReadString(gomock.Any(), fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
 				Return(nil, assert.AnError)
 		}
 
@@ -51,7 +53,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 			initSuite(suite, uuid)
 
-			_, err := suite.sut.ConsumeChallenge(&uuid)
+			_, err := suite.sut.ConsumeChallenge(context.Background(), &uuid)
 
 			assert.Error(t, err)
 		})
@@ -62,7 +64,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 		initSuite := func(suite *WhenConsumingWalletOwnershipChallengeTestingSuite, nonce uuid.UUID) {
 			suite.mockCacheStorage.EXPECT().
-				ReadString(fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
+				ReadString(gomock.Any(), fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
 				Return(nil, nil)
 		}
 
@@ -75,7 +77,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 			initSuite(suite, uuid)
 
-			_, err := suite.sut.ConsumeChallenge(&uuid)
+			_, err := suite.sut.ConsumeChallenge(context.Background(), &uuid)
 
 			assert.Error(t, err)
 		})
@@ -86,7 +88,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 		initSuite := func(suite *WhenConsumingWalletOwnershipChallengeTestingSuite, nonce uuid.UUID, userId string) {
 			suite.mockCacheStorage.EXPECT().
-				ReadString(fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
+				ReadString(gomock.Any(), fmt.Sprintf(services.WALLET_OWNERSHIP_CHALLENGE_PATH_TEMPLATE, nonce.String())).
 				Return(&userId, nil)
 		}
 
@@ -100,7 +102,7 @@ func TestWhenConsumingWalletOwnershipChallenge(t *testing.T) {
 
 			initSuite(suite, uuid, userId)
 
-			result, err := suite.sut.ConsumeChallenge(&uuid)
+			result, err := suite.sut.ConsumeChallenge(context.Background(), &uuid)
 
 			assert.NoError(t, err)
 			assert.Equal(t, &userId, result)

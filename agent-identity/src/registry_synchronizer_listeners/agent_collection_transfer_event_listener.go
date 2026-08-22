@@ -1,6 +1,8 @@
 package registry_synchronizer_listeners
 
 import (
+	"context"
+
 	"fmt"
 	"slices"
 
@@ -44,12 +46,12 @@ func NewAgentCollectionTransferListener(
 	return el
 }
 
-func (listener *AgentCollectionTransferListener) Listen() error {
-	return listener.AbstractUpdatableSubscriptionListener.Listen()
+func (listener *AgentCollectionTransferListener) Listen(ctx context.Context) error {
+	return listener.AbstractUpdatableSubscriptionListener.Listen(ctx)
 }
 
-func (listener *AgentCollectionTransferListener) SubscribeAll() error {
-	collections, err := listener.agentCollectionRepository.GetAll()
+func (listener *AgentCollectionTransferListener) SubscribeAll(ctx context.Context) error {
+	collections, err := listener.agentCollectionRepository.GetAll(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collections: %w", err)
 	}
@@ -69,7 +71,7 @@ func (listener *AgentCollectionTransferListener) SubscribeAll() error {
 	addressesToSubscribe := append([]common.Address(nil), collectionAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -80,7 +82,7 @@ func (listener *AgentCollectionTransferListener) SubscribeAll() error {
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"subscribed to AgentCollection.Transfer events",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -102,12 +104,12 @@ func (listener *AgentCollectionTransferListener) Subscribe(collectionAddress com
 	return nil
 }
 
-func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
+func (listener *AgentCollectionTransferListener) rebuildSubscription(ctx context.Context) error {
 	listener.mu.Lock()
 	addressesToSubscribe := append([]common.Address(nil), listener.trackedAddresses...)
 	listener.mu.Unlock()
 
-	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(
+	events, subscription, err := listener.agentCollectionEventSubscriptionProvider.StartTransferSubscription(ctx,
 		addressesToSubscribe,
 	)
 	if err != nil {
@@ -121,7 +123,7 @@ func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 	listener.logger.Info(
 		"rebuilt AgentCollection.Transfer subscription",
 		zap.Int("collectionCount", len(addressesToSubscribe)),
@@ -129,7 +131,7 @@ func (listener *AgentCollectionTransferListener) rebuildSubscription() error {
 	return nil
 }
 
-func (listener *AgentCollectionTransferListener) startSubscriptionHandler(
+func (listener *AgentCollectionTransferListener) startSubscriptionHandler(ctx context.Context,
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionV1Transfer,
 ) {
@@ -159,6 +161,8 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(
 				}
 
 				listener.onBlockSeen(event.Raw.BlockNumber)
+			case <-ctx.Done():
+				return
 			case err := <-subscription.Err():
 				if err == nil {
 					return

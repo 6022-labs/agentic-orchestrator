@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
@@ -21,29 +23,29 @@ func NewConversationConclude(
 	return &ConversationConclude{conversationRepository: conversationRepository}
 }
 
-func (s *ConversationConclude) Conclude(conversationId uuid.UUID) error {
-	conversation, err := s.conversationRepository.GetById(conversationId)
+func (s *ConversationConclude) Conclude(ctx context.Context, conversationId uuid.UUID) error {
+	conversation, err := s.conversationRepository.GetById(ctx, conversationId)
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
 		return cb_errors.NewNotFoundError("conversation", conversationId.String())
 	}
-	return s.concludeConversation(conversation)
+	return s.concludeConversation(ctx, conversation)
 }
 
-func (s *ConversationConclude) ConcludeIfExists(conversationId uuid.UUID) error {
-	conversation, err := s.conversationRepository.GetById(conversationId)
+func (s *ConversationConclude) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) error {
+	conversation, err := s.conversationRepository.GetById(ctx, conversationId)
 	if err != nil {
 		return fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
 		return nil
 	}
-	return s.concludeConversation(conversation)
+	return s.concludeConversation(ctx, conversation)
 }
 
-func (s *ConversationConclude) concludeConversation(conversation *models.Conversation) error {
+func (s *ConversationConclude) concludeConversation(ctx context.Context, conversation *models.Conversation) error {
 	if conversation.Status == enums.ConversationStatusConcluded {
 		return nil
 	}
@@ -53,7 +55,7 @@ func (s *ConversationConclude) concludeConversation(conversation *models.Convers
 	conversation.ConcludedAt = &now
 	conversation.UnconcludedAt = nil
 
-	if _, err := s.conversationRepository.Save(conversation); err != nil {
+	if _, err := s.conversationRepository.Save(ctx, conversation); err != nil {
 		return fmt.Errorf("failed to conclude conversation: %w", err)
 	}
 	return nil

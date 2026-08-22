@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -78,7 +80,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 			suite.mockSlackChannelSynchronizerCached.EXPECT().
-				Sync(request.Event.Channel).
+				Sync(gomock.Any(), request.Event.Channel).
 				Return(nil, assert.AnError)
 		}
 
@@ -94,7 +96,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			err := suite.sut.Handle(request)
+			err := suite.sut.Handle(context.Background(), request)
 			assert.Error(t, err)
 		})
 	})
@@ -110,9 +112,11 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 					WithAgents([]models.SlackAgent{
 						*model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleExpert).Build(),
 					}).Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 				suite.mockSlackThreadRequester.EXPECT().
-					PushCompletionToThread(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					PushCompletionToThread(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
 			}
 
@@ -129,7 +133,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.NoError(t, err)
 			})
 		})
@@ -142,7 +146,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 					WithAgents([]models.SlackAgent{
 						*model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleExpert).Build(),
 					}).Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 			}
 
 			t.Run("Should skip without posting again", func(t *testing.T) {
@@ -159,7 +165,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.NoError(t, err)
 			})
 		})
@@ -179,18 +185,20 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 
 				agent := model_builders.NewSlackAgentBuilder().
 					WithCollectionAddress(collectionAddr).
 					WithCollectionTokenId(collectionTokenId).
 					Build()
 				suite.mockSlackAgentRepository.EXPECT().
-					GetByCollectionAddressAndCollectionTokenId(collectionAddr, collectionTokenId).
+					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddr, collectionTokenId).
 					Return(agent, nil)
 
 				suite.mockBrokerMessageForwarder.EXPECT().
-					Forward(slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, nil, agent).
+					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, nil, agent).
 					Return(nil)
 			}
 
@@ -215,7 +223,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.NoError(t, err)
 			})
 		})
@@ -228,7 +236,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 			}
 
 			t.Run("Should return an error", func(t *testing.T) {
@@ -244,7 +254,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.Error(t, err)
 			})
 		})
@@ -257,10 +267,12 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 
 				suite.mockSlackAgentRepository.EXPECT().
-					GetByCollectionAddressAndCollectionTokenId(collectionAddr, collectionTokenId).
+					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddr, collectionTokenId).
 					Return(nil, nil)
 			}
 
@@ -285,7 +297,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.Error(t, err)
 			})
 		})
@@ -302,17 +314,21 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 
 				slackUser := model_builders.NewSlackUserBuilder().
 					WithId(*request.Event.User).
 					WithPairedHumanAgentCollectionAddress(nil).
 					WithPairedHumanAgentCollectionTokenId(nil).
 					Build()
-				suite.mockSlackUserSynchronizerCached.EXPECT().Sync(*request.Event.User).Return(slackUser, nil)
+				suite.mockSlackUserSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), *request.Event.User).
+					Return(slackUser, nil)
 
 				suite.mockBrokerMessageForwarder.EXPECT().
-					Forward(slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, slackUser, nil).
+					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, slackUser, nil).
 					Return(nil)
 			}
 
@@ -331,7 +347,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.NoError(t, err)
 			})
 		})
@@ -344,8 +360,12 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
-				suite.mockSlackUserSynchronizerCached.EXPECT().Sync(*request.Event.User).Return(nil, assert.AnError)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
+				suite.mockSlackUserSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), *request.Event.User).
+					Return(nil, assert.AnError)
 			}
 
 			t.Run("Should return the error", func(t *testing.T) {
@@ -363,7 +383,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.Error(t, err)
 			})
 		})
@@ -379,17 +399,21 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				slackChannel := model_builders.NewSlackChannelBuilder().
 					WithAgents([]models.SlackAgent{facilitator}).
 					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
 
 				slackUser := model_builders.NewSlackUserBuilder().
 					WithId(*request.Event.User).
 					WithPairedHumanAgentCollectionAddress(&pairedAddr).
 					WithPairedHumanAgentCollectionTokenId(&pairedTokenId).
 					Build()
-				suite.mockSlackUserSynchronizerCached.EXPECT().Sync(*request.Event.User).Return(slackUser, nil)
+				suite.mockSlackUserSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), *request.Event.User).
+					Return(slackUser, nil)
 
 				suite.mockSlackAgentRepository.EXPECT().
-					GetByCollectionAddressAndCollectionTokenId(pairedAddr, pairedTokenId).
+					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), pairedAddr, pairedTokenId).
 					Return(nil, nil)
 			}
 
@@ -408,7 +432,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				}
 				initSuite(suite, request)
 
-				err := suite.sut.Handle(request)
+				err := suite.sut.Handle(context.Background(), request)
 				assert.Error(t, err)
 			})
 		})
@@ -420,7 +444,9 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 		initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
 			facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
 			slackChannel := model_builders.NewSlackChannelBuilder().WithAgents([]models.SlackAgent{facilitator}).Build()
-			suite.mockSlackChannelSynchronizerCached.EXPECT().Sync(request.Event.Channel).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizerCached.EXPECT().
+				Sync(gomock.Any(), request.Event.Channel).
+				Return(slackChannel, nil)
 		}
 
 		t.Run("Should return an error", func(t *testing.T) {
@@ -436,7 +462,7 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 			}
 			initSuite(suite, request)
 
-			err := suite.sut.Handle(request)
+			err := suite.sut.Handle(context.Background(), request)
 			assert.Error(t, err)
 		})
 	})

@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -74,7 +76,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			suite := WhenIngestingMessageBeforeEach(t)
 			messageId := initSuite(suite)
 
-			got, err := suite.sut.IngestMessage(conversationId, participantId, "hello")
+			got, err := suite.sut.IngestMessage(context.Background(), conversationId, participantId, "hello")
 
 			assert.NoError(t, err)
 			assert.Equal(t, messageId, got)
@@ -100,7 +102,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			suite := WhenIngestingMessageBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.IngestMessage(uuid.New(), uuid.New(), "hello")
+			got, err := suite.sut.IngestMessage(context.Background(), uuid.New(), uuid.New(), "hello")
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)
@@ -123,7 +125,7 @@ func TestWhenIngestingMessage(t *testing.T) {
 			suite := WhenIngestingMessageBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.IngestMessage(uuid.New(), uuid.New(), "hello")
+			got, err := suite.sut.IngestMessage(context.Background(), uuid.New(), uuid.New(), "hello")
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)

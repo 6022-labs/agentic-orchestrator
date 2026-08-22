@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -65,7 +67,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			suite := WhenRegisteringUserBeforeEach(t)
 			participantId := initSuite(suite)
 
-			got, err := suite.sut.RegisterUser("Pierre")
+			got, err := suite.sut.RegisterUser(context.Background(), "Pierre")
 
 			assert.NoError(t, err)
 			assert.Equal(t, participantId, got)
@@ -91,7 +93,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			suite := WhenRegisteringUserBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterUser("Pierre")
+			got, err := suite.sut.RegisterUser(context.Background(), "Pierre")
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)
@@ -114,7 +116,7 @@ func TestWhenRegisteringUser(t *testing.T) {
 			suite := WhenRegisteringUserBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterUser("Pierre")
+			got, err := suite.sut.RegisterUser(context.Background(), "Pierre")
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)

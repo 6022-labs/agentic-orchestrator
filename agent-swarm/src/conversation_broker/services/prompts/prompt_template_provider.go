@@ -1,6 +1,8 @@
 package prompts
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -13,11 +15,12 @@ type promptTemplateProvider struct {
 }
 
 func (p *promptTemplateProvider) templateFor(
+	ctx context.Context,
 	agent *models.Participant,
 	key enums.AgentPromptTemplateKey,
 ) (string, error) {
 	if agent.CollectionAddress != nil && agent.CollectionTokenId != nil {
-		stored, err := p.agentPromptTemplateRepository.GetByAgentAndKey(
+		stored, err := p.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
 			*agent.CollectionAddress,
 			*agent.CollectionTokenId,
 			key,

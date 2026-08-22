@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -42,10 +44,15 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			defer WhenSavingAgentPromptTemplateAfterEach(suite)
 
 			entity := model_builders.NewAgentPromptTemplateBuilder().Build()
-			_, err := suite.sut.Save(entity)
+			_, err := suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetByAgentAndKey(entity.CollectionAddress, entity.CollectionTokenId, entity.Key)
+			got, err := suite.sut.GetByAgentAndKey(
+				context.Background(),
+				entity.CollectionAddress,
+				entity.CollectionTokenId,
+				entity.Key,
+			)
 			assert.NoError(t, err)
 			assert.Equal(t, entity.ID, got.ID)
 			assert.Equal(t, entity.Content, got.Content)
@@ -62,14 +69,19 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			defer WhenSavingAgentPromptTemplateAfterEach(suite)
 
 			entity := model_builders.NewAgentPromptTemplateBuilder().WithContent("old").Build()
-			_, err := suite.sut.Save(entity)
+			_, err := suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
 			entity.Content = "new"
-			_, err = suite.sut.Save(entity)
+			_, err = suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetByAgentAndKey(entity.CollectionAddress, entity.CollectionTokenId, entity.Key)
+			got, err := suite.sut.GetByAgentAndKey(
+				context.Background(),
+				entity.CollectionAddress,
+				entity.CollectionTokenId,
+				entity.Key,
+			)
 			assert.NoError(t, err)
 			assert.Equal(t, "new", got.Content)
 		})

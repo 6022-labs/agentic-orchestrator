@@ -48,7 +48,7 @@ func TestWhenGettingMintProposal(t *testing.T) {
 			suite.createProposal("second-proposed-agent")
 
 			// Proposal ids are 1-based even though the batch reads array slots from 0.
-			proposal, err := suite.sut.GetMintProposal(
+			proposal, err := suite.sut.GetMintProposal(context.Background(),
 				suite.fixture.stack.Collection,
 				big.NewInt(2),
 				suite.fixture.currentBlock(),
@@ -69,7 +69,7 @@ func TestWhenGettingMintProposal(t *testing.T) {
 			blockWithOneProposal := suite.fixture.currentBlock()
 			suite.createProposal("later-agent")
 
-			atLatest, err := suite.sut.GetMintProposal(
+			atLatest, err := suite.sut.GetMintProposal(context.Background(),
 				suite.fixture.stack.Collection,
 				big.NewInt(2),
 				suite.fixture.currentBlock(),
@@ -77,7 +77,12 @@ func TestWhenGettingMintProposal(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, atLatest)
 
-			_, err = suite.sut.GetMintProposal(suite.fixture.stack.Collection, big.NewInt(2), blockWithOneProposal)
+			_, err = suite.sut.GetMintProposal(
+				context.Background(),
+				suite.fixture.stack.Collection,
+				big.NewInt(2),
+				blockWithOneProposal,
+			)
 			assert.Error(t, err)
 		})
 	})
@@ -90,7 +95,7 @@ func TestWhenGettingMintProposal(t *testing.T) {
 			suite := WhenGettingMintProposalBeforeEach(t)
 			suite.createProposal("only-proposed-agent")
 
-			_, err := suite.sut.GetMintProposal(
+			_, err := suite.sut.GetMintProposal(context.Background(),
 				suite.fixture.stack.Collection,
 				big.NewInt(42),
 				suite.fixture.currentBlock(),

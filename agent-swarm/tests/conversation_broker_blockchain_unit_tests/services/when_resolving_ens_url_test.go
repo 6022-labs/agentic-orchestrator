@@ -83,7 +83,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			url, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+			url, err := suite.sut.ResolveUrl(context.Background(), resolvableEnsDomain)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://node.example", url)
@@ -95,7 +95,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+			_, err := suite.sut.ResolveUrl(context.Background(), resolvableEnsDomain)
 			assert.NoError(t, err)
 
 			registryAbi, err := contract_abi.AgentEnsRegistryMetaData.GetAbi()
@@ -127,7 +127,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			url, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+			url, err := suite.sut.ResolveUrl(context.Background(), resolvableEnsDomain)
 
 			assert.NoError(t, err)
 			assert.Empty(t, url)
@@ -150,7 +150,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl(resolvableEnsDomain)
+			_, err := suite.sut.ResolveUrl(context.Background(), resolvableEnsDomain)
 
 			assert.Error(t, err)
 		})
@@ -170,7 +170,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl("agent.collection.1.6022.eth")
+			_, err := suite.sut.ResolveUrl(context.Background(), "agent.collection.1.6022.eth")
 
 			assert.ErrorContains(t, err, "belongs to chain 1")
 		})
@@ -189,7 +189,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl("agent.collection.polygon.6022.eth")
+			_, err := suite.sut.ResolveUrl(context.Background(), "agent.collection.polygon.6022.eth")
 
 			assert.ErrorContains(t, err, "non-numeric chain id label")
 		})
@@ -208,7 +208,7 @@ func TestWhenResolvingEnsUrl(t *testing.T) {
 			suite := WhenResolvingEnsUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.ResolveUrl("agent.eth")
+			_, err := suite.sut.ResolveUrl(context.Background(), "agent.eth")
 
 			assert.Error(t, err)
 		})

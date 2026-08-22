@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -47,10 +49,10 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
 			suite.cacheStorage.EXPECT().
-				Read("x402-payment-challenges/agent.eth").
+				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return(`{"x402Version":2,"accepts":[{"scheme":"exact","network":"eip155:80002"}]}`, nil)
 
-			paymentChallenge, ok := suite.sut.Read(" Agent.ETH ")
+			paymentChallenge, ok := suite.sut.Read(context.Background(), " Agent.ETH ")
 
 			assert.True(t, ok)
 			assert.Equal(t, models.X402Version, paymentChallenge.X402Version)
@@ -66,10 +68,10 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
 			suite.cacheStorage.EXPECT().
-				Read("x402-payment-challenges/agent.eth").
+				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return("", assert.AnError)
 
-			paymentChallenge, ok := suite.sut.Read("agent.eth")
+			paymentChallenge, ok := suite.sut.Read(context.Background(), "agent.eth")
 
 			assert.False(t, ok)
 			assert.Nil(t, paymentChallenge)
@@ -84,10 +86,10 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
 			suite.cacheStorage.EXPECT().
-				Read("x402-payment-challenges/agent.eth").
+				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return("not-json", nil)
 
-			paymentChallenge, ok := suite.sut.Read("agent.eth")
+			paymentChallenge, ok := suite.sut.Read(context.Background(), "agent.eth")
 
 			assert.False(t, ok)
 			assert.Nil(t, paymentChallenge)

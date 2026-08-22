@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,17 +41,17 @@ func (m *MockBlockEventsDequeueDaemonInterface) EXPECT() *MockBlockEventsDequeue
 }
 
 // Start mocks base method.
-func (m *MockBlockEventsDequeueDaemonInterface) Start() error {
+func (m *MockBlockEventsDequeueDaemonInterface) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start")
+	ret := m.ctrl.Call(m, "Start", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockBlockEventsDequeueDaemonInterfaceMockRecorder) Start() *gomock.Call {
+func (mr *MockBlockEventsDequeueDaemonInterfaceMockRecorder) Start(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockBlockEventsDequeueDaemonInterface)(nil).Start))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockBlockEventsDequeueDaemonInterface)(nil).Start), ctx)
 }
 
 // Stop mocks base method.

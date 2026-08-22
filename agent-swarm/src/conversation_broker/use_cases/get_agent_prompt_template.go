@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -10,7 +12,10 @@ import (
 )
 
 type GetAgentPromptTemplateInterface interface {
-	Get(request *requests.GetAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error)
+	Get(
+		ctx context.Context,
+		request *requests.GetAgentPromptTemplateRequest,
+	) (*responses.AgentPromptTemplateResponse, error)
 }
 
 type GetAgentPromptTemplate struct {
@@ -24,13 +29,14 @@ func NewGetAgentPromptTemplate(
 }
 
 func (uc *GetAgentPromptTemplate) Get(
+	ctx context.Context,
 	request *requests.GetAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(
+	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
 		request.CollectionAddress,
 		request.ParsedCollectionTokenId(),
 		request.ParsedKey(),

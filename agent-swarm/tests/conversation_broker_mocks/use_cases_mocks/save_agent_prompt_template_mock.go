@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockSaveAgentPromptTemplateInterface) EXPECT() *MockSaveAgentPromptTemp
 }
 
 // Save mocks base method.
-func (m *MockSaveAgentPromptTemplateInterface) Save(request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
+func (m *MockSaveAgentPromptTemplateInterface) Save(ctx context.Context, request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", request)
+	ret := m.ctrl.Call(m, "Save", ctx, request)
 	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockSaveAgentPromptTemplateInterfaceMockRecorder) Save(request any) *gomock.Call {
+func (mr *MockSaveAgentPromptTemplateInterfaceMockRecorder) Save(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSaveAgentPromptTemplateInterface)(nil).Save), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSaveAgentPromptTemplateInterface)(nil).Save), ctx, request)
 }

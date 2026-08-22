@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -66,7 +68,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			suite := WhenRegisteringAgentBeforeEach(t)
 			participantId := initSuite(suite)
 
-			got, err := suite.sut.RegisterAgent("0xabc", 7)
+			got, err := suite.sut.RegisterAgent(context.Background(), "0xabc", 7)
 
 			assert.NoError(t, err)
 			assert.Equal(t, participantId, got)
@@ -96,7 +98,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			suite := WhenRegisteringAgentBeforeEach(t)
 			participantId := initSuite(suite)
 
-			got, err := suite.sut.RegisterAgent("0xabc", 7)
+			got, err := suite.sut.RegisterAgent(context.Background(), "0xabc", 7)
 
 			assert.NoError(t, err)
 			assert.Equal(t, participantId, got)
@@ -122,7 +124,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			suite := WhenRegisteringAgentBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterAgent("0xabc", 7)
+			got, err := suite.sut.RegisterAgent(context.Background(), "0xabc", 7)
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)
@@ -145,7 +147,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			suite := WhenRegisteringAgentBeforeEach(t)
 			initSuite(suite)
 
-			got, err := suite.sut.RegisterAgent("0xabc", 7)
+			got, err := suite.sut.RegisterAgent(context.Background(), "0xabc", 7)
 
 			assert.Error(t, err)
 			assert.Equal(t, uuid.Nil, got)

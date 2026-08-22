@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -49,11 +51,11 @@ func TestWhenSavingConversationMessage(t *testing.T) {
 			defer WhenSavingConversationMessageAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, _ = suite.bridges.Save(bridge)
+			_, _ = suite.bridges.Save(context.Background(), bridge)
 			conv := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, _ = suite.conversations.Save(conv)
+			_, _ = suite.conversations.Save(context.Background(), conv)
 			part := model_builders.NewAgentParticipantBuilder().Build()
-			_, _ = suite.participants.Save(part)
+			_, _ = suite.participants.Save(context.Background(), part)
 
 			now := time.Now()
 			older := model_builders.NewConversationMessageBuilder().
@@ -70,12 +72,12 @@ func TestWhenSavingConversationMessage(t *testing.T) {
 				Build()
 
 			// Save newer first to make sure ordering is not insertion-order.
-			_, err := suite.sut.Save(newer)
+			_, err := suite.sut.Save(context.Background(), newer)
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(older)
+			_, err = suite.sut.Save(context.Background(), older)
 			assert.NoError(t, err)
 
-			list, err := suite.sut.ListByConversationId(conv.ID)
+			list, err := suite.sut.ListByConversationId(context.Background(), conv.ID)
 			assert.NoError(t, err)
 			assert.Len(t, list, 2)
 			assert.Equal(t, "first", list[0].Content)

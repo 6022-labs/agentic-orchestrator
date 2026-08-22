@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -63,7 +65,7 @@ func TestWhenHandlingCollectionCreatedEvent(t *testing.T) {
 			event := newEvent(1, "Collection", "COL")
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
-				Save(gomock.Any()).
+				Save(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 
 			return event
@@ -75,7 +77,7 @@ func TestWhenHandlingCollectionCreatedEvent(t *testing.T) {
 			suite := WhenHandlingCollectionCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "failed to save new collection")
@@ -89,8 +91,8 @@ func TestWhenHandlingCollectionCreatedEvent(t *testing.T) {
 			event := newEvent(2, "My Collection", "MC")
 			suite.agentCollectionRepositoryMock.
 				EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(collection *models.AgentCollection) (*models.AgentCollection, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, collection *models.AgentCollection) (*models.AgentCollection, error) {
 					assert.Equal(t, event.CollectionAddress.Hex(), collection.Address)
 					assert.Equal(t, event.Name, collection.Name)
 					assert.Equal(t, event.Symbol, collection.Symbol)
@@ -106,7 +108,7 @@ func TestWhenHandlingCollectionCreatedEvent(t *testing.T) {
 			suite := WhenHandlingCollectionCreatedEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})

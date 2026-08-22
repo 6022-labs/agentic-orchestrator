@@ -1,6 +1,8 @@
 package event_handlers_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -48,13 +50,13 @@ func TestWhenHandlingChannelArchive(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingChannelArchiveTestingSuite, channelId string) {
 			suite.mockSlackConversationRepository.EXPECT().
-				ListByChannelId(channelId).
+				ListByChannelId(gomock.Any(), channelId).
 				Return([]*models.SlackConversation{
 					{SlackChannelId: channelId, SlackThreadTs: "1.0", BrokerConversationID: convId1},
 					{SlackChannelId: channelId, SlackThreadTs: "2.0", BrokerConversationID: convId2},
 				}, nil)
-			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId1).Return(nil)
-			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(convId2).Return(nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(gomock.Any(), convId1).Return(nil)
+			suite.mockBrokerRequester.EXPECT().ForceConcludeConversation(gomock.Any(), convId2).Return(nil)
 		}
 
 		t.Run("Should force-conclude every broker conversation", func(t *testing.T) {
@@ -66,7 +68,7 @@ func TestWhenHandlingChannelArchive(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.NoError(t, err)
 		})
 	})
@@ -75,7 +77,9 @@ func TestWhenHandlingChannelArchive(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingChannelArchiveTestingSuite, channelId string) {
-			suite.mockSlackConversationRepository.EXPECT().ListByChannelId(channelId).Return(nil, errors.New("boom"))
+			suite.mockSlackConversationRepository.EXPECT().
+				ListByChannelId(gomock.Any(), channelId).
+				Return(nil, errors.New("boom"))
 		}
 
 		t.Run("Should propagate the error", func(t *testing.T) {
@@ -87,7 +91,7 @@ func TestWhenHandlingChannelArchive(t *testing.T) {
 
 			initSuite(suite, req.Event.Channel)
 
-			err := suite.sut.Handle(req)
+			err := suite.sut.Handle(context.Background(), req)
 			assert.Error(t, err)
 		})
 	})

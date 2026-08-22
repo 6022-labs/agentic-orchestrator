@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	abi "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -43,9 +44,9 @@ func (m *MockAgentCollectionsManagerEventSubscriptionProviderInterface) EXPECT()
 }
 
 // StartCollectionCreatedSubscription mocks base method.
-func (m *MockAgentCollectionsManagerEventSubscriptionProviderInterface) StartCollectionCreatedSubscription(addresses []common.Address) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
+func (m *MockAgentCollectionsManagerEventSubscriptionProviderInterface) StartCollectionCreatedSubscription(ctx context.Context, addresses []common.Address) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartCollectionCreatedSubscription", addresses)
+	ret := m.ctrl.Call(m, "StartCollectionCreatedSubscription", ctx, addresses)
 	ret0, _ := ret[0].(<-chan *abi.AgentCollectionsManagerCollectionCreated)
 	ret1, _ := ret[1].(ethereum.Subscription)
 	ret2, _ := ret[2].(error)
@@ -53,7 +54,7 @@ func (m *MockAgentCollectionsManagerEventSubscriptionProviderInterface) StartCol
 }
 
 // StartCollectionCreatedSubscription indicates an expected call of StartCollectionCreatedSubscription.
-func (mr *MockAgentCollectionsManagerEventSubscriptionProviderInterfaceMockRecorder) StartCollectionCreatedSubscription(addresses any) *gomock.Call {
+func (mr *MockAgentCollectionsManagerEventSubscriptionProviderInterfaceMockRecorder) StartCollectionCreatedSubscription(ctx, addresses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCollectionCreatedSubscription", reflect.TypeOf((*MockAgentCollectionsManagerEventSubscriptionProviderInterface)(nil).StartCollectionCreatedSubscription), addresses)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCollectionCreatedSubscription", reflect.TypeOf((*MockAgentCollectionsManagerEventSubscriptionProviderInterface)(nil).StartCollectionCreatedSubscription), ctx, addresses)
 }

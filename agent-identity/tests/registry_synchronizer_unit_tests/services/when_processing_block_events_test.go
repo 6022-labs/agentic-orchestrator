@@ -104,22 +104,22 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 		initSuite := func(suite *WhenProcessingBlockEventsTestingSuite, item *service_interfaces.QueueItem) {
 			suite.collectionCreatedEventHandlerMock.
 				EXPECT().
-				Handle(item.AgentCollectionsManagerCollectionCreatedEvents[0]).
+				Handle(gomock.Any(), item.AgentCollectionsManagerCollectionCreatedEvents[0]).
 				Return(assert.AnError).
 				Times(1)
 			suite.collectionCreatedEventHandlerMock.
 				EXPECT().
-				Handle(item.AgentCollectionsManagerCollectionCreatedEvents[0]).
+				Handle(gomock.Any(), item.AgentCollectionsManagerCollectionCreatedEvents[0]).
 				Return(nil).
 				Times(1)
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
-				Get().
+				Get(gomock.Any()).
 				Return(nil, nil)
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
 					assert.Equal(t, uint64(42), entity.Block)
 					return entity, nil
 				})
@@ -144,7 +144,7 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 		initSuite := func(suite *WhenProcessingBlockEventsTestingSuite, item *service_interfaces.QueueItem) {
 			suite.collectionCreatedEventHandlerMock.
 				EXPECT().
-				Handle(item.AgentCollectionsManagerCollectionCreatedEvents[0]).
+				Handle(gomock.Any(), item.AgentCollectionsManagerCollectionCreatedEvents[0]).
 				Return(assert.AnError).
 				Times(3)
 		}
@@ -177,22 +177,22 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 
 			suite.agentImageUpdatedEventHandlerMock.
 				EXPECT().
-				Handle(imageUpdated).
+				Handle(gomock.Any(), imageUpdated).
 				Return(nil).
 				Times(1)
 			suite.agentImageRemovedEventHandlerMock.
 				EXPECT().
-				Handle(imageRemoved).
+				Handle(gomock.Any(), imageRemoved).
 				Return(nil).
 				Times(1)
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
-				Get().
+				Get(gomock.Any()).
 				Return(nil, nil)
 			suite.syncCheckpointRepositoryMock.
 				EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
 					return entity, nil
 				})
 
@@ -223,7 +223,7 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 
 			suite.agentImageRemovedEventHandlerMock.
 				EXPECT().
-				Handle(imageRemoved).
+				Handle(gomock.Any(), imageRemoved).
 				Return(assert.AnError).
 				Times(3)
 

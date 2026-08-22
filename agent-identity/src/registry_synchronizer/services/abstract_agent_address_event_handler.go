@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
@@ -44,6 +46,7 @@ func (handler *AbstractAgentAddressEventHandler) typedAddresses(
 
 // findAgentByAddresses returns the agent holding any of the typed addresses, or nil.
 func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(
+	ctx context.Context,
 	addresses map[enums.AddressType]string,
 ) (*models.Agent, error) {
 	for _, addressType := range enums.GetAllAddressTypes() {
@@ -51,7 +54,7 @@ func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(
 		if !exists {
 			continue
 		}
-		agentAddress, err := handler.agentAddressRepository.GetByTypeAndAddress(addressType, value)
+		agentAddress, err := handler.agentAddressRepository.GetByTypeAndAddress(ctx, addressType, value)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get agent address: %w", err)
 		}
@@ -59,7 +62,7 @@ func (handler *AbstractAgentAddressEventHandler) findAgentByAddresses(
 			continue
 		}
 
-		agent, err := handler.agentRepository.GetById(agentAddress.AgentId)
+		agent, err := handler.agentRepository.GetById(ctx, agentAddress.AgentId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get agent by id: %w", err)
 		}

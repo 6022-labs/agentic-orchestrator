@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -27,13 +29,15 @@ const (
 // RemoteAgentClientInterface is pure transport
 type RemoteAgentClientInterface interface {
 	// GetWellKnownCard also returns the body verbatim — signature verification runs over those bytes.
-	GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error)
+	GetWellKnownCard(ctx context.Context, agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error)
 	CreateResponse(
+		ctx context.Context,
 		endpointUrl, ensDomain string,
 		request *models.ExternalCreateResponseRequest,
 		headers *models.ExternalRequestHeaders,
 	) (*models.ExternalResponse, error)
 	CreateChatCompletion(
+		ctx context.Context,
 		endpointUrl, ensDomain string,
 		request *models.ExternalChatCompletionRequest,
 		headers *models.ExternalRequestHeaders,
@@ -62,10 +66,18 @@ func NewRemoteAgentClient(params NewRemoteAgentClientParams) *RemoteAgentClient 
 	}
 }
 
-func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.ExternalWellKnownAgent6022, []byte, error) {
+func (client *RemoteAgentClient) GetWellKnownCard(
+	ctx context.Context,
+	agentUrl string,
+) (*models.ExternalWellKnownAgent6022, []byte, error) {
 	url := strings.TrimRight(agentUrl, "/") + WELL_KNOWN_6022_PATH
 
-	httpResponse, err := client.wellKnownHttpClient.Get(url)
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to build request: %w", err)
+	}
+
+	httpResponse, err := client.wellKnownHttpClient.Do(httpRequest)
 	if err != nil {
 		return nil, nil, fmt.Errorf("HTTP request failed: %w", err)
 	}
@@ -96,24 +108,26 @@ func (client *RemoteAgentClient) GetWellKnownCard(agentUrl string) (*models.Exte
 }
 
 func (client *RemoteAgentClient) CreateResponse(
+	ctx context.Context,
 	endpointUrl, ensDomain string,
 	request *models.ExternalCreateResponseRequest,
 	headers *models.ExternalRequestHeaders,
 ) (*models.ExternalResponse, error) {
 	var response models.ExternalResponse
-	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
+	if err := client.post(ctx, endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
 	}
 	return &response, nil
 }
 
 func (client *RemoteAgentClient) CreateChatCompletion(
+	ctx context.Context,
 	endpointUrl, ensDomain string,
 	request *models.ExternalChatCompletionRequest,
 	headers *models.ExternalRequestHeaders,
 ) (*models.ExternalChatCompletionResponse, error) {
 	var response models.ExternalChatCompletionResponse
-	if err := client.post(endpointUrl, ensDomain, headers, request, &response); err != nil {
+	if err := client.post(ctx, endpointUrl, ensDomain, headers, request, &response); err != nil {
 		return nil, err
 	}
 	return &response, nil
@@ -138,6 +152,7 @@ func (client *RemoteAgentClient) setRequestHeaders(httpRequest *http.Request, he
 }
 
 func (client *RemoteAgentClient) post(
+	ctx context.Context,
 	url, ensDomain string,
 	headers *models.ExternalRequestHeaders,
 	requestBody, responseBody any,
@@ -147,7 +162,7 @@ func (client *RemoteAgentClient) post(
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	httpRequest, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}

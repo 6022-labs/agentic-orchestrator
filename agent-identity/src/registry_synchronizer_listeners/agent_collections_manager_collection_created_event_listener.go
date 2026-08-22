@@ -1,6 +1,8 @@
 package registry_synchronizer_listeners
 
 import (
+	"context"
+
 	"fmt"
 	"sync"
 
@@ -42,8 +44,17 @@ func NewAgentCollectionsManagerCollectionCreatedListener(
 	}
 }
 
-func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen() error {
-	err := <-listener.errCh
+func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen(ctx context.Context) error {
+	var err error
+	select {
+	case err = <-listener.errCh:
+	case <-ctx.Done():
+		// Graceful stop, but a subscription error already queued still wins.
+		select {
+		case err = <-listener.errCh:
+		default:
+		}
+	}
 
 	listener.mu.Lock()
 	if listener.subscription != nil {
@@ -56,9 +67,9 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) Listen() error
 	return err
 }
 
-func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll() error {
+func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll(ctx context.Context) error {
 	provider := listener.agentCollectionsManagerEventSubscriptionProvider
-	events, subscription, err := provider.StartCollectionCreatedSubscription(
+	events, subscription, err := provider.StartCollectionCreatedSubscription(ctx,
 		[]common.Address{listener.agentCollectionsManagerSettings.SmartContractAddress},
 	)
 	if err != nil {
@@ -69,7 +80,7 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll()
 	listener.subscription = subscription
 	listener.mu.Unlock()
 
-	listener.startSubscriptionHandler(subscription, events)
+	listener.startSubscriptionHandler(ctx, subscription, events)
 
 	listener.logger.Info(
 		"subscribed to AgentCollectionsManager.CollectionCreated events",
@@ -82,7 +93,7 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) SubscribeAll()
 	return nil
 }
 
-func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscriptionHandler(
+func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscriptionHandler(ctx context.Context,
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionsManagerCollectionCreated,
 ) {
@@ -112,6 +123,8 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 						zap.Error(err),
 					)
 				}
+			case <-ctx.Done():
+				return
 			case err := <-subscription.Err():
 				if err == nil {
 					return

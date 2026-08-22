@@ -1,6 +1,8 @@
 package command_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -63,7 +65,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(nil, assert.AnError)
 		}
 
@@ -80,7 +82,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -100,7 +102,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 		}
 
@@ -117,7 +119,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -131,12 +133,12 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(nil, assert.AnError)
 		}
 
@@ -153,7 +155,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -167,17 +169,17 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackAgentSynchronizer.
 				EXPECT().
-				Sync(request.CollectionAddress, request.CollectionTokenId).
+				Sync(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(nil, assert.AnError)
 		}
 
@@ -194,7 +196,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -208,12 +210,12 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(request.ChannelID).
+				GetById(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(request.ChannelID).
+				Sync(gomock.Any(), request.ChannelID).
 				Return(slackChannel, nil)
 
 			brokerParticipantId := uuid.New()
@@ -221,12 +223,12 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			slackAgent.BrokerParticipantId = &brokerParticipantId
 			suite.mockSlackAgentSynchronizer.
 				EXPECT().
-				Sync(request.CollectionAddress, request.CollectionTokenId).
+				Sync(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
 
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				AddAgent(slackChannel, slackAgent).
+				AddAgent(gomock.Any(), slackChannel, slackAgent).
 				Return(nil, assert.AnError)
 		}
 
@@ -243,7 +245,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -255,10 +257,10 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		brokerAgentId := uuid.New()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
-			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(nil, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), request.ChannelID).Return(nil, nil)
 
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
-			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
@@ -266,13 +268,15 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			slackAgent.BrokerParticipantId = &brokerAgentId
 			suite.mockSlackAgentSynchronizer.EXPECT().
-				Sync(request.CollectionAddress, request.CollectionTokenId).
+				Sync(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
 
-			suite.mockSlackChannelRepository.EXPECT().AddAgent(slackChannel, slackAgent).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().
+				AddAgent(gomock.Any(), slackChannel, slackAgent).
+				Return(slackChannel, nil)
 
 			suite.mockSlackConversationRepository.EXPECT().
-				ListByChannelId(request.ChannelID).
+				ListByChannelId(gomock.Any(), request.ChannelID).
 				Return([]*models.SlackConversation{}, nil)
 		}
 
@@ -289,7 +293,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.NoError(t, err)
 		})
@@ -304,8 +308,8 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
-			suite.mockSlackChannelRepository.EXPECT().GetById(request.ChannelID).Return(slackChannel, nil)
-			suite.mockSlackChannelSynchronizer.EXPECT().Sync(request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
+			suite.mockSlackChannelSynchronizer.EXPECT().Sync(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
@@ -313,20 +317,22 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 				Build()
 			slackAgent.BrokerParticipantId = &brokerAgentId
 			suite.mockSlackAgentSynchronizer.EXPECT().
-				Sync(request.CollectionAddress, request.CollectionTokenId).
+				Sync(gomock.Any(), request.CollectionAddress, request.CollectionTokenId).
 				Return(slackAgent, nil)
 
-			suite.mockSlackChannelRepository.EXPECT().AddAgent(slackChannel, slackAgent).Return(slackChannel, nil)
+			suite.mockSlackChannelRepository.EXPECT().
+				AddAgent(gomock.Any(), slackChannel, slackAgent).
+				Return(slackChannel, nil)
 
 			suite.mockSlackConversationRepository.EXPECT().
-				ListByChannelId(request.ChannelID).
+				ListByChannelId(gomock.Any(), request.ChannelID).
 				Return([]*models.SlackConversation{
 					{SlackChannelId: request.ChannelID, SlackThreadTs: "1.0", BrokerConversationID: convId1},
 					{SlackChannelId: request.ChannelID, SlackThreadTs: "2.0", BrokerConversationID: convId2},
 				}, nil)
 
-			suite.mockBrokerRequester.EXPECT().AttachParticipant(convId1, brokerAgentId).Return(nil)
-			suite.mockBrokerRequester.EXPECT().AttachParticipant(convId2, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().AttachParticipant(gomock.Any(), convId1, brokerAgentId).Return(nil)
+			suite.mockBrokerRequester.EXPECT().AttachParticipant(gomock.Any(), convId2, brokerAgentId).Return(nil)
 		}
 
 		t.Run("Should attach the agent to every existing broker conversation in the channel", func(t *testing.T) {
@@ -342,7 +348,7 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 
 			initSuite(suite, request)
 
-			err := suite.sut.Add(request)
+			err := suite.sut.Add(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

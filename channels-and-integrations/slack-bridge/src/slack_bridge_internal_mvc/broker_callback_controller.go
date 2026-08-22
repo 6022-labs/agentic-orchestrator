@@ -51,7 +51,7 @@ func (c *BrokerCallbackController) Handle(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	if err := c.postBrokerCompletionToSlack.Post(request); err != nil {
+	if err := c.postBrokerCompletionToSlack.Post(ctx.UserContext(), request); err != nil {
 		if errors.Is(err, requests.ErrValidation) {
 			c.logger.Warn("Broker callback failed validation", zap.Error(err))
 			return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())

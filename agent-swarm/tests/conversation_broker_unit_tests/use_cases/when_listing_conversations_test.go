@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -42,11 +44,11 @@ func TestWhenListingConversations(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				List(uint(1), uint(10)).
+				List(gomock.Any(), uint(1), uint(10)).
 				Return(nil, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Count().
+				Count(gomock.Any()).
 				Return(uint(0), nil).
 				Times(1)
 		}
@@ -57,7 +59,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			resp, err := suite.sut.List(&requests.ListConversationsRequest{})
+			resp, err := suite.sut.List(context.Background(), &requests.ListConversationsRequest{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, uint(1), resp.Page)
@@ -72,11 +74,11 @@ func TestWhenListingConversations(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				List(uint(2), uint(5)).
+				List(gomock.Any(), uint(2), uint(5)).
 				Return([]*models.Conversation{conversation}, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Count().
+				Count(gomock.Any()).
 				Return(uint(6), nil).
 				Times(1)
 		}
@@ -87,7 +89,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			resp, err := suite.sut.List(&requests.ListConversationsRequest{
+			resp, err := suite.sut.List(context.Background(), &requests.ListConversationsRequest{
 				Page:            lo.ToPtr(uint(2)),
 				ElementsPerPage: lo.ToPtr(uint(5)),
 			})
@@ -104,7 +106,7 @@ func TestWhenListingConversations(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				List(gomock.Any(), gomock.Any()).
+				List(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -115,7 +117,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.List(&requests.ListConversationsRequest{})
+			_, err := suite.sut.List(context.Background(), &requests.ListConversationsRequest{})
 
 			assert.Error(t, err)
 		})
@@ -126,11 +128,11 @@ func TestWhenListingConversations(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				List(gomock.Any(), gomock.Any()).
+				List(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
-				Count().
+				Count(gomock.Any()).
 				Return(uint(0), errors.New("boom")).
 				Times(1)
 		}
@@ -141,7 +143,7 @@ func TestWhenListingConversations(t *testing.T) {
 			suite := WhenListingConversationsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.List(&requests.ListConversationsRequest{})
+			_, err := suite.sut.List(context.Background(), &requests.ListConversationsRequest{})
 
 			assert.Error(t, err)
 		})

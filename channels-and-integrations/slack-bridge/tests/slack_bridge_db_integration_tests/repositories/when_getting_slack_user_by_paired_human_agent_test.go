@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -69,7 +71,11 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 			collectionAddress := common_tests.RandomEthAddress().Hex()
 			collectionTokenId := uint64(1)
 
-			pairedSlackUserToHumanAgent, err := suite.sut.GetByPairedHumanAgent(collectionAddress, collectionTokenId)
+			pairedSlackUserToHumanAgent, err := suite.sut.GetByPairedHumanAgent(
+				context.Background(),
+				collectionAddress,
+				collectionTokenId,
+			)
 
 			assert.NoError(t, err)
 			assert.Nil(t, pairedSlackUserToHumanAgent)
@@ -103,12 +109,12 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 				WithPairedHumanAgentCollectionTokenId(&collectionTokenId).
 				Build()
 
-			_, err = suite.sut.Save(slackUser)
+			_, err = suite.sut.Save(context.Background(), slackUser)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			slackUser, err = suite.sut.GetByPairedHumanAgent(
+			slackUser, err = suite.sut.GetByPairedHumanAgent(context.Background(),
 				collectionAddress,
 				9999,
 			)
@@ -145,12 +151,12 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 				WithPairedHumanAgentCollectionTokenId(&collectionTokenId).
 				Build()
 
-			_, err = suite.sut.Save(slackUser)
+			_, err = suite.sut.Save(context.Background(), slackUser)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			slackUser, err = suite.sut.GetByPairedHumanAgent(
+			slackUser, err = suite.sut.GetByPairedHumanAgent(context.Background(),
 				common_tests.RandomEthAddress().Hex(),
 				collectionTokenId,
 			)
@@ -187,12 +193,12 @@ func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {
 				WithPairedHumanAgentCollectionTokenId(&collectionTokenId).
 				Build()
 
-			_, err = suite.sut.Save(slackUser)
+			_, err = suite.sut.Save(context.Background(), slackUser)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result, err := suite.sut.GetByPairedHumanAgent(
+			result, err := suite.sut.GetByPairedHumanAgent(context.Background(),
 				collectionAddress,
 				collectionTokenId,
 			)

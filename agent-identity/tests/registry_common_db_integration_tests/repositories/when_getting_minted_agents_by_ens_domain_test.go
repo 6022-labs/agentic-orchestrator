@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -71,12 +73,12 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 				WithCollectionAddress(common_tests.RandomEthAddress().Hex()).
 				WithCollectionTokenId(lo.ToPtr(uint64(1))).
 				Build()
-			createdEntity, err := suite.sut.Save(existingEntity)
+			createdEntity, err := suite.sut.Save(context.Background(), existingEntity)
 			if err != nil {
 				t.Errorf("Error creating entity: %v", err)
 			}
 
-			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(createdEntity.EnsDomain)
+			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(context.Background(), createdEntity.EnsDomain)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, fetchedEntity)
@@ -102,12 +104,12 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 				WithCollectionAddress(common_tests.RandomEthAddress().Hex()).
 				WithCollectionTokenId(nil).
 				Build()
-			createdEntity, err := suite.sut.Save(existingEntity)
+			createdEntity, err := suite.sut.Save(context.Background(), existingEntity)
 			if err != nil {
 				t.Errorf("Error creating entity: %v", err)
 			}
 
-			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(createdEntity.EnsDomain)
+			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(context.Background(), createdEntity.EnsDomain)
 
 			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)
@@ -123,7 +125,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 			suite := WhenGettingMintedAgentsByEnsBeforeEach()
 			defer WhenGettingMintedAgentsByEnsAfterEach(suite)
 
-			fetchedEntity, err := suite.sut.GetMintedByEnsDomain("nonexistent.ens")
+			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(context.Background(), "nonexistent.ens")
 
 			assert.Nil(t, err)
 			assert.Nil(t, fetchedEntity)

@@ -1,6 +1,8 @@
 package interfaces
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -8,6 +10,7 @@ import (
 
 type AgentCollectionsManagerEventSubscriptionProviderInterface interface {
 	StartCollectionCreatedSubscription(
+		ctx context.Context,
 		addresses []common.Address,
 	) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error)
 }

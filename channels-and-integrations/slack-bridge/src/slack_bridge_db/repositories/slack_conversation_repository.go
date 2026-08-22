@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -20,10 +22,11 @@ func NewSlackConversationRepository(client *slack_bridge_db.DatabaseClient) *Sla
 }
 
 func (r *SlackConversationRepository) GetBySlackIds(
+	ctx context.Context,
 	slackChannelId, slackThreadTs string,
 ) (*models.SlackConversation, error) {
 	var entity models.SlackConversation
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("slack_channel_id = ? AND slack_thread_ts = ?", slackChannelId, slackThreadTs).
 		First(&entity).
 		Error
@@ -37,10 +40,11 @@ func (r *SlackConversationRepository) GetBySlackIds(
 }
 
 func (r *SlackConversationRepository) GetByBrokerConversationId(
+	ctx context.Context,
 	brokerConversationId uuid.UUID,
 ) (*models.SlackConversation, error) {
 	var entity models.SlackConversation
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("broker_conversation_id = ?", brokerConversationId).
 		First(&entity).
 		Error
@@ -53,9 +57,12 @@ func (r *SlackConversationRepository) GetByBrokerConversationId(
 	return &entity, nil
 }
 
-func (r *SlackConversationRepository) ListByChannelId(slackChannelId string) ([]*models.SlackConversation, error) {
+func (r *SlackConversationRepository) ListByChannelId(
+	ctx context.Context,
+	slackChannelId string,
+) ([]*models.SlackConversation, error) {
 	var entities []*models.SlackConversation
-	err := r.client.
+	err := r.client.WithContext(ctx).
 		Where("slack_channel_id = ?", slackChannelId).
 		Find(&entities).
 		Error

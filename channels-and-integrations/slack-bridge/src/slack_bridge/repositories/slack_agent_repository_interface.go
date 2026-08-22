@@ -1,12 +1,22 @@
 package repositories
 
-import "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
+import (
+	"context"
+
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
+)
 
 type SlackAgentRepositoryInterface interface {
-	Save(entity *models.SlackAgent) (*models.SlackAgent, error)
-	UpdateOwnerWallet(collectionAddress string, collectionTokenId uint64, ownerWallet string) error
-	UpdateIconImageCid(collectionAddress string, collectionTokenId uint64, iconImageCid *string) error
+	Save(ctx context.Context, entity *models.SlackAgent) (*models.SlackAgent, error)
+	UpdateOwnerWallet(ctx context.Context, collectionAddress string, collectionTokenId uint64, ownerWallet string) error
+	UpdateIconImageCid(
+		ctx context.Context,
+		collectionAddress string,
+		collectionTokenId uint64,
+		iconImageCid *string,
+	) error
 	GetByCollectionAddressAndCollectionTokenId(
+		ctx context.Context,
 		collectionAddress string,
 		collectionTokenId uint64,
 	) (*models.SlackAgent, error)

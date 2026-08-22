@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,15 +42,15 @@ func (m *MockBrokerMessageForwarderInterface) EXPECT() *MockBrokerMessageForward
 }
 
 // Forward mocks base method.
-func (m *MockBrokerMessageForwarderInterface) Forward(slackChannel *models.SlackChannel, parentMessageTs, messageTs, content string, authorSlackUser *models.SlackUser, authorSlackAgent *models.SlackAgent) error {
+func (m *MockBrokerMessageForwarderInterface) Forward(ctx context.Context, slackChannel *models.SlackChannel, parentMessageTs, messageTs, content string, authorSlackUser *models.SlackUser, authorSlackAgent *models.SlackAgent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Forward", slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent)
+	ret := m.ctrl.Call(m, "Forward", ctx, slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Forward indicates an expected call of Forward.
-func (mr *MockBrokerMessageForwarderInterfaceMockRecorder) Forward(slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent any) *gomock.Call {
+func (mr *MockBrokerMessageForwarderInterfaceMockRecorder) Forward(ctx, slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockBrokerMessageForwarderInterface)(nil).Forward), slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockBrokerMessageForwarderInterface)(nil).Forward), ctx, slackChannel, parentMessageTs, messageTs, content, authorSlackUser, authorSlackAgent)
 }

@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
@@ -43,7 +45,7 @@ func TestWhenGettingAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any()).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -57,7 +59,7 @@ func TestWhenGettingAgent(t *testing.T) {
 				AgentCollectionAddress: "0x1234567890abcdef1234567890abcdef12345678",
 				AgentCollectionTokenId: 1,
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.NotNil(t, err)
@@ -70,7 +72,7 @@ func TestWhenGettingAgent(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any()).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -84,7 +86,7 @@ func TestWhenGettingAgent(t *testing.T) {
 				AgentCollectionAddress: "0x1234567890abcdef1234567890abcdef12345678",
 				AgentCollectionTokenId: 1,
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.Nil(t, err)
@@ -101,12 +103,12 @@ func TestWhenGettingAgent(t *testing.T) {
 			agent := model_builders.NewAgentBuilder().Build()
 
 			basics.mockAgentRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(agent.CollectionAddress, *agent.CollectionTokenId).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), agent.CollectionAddress, *agent.CollectionTokenId).
 				Return(agent, nil).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentId(agent.ID).
+				GetAllByAgentId(gomock.Any(), agent.ID).
 				Return([]*models.AgentAddress{
 					model_builders.NewAgentAddressBuilder().
 						WithAgentId(agent.ID).
@@ -119,7 +121,7 @@ func TestWhenGettingAgent(t *testing.T) {
 				AgentCollectionAddress: agent.CollectionAddress,
 				AgentCollectionTokenId: *agent.CollectionTokenId,
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, resp)

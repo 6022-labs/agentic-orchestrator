@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
@@ -76,30 +78,30 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			agentInChannel := model_builders.NewSlackAgentBuilder().Build()
 			agentNotInChannel := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(channel)
+			_, err := suite.sut.Save(context.Background(), channel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving channel: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agentInChannel)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agentInChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving agent: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agentNotInChannel)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agentNotInChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving agent: %v", err)
 			}
 
-			_, err = suite.sut.AddAgent(channel, agentInChannel)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agentInChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error adding agent to channel: %v", err)
 			}
 
-			_, err = suite.sut.RemoveAgent(channel, agentNotInChannel)
+			_, err = suite.sut.RemoveAgent(context.Background(), channel, agentNotInChannel)
 
 			assert.Nil(t, err)
-			channel, err = suite.sut.GetById(channel.Id)
+			channel, err = suite.sut.GetById(context.Background(), channel.Id)
 			if err != nil {
 				t.Fatalf("Unexpected error getting channel: %v", err)
 			}
@@ -121,36 +123,36 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			agent1InChannel := model_builders.NewSlackAgentBuilder().Build()
 			agent2InChannel := model_builders.NewSlackAgentBuilder().Build()
 
-			_, err := suite.sut.Save(channel)
+			_, err := suite.sut.Save(context.Background(), channel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving channel: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agent1InChannel)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agent1InChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving agent: %v", err)
 			}
 
-			_, err = suite.slackAgentRepository.Save(agent2InChannel)
+			_, err = suite.slackAgentRepository.Save(context.Background(), agent2InChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error saving agent: %v", err)
 			}
 
-			_, err = suite.sut.AddAgent(channel, agent1InChannel)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agent1InChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error adding agent to channel: %v", err)
 			}
 
-			_, err = suite.sut.AddAgent(channel, agent2InChannel)
+			_, err = suite.sut.AddAgent(context.Background(), channel, agent2InChannel)
 			if err != nil {
 				t.Fatalf("Unexpected error adding agent to channel: %v", err)
 			}
 
-			_, err = suite.sut.RemoveAgent(channel, agent1InChannel)
+			_, err = suite.sut.RemoveAgent(context.Background(), channel, agent1InChannel)
 
 			assert.Nil(t, err, "Expected no error when removing agent from channel")
 
-			channel, err = suite.sut.GetById(channel.Id)
+			channel, err = suite.sut.GetById(context.Background(), channel.Id)
 			if err != nil {
 				t.Fatalf("Unexpected error getting channel: %v", err)
 			}

@@ -39,7 +39,7 @@ func (c *BridgesController) RegisterBridge(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	bridge, existed, err := c.registerBridge.Register(req)
+	bridge, existed, err := c.registerBridge.Register(ctx.UserContext(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

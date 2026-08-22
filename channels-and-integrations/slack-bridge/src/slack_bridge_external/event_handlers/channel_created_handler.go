@@ -1,6 +1,8 @@
 package event_handlers
 
 import (
+	"context"
+
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
@@ -10,7 +12,7 @@ import (
 )
 
 type ChannelCreatedHandlerInterface interface {
-	Handle(request *requests.ChannelCreatedRequest) error
+	Handle(ctx context.Context, request *requests.ChannelCreatedRequest) error
 }
 
 type ChannelCreatedHandler struct {
@@ -31,7 +33,7 @@ func NewChannelCreatedHandler(
 	}
 }
 
-func (c *ChannelCreatedHandler) Handle(request *requests.ChannelCreatedRequest) error {
+func (c *ChannelCreatedHandler) Handle(ctx context.Context, request *requests.ChannelCreatedRequest) error {
 	if !strings.HasPrefix(request.Event.Channel.Name, c.slackChannel.AcceptedChannelPrefix) {
 		c.logger.Info("Channel name does not start with accepted prefix, skipping join",
 			zap.String("channel_id", request.Event.Channel.Id),
@@ -42,7 +44,7 @@ func (c *ChannelCreatedHandler) Handle(request *requests.ChannelCreatedRequest) 
 		return nil
 	}
 
-	_, err := c.slackChannelSynchronizer.Sync(request.Event.Channel.Id)
+	_, err := c.slackChannelSynchronizer.Sync(ctx, request.Event.Channel.Id)
 	if err != nil {
 		return err
 	}

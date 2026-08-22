@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,16 +42,16 @@ func (m *MockSlackUserRequesterInterface) EXPECT() *MockSlackUserRequesterInterf
 }
 
 // GetUserInformation mocks base method.
-func (m *MockSlackUserRequesterInterface) GetUserInformation(userId string) (*models.SlackUser, error) {
+func (m *MockSlackUserRequesterInterface) GetUserInformation(ctx context.Context, userId string) (*models.SlackUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserInformation", userId)
+	ret := m.ctrl.Call(m, "GetUserInformation", ctx, userId)
 	ret0, _ := ret[0].(*models.SlackUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserInformation indicates an expected call of GetUserInformation.
-func (mr *MockSlackUserRequesterInterfaceMockRecorder) GetUserInformation(userId any) *gomock.Call {
+func (mr *MockSlackUserRequesterInterfaceMockRecorder) GetUserInformation(ctx, userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInformation", reflect.TypeOf((*MockSlackUserRequesterInterface)(nil).GetUserInformation), userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInformation", reflect.TypeOf((*MockSlackUserRequesterInterface)(nil).GetUserInformation), ctx, userId)
 }

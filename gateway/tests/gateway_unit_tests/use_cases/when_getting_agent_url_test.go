@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -51,7 +53,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent("0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -62,7 +64,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentUrlRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
 
 			assert.Error(t, err)
 		})
@@ -73,7 +75,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent("0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -84,7 +86,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentUrlRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
 
 			assert.IsType(t, &gw_errors.NotFoundError{}, err)
 		})
@@ -95,7 +97,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent("0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
 				Return(&responses.AgentResponse{}, nil).
 				Times(1)
 		}
@@ -106,7 +108,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(generateValidGetAgentUrlRequest())
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
 
 			assert.IsType(t, &gw_errors.NotFoundError{}, err)
 		})
@@ -117,11 +119,11 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent("0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
 				Return(&responses.AgentResponse{EnsDomain: "ada.experts.80002.6022.eth"}, nil).
 				Times(1)
 			suite.mockConversationBrokerRequester.EXPECT().
-				GetAgentUrl("ada.experts.80002.6022.eth").
+				GetAgentUrl(gomock.Any(), "ada.experts.80002.6022.eth").
 				Return(&responses.AgentUrlResponse{Url: "https://ada.example"}, nil).
 				Times(1)
 		}
@@ -132,7 +134,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Get(generateValidGetAgentUrlRequest())
+			response, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "https://ada.example", response.Url)

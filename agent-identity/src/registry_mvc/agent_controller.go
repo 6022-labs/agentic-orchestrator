@@ -58,7 +58,7 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 		return err
 	}
 
-	response, err := controller.getAgent.Get(request)
+	response, err := controller.getAgent.Get(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to get agent", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -90,7 +90,7 @@ func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp, err := controller.listAgents.List(request)
+	resp, err := controller.listAgents.List(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to list agents", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -116,7 +116,7 @@ func (controller *AgentController) GetMintedAgentByEnsDomain(c *fiber.Ctx) error
 		return err
 	}
 
-	response, err := controller.getMintedAgentByEnsDomain.Get(request)
+	response, err := controller.getMintedAgentByEnsDomain.Get(c.UserContext(), request)
 	if err != nil {
 		controller.logger.Error("Failed to get agent by ENS domain", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

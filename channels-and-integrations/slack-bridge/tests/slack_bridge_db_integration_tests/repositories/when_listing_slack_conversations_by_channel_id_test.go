@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -64,21 +66,21 @@ func TestWhenListingSlackConversationsByChannelId(t *testing.T) {
 			channelId := "C-target"
 			otherChannelId := "C-other"
 
-			_, err := suite.sut.Save(&models.SlackConversation{
+			_, err := suite.sut.Save(context.Background(), &models.SlackConversation{
 				SlackChannelId:       channelId,
 				SlackThreadTs:        "1.0",
 				BrokerConversationID: uuid.New(),
 				CreatedAt:            time.Now(),
 			})
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(&models.SlackConversation{
+			_, err = suite.sut.Save(context.Background(), &models.SlackConversation{
 				SlackChannelId:       channelId,
 				SlackThreadTs:        "2.0",
 				BrokerConversationID: uuid.New(),
 				CreatedAt:            time.Now(),
 			})
 			assert.NoError(t, err)
-			_, err = suite.sut.Save(&models.SlackConversation{
+			_, err = suite.sut.Save(context.Background(), &models.SlackConversation{
 				SlackChannelId:       otherChannelId,
 				SlackThreadTs:        "3.0",
 				BrokerConversationID: uuid.New(),
@@ -86,7 +88,7 @@ func TestWhenListingSlackConversationsByChannelId(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			got, err := suite.sut.ListByChannelId(channelId)
+			got, err := suite.sut.ListByChannelId(context.Background(), channelId)
 
 			assert.NoError(t, err)
 			assert.Len(t, got, 2)
@@ -105,7 +107,7 @@ func TestWhenListingSlackConversationsByChannelId(t *testing.T) {
 			suite := WhenListingSlackConversationsByChannelIdBeforeEach()
 			defer WhenListingSlackConversationsByChannelIdAfterEach(suite)
 
-			got, err := suite.sut.ListByChannelId("C-empty")
+			got, err := suite.sut.ListByChannelId(context.Background(), "C-empty")
 
 			assert.NoError(t, err)
 			assert.Empty(t, got)

@@ -21,6 +21,7 @@ func NewAgentRegistryRequester(client clients.ClientWithResponsesInterface) *Age
 }
 
 func (r *AgentRegistryRequester) ListAgents(
+	ctx context.Context,
 	request *interfaces.ListRegistryAgentsRequest,
 ) (*responses.ListAgentsResponse, error) {
 	params := &clients.GetAgentsParams{
@@ -35,7 +36,7 @@ func (r *AgentRegistryRequester) ListAgents(
 		params.ElementsPerPage = lo.ToPtr(int(*request.ElementsPerPage))
 	}
 
-	rsp, err := r.client.GetAgentsWithResponse(context.Background(), params)
+	rsp, err := r.client.GetAgentsWithResponse(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -47,11 +48,12 @@ func (r *AgentRegistryRequester) ListAgents(
 }
 
 func (r *AgentRegistryRequester) GetAgent(
+	ctx context.Context,
 	agentCollectionAddress string,
 	agentCollectionTokenId uint64,
 ) (*responses.AgentResponse, error) {
 	rsp, err := r.client.GetAgentAgentCollectionAddressAgentCollectionTokenIdWithResponse(
-		context.Background(),
+		ctx,
 		agentCollectionAddress,
 		int(agentCollectionTokenId),
 	)
@@ -68,8 +70,10 @@ func (r *AgentRegistryRequester) GetAgent(
 	return (*mappings.ExternalAgentResponse)(rsp.JSON200).ToUseCaseResponse(), nil
 }
 
-func (r *AgentRegistryRequester) ListAgentCollections() ([]*responses.AgentCollectionResponse, error) {
-	rsp, err := r.client.GetAgentCollectionsWithResponse(context.Background())
+func (r *AgentRegistryRequester) ListAgentCollections(
+	ctx context.Context,
+) ([]*responses.AgentCollectionResponse, error) {
+	rsp, err := r.client.GetAgentCollectionsWithResponse(ctx)
 	if err != nil {
 		return nil, err
 	}

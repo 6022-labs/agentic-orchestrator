@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -51,7 +53,7 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 
 			suite := WhenGettingConversationMessagesBeforeEach(t)
 
-			_, err := suite.sut.Get(&requests.ConversationIdRequest{ConversationID: uuid.Nil})
+			_, err := suite.sut.Get(context.Background(), &requests.ConversationIdRequest{ConversationID: uuid.Nil})
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -62,7 +64,7 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -74,7 +76,7 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 			request := &requests.ConversationIdRequest{ConversationID: uuid.New()}
 			initSuite(suite, request)
 
-			_, err := suite.sut.Get(request)
+			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -88,11 +90,11 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversation.ID).
+				GetById(gomock.Any(), conversation.ID).
 				Return(conversation, nil).
 				Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
-				ListByConversationId(conversation.ID).
+				ListByConversationId(gomock.Any(), conversation.ID).
 				Return([]*models.ConversationMessage{message}, nil).
 				Times(1)
 		}
@@ -103,7 +105,10 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 			suite := WhenGettingConversationMessagesBeforeEach(t)
 			initSuite(suite)
 
-			messages, err := suite.sut.Get(&requests.ConversationIdRequest{ConversationID: conversation.ID})
+			messages, err := suite.sut.Get(
+				context.Background(),
+				&requests.ConversationIdRequest{ConversationID: conversation.ID},
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, messages, 1)
@@ -118,11 +123,11 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingConversationMessagesTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversation.ID).
+				GetById(gomock.Any(), conversation.ID).
 				Return(conversation, nil).
 				Times(1)
 			suite.mockConversationMessageRepository.EXPECT().
-				ListByConversationId(conversation.ID).
+				ListByConversationId(gomock.Any(), conversation.ID).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -133,7 +138,10 @@ func TestWhenGettingConversationMessages(t *testing.T) {
 			suite := WhenGettingConversationMessagesBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(&requests.ConversationIdRequest{ConversationID: conversation.ID})
+			_, err := suite.sut.Get(
+				context.Background(),
+				&requests.ConversationIdRequest{ConversationID: conversation.ID},
+			)
 
 			assert.Error(t, err)
 		})

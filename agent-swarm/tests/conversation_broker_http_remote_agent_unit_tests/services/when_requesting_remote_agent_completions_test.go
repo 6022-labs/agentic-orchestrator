@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/base64"
 	"encoding/json"
 	"testing"
@@ -50,7 +52,7 @@ func WhenRequestingRemoteAgentCompletionsBeforeEach(t *testing.T) *WhenRequestin
 }
 
 func (suite *WhenRequestingRemoteAgentCompletionsTestingSuite) noCachedChallenge() {
-	suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(nil, false)
+	suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(nil, false)
 }
 
 func turnForTest() *models.RemoteAgentInput {
@@ -97,8 +99,8 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite, turn *models.RemoteAgentInput) {
 			suite.noCachedChallenge()
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
-				DoAndReturn(func(_, _ string, request *http_node_models.ExternalCreateResponseRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalResponse, error) {
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				DoAndReturn(func(_ context.Context, _, _ string, request *http_node_models.ExternalCreateResponseRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalResponse, error) {
 					assert.Equal(t, turn.Instructions, request.Instructions)
 					assert.Len(t, request.Input, 2)
 					assert.Equal(t, "message", request.Input[0].Type)
@@ -128,7 +130,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			turn := turnForTest()
 			initSuite(suite, turn)
 
-			completions, err := suite.sut.RequestCompletions(card, turn)
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
 
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"answer"}, completions)
@@ -146,7 +148,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			suite.noCachedChallenge()
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
 				Return(
 					&http_node_models.ExternalResponse{
 						Error: &http_node_models.ExternalResponseError{Code: "server_error", Message: "boom"},
@@ -162,7 +164,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.RequestCompletions(card, turnForTest())
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			assert.Error(t, err)
 		})
@@ -179,8 +181,8 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite, turn *models.RemoteAgentInput) {
 			suite.noCachedChallenge()
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateChatCompletion(card.Endpoints.ChatCompletions, "agent.eth", gomock.Any(), gomock.Nil()).
-				DoAndReturn(func(_, _ string, request *http_node_models.ExternalChatCompletionRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalChatCompletionResponse, error) {
+				CreateChatCompletion(gomock.Any(), card.Endpoints.ChatCompletions, "agent.eth", gomock.Any(), gomock.Nil()).
+				DoAndReturn(func(_ context.Context, _, _ string, request *http_node_models.ExternalChatCompletionRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalChatCompletionResponse, error) {
 					assert.Len(t, request.Messages, 3)
 					assert.Equal(t, "system", request.Messages[0].Role)
 					assert.Equal(t, turn.Instructions, request.Messages[0].Content)
@@ -205,7 +207,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			turn := turnForTest()
 			initSuite(suite, turn)
 
-			completions, err := suite.sut.RequestCompletions(card, turn)
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
 
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"chat answer"}, completions)
@@ -223,7 +225,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			suite.noCachedChallenge()
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
 				Return(&http_node_models.ExternalResponse{Status: "completed"}, nil).
 				Times(1)
 		}
@@ -234,7 +236,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.RequestCompletions(card, turnForTest())
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			assert.Error(t, err)
 		})
@@ -259,15 +261,15 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
-			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(nil, false)
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(nil, false)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))).
 				Times(1)
-			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", challenge)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(
+				CreateResponse(gomock.Any(),
 					card.Endpoints.Responses,
 					"agent.eth",
 					gomock.Any(),
@@ -283,7 +285,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
-			completions, err := suite.sut.RequestCompletions(card, turnForTest())
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"answer"}, completions)
@@ -306,10 +308,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
-			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(challenge, true)
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(challenge, true)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(
+				CreateResponse(gomock.Any(),
 					card.Endpoints.Responses,
 					"agent.eth",
 					gomock.Any(),
@@ -325,7 +327,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
-			completions, err := suite.sut.RequestCompletions(card, turnForTest())
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"answer"}, completions)
@@ -351,10 +353,10 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
-			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(challenge, true)
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(challenge, true)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(
+				CreateResponse(gomock.Any(),
 					card.Endpoints.Responses,
 					"agent.eth",
 					gomock.Any(),
@@ -362,7 +364,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 				).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))).
 				Times(1)
-			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", challenge)
 		}
 
 		t.Run("Should return the PaymentRequiredError without a doomed retry", func(t *testing.T) {
@@ -371,7 +373,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
-			_, err := suite.sut.RequestCompletions(card, turnForTest())
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			var paymentRequired *cb_errors.PaymentRequiredError
 			assert.ErrorAs(t, err, &paymentRequired)
@@ -389,12 +391,12 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
 			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
 
-			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(nil, false)
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(nil, false)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))).
 				Times(1)
-			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", challenge)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(nil, assert.AnError)
 		}
 
@@ -404,7 +406,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
-			_, err := suite.sut.RequestCompletions(card, turnForTest())
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			var paymentRequired *cb_errors.PaymentRequiredError
 			assert.ErrorAs(t, err, &paymentRequired)
@@ -424,15 +426,15 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			paymentPayload := &models.X402PaymentPayload{X402Version: models.X402Version}
 			expectedSignatureHeader := encodeForTest(t, paymentPayload)
 
-			suite.x402PaymentChallengeCache.EXPECT().Read("agent.eth").Return(nil, false)
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(nil, false)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
 				Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))).
 				Times(1)
-			suite.x402PaymentChallengeCache.EXPECT().Store("agent.eth", challenge)
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", challenge)
 			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(paymentPayload, nil)
 			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(
+				CreateResponse(gomock.Any(),
 					card.Endpoints.Responses,
 					"agent.eth",
 					gomock.Any(),
@@ -448,7 +450,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
-			_, err := suite.sut.RequestCompletions(card, turnForTest())
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			var paymentRequired *cb_errors.PaymentRequiredError
 			assert.ErrorAs(t, err, &paymentRequired)

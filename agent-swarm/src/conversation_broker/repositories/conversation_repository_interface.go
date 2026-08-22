@@ -1,16 +1,18 @@
 package repositories
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/google/uuid"
 )
 
 type ConversationRepositoryInterface interface {
-	Save(entity *models.Conversation) (*models.Conversation, error)
-	GetById(id uuid.UUID) (*models.Conversation, error)
-	List(page, elementsPerPage uint) ([]*models.Conversation, error)
-	Count() (uint, error)
+	Save(ctx context.Context, entity *models.Conversation) (*models.Conversation, error)
+	GetById(ctx context.Context, id uuid.UUID) (*models.Conversation, error)
+	List(ctx context.Context, page, elementsPerPage uint) ([]*models.Conversation, error)
+	Count(ctx context.Context) (uint, error)
 
 	// ListProcessableForParticipant returns active conversations the given
 	// participant should be considered for in the current swarm tick.
@@ -18,6 +20,7 @@ type ConversationRepositoryInterface interface {
 	// only when the facilitator's last message in it is older than
 	// facilitatorTickIntervalSeconds (or no message at all).
 	ListProcessableForParticipant(
+		ctx context.Context,
 		participant *models.Participant,
 		role *enums.ParticipantRole,
 		facilitatorTickIntervalSeconds uint64,

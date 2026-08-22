@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -41,16 +42,16 @@ func (m *MockAgentRequesterInterface) EXPECT() *MockAgentRequesterInterfaceMockR
 }
 
 // GetAgent mocks base method.
-func (m *MockAgentRequesterInterface) GetAgent(collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
+func (m *MockAgentRequesterInterface) GetAgent(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.SlackAgent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgent", collectionAddress, collectionTokenId)
+	ret := m.ctrl.Call(m, "GetAgent", ctx, collectionAddress, collectionTokenId)
 	ret0, _ := ret[0].(*models.SlackAgent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgent indicates an expected call of GetAgent.
-func (mr *MockAgentRequesterInterfaceMockRecorder) GetAgent(collectionAddress, collectionTokenId any) *gomock.Call {
+func (mr *MockAgentRequesterInterfaceMockRecorder) GetAgent(ctx, collectionAddress, collectionTokenId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRequesterInterface)(nil).GetAgent), collectionAddress, collectionTokenId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgent", reflect.TypeOf((*MockAgentRequesterInterface)(nil).GetAgent), ctx, collectionAddress, collectionTokenId)
 }

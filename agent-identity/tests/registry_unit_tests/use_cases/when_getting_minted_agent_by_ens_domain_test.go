@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
@@ -43,7 +45,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				GetMintedByEnsDomain(gomock.Any()).
+				GetMintedByEnsDomain(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError).
 				Times(1)
 		}
@@ -56,7 +58,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			req := &requests.GetAgentByEnsDomainRequest{
 				EnsDomain: "alice.6022.eth",
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.NotNil(t, err)
@@ -69,7 +71,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingMintedAgentByEnsDomainTestingSuite) {
 			suite.mockAgentRepository.EXPECT().
-				GetMintedByEnsDomain(gomock.Any()).
+				GetMintedByEnsDomain(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -82,7 +84,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			req := &requests.GetAgentByEnsDomainRequest{
 				EnsDomain: "unknown.6022.eth",
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.Nil(t, err)
@@ -101,12 +103,12 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 				Build()
 
 			basics.mockAgentRepository.EXPECT().
-				GetMintedByEnsDomain(agent.EnsDomain).
+				GetMintedByEnsDomain(gomock.Any(), agent.EnsDomain).
 				Return(agent, nil).
 				Times(1)
 
 			basics.mockAgentAddressRepository.EXPECT().
-				GetAllByAgentId(agent.ID).
+				GetAllByAgentId(gomock.Any(), agent.ID).
 				Return([]*models.AgentAddress{
 					model_builders.NewAgentAddressBuilder().
 						WithAgentId(agent.ID).
@@ -118,7 +120,7 @@ func TestWhenGettingMintedAgentByEnsDomain(t *testing.T) {
 			req := &requests.GetAgentByEnsDomainRequest{
 				EnsDomain: agent.EnsDomain,
 			}
-			resp, err := basics.sut.Get(req)
+			resp, err := basics.sut.Get(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, resp)

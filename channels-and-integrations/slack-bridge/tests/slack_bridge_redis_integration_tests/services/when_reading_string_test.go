@@ -50,7 +50,7 @@ func TestWhenReadingString(t *testing.T) {
 				t.Fatalf("Failed to set key in Redis: %v", err)
 			}
 
-			result, err := suite.sut.ReadString(key)
+			result, err := suite.sut.ReadString(context.Background(), key)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, result)
@@ -64,7 +64,7 @@ func TestWhenReadingString(t *testing.T) {
 		suite := WhenReadingStringBeforeEach()
 		defer WhenReadingStringAfterEach(suite)
 
-		result, err := suite.sut.ReadString(key)
+		result, err := suite.sut.ReadString(context.Background(), key)
 
 		assert.Nil(t, err)
 		assert.Nil(t, result)

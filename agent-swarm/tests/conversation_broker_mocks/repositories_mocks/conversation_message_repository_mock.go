@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -43,46 +44,46 @@ func (m *MockConversationMessageRepositoryInterface) EXPECT() *MockConversationM
 }
 
 // ListByConversationId mocks base method.
-func (m *MockConversationMessageRepositoryInterface) ListByConversationId(conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
+func (m *MockConversationMessageRepositoryInterface) ListByConversationId(ctx context.Context, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListByConversationId", conversationId)
+	ret := m.ctrl.Call(m, "ListByConversationId", ctx, conversationId)
 	ret0, _ := ret[0].([]*models.ConversationMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListByConversationId indicates an expected call of ListByConversationId.
-func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListByConversationId(conversationId any) *gomock.Call {
+func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListByConversationId(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByConversationId", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListByConversationId), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByConversationId", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListByConversationId), ctx, conversationId)
 }
 
 // ListProcessableForParticipantAndConversation mocks base method.
-func (m *MockConversationMessageRepositoryInterface) ListProcessableForParticipantAndConversation(participant *models.Participant, role *enums.ParticipantRole, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
+func (m *MockConversationMessageRepositoryInterface) ListProcessableForParticipantAndConversation(ctx context.Context, participant *models.Participant, role *enums.ParticipantRole, conversationId uuid.UUID) ([]*models.ConversationMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListProcessableForParticipantAndConversation", participant, role, conversationId)
+	ret := m.ctrl.Call(m, "ListProcessableForParticipantAndConversation", ctx, participant, role, conversationId)
 	ret0, _ := ret[0].([]*models.ConversationMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListProcessableForParticipantAndConversation indicates an expected call of ListProcessableForParticipantAndConversation.
-func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListProcessableForParticipantAndConversation(participant, role, conversationId any) *gomock.Call {
+func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) ListProcessableForParticipantAndConversation(ctx, participant, role, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipantAndConversation", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListProcessableForParticipantAndConversation), participant, role, conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcessableForParticipantAndConversation", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).ListProcessableForParticipantAndConversation), ctx, participant, role, conversationId)
 }
 
 // Save mocks base method.
-func (m *MockConversationMessageRepositoryInterface) Save(entity *models.ConversationMessage) (*models.ConversationMessage, error) {
+func (m *MockConversationMessageRepositoryInterface) Save(ctx context.Context, entity *models.ConversationMessage) (*models.ConversationMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.ConversationMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockConversationMessageRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockConversationMessageRepositoryInterface)(nil).Save), ctx, entity)
 }

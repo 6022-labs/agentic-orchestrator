@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -37,14 +39,14 @@ func NewSlackChannelSynchronizerCached(
 	}
 }
 
-func (s *SlackChannelSynchronizerCached) Sync(channelId string) (*models.SlackChannel, error) {
-	inDatabaseChannel, err := s.slackChannelRepository.GetById(channelId)
+func (s *SlackChannelSynchronizerCached) Sync(ctx context.Context, channelId string) (*models.SlackChannel, error) {
+	inDatabaseChannel, err := s.slackChannelRepository.GetById(ctx, channelId)
 	if err != nil {
 		return nil, fmt.Errorf("error getting channel %s from database: %w", channelId, err)
 	}
 
 	channelSyncKey := fmt.Sprintf(CHANNEL_SYNC_CACHE_KEY_TEMPLATE, channelId)
-	isChannelSyncInCache, err := s.cacheStorage.ReadBool(channelSyncKey)
+	isChannelSyncInCache, err := s.cacheStorage.ReadBool(ctx, channelSyncKey)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cache for channel %s: %w", channelId, err)
 	}
@@ -52,12 +54,12 @@ func (s *SlackChannelSynchronizerCached) Sync(channelId string) (*models.SlackCh
 	if isChannelSyncInCache == nil || !*isChannelSyncInCache {
 		s.logger.Debug("Channel sync not found in cache, syncing from Slack", zap.String("channelId", channelId))
 
-		inDatabaseChannel, err = s.slackChannelSynchronizer.Sync(channelId)
+		inDatabaseChannel, err = s.slackChannelSynchronizer.Sync(ctx, channelId)
 		if err != nil {
 			return nil, fmt.Errorf("error syncing channel %s: %w", channelId, err)
 		}
 
-		s.cacheStorage.Store(channelSyncKey, true, &s.cacheSettings.SlackChannelSynchronizerTTLMinutes)
+		s.cacheStorage.Store(ctx, channelSyncKey, true, &s.cacheSettings.SlackChannelSynchronizerTTLMinutes)
 	}
 
 	return inDatabaseChannel, nil

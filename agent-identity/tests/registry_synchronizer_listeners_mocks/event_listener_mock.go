@@ -10,6 +10,7 @@
 package registry_synchronizer_listeners_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,29 +41,29 @@ func (m *MockEventListenerInterface) EXPECT() *MockEventListenerInterfaceMockRec
 }
 
 // Listen mocks base method.
-func (m *MockEventListenerInterface) Listen() error {
+func (m *MockEventListenerInterface) Listen(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Listen")
+	ret := m.ctrl.Call(m, "Listen", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Listen indicates an expected call of Listen.
-func (mr *MockEventListenerInterfaceMockRecorder) Listen() *gomock.Call {
+func (mr *MockEventListenerInterfaceMockRecorder) Listen(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Listen", reflect.TypeOf((*MockEventListenerInterface)(nil).Listen))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Listen", reflect.TypeOf((*MockEventListenerInterface)(nil).Listen), ctx)
 }
 
 // SubscribeAll mocks base method.
-func (m *MockEventListenerInterface) SubscribeAll() error {
+func (m *MockEventListenerInterface) SubscribeAll(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeAll")
+	ret := m.ctrl.Call(m, "SubscribeAll", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SubscribeAll indicates an expected call of SubscribeAll.
-func (mr *MockEventListenerInterfaceMockRecorder) SubscribeAll() *gomock.Call {
+func (mr *MockEventListenerInterfaceMockRecorder) SubscribeAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAll", reflect.TypeOf((*MockEventListenerInterface)(nil).SubscribeAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeAll", reflect.TypeOf((*MockEventListenerInterface)(nil).SubscribeAll), ctx)
 }

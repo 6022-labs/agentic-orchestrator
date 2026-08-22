@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 	"time"
@@ -55,7 +57,7 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 			ExpiresAt: time.Now().Add(5 * time.Minute),
 		}
 		initSuite := func(suite *WhenGettingAuthChallengeTestingSuite) {
-			suite.mockNonceStore.EXPECT().Generate(wallet, uint64(80002)).Return(entry, nil)
+			suite.mockNonceStore.EXPECT().Generate(gomock.Any(), wallet, uint64(80002)).Return(entry, nil)
 			suite.mockSiweMessageBuilder.EXPECT().
 				Build(wallet, uint64(80002), "nonce-abc", entry.IssuedAt, entry.ExpiresAt).
 				Return("siwe message")
@@ -67,7 +69,7 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 			suite := WhenGettingAuthChallengeBeforeEach(t)
 			initSuite(suite)
 
-			resp, err := suite.sut.Execute(
+			resp, err := suite.sut.Execute(context.Background(),
 				&requests.GetAuthChallengeRequest{Address: challengeWalletHex, ChainId: 80002},
 			)
 
@@ -85,7 +87,10 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 
 			suite := WhenGettingAuthChallengeBeforeEach(t)
 
-			_, err := suite.sut.Execute(&requests.GetAuthChallengeRequest{Address: "not-an-address"})
+			_, err := suite.sut.Execute(
+				context.Background(),
+				&requests.GetAuthChallengeRequest{Address: "not-an-address"},
+			)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -95,7 +100,9 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAuthChallengeTestingSuite) {
-			suite.mockNonceStore.EXPECT().Generate(wallet, uint64(80002)).Return(nil, errors.New("rng failed"))
+			suite.mockNonceStore.EXPECT().
+				Generate(gomock.Any(), wallet, uint64(80002)).
+				Return(nil, errors.New("rng failed"))
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -104,7 +111,10 @@ func TestWhenGettingAuthChallenge(t *testing.T) {
 			suite := WhenGettingAuthChallengeBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(&requests.GetAuthChallengeRequest{Address: challengeWalletHex, ChainId: 80002})
+			_, err := suite.sut.Execute(
+				context.Background(),
+				&requests.GetAuthChallengeRequest{Address: challengeWalletHex, ChainId: 80002},
+			)
 
 			assert.ErrorContains(t, err, "rng failed")
 		})

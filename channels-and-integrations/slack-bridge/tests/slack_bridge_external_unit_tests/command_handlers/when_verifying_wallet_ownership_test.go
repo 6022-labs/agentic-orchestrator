@@ -1,6 +1,8 @@
 package command_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
@@ -70,7 +72,7 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 			request := generateValidVerifyWalletOwnershipRequest()
 			request.UserId = ""
 
-			_, err := suite.sut.Verify(request)
+			_, err := suite.sut.Verify(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -82,7 +84,7 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 		initSuite := func(suite *WhenVerifyingWalletOwnershipTestingSuite, request *requests.VerifyWalletOwnershipRequest) {
 			suite.mockSlackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.UserId).
+				Sync(gomock.Any(), request.UserId).
 				Return(nil, assert.AnError)
 		}
 
@@ -94,7 +96,7 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 
 			initSuite(suite, request)
 
-			_, err := suite.sut.Verify(request)
+			_, err := suite.sut.Verify(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -109,12 +111,12 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 				Build()
 			suite.mockSlackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.UserId).
+				Sync(gomock.Any(), request.UserId).
 				Return(slackUser, nil)
 
 			suite.mockWalletOwnershipChallenge.
 				EXPECT().
-				IssueChallenge(slackUser.Id).
+				IssueChallenge(gomock.Any(), slackUser.Id).
 				Return(nil, assert.AnError)
 		}
 
@@ -126,7 +128,7 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 
 			initSuite(suite, request)
 
-			_, err := suite.sut.Verify(request)
+			_, err := suite.sut.Verify(context.Background(), request)
 
 			assert.Error(t, err)
 		})
@@ -141,12 +143,12 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 				Build()
 			suite.mockSlackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.UserId).
+				Sync(gomock.Any(), request.UserId).
 				Return(slackUser, nil)
 
 			suite.mockWalletOwnershipChallenge.
 				EXPECT().
-				IssueChallenge(request.UserId).
+				IssueChallenge(gomock.Any(), request.UserId).
 				Return(&challenge, nil)
 		}
 
@@ -160,7 +162,7 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 
 			initSuite(suite, request, challenge)
 
-			response, err := suite.sut.Verify(request)
+			response, err := suite.sut.Verify(context.Background(), request)
 
 			assert.NoError(t, err)
 			expectedUrl := suite.verifyWalletOwnershipSettings.OrchestratorFrontBaseUrl +

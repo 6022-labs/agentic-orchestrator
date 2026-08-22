@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"errors"
 	"fmt"
 	"strings"
@@ -74,6 +76,7 @@ func NewConversationProcessor(
 }
 
 func (p *ConversationProcessor) ProcessConversation(
+	ctx context.Context,
 	participant *models.Participant,
 	conversation *models.Conversation,
 ) error {
@@ -81,13 +84,13 @@ func (p *ConversationProcessor) ProcessConversation(
 
 	if p.shouldForceConcludeConversation(conversation) {
 		p.logger.Warn("Force concluding conversation", logFields...)
-		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
+		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
 			return fmt.Errorf("failed to force conclude conversation: %w", err)
 		}
 		return nil
 	}
 
-	role, err := p.participantRoleResolver.Resolve(participant)
+	role, err := p.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
 		return fmt.Errorf("failed to resolve participant role: %w", err)
 	}
@@ -97,19 +100,19 @@ func (p *ConversationProcessor) ProcessConversation(
 		return nil
 	}
 
-	bridge, err := p.bridgeRepository.GetById(conversation.BridgeID)
+	bridge, err := p.bridgeRepository.GetById(ctx, conversation.BridgeID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch bridge: %w", err)
 	}
 	if bridge == nil {
 		p.logger.Warn("Bridge not found for conversation", logFields...)
-		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
+		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
 			return fmt.Errorf("failed to conclude orphan conversation: %w", err)
 		}
 		return nil
 	}
 
-	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(
+	messages, err := p.conversationMessageRepository.ListProcessableForParticipantAndConversation(ctx,
 		participant,
 		role,
 		conversation.ID,
@@ -122,7 +125,7 @@ func (p *ConversationProcessor) ProcessConversation(
 		return nil
 	}
 
-	participants, err := p.participantRepository.ListByConversationId(conversation.ID)
+	participants, err := p.participantRepository.ListByConversationId(ctx, conversation.ID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch conversation participants: %w", err)
 	}
@@ -131,12 +134,12 @@ func (p *ConversationProcessor) ProcessConversation(
 		return fmt.Errorf("agent participant %s has no ENS domain", participant.ID)
 	}
 
-	card, err := p.remoteAgentCardResolver.ResolveCard(*participant.EnsDomain)
+	card, err := p.remoteAgentCardResolver.ResolveCard(ctx, *participant.EnsDomain)
 	if err != nil {
 		return fmt.Errorf("failed to resolve remote agent card: %w", err)
 	}
 
-	turn, err := p.conversationPromptBuilder.BuildInput(
+	turn, err := p.conversationPromptBuilder.BuildInput(ctx,
 		string(bridge.Kind),
 		participant,
 		role,
@@ -148,7 +151,7 @@ func (p *ConversationProcessor) ProcessConversation(
 		return fmt.Errorf("failed to build turn: %w", err)
 	}
 
-	completions, err := p.remoteAgentCompletionsRequester.RequestCompletions(card, turn)
+	completions, err := p.remoteAgentCompletionsRequester.RequestCompletions(ctx, card, turn)
 	var paymentRequired *cb_errors.PaymentRequiredError
 	if errors.As(err, &paymentRequired) {
 		p.logger.Info("Agent node requires payment, skipping turn", logFields...)
@@ -165,7 +168,7 @@ func (p *ConversationProcessor) ProcessConversation(
 
 	isFinal := false
 	if role != nil && *role == enums.ParticipantRoleFacilitator {
-		completions, isFinal, err = p.concludeByFacilitatorIfNeeded(
+		completions, isFinal, err = p.concludeByFacilitatorIfNeeded(ctx,
 			participant, conversation, card, turn, completions, role, messages, participants,
 		)
 		if err != nil {
@@ -173,7 +176,7 @@ func (p *ConversationProcessor) ProcessConversation(
 		}
 	}
 
-	if err := p.sendCompletionsToBridge(bridge, conversation, participant, completions, isFinal); err != nil {
+	if err := p.sendCompletionsToBridge(ctx, bridge, conversation, participant, completions, isFinal); err != nil {
 		return fmt.Errorf("failed to send completions to bridge: %w", err)
 	}
 
@@ -184,6 +187,7 @@ func (p *ConversationProcessor) ProcessConversation(
 // broker timer elapsed or the conclude marker appears in a fresh completion or
 // the latest inbound message, the facilitator gets one extra conclude turn.
 func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
+	ctx context.Context,
 	participant *models.Participant,
 	conversation *models.Conversation,
 	card *models.RemoteAgentCard,
@@ -199,7 +203,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 		return completions, false, nil
 	}
 
-	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(
+	concludeTurn, err := p.conversationPromptBuilder.BuildConcludeInput(ctx,
 		turn,
 		completions,
 		participant,
@@ -212,7 +216,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 		return nil, false, fmt.Errorf("failed to build conclude turn: %w", err)
 	}
 
-	concludeCompletions, err := p.remoteAgentCompletionsRequester.RequestCompletions(card, concludeTurn)
+	concludeCompletions, err := p.remoteAgentCompletionsRequester.RequestCompletions(ctx, card, concludeTurn)
 	var paymentRequired *cb_errors.PaymentRequiredError
 	if errors.As(err, &paymentRequired) {
 		p.logger.Info("Agent node requires payment for conclude turn, concluding without wrap-up",
@@ -228,6 +232,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 }
 
 func (p *ConversationProcessor) sendCompletionsToBridge(
+	ctx context.Context,
 	bridge *models.Bridge,
 	conversation *models.Conversation,
 	participant *models.Participant,
@@ -239,7 +244,7 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 	defer mu.Unlock()
 
 	// Reload under lock to catch a concurrent conclude.
-	reloaded, err := p.conversationRepository.GetById(conversation.ID)
+	reloaded, err := p.conversationRepository.GetById(ctx, conversation.ID)
 	if err != nil {
 		return fmt.Errorf("failed to reload conversation: %w", err)
 	}
@@ -254,7 +259,13 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 	}
 
 	for _, completion := range completions {
-		if err := p.bridgeCallbackRequester.PostCompletion(bridge, conversation, participant, completion); err != nil {
+		if err := p.bridgeCallbackRequester.PostCompletion(
+			ctx,
+			bridge,
+			conversation,
+			participant,
+			completion,
+		); err != nil {
 			return fmt.Errorf("failed to post completion to bridge: %w", err)
 		}
 	}
@@ -263,7 +274,7 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 		p.logger.Info("Conversation is concluded by facilitator",
 			p.processingLogFields(participant, conversation)...,
 		)
-		if err := p.conversationConclude.Conclude(conversation.ID); err != nil {
+		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
 			return fmt.Errorf("failed to conclude conversation: %w", err)
 		}
 	}

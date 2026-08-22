@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -42,135 +43,135 @@ func (m *MockConversationBrokerRequesterInterface) EXPECT() *MockConversationBro
 }
 
 // ForceConcludeConversation mocks base method.
-func (m *MockConversationBrokerRequesterInterface) ForceConcludeConversation(conversationId uuid.UUID) error {
+func (m *MockConversationBrokerRequesterInterface) ForceConcludeConversation(ctx context.Context, conversationId uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ForceConcludeConversation", conversationId)
+	ret := m.ctrl.Call(m, "ForceConcludeConversation", ctx, conversationId)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ForceConcludeConversation indicates an expected call of ForceConcludeConversation.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ForceConcludeConversation(conversationId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ForceConcludeConversation(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceConcludeConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ForceConcludeConversation), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceConcludeConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ForceConcludeConversation), ctx, conversationId)
 }
 
 // GetAgentCard mocks base method.
-func (m *MockConversationBrokerRequesterInterface) GetAgentCard(ensDomain string) (*responses.AgentCardResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) GetAgentCard(ctx context.Context, ensDomain string) (*responses.AgentCardResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentCard", ensDomain)
+	ret := m.ctrl.Call(m, "GetAgentCard", ctx, ensDomain)
 	ret0, _ := ret[0].(*responses.AgentCardResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentCard indicates an expected call of GetAgentCard.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentCard(ensDomain any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentCard(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCard", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentCard), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentCard", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentCard), ctx, ensDomain)
 }
 
 // GetAgentPromptTemplate mocks base method.
-func (m *MockConversationBrokerRequesterInterface) GetAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key string) (*responses.AgentPromptTemplateResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) GetAgentPromptTemplate(ctx context.Context, collectionAddress string, collectionTokenId uint64, key string) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentPromptTemplate", collectionAddress, collectionTokenId, key)
+	ret := m.ctrl.Call(m, "GetAgentPromptTemplate", ctx, collectionAddress, collectionTokenId, key)
 	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentPromptTemplate indicates an expected call of GetAgentPromptTemplate.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentPromptTemplate(collectionAddress, collectionTokenId, key any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentPromptTemplate(ctx, collectionAddress, collectionTokenId, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPromptTemplate", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentPromptTemplate), collectionAddress, collectionTokenId, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentPromptTemplate", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentPromptTemplate), ctx, collectionAddress, collectionTokenId, key)
 }
 
 // GetAgentUrl mocks base method.
-func (m *MockConversationBrokerRequesterInterface) GetAgentUrl(ensDomain string) (*responses.AgentUrlResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) GetAgentUrl(ctx context.Context, ensDomain string) (*responses.AgentUrlResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAgentUrl", ensDomain)
+	ret := m.ctrl.Call(m, "GetAgentUrl", ctx, ensDomain)
 	ret0, _ := ret[0].(*responses.AgentUrlResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAgentUrl indicates an expected call of GetAgentUrl.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentUrl(ensDomain any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetAgentUrl(ctx, ensDomain any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentUrl", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentUrl), ensDomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentUrl", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetAgentUrl), ctx, ensDomain)
 }
 
 // GetConversation mocks base method.
-func (m *MockConversationBrokerRequesterInterface) GetConversation(conversationId uuid.UUID) (*responses.BrokerConversationResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) GetConversation(ctx context.Context, conversationId uuid.UUID) (*responses.BrokerConversationResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConversation", conversationId)
+	ret := m.ctrl.Call(m, "GetConversation", ctx, conversationId)
 	ret0, _ := ret[0].(*responses.BrokerConversationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetConversation indicates an expected call of GetConversation.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetConversation(conversationId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetConversation(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetConversation), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversation", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetConversation), ctx, conversationId)
 }
 
 // GetConversationMessages mocks base method.
-func (m *MockConversationBrokerRequesterInterface) GetConversationMessages(conversationId uuid.UUID) ([]*responses.BrokerMessageResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) GetConversationMessages(ctx context.Context, conversationId uuid.UUID) ([]*responses.BrokerMessageResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConversationMessages", conversationId)
+	ret := m.ctrl.Call(m, "GetConversationMessages", ctx, conversationId)
 	ret0, _ := ret[0].([]*responses.BrokerMessageResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetConversationMessages indicates an expected call of GetConversationMessages.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetConversationMessages(conversationId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) GetConversationMessages(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversationMessages", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetConversationMessages), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConversationMessages", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).GetConversationMessages), ctx, conversationId)
 }
 
 // ListConversationParticipants mocks base method.
-func (m *MockConversationBrokerRequesterInterface) ListConversationParticipants(conversationId uuid.UUID) ([]*responses.BrokerParticipantResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) ListConversationParticipants(ctx context.Context, conversationId uuid.UUID) ([]*responses.BrokerParticipantResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListConversationParticipants", conversationId)
+	ret := m.ctrl.Call(m, "ListConversationParticipants", ctx, conversationId)
 	ret0, _ := ret[0].([]*responses.BrokerParticipantResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListConversationParticipants indicates an expected call of ListConversationParticipants.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ListConversationParticipants(conversationId any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ListConversationParticipants(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConversationParticipants", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ListConversationParticipants), conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConversationParticipants", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ListConversationParticipants), ctx, conversationId)
 }
 
 // ListConversations mocks base method.
-func (m *MockConversationBrokerRequesterInterface) ListConversations(page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) ListConversations(ctx context.Context, page, elementsPerPage *uint) (*responses.ListBrokerConversationsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListConversations", page, elementsPerPage)
+	ret := m.ctrl.Call(m, "ListConversations", ctx, page, elementsPerPage)
 	ret0, _ := ret[0].(*responses.ListBrokerConversationsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListConversations indicates an expected call of ListConversations.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ListConversations(page, elementsPerPage any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) ListConversations(ctx, page, elementsPerPage any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConversations", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ListConversations), page, elementsPerPage)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConversations", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).ListConversations), ctx, page, elementsPerPage)
 }
 
 // SaveAgentPromptTemplate mocks base method.
-func (m *MockConversationBrokerRequesterInterface) SaveAgentPromptTemplate(collectionAddress string, collectionTokenId uint64, key, content string) (*responses.AgentPromptTemplateResponse, error) {
+func (m *MockConversationBrokerRequesterInterface) SaveAgentPromptTemplate(ctx context.Context, collectionAddress string, collectionTokenId uint64, key, content string) (*responses.AgentPromptTemplateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveAgentPromptTemplate", collectionAddress, collectionTokenId, key, content)
+	ret := m.ctrl.Call(m, "SaveAgentPromptTemplate", ctx, collectionAddress, collectionTokenId, key, content)
 	ret0, _ := ret[0].(*responses.AgentPromptTemplateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveAgentPromptTemplate indicates an expected call of SaveAgentPromptTemplate.
-func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) SaveAgentPromptTemplate(collectionAddress, collectionTokenId, key, content any) *gomock.Call {
+func (mr *MockConversationBrokerRequesterInterfaceMockRecorder) SaveAgentPromptTemplate(ctx, collectionAddress, collectionTokenId, key, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAgentPromptTemplate", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).SaveAgentPromptTemplate), collectionAddress, collectionTokenId, key, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAgentPromptTemplate", reflect.TypeOf((*MockConversationBrokerRequesterInterface)(nil).SaveAgentPromptTemplate), ctx, collectionAddress, collectionTokenId, key, content)
 }

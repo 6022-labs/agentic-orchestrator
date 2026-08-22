@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -24,8 +26,8 @@ func NewAgentRepository(client db_clients.DatabaseClientInterface) *AgentReposit
 	}
 }
 
-func (r *AgentRepository) Remove(agent *models.Agent) error {
-	tx := r.client.GetDB().Delete(agent)
+func (r *AgentRepository) Remove(ctx context.Context, agent *models.Agent) error {
+	tx := r.client.GetDB().WithContext(ctx).Delete(agent)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -33,10 +35,10 @@ func (r *AgentRepository) Remove(agent *models.Agent) error {
 	return nil
 }
 
-func (r *AgentRepository) GetAll() ([]*models.Agent, error) {
+func (r *AgentRepository) GetAll(ctx context.Context) ([]*models.Agent, error) {
 	agents := []*models.Agent{}
 
-	tx := r.client.GetDB().Find(&agents)
+	tx := r.client.GetDB().WithContext(ctx).Find(&agents)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -44,11 +46,14 @@ func (r *AgentRepository) GetAll() ([]*models.Agent, error) {
 	return agents, nil
 }
 
-func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagination) ([]*models.Agent, error) {
+func (r *AgentRepository) Search(
+	ctx context.Context,
+	params repositories.AgentSearchParamsWithPagination,
+) ([]*models.Agent, error) {
 	agents := []*models.Agent{}
 
 	db := r.applySearchParams(
-		r.client.GetDB().Model(&models.Agent{}),
+		r.client.GetDB().WithContext(ctx).Model(&models.Agent{}),
 		params.AgentSearchParams,
 	)
 
@@ -80,10 +85,10 @@ func (r *AgentRepository) Search(params repositories.AgentSearchParamsWithPagina
 	return agents, nil
 }
 
-func (r *AgentRepository) SearchCount(params repositories.AgentSearchParams) (uint, error) {
+func (r *AgentRepository) SearchCount(ctx context.Context, params repositories.AgentSearchParams) (uint, error) {
 	var count int64
 
-	db := r.applySearchParams(r.client.GetDB().Model(&models.Agent{}), params)
+	db := r.applySearchParams(r.client.GetDB().WithContext(ctx).Model(&models.Agent{}), params)
 
 	tx := db.Count(&count)
 	if tx.Error != nil {
@@ -105,9 +110,9 @@ func (r *AgentRepository) applySearchParams(db *gorm.DB, params repositories.Age
 	return db
 }
 
-func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
+func (r *AgentRepository) GetById(ctx context.Context, id uuid.UUID) (*models.Agent, error) {
 	entity := new(models.Agent)
-	tx := r.client.GetDB().First(entity, id)
+	tx := r.client.GetDB().WithContext(ctx).First(entity, id)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -118,13 +123,13 @@ func (r *AgentRepository) GetById(id uuid.UUID) (*models.Agent, error) {
 	return entity, nil
 }
 
-func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(
+func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.Agent, error) {
 	agent := &models.Agent{}
 
-	tx := r.client.GetDB().
+	tx := r.client.GetDB().WithContext(ctx).
 		Where("collection_address = ? AND collection_token_id = ?", collectionAddress, collectionTokenId).
 		First(agent)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -137,10 +142,13 @@ func (r *AgentRepository) GetByCollectionAddressAndCollectionTokenId(
 	return agent, nil
 }
 
-func (r *AgentRepository) GetMintedByEnsDomain(ensDomain string) (*models.Agent, error) {
+func (r *AgentRepository) GetMintedByEnsDomain(ctx context.Context, ensDomain string) (*models.Agent, error) {
 	agent := &models.Agent{}
 
-	tx := r.client.GetDB().Where("ens_domain = ? AND collection_token_id IS NOT NULL", ensDomain).First(agent)
+	tx := r.client.GetDB().
+		WithContext(ctx).
+		Where("ens_domain = ? AND collection_token_id IS NOT NULL", ensDomain).
+		First(agent)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -151,10 +159,10 @@ func (r *AgentRepository) GetMintedByEnsDomain(ensDomain string) (*models.Agent,
 	return agent, nil
 }
 
-func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent, error) {
+func (r *AgentRepository) GetByEnsDomains(ctx context.Context, ensDomains []string) ([]*models.Agent, error) {
 	agents := []*models.Agent{}
 
-	tx := r.client.GetDB().Where("ens_domain IN ?", ensDomains).Find(&agents)
+	tx := r.client.GetDB().WithContext(ctx).Where("ens_domain IN ?", ensDomains).Find(&agents)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -162,13 +170,13 @@ func (r *AgentRepository) GetByEnsDomains(ensDomains []string) ([]*models.Agent,
 	return agents, nil
 }
 
-func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(
+func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(ctx context.Context,
 	collectionAddress string,
 	proposalId uint64,
 ) (*models.Agent, error) {
 	agent := &models.Agent{}
 
-	tx := r.client.GetDB().Where(
+	tx := r.client.GetDB().WithContext(ctx).Where(
 		"collection_token_id IS NULL AND collection_address = ? AND proposal_id = ?",
 		collectionAddress,
 		proposalId,
@@ -183,10 +191,14 @@ func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(
 	return agent, nil
 }
 
-func (r *AgentRepository) ExistsByCollectionAddressAndCollectionTokenId(address string, tokenId uint64) (bool, error) {
+func (r *AgentRepository) ExistsByCollectionAddressAndCollectionTokenId(
+	ctx context.Context,
+	address string,
+	tokenId uint64,
+) (bool, error) {
 	var count int64
 
-	tx := r.client.GetDB().
+	tx := r.client.GetDB().WithContext(ctx).
 		Model(&models.Agent{}).
 		Where("collection_address = ? AND collection_token_id = ?", address, tokenId).
 		Count(&count)

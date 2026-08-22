@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -67,12 +69,12 @@ func TestWhenGettingAgentsByEnsDomains(t *testing.T) {
 			defer WhenGettingAgentsByEnsDomainsAfterEach(suite)
 
 			existingEntity := model_builders.NewAgentBuilder().Build()
-			createdEntity, err := suite.sut.Save(existingEntity)
+			createdEntity, err := suite.sut.Save(context.Background(), existingEntity)
 			if err != nil {
 				t.Errorf("Error creating entity: %v", err)
 			}
 
-			fetchedEntities, err := suite.sut.GetByEnsDomains([]string{createdEntity.EnsDomain})
+			fetchedEntities, err := suite.sut.GetByEnsDomains(context.Background(), []string{createdEntity.EnsDomain})
 
 			assert.Nil(t, err)
 			assert.Equal(t, 1, len(fetchedEntities))
@@ -88,7 +90,7 @@ func TestWhenGettingAgentsByEnsDomains(t *testing.T) {
 			suite := WhenGettingAgentsByEnsDomainsBeforeEach()
 			defer WhenGettingAgentsByEnsDomainsAfterEach(suite)
 
-			fetchedEntities, err := suite.sut.GetByEnsDomains([]string{"nonexistent.ens"})
+			fetchedEntities, err := suite.sut.GetByEnsDomains(context.Background(), []string{"nonexistent.ens"})
 
 			assert.Nil(t, err)
 			assert.Equal(t, 0, len(fetchedEntities))

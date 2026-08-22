@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
@@ -11,7 +13,7 @@ import (
 )
 
 type RegisterAgentInterface interface {
-	Register(request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error)
+	Register(ctx context.Context, request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error)
 }
 
 // RegisterAgent upserts an agent participant by its on-chain identity bundle
@@ -34,6 +36,7 @@ func NewRegisterAgent(
 }
 
 func (uc *RegisterAgent) Register(
+	ctx context.Context,
 	request *requests.RegisterAgentRequest,
 ) (*responses.ParticipantResponse, bool, error) {
 	if err := request.Validate(); err != nil {
@@ -41,7 +44,7 @@ func (uc *RegisterAgent) Register(
 	}
 
 	tokenId := request.ParsedCollectionTokenId()
-	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(
+	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		request.CollectionAddress,
 		tokenId,
 	)
@@ -52,7 +55,7 @@ func (uc *RegisterAgent) Register(
 		return responses.ParticipantResponseFromModel(existing), true, nil
 	}
 
-	registryAgent, err := uc.agentRegistryRequester.GetAgent(request.CollectionAddress, tokenId)
+	registryAgent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, tokenId)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to fetch agent from registry: %w", err)
 	}
@@ -62,7 +65,7 @@ func (uc *RegisterAgent) Register(
 
 	participant := registryAgent.ToParticipant()
 
-	saved, err := uc.participantRepository.Save(participant)
+	saved, err := uc.participantRepository.Save(ctx, participant)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to save agent participant: %w", err)
 	}

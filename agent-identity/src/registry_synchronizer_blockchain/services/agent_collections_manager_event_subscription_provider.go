@@ -40,6 +40,7 @@ func NewAgentCollectionsManagerEventSubscriptionProvider(
 }
 
 func (s *AgentCollectionsManagerEventSubscriptionProvider) StartCollectionCreatedSubscription(
+	ctx context.Context,
 	addresses []common.Address,
 ) (<-chan *abi.AgentCollectionsManagerCollectionCreated, ethereum.Subscription, error) {
 	abiSpec, err := abi.AgentCollectionsManagerMetaData.GetAbi()
@@ -54,7 +55,7 @@ func (s *AgentCollectionsManagerEventSubscriptionProvider) StartCollectionCreate
 
 	query := ethereum.FilterQuery{Topics: [][]common.Hash{{eventDef.ID}}, Addresses: addresses}
 	subscriptionLogs := make(chan types.Log)
-	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, subscriptionLogs)
+	sub, err := s.client.SubscribeFilterLogs(ctx, query, subscriptionLogs)
 	if err != nil {
 		return nil, nil, err
 	}

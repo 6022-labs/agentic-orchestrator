@@ -1,6 +1,8 @@
 package mvc_test
 
 import (
+	"context"
+
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -44,23 +46,28 @@ type httpSuite struct {
 // under test never reaches an agent node.
 type stubEnsUrlResolver struct{}
 
-func (s *stubEnsUrlResolver) ResolveUrl(ensDomain string) (string, error) {
+func (s *stubEnsUrlResolver) ResolveUrl(_ context.Context, ensDomain string) (string, error) {
 	return "", fmt.Errorf("no agent node in integration tests")
 }
 
 type stubRemoteAgentCardRequester struct{}
 
-func (s *stubRemoteAgentCardRequester) GetCard(agentUrl string) (*models.RemoteAgentCard, []byte, error) {
+func (s *stubRemoteAgentCardRequester) GetCard(
+	_ context.Context,
+	agentUrl string,
+) (*models.RemoteAgentCard, []byte, error) {
 	return nil, nil, fmt.Errorf("no agent node in integration tests")
 }
 
 type stubCacheStorage struct{}
 
-func (s *stubCacheStorage) Store(key, value string, expiration *time.Duration) error { return nil }
-func (s *stubCacheStorage) Read(key string) (string, error) {
+func (s *stubCacheStorage) Store(_ context.Context, key, value string, expiration *time.Duration) error {
+	return nil
+}
+func (s *stubCacheStorage) Read(_ context.Context, key string) (string, error) {
 	return "", fmt.Errorf("cache miss")
 }
-func (s *stubCacheStorage) Delete(key string) error { return nil }
+func (s *stubCacheStorage) Delete(_ context.Context, key string) error { return nil }
 
 func newHttpSuite() *httpSuite {
 	dbName, connStr := container_builders.CreatePostgreSQLDatabase()

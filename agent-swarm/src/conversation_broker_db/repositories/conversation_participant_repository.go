@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/google/uuid"
@@ -19,10 +21,11 @@ func NewConversationParticipantRepository(
 }
 
 func (r *ConversationParticipantRepository) ListByConversationId(
+	ctx context.Context,
 	conversationId uuid.UUID,
 ) ([]*models.ConversationParticipant, error) {
 	var entities []*models.ConversationParticipant
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("conversation_id = ?", conversationId).
 		Order("joined_at ASC").
 		Find(&entities).
@@ -34,10 +37,11 @@ func (r *ConversationParticipantRepository) ListByConversationId(
 }
 
 func (r *ConversationParticipantRepository) DeleteByConversationIdAndParticipantId(
+	ctx context.Context,
 	conversationId uuid.UUID,
 	participantId uuid.UUID,
 ) error {
-	return r.client.GetDB().
+	return r.client.GetDB().WithContext(ctx).
 		Where("conversation_id = ? AND participant_id = ?", conversationId, participantId).
 		Delete(&models.ConversationParticipant{}).
 		Error

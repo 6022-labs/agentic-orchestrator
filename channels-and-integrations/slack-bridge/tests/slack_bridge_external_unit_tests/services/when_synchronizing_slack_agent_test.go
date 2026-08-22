@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -54,7 +56,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingSlackAgentTestingSuite) {
 			suite.mockAgentRequester.
 				EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 		}
 
@@ -64,7 +66,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 			suite := WhenSynchronizingSlackAgentBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync(common_tests.RandomEthAddress().Hex(), 123)
+			_, err := suite.sut.Sync(context.Background(), common_tests.RandomEthAddress().Hex(), 123)
 
 			assert.Error(t, err)
 		})
@@ -77,12 +79,12 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 			agentFromOrchestrator := model_builders.NewSlackAgentBuilder().Build()
 			suite.mockAgentRequester.
 				EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(agentFromOrchestrator, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any()).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 		}
 
@@ -92,7 +94,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 			suite := WhenSynchronizingSlackAgentBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync(common_tests.RandomEthAddress().Hex(), 123)
+			_, err := suite.sut.Sync(context.Background(), common_tests.RandomEthAddress().Hex(), 123)
 
 			assert.Error(t, err)
 		})
@@ -112,7 +114,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 
 			suite.mockAgentRequester.
 				EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(agentFromOrchestrator, nil)
 
 			agentInDatabase := model_builders.NewSlackAgentBuilder().
@@ -123,17 +125,17 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 				Build()
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any()).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(agentInDatabase, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				UpdateOwnerWallet(collectionAddress, collectionTokenId, agentFromOrchestrator.OwnerWallet).
+				UpdateOwnerWallet(gomock.Any(), collectionAddress, collectionTokenId, agentFromOrchestrator.OwnerWallet).
 				Return(nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				UpdateIconImageCid(collectionAddress, collectionTokenId, agentFromOrchestrator.IconImageCid).
+				UpdateIconImageCid(gomock.Any(), collectionAddress, collectionTokenId, agentFromOrchestrator.IconImageCid).
 				Return(nil)
 		}
 
@@ -147,7 +149,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 
 			initSuite(suite, collectionAddress, collectionTokenId)
 
-			agent, err := suite.sut.Sync(collectionAddress, collectionTokenId)
+			agent, err := suite.sut.Sync(context.Background(), collectionAddress, collectionTokenId)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, agent)
@@ -163,23 +165,23 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 			agentFromOrchestrator := model_builders.NewSlackAgentBuilder().Build()
 			suite.mockAgentRequester.
 				EXPECT().
-				GetAgent(gomock.Any(), gomock.Any()).
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(agentFromOrchestrator, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any()).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			suite.mockBrokerRequester.
 				EXPECT().
-				RegisterAgent(gomock.Any(), gomock.Any()).
+				RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(brokerParticipantId, nil)
 
 			suite.mockSlackAgentRepository.
 				EXPECT().
-				Save(gomock.Any()).
-				DoAndReturn(func(saved *models.SlackAgent) (*models.SlackAgent, error) {
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, saved *models.SlackAgent) (*models.SlackAgent, error) {
 					assert.NotNil(t, saved.BrokerParticipantId)
 					assert.Equal(t, brokerParticipantId, *saved.BrokerParticipantId)
 					return saved, nil
@@ -194,7 +196,7 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 				suite := WhenSynchronizingSlackAgentBeforeEach(t)
 				initSuite(suite)
 
-				_, err := suite.sut.Sync(common_tests.RandomEthAddress().Hex(), 123)
+				_, err := suite.sut.Sync(context.Background(), common_tests.RandomEthAddress().Hex(), 123)
 
 				assert.Nil(t, err)
 			},

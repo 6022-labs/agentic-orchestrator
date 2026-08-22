@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -85,7 +87,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			request := generateValidVerifyAuthRequest()
 			request.Address = "not-an-address"
 
-			_, err := suite.sut.Execute(request)
+			_, err := suite.sut.Execute(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -95,7 +97,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite) {
-			suite.mockNonceStore.EXPECT().Consume(wallet).Return(nil).Times(1)
+			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(nil).Times(1)
 		}
 
 		t.Run("Should return an unauthorized error", func(t *testing.T) {
@@ -104,7 +106,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			suite := WhenVerifyingAuthBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(generateValidVerifyAuthRequest())
+			_, err := suite.sut.Execute(context.Background(), generateValidVerifyAuthRequest())
 
 			var unauthorizedErr *cb_errors.UnauthorizedError
 			assert.ErrorAs(t, err, &unauthorizedErr)
@@ -116,7 +118,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
-			suite.mockNonceStore.EXPECT().Consume(wallet).Return(entry).Times(1)
+			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
 			expectSiweMessage(suite)
 			suite.mockSignatureVerifier.EXPECT().
 				Recover(siweMessage, request.Signature).
@@ -131,7 +133,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			request := generateValidVerifyAuthRequest()
 			initSuite(suite, request)
 
-			_, err := suite.sut.Execute(request)
+			_, err := suite.sut.Execute(context.Background(), request)
 
 			var unauthorizedErr *cb_errors.UnauthorizedError
 			assert.ErrorAs(t, err, &unauthorizedErr)
@@ -145,7 +147,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 		expiresAt := time.Now().Add(time.Hour)
 
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
-			suite.mockNonceStore.EXPECT().Consume(wallet).Return(entry).Times(1)
+			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
 			expectSiweMessage(suite)
 			suite.mockSignatureVerifier.EXPECT().
 				Recover(siweMessage, request.Signature).
@@ -164,7 +166,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			request := generateValidVerifyAuthRequest()
 			initSuite(suite, request)
 
-			response, err := suite.sut.Execute(request)
+			response, err := suite.sut.Execute(context.Background(), request)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "jwt-token", response.Token)

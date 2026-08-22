@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
@@ -14,7 +16,10 @@ import (
 )
 
 type SaveAgentPromptTemplateInterface interface {
-	Save(request *requests.SaveAgentPromptTemplateRequest) (*responses.AgentPromptTemplateResponse, error)
+	Save(
+		ctx context.Context,
+		request *requests.SaveAgentPromptTemplateRequest,
+	) (*responses.AgentPromptTemplateResponse, error)
 }
 
 type SaveAgentPromptTemplate struct {
@@ -33,13 +38,14 @@ func NewSaveAgentPromptTemplate(
 }
 
 func (uc *SaveAgentPromptTemplate) Save(
+	ctx context.Context,
 	request *requests.SaveAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
-	agent, err := uc.agentRegistryRequester.GetAgent(request.CollectionAddress, request.ParsedCollectionTokenId())
+	agent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, request.ParsedCollectionTokenId())
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch agent from registry: %w", err)
 	}
@@ -55,7 +61,7 @@ func (uc *SaveAgentPromptTemplate) Save(
 		)
 	}
 
-	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(
+	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
 		request.CollectionAddress,
 		request.ParsedCollectionTokenId(),
 		request.ParsedKey(),
@@ -73,7 +79,7 @@ func (uc *SaveAgentPromptTemplate) Save(
 	}
 	template.Content = request.Content
 
-	saved, err := uc.agentPromptTemplateRepository.Save(template)
+	saved, err := uc.agentPromptTemplateRepository.Save(ctx, template)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save agent prompt template: %w", err)
 	}

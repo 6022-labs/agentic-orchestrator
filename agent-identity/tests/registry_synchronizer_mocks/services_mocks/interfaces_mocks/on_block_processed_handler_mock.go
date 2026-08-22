@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,13 +41,13 @@ func (m *MockOnBlockProcessedHandlerInterface) EXPECT() *MockOnBlockProcessedHan
 }
 
 // OnBlockProcessed mocks base method.
-func (m *MockOnBlockProcessedHandlerInterface) OnBlockProcessed(blockNumber uint64) {
+func (m *MockOnBlockProcessedHandlerInterface) OnBlockProcessed(ctx context.Context, blockNumber uint64) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "OnBlockProcessed", blockNumber)
+	m.ctrl.Call(m, "OnBlockProcessed", ctx, blockNumber)
 }
 
 // OnBlockProcessed indicates an expected call of OnBlockProcessed.
-func (mr *MockOnBlockProcessedHandlerInterfaceMockRecorder) OnBlockProcessed(blockNumber any) *gomock.Call {
+func (mr *MockOnBlockProcessedHandlerInterfaceMockRecorder) OnBlockProcessed(ctx, blockNumber any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnBlockProcessed", reflect.TypeOf((*MockOnBlockProcessedHandlerInterface)(nil).OnBlockProcessed), blockNumber)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnBlockProcessed", reflect.TypeOf((*MockOnBlockProcessedHandlerInterface)(nil).OnBlockProcessed), ctx, blockNumber)
 }

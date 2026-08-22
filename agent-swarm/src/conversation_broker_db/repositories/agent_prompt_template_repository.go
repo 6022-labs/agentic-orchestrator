@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+
 	"errors"
 
 	"gorm.io/gorm"
@@ -21,12 +23,13 @@ func NewAgentPromptTemplateRepository(client db_clients.DatabaseClientInterface)
 }
 
 func (r *AgentPromptTemplateRepository) GetByAgentAndKey(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 	key enums.AgentPromptTemplateKey,
 ) (*models.AgentPromptTemplate, error) {
 	var entity models.AgentPromptTemplate
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("collection_address = ?", collectionAddress).
 		Where("collection_token_id = ?", collectionTokenId).
 		Where("key = ?", key).
@@ -42,11 +45,12 @@ func (r *AgentPromptTemplateRepository) GetByAgentAndKey(
 }
 
 func (r *AgentPromptTemplateRepository) ListByAgent(
+	ctx context.Context,
 	collectionAddress string,
 	collectionTokenId uint64,
 ) ([]*models.AgentPromptTemplate, error) {
 	var entities []*models.AgentPromptTemplate
-	err := r.client.GetDB().
+	err := r.client.GetDB().WithContext(ctx).
 		Where("collection_address = ?", collectionAddress).
 		Where("collection_token_id = ?", collectionTokenId).
 		Order("key ASC").

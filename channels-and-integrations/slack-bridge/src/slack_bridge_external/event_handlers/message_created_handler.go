@@ -1,6 +1,8 @@
 package event_handlers
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -26,7 +28,7 @@ const (
 )
 
 type MessageCreatedHandlerInterface interface {
-	Handle(request *requests.MessageCreatedRequest) error
+	Handle(ctx context.Context, request *requests.MessageCreatedRequest) error
 }
 
 type MessageCreatedHandler struct {
@@ -62,7 +64,7 @@ func NewMessageCreatedHandler(
 	}
 }
 
-func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) error {
+func (p *MessageCreatedHandler) Handle(ctx context.Context, request *requests.MessageCreatedRequest) error {
 	p.logger.Debug(
 		"Handling message created event",
 		zap.String("messageTs", request.Event.Ts),
@@ -71,7 +73,7 @@ func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) 
 		zap.String("channelType", request.Event.ChannelType),
 	)
 
-	slackChannel, err := p.slackChannelSynchronizerCached.Sync(request.Event.Channel)
+	slackChannel, err := p.slackChannelSynchronizerCached.Sync(ctx, request.Event.Channel)
 	if err != nil {
 		return fmt.Errorf("failed to synchronize slack channel and slack channel not found in persistence: %w", err)
 	}
@@ -99,7 +101,7 @@ func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) 
 			return nil
 		}
 
-		err = p.slackThreadRequester.PushCompletionToThread(
+		err = p.slackThreadRequester.PushCompletionToThread(ctx,
 			NO_FACILITATOR_FOUND_ERROR,
 			nil,
 			request.Event.Channel,
@@ -113,21 +115,22 @@ func (p *MessageCreatedHandler) Handle(request *requests.MessageCreatedRequest) 
 	}
 
 	if request.Event.AppId != nil && *request.Event.AppId == p.slackSettings.AppId {
-		return p.handleAsAgent(request, slackChannel)
+		return p.handleAsAgent(ctx, request, slackChannel)
 	}
 
 	if request.Event.User != nil {
-		return p.handleAsSlackUser(request, slackChannel)
+		return p.handleAsSlackUser(ctx, request, slackChannel)
 	}
 
 	return fmt.Errorf("message created event does not have a user or app_id: %+v", request.Event)
 }
 
 func (p *MessageCreatedHandler) handleAsSlackUser(
+	ctx context.Context,
 	request *requests.MessageCreatedRequest,
 	slackChannel *models.SlackChannel,
 ) error {
-	slackUser, err := p.slackUserSynchronizerCached.Sync(*request.Event.User)
+	slackUser, err := p.slackUserSynchronizerCached.Sync(ctx, *request.Event.User)
 	if err != nil {
 		return fmt.Errorf("failed to synchronize slack user and slack user not found in persistence: %w", err)
 	}
@@ -136,12 +139,12 @@ func (p *MessageCreatedHandler) handleAsSlackUser(
 	}
 
 	if slackUser.PairedHumanAgentCollectionAddress != nil && slackUser.PairedHumanAgentCollectionTokenId != nil {
-		return p.handleAsSlackUserAgent(request, slackUser, slackChannel)
+		return p.handleAsSlackUserAgent(ctx, request, slackUser, slackChannel)
 	}
 
 	parentMessageTs := p.getParentMessageTs(request)
 
-	err = p.brokerMessageForwarder.Forward(
+	err = p.brokerMessageForwarder.Forward(ctx,
 		slackChannel,
 		parentMessageTs,
 		request.Event.Ts,
@@ -157,6 +160,7 @@ func (p *MessageCreatedHandler) handleAsSlackUser(
 }
 
 func (p *MessageCreatedHandler) handleAsAgent(
+	ctx context.Context,
 	request *requests.MessageCreatedRequest,
 	slackChannel *models.SlackChannel,
 ) error {
@@ -173,7 +177,7 @@ func (p *MessageCreatedHandler) handleAsAgent(
 		return err
 	}
 
-	agent, err := p.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+	agent, err := p.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		*collectionTokenAddress,
 		*collectionTokenId,
 	)
@@ -195,7 +199,7 @@ func (p *MessageCreatedHandler) handleAsAgent(
 
 	parentMessageTs := p.getParentMessageTs(request)
 
-	err = p.brokerMessageForwarder.Forward(
+	err = p.brokerMessageForwarder.Forward(ctx,
 		slackChannel,
 		parentMessageTs,
 		request.Event.Ts,
@@ -211,11 +215,12 @@ func (p *MessageCreatedHandler) handleAsAgent(
 }
 
 func (p *MessageCreatedHandler) handleAsSlackUserAgent(
+	ctx context.Context,
 	request *requests.MessageCreatedRequest,
 	slackUser *models.SlackUser,
 	slackChannel *models.SlackChannel,
 ) error {
-	pairedHumanAgent, err := p.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(
+	pairedHumanAgent, err := p.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		*slackUser.PairedHumanAgentCollectionAddress,
 		*slackUser.PairedHumanAgentCollectionTokenId,
 	)
@@ -230,7 +235,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(
 		)
 	}
 
-	err = p.addAgentToChannel.Add(
+	err = p.addAgentToChannel.Add(ctx,
 		&command_handlers_requests.AddAgentToChannelRequest{
 			CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
 			CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,
@@ -243,7 +248,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(
 
 	// Re-sync channel to pick up the freshly attached paired human agent so the
 	// broker registration includes them in the conversation participant set.
-	freshChannel, err := p.slackChannelSynchronizerCached.Sync(slackChannel.Id)
+	freshChannel, err := p.slackChannelSynchronizerCached.Sync(ctx, slackChannel.Id)
 	if err != nil {
 		return fmt.Errorf("failed to refresh slack channel after attaching paired human agent: %w", err)
 	}
@@ -253,7 +258,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(
 
 	parentMessageTs := p.getParentMessageTs(request)
 
-	err = p.brokerMessageForwarder.Forward(
+	err = p.brokerMessageForwarder.Forward(ctx,
 		slackChannel,
 		parentMessageTs,
 		request.Event.Ts,

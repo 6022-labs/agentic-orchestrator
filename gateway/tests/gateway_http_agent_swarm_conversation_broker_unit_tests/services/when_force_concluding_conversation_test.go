@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	stderrors "errors"
 	"net/http"
 	"testing"
@@ -53,7 +55,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			err := suite.sut.ForceConcludeConversation(conversationId)
+			err := suite.sut.ForceConcludeConversation(context.Background(), conversationId)
 
 			assert.NoError(t, err)
 		})
@@ -78,7 +80,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			err := suite.sut.ForceConcludeConversation(conversationId)
+			err := suite.sut.ForceConcludeConversation(context.Background(), conversationId)
 
 			var target *errors.NotFoundError
 			assert.ErrorAs(t, err, &target)
@@ -105,7 +107,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			err := suite.sut.ForceConcludeConversation(conversationId)
+			err := suite.sut.ForceConcludeConversation(context.Background(), conversationId)
 
 			assert.Error(t, err)
 		})
@@ -128,7 +130,7 @@ func TestWhenForceConcludingConversation(t *testing.T) {
 			conversationId := uuid.New()
 			initSuite(suite, conversationId)
 
-			err := suite.sut.ForceConcludeConversation(conversationId)
+			err := suite.sut.ForceConcludeConversation(context.Background(), conversationId)
 
 			assert.Error(t, err)
 		})

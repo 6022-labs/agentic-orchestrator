@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
@@ -9,7 +11,7 @@ import (
 )
 
 type VerifyWalletForBridgeInterface interface {
-	Verify(request *requests.VerifyWalletForBridgeRequest) error
+	Verify(ctx context.Context, request *requests.VerifyWalletForBridgeRequest) error
 }
 
 type VerifyWalletForBridge struct {
@@ -27,7 +29,7 @@ func NewVerifyWalletForBridge(
 	}
 }
 
-func (uc *VerifyWalletForBridge) Verify(request *requests.VerifyWalletForBridgeRequest) error {
+func (uc *VerifyWalletForBridge) Verify(ctx context.Context, request *requests.VerifyWalletForBridgeRequest) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
@@ -37,7 +39,7 @@ func (uc *VerifyWalletForBridge) Verify(request *requests.VerifyWalletForBridgeR
 		return errors.NewValidationError("signature", "invalid signature")
 	}
 
-	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(
+	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(ctx,
 		request.Platform,
 		request.Challenge,
 		request.AuthenticatedWallet.Hex(),

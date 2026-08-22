@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -42,9 +43,9 @@ func (m *MockRegisterAgentInterface) EXPECT() *MockRegisterAgentInterfaceMockRec
 }
 
 // Register mocks base method.
-func (m *MockRegisterAgentInterface) Register(request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error) {
+func (m *MockRegisterAgentInterface) Register(ctx context.Context, request *requests.RegisterAgentRequest) (*responses.ParticipantResponse, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", request)
+	ret := m.ctrl.Call(m, "Register", ctx, request)
 	ret0, _ := ret[0].(*responses.ParticipantResponse)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -52,7 +53,7 @@ func (m *MockRegisterAgentInterface) Register(request *requests.RegisterAgentReq
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockRegisterAgentInterfaceMockRecorder) Register(request any) *gomock.Call {
+func (mr *MockRegisterAgentInterfaceMockRecorder) Register(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockRegisterAgentInterface)(nil).Register), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockRegisterAgentInterface)(nil).Register), ctx, request)
 }

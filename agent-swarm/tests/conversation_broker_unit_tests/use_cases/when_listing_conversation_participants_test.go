@@ -1,6 +1,8 @@
 package use_cases_test
 
 import (
+	"context"
+
 	"errors"
 	"testing"
 
@@ -49,7 +51,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 
 			suite := WhenListingConversationParticipantsBeforeEach(t)
 
-			_, err := suite.sut.List(&requests.ConversationIdRequest{ConversationID: uuid.Nil})
+			_, err := suite.sut.List(context.Background(), &requests.ConversationIdRequest{ConversationID: uuid.Nil})
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
@@ -60,7 +62,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(request.ConversationID).
+				GetById(gomock.Any(), request.ConversationID).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -72,7 +74,7 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			request := &requests.ConversationIdRequest{ConversationID: uuid.New()}
 			initSuite(suite, request)
 
-			_, err := suite.sut.List(request)
+			_, err := suite.sut.List(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -86,11 +88,11 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversation.ID).
+				GetById(gomock.Any(), conversation.ID).
 				Return(conversation, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ListByConversationId(conversation.ID).
+				ListByConversationId(gomock.Any(), conversation.ID).
 				Return([]*models.Participant{participant}, nil).
 				Times(1)
 		}
@@ -101,7 +103,10 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			suite := WhenListingConversationParticipantsBeforeEach(t)
 			initSuite(suite)
 
-			participants, err := suite.sut.List(&requests.ConversationIdRequest{ConversationID: conversation.ID})
+			participants, err := suite.sut.List(
+				context.Background(),
+				&requests.ConversationIdRequest{ConversationID: conversation.ID},
+			)
 
 			assert.NoError(t, err)
 			assert.Len(t, participants, 1)
@@ -116,11 +121,11 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 
 		initSuite := func(suite *WhenListingConversationParticipantsTestingSuite) {
 			suite.mockConversationRepository.EXPECT().
-				GetById(conversation.ID).
+				GetById(gomock.Any(), conversation.ID).
 				Return(conversation, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ListByConversationId(conversation.ID).
+				ListByConversationId(gomock.Any(), conversation.ID).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -131,7 +136,10 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			suite := WhenListingConversationParticipantsBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.List(&requests.ConversationIdRequest{ConversationID: conversation.ID})
+			_, err := suite.sut.List(
+				context.Background(),
+				&requests.ConversationIdRequest{ConversationID: conversation.ID},
+			)
 
 			assert.Error(t, err)
 		})

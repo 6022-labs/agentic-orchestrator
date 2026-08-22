@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -33,15 +35,15 @@ func NewSlackChannelSynchronizer(
 	}
 }
 
-func (s *SlackChannelSynchronizer) Sync(channelId string) (*models.SlackChannel, error) {
+func (s *SlackChannelSynchronizer) Sync(ctx context.Context, channelId string) (*models.SlackChannel, error) {
 	s.logger.Debug("Starting channel synchronization", zap.String("channelId", channelId))
 
-	existingChannelInDatabase, err := s.slackChannelRepository.GetById(channelId)
+	existingChannelInDatabase, err := s.slackChannelRepository.GetById(ctx, channelId)
 	if err != nil {
 		return nil, err
 	}
 
-	existingChannelInSlack, err := s.slackChannelRequester.GetChannelInformation(channelId)
+	existingChannelInSlack, err := s.slackChannelRequester.GetChannelInformation(ctx, channelId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get channel information from Slack: %w", err)
 	}
@@ -55,7 +57,7 @@ func (s *SlackChannelSynchronizer) Sync(channelId string) (*models.SlackChannel,
 		}
 
 		if !existingChannelInSlack.IsMember {
-			err = s.slackChannelRequester.JoinChannel(channelId)
+			err = s.slackChannelRequester.JoinChannel(ctx, channelId)
 			if err != nil {
 				return nil, err
 			}
@@ -65,12 +67,12 @@ func (s *SlackChannelSynchronizer) Sync(channelId string) (*models.SlackChannel,
 	existingChannelInDatabase.Name = existingChannelInSlack.Name
 	existingChannelInDatabase.Description = existingChannelInSlack.Description
 
-	existingChannelInDatabase, err = s.slackChannelRepository.Save(existingChannelInDatabase)
+	existingChannelInDatabase, err = s.slackChannelRepository.Save(ctx, existingChannelInDatabase)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.reconcileMembership(channelId, existingChannelInSlack.UserIds); err != nil {
+	if err := s.reconcileMembership(ctx, channelId, existingChannelInSlack.UserIds); err != nil {
 		return nil, err
 	}
 
@@ -84,12 +86,12 @@ func (s *SlackChannelSynchronizer) Sync(channelId string) (*models.SlackChannel,
 // registers the user with the broker, then writes the membership row. The
 // caller returns without waiting on the fan-out: agents can @mention those
 // users as soon as the background work lands, not before.
-func (s *SlackChannelSynchronizer) reconcileMembership(channelId string, userIds []string) error {
+func (s *SlackChannelSynchronizer) reconcileMembership(ctx context.Context, channelId string, userIds []string) error {
 	if len(userIds) == 0 {
 		return nil
 	}
 
-	existing, err := s.slackUserRepository.ListByIds(userIds)
+	existing, err := s.slackUserRepository.ListByIds(ctx, userIds)
 	if err != nil {
 		return fmt.Errorf("failed to load existing slack users: %w", err)
 	}
@@ -100,20 +102,20 @@ func (s *SlackChannelSynchronizer) reconcileMembership(channelId string, userIds
 
 	for _, userId := range userIds {
 		if _, ok := known[userId]; ok {
-			if err := s.slackChannelRepository.AddUser(channelId, userId); err != nil {
+			if err := s.slackChannelRepository.AddUser(ctx, channelId, userId); err != nil {
 				return fmt.Errorf("failed to link known user %s to channel %s: %w", userId, channelId, err)
 			}
 			continue
 		}
 
-		go s.syncUnknownMember(channelId, userId)
+		go s.syncUnknownMember(ctx, channelId, userId)
 	}
 
 	return nil
 }
 
-func (s *SlackChannelSynchronizer) syncUnknownMember(channelId, userId string) {
-	user, err := s.slackUserSynchronizer.Sync(userId)
+func (s *SlackChannelSynchronizer) syncUnknownMember(ctx context.Context, channelId, userId string) {
+	user, err := s.slackUserSynchronizer.Sync(ctx, userId)
 	if err != nil {
 		s.logger.Warn("Failed to sync unknown slack user during channel membership reconciliation",
 			zap.String("channelId", channelId),
@@ -126,7 +128,7 @@ func (s *SlackChannelSynchronizer) syncUnknownMember(channelId, userId string) {
 		return
 	}
 
-	err = s.slackChannelRepository.AddUser(channelId, user.Id)
+	err = s.slackChannelRepository.AddUser(ctx, channelId, user.Id)
 	if err != nil {
 		s.logger.Warn("Failed to link freshly-synced user to channel",
 			zap.String("channelId", channelId),

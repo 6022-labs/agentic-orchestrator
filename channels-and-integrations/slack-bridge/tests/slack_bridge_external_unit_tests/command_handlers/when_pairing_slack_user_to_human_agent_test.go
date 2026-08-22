@@ -1,6 +1,8 @@
 package command_handlers_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
@@ -64,7 +66,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(nil, assert.AnError)
 		}
 
@@ -76,7 +78,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to sync requester user")
@@ -94,7 +96,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 		}
 
@@ -106,7 +108,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "requester needs to verify their wallet first before pairing a human agent")
@@ -125,12 +127,12 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(nil, assert.AnError)
 		}
 
@@ -142,7 +144,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to sync human agent")
@@ -161,7 +163,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -171,7 +173,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 		}
 
@@ -183,7 +185,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "is not a human agent")
@@ -202,7 +204,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -213,7 +215,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 		}
 
@@ -225,7 +227,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "requester does not own the human agent")
@@ -244,7 +246,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -255,12 +257,12 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 
 			suite.slackUserRepository.
 				EXPECT().
-				GetByPairedHumanAgent(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				GetByPairedHumanAgent(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(nil, assert.AnError)
 		}
 
@@ -272,7 +274,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to check if human agent is already paired")
@@ -291,7 +293,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -302,7 +304,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 
 			alreadyExistingSlackUserForAgent := model_builders.NewSlackUserBuilder().
@@ -312,7 +314,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackUserRepository.
 				EXPECT().
-				GetByPairedHumanAgent(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				GetByPairedHumanAgent(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(alreadyExistingSlackUserForAgent, nil)
 		}
 
@@ -326,7 +328,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				request := generateValidPairSlackUserToHumanAgentRequest()
 				initSuite(suite, request)
 
-				err := suite.sut.Pair(request)
+				err := suite.sut.Pair(context.Background(), request)
 
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "is already paired to another slack user")
@@ -346,7 +348,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -357,17 +359,17 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 
 			suite.slackUserRepository.
 				EXPECT().
-				GetByPairedHumanAgent(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				GetByPairedHumanAgent(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(nil, nil)
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.SlackUserId).
+				Sync(gomock.Any(), request.SlackUserId).
 				Return(nil, assert.AnError)
 		}
 
@@ -379,7 +381,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to sync slack user to pair")
@@ -398,7 +400,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.RequesterSlackUserId).
+				Sync(gomock.Any(), request.RequesterSlackUserId).
 				Return(slackUser, nil)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().
@@ -409,12 +411,12 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackAgentSynchronizer.
 				EXPECT().
-				Sync(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				Sync(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(slackAgent, nil)
 
 			suite.slackUserRepository.
 				EXPECT().
-				GetByPairedHumanAgent(request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
+				GetByPairedHumanAgent(gomock.Any(), request.HumanAgentCollectionAddress, request.HumanAgentCollectionTokenId).
 				Return(nil, nil)
 
 			slackUserToPair := model_builders.NewSlackUserBuilder().
@@ -425,12 +427,12 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				Build()
 			suite.slackUserSynchronizerCached.
 				EXPECT().
-				Sync(request.SlackUserId).
+				Sync(gomock.Any(), request.SlackUserId).
 				Return(slackUserToPair, nil)
 
 			suite.slackUserRepository.
 				EXPECT().
-				Save(slackUserToPair).
+				Save(gomock.Any(), slackUserToPair).
 				Return(nil, nil)
 		}
 
@@ -442,7 +444,7 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 			request := generateValidPairSlackUserToHumanAgentRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Pair(request)
+			err := suite.sut.Pair(context.Background(), request)
 
 			assert.NoError(t, err)
 		})

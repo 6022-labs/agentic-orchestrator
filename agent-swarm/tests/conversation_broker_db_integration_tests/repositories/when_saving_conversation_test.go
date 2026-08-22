@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
@@ -44,14 +46,14 @@ func TestWhenSavingConversation(t *testing.T) {
 			defer WhenSavingConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
-			_, err := suite.bridges.Save(bridge)
+			_, err := suite.bridges.Save(context.Background(), bridge)
 			assert.NoError(t, err)
 
 			entity := model_builders.NewConversationBuilder().WithBridgeID(bridge.ID).Build()
-			_, err = suite.sut.Save(entity)
+			_, err = suite.sut.Save(context.Background(), entity)
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetById(entity.ID)
+			got, err := suite.sut.GetById(context.Background(), entity.ID)
 			assert.NoError(t, err)
 			assert.Equal(t, entity.ID, got.ID)
 			assert.Equal(t, bridge.ID, got.BridgeID)

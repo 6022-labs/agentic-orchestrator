@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"encoding/json"
 	"errors"
 	"io"
@@ -64,7 +66,15 @@ func TestWhenSettingWalletOwnershipToUser(t *testing.T) {
 			suite := WhenSettingWalletOwnershipToUserBeforeEach(t)
 			initSuite(suite)
 
-			assert.NoError(t, suite.sut.SetWalletOwnershipToUser(enums.BridgePlatformSlack, "challenge-1", "0xwallet"))
+			assert.NoError(
+				t,
+				suite.sut.SetWalletOwnershipToUser(
+					context.Background(),
+					enums.BridgePlatformSlack,
+					"challenge-1",
+					"0xwallet",
+				),
+			)
 		})
 	})
 
@@ -87,7 +97,15 @@ func TestWhenSettingWalletOwnershipToUser(t *testing.T) {
 			suite := WhenSettingWalletOwnershipToUserBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.SetWalletOwnershipToUser(enums.BridgePlatformSlack, "challenge-1", "0xwallet"))
+			assert.Error(
+				t,
+				suite.sut.SetWalletOwnershipToUser(
+					context.Background(),
+					enums.BridgePlatformSlack,
+					"challenge-1",
+					"0xwallet",
+				),
+			)
 		})
 	})
 
@@ -107,7 +125,15 @@ func TestWhenSettingWalletOwnershipToUser(t *testing.T) {
 			suite := WhenSettingWalletOwnershipToUserBeforeEach(t)
 			initSuite(suite)
 
-			assert.Error(t, suite.sut.SetWalletOwnershipToUser(enums.BridgePlatformSlack, "challenge-1", "0xwallet"))
+			assert.Error(
+				t,
+				suite.sut.SetWalletOwnershipToUser(
+					context.Background(),
+					enums.BridgePlatformSlack,
+					"challenge-1",
+					"0xwallet",
+				),
+			)
 		})
 	})
 
@@ -119,7 +145,12 @@ func TestWhenSettingWalletOwnershipToUser(t *testing.T) {
 
 			suite := WhenSettingWalletOwnershipToUserBeforeEach(t)
 
-			err := suite.sut.SetWalletOwnershipToUser(enums.BridgePlatform("teams"), "challenge-1", "0xwallet")
+			err := suite.sut.SetWalletOwnershipToUser(
+				context.Background(),
+				enums.BridgePlatform("teams"),
+				"challenge-1",
+				"0xwallet",
+			)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "unsupported platform")

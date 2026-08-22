@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
@@ -35,7 +37,7 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 			suite.fixture.mintAgent("first-minted-agent")
 			suite.fixture.mintAgent("second-minted-agent")
 
-			events, err := suite.sut.GetAgentCollectionV1MintedEvent(
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
 				from,
 				suite.fixture.currentBlock(),
 				[]common.Address{suite.fixture.stack.Collection},
@@ -56,7 +58,7 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 			beforeMint := suite.fixture.currentBlock()
 			suite.fixture.mintAgent("late-minted-agent")
 
-			events, err := suite.sut.GetAgentCollectionV1MintedEvent(
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
 				0,
 				beforeMint,
 				[]common.Address{suite.fixture.stack.Collection},
@@ -75,7 +77,7 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 			suite := WhenGettingMintedEventsBeforeEach(t)
 			suite.fixture.mintAgent("unrelated-agent")
 
-			events, err := suite.sut.GetAgentCollectionV1MintedEvent(
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
 				0,
 				suite.fixture.currentBlock(),
 				[]common.Address{common_tests.RandomEthAddress()},

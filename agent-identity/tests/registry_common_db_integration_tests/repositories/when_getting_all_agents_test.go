@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
@@ -69,9 +71,9 @@ func TestWhenGettingAllAgents(t *testing.T) {
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			entity := model_builders.NewAgentBuilder().Build()
-			createdEntity, _ := suite.sut.Save(entity)
+			createdEntity, _ := suite.sut.Save(context.Background(), entity)
 
-			fetchedEntity, err := suite.sut.GetById(createdEntity.ID)
+			fetchedEntity, err := suite.sut.GetById(context.Background(), createdEntity.ID)
 
 			assert.Nil(t, err)
 			assert.Equal(t, createdEntity.ID, fetchedEntity.ID)
@@ -91,11 +93,11 @@ func TestWhenGettingAllAgents(t *testing.T) {
 			createdEntities := []*models.Agent{}
 			for i := 0; i < 3; i++ {
 				entity := model_builders.NewAgentBuilder().Build()
-				createdEntity, _ := suite.sut.Save(entity)
+				createdEntity, _ := suite.sut.Save(context.Background(), entity)
 				createdEntities = append(createdEntities, createdEntity)
 			}
 
-			fetchedEntities, err := suite.sut.GetAll()
+			fetchedEntities, err := suite.sut.GetAll(context.Background())
 
 			assert.Nil(t, err)
 			assert.Len(t, fetchedEntities, len(createdEntities))
@@ -118,7 +120,7 @@ func TestWhenGettingAllAgents(t *testing.T) {
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			nonExistentID := uuid.New()
-			fetchedAgent, err := suite.sut.GetById(nonExistentID)
+			fetchedAgent, err := suite.sut.GetById(context.Background(), nonExistentID)
 
 			assert.Nil(t, err)
 			assert.Nil(t, fetchedAgent)

@@ -1,6 +1,8 @@
 package event_handlers
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -10,7 +12,7 @@ import (
 )
 
 type ChannelLeftHandlerInterface interface {
-	Handle(request *requests.ChannelLeftRequest) error
+	Handle(ctx context.Context, request *requests.ChannelLeftRequest) error
 }
 
 type ChannelLeftHandler struct {
@@ -31,14 +33,14 @@ func NewChannelLeftHandler(
 	}
 }
 
-func (c *ChannelLeftHandler) Handle(request *requests.ChannelLeftRequest) error {
-	conversations, err := c.slackConversationRepository.ListByChannelId(request.Event.Channel)
+func (c *ChannelLeftHandler) Handle(ctx context.Context, request *requests.ChannelLeftRequest) error {
+	conversations, err := c.slackConversationRepository.ListByChannelId(ctx, request.Event.Channel)
 	if err != nil {
 		return fmt.Errorf("failed to list slack conversations for channel %s: %w", request.Event.Channel, err)
 	}
 
 	for _, conversation := range conversations {
-		if err := c.conversationBrokerRequester.ForceConcludeConversation(
+		if err := c.conversationBrokerRequester.ForceConcludeConversation(ctx,
 			conversation.BrokerConversationID,
 		); err != nil {
 			return fmt.Errorf(

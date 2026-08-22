@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
@@ -64,7 +66,7 @@ func TestWhenRemovingAgent(t *testing.T) {
 
 			nonExistentAgent := model_builders.NewAgentBuilder().Build()
 
-			err := suite.sut.Remove(nonExistentAgent)
+			err := suite.sut.Remove(context.Background(), nonExistentAgent)
 
 			assert.Nil(t, err)
 		})
@@ -80,16 +82,16 @@ func TestWhenRemovingAgent(t *testing.T) {
 			defer WhenRemovingAgentAfterEach(suite)
 
 			agent := model_builders.NewAgentBuilder().Build()
-			_, err := suite.sut.Save(agent)
+			_, err := suite.sut.Save(context.Background(), agent)
 			if err != nil {
 				t.Fatalf("Error saving agent: %v", err)
 			}
 
-			err = suite.sut.Remove(agent)
+			err = suite.sut.Remove(context.Background(), agent)
 
 			assert.Nil(t, err)
 
-			fetchedAgent, err := suite.sut.GetById(agent.ID)
+			fetchedAgent, err := suite.sut.GetById(context.Background(), agent.ID)
 
 			assert.Nil(t, err)
 			assert.Nil(t, fetchedAgent)

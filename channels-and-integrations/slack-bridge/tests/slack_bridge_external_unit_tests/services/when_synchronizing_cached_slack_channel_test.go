@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
@@ -61,7 +63,7 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingCachedSlackChannelTestingSuite) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 		}
 
@@ -71,7 +73,7 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("C1234567890")
+			_, err := suite.sut.Sync(context.Background(), "C1234567890")
 			assert.Error(t, err)
 		})
 	})
@@ -82,23 +84,23 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingCachedSlackChannelTestingSuite) {
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(channel, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any())
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should sync the channel and return it", func(t *testing.T) {
@@ -107,7 +109,7 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			channel, err := suite.sut.Sync("C1234567890")
+			channel, err := suite.sut.Sync(context.Background(), "C1234567890")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, channel)
@@ -124,12 +126,12 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(existingChannel, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			updatedChannel := model_builders.NewSlackChannelBuilder().
@@ -138,12 +140,12 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(updatedChannel, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any())
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should sync the channel and return it", func(t *testing.T) {
@@ -152,7 +154,7 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			channel, err := suite.sut.Sync("C1234567890")
+			channel, err := suite.sut.Sync(context.Background(), "C1234567890")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, channel)
@@ -170,13 +172,13 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				Build()
 			suite.mockSlackChannelRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(existingChannel, nil)
 
 			cacheResult := true
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(&cacheResult, nil)
 		}
 
@@ -186,7 +188,7 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackChannelBeforeEach(t)
 			initSuite(suite)
 
-			channel, err := suite.sut.Sync("C1234567890")
+			channel, err := suite.sut.Sync(context.Background(), "C1234567890")
 
 			assert.NoError(t, err)
 			assert.NotNil(t, channel)

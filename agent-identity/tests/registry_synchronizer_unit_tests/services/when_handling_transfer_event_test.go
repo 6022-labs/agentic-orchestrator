@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"math/big"
 	"testing"
 
@@ -62,7 +64,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 1, common_tests.RandomEthAddress())
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(1)).
 				Return(nil, nil)
 
 			return event
@@ -74,7 +76,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			suite := WhenHandlingTransferEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "agent not found for transfer event")
@@ -89,7 +91,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 2, common_tests.RandomEthAddress())
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(2)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(2)).
 				Return(nil, nil)
 
 			return event
@@ -101,7 +103,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			suite := WhenHandlingTransferEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, "agent not found for transfer event")
@@ -118,11 +120,11 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			agent := model_builders.NewAgentBuilder().Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(3)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(3)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
+				Save(gomock.Any(), agent).
 				Return(nil, assert.AnError)
 
 			return event
@@ -134,7 +136,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			suite := WhenHandlingTransferEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.Equal(t, assert.AnError, err)
 		})
@@ -150,12 +152,12 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			agent := model_builders.NewAgentBuilder().Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(collectionAddress.Hex(), uint64(4)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(4)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				Save(agent).
-				DoAndReturn(func(saved *models.Agent) (*models.Agent, error) {
+				Save(gomock.Any(), agent).
+				DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
 					if assert.NotNil(t, saved.Owner) {
 						assert.Equal(t, newOwner.Hex(), *saved.Owner)
 					}
@@ -171,7 +173,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			suite := WhenHandlingTransferEventBeforeEach(t)
 			event := initSuite(suite)
 
-			err := suite.sut.Handle(event)
+			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
 		})

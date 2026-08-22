@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"crypto/rand"
 	"math/big"
 	"testing"
@@ -67,12 +69,12 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndProposalId(t *testing
 			defer WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdAfterEach(suite)
 
 			agent := model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build()
-			createdAgent, err := suite.sut.Save(agent)
+			createdAgent, err := suite.sut.Save(context.Background(), agent)
 			if err != nil {
 				t.Errorf("Error creating agent: %v", err)
 			}
 
-			fetchedAgent, err := suite.sut.GetNotYetMintedByCollectionAddressAndProposalId(
+			fetchedAgent, err := suite.sut.GetNotYetMintedByCollectionAddressAndProposalId(context.Background(),
 				createdAgent.CollectionAddress,
 				*createdAgent.ProposalId,
 			)
@@ -99,7 +101,7 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndProposalId(t *testing
 			nonExistingProposalId := nonExistingProposalIdBigInt.Uint64()
 			nonExistingCollectionAddress := common_tests.RandomEthAddress()
 
-			fetchedAgent, err := suite.sut.GetNotYetMintedByCollectionAddressAndProposalId(
+			fetchedAgent, err := suite.sut.GetNotYetMintedByCollectionAddressAndProposalId(context.Background(),
 				nonExistingCollectionAddress.Hex(),
 				nonExistingProposalId,
 			)

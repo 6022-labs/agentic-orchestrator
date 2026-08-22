@@ -10,6 +10,7 @@
 package repositories_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
@@ -42,46 +43,46 @@ func (m *MockSyncCheckpointRepositoryInterface) EXPECT() *MockSyncCheckpointRepo
 }
 
 // Get mocks base method.
-func (m *MockSyncCheckpointRepositoryInterface) Get() (*models.SyncCheckpoint, error) {
+func (m *MockSyncCheckpointRepositoryInterface) Get(ctx context.Context) (*models.SyncCheckpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get")
+	ret := m.ctrl.Call(m, "Get", ctx)
 	ret0, _ := ret[0].(*models.SyncCheckpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) Get() *gomock.Call {
+func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) Get(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).Get))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).Get), ctx)
 }
 
 // Save mocks base method.
-func (m *MockSyncCheckpointRepositoryInterface) Save(entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
+func (m *MockSyncCheckpointRepositoryInterface) Save(ctx context.Context, entity *models.SyncCheckpoint) (*models.SyncCheckpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", entity)
+	ret := m.ctrl.Call(m, "Save", ctx, entity)
 	ret0, _ := ret[0].(*models.SyncCheckpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Save indicates an expected call of Save.
-func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) Save(entity any) *gomock.Call {
+func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) Save(ctx, entity any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).Save), entity)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).Save), ctx, entity)
 }
 
 // SaveUsingTransaction mocks base method.
-func (m *MockSyncCheckpointRepositoryInterface) SaveUsingTransaction(entity *models.SyncCheckpoint, tx *gorm.DB) (*models.SyncCheckpoint, error) {
+func (m *MockSyncCheckpointRepositoryInterface) SaveUsingTransaction(ctx context.Context, entity *models.SyncCheckpoint, tx *gorm.DB) (*models.SyncCheckpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveUsingTransaction", entity, tx)
+	ret := m.ctrl.Call(m, "SaveUsingTransaction", ctx, entity, tx)
 	ret0, _ := ret[0].(*models.SyncCheckpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveUsingTransaction indicates an expected call of SaveUsingTransaction.
-func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) SaveUsingTransaction(entity, tx any) *gomock.Call {
+func (mr *MockSyncCheckpointRepositoryInterfaceMockRecorder) SaveUsingTransaction(ctx, entity, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).SaveUsingTransaction), entity, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveUsingTransaction", reflect.TypeOf((*MockSyncCheckpointRepositoryInterface)(nil).SaveUsingTransaction), ctx, entity, tx)
 }

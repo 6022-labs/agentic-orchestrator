@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"context"
+
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
@@ -61,7 +63,7 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingCachedSlackUserTestingSuite) {
 			suite.mockSlackUserRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(nil, assert.AnError)
 		}
 
@@ -71,7 +73,7 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackUserBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Sync("some-user-id")
+			_, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.Error(t, err)
 		})
 	})
@@ -82,12 +84,12 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 		initSuite := func(suite *WhenSynchronizingCachedSlackUserTestingSuite) {
 			suite.mockSlackUserRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
@@ -97,12 +99,12 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 				Build()
 			suite.mockSlackUserSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(slackUser, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any())
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should sync the user and return it", func(t *testing.T) {
@@ -111,7 +113,7 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackUserBeforeEach(t)
 			initSuite(suite)
 
-			user, err := suite.sut.Sync("some-user-id")
+			user, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.NoError(t, err)
 			assert.Equal(t, "some-user-id", user.Id)
 			assert.Equal(t, "some-name", user.Name)
@@ -130,12 +132,12 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 				Build()
 			suite.mockSlackUserRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(slackUserInDb, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
 			slackUser := model_builders.NewSlackUserBuilder().
@@ -145,12 +147,12 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 				Build()
 			suite.mockSlackUserSynchronizer.
 				EXPECT().
-				Sync(gomock.Any()).
+				Sync(gomock.Any(), gomock.Any()).
 				Return(slackUser, nil)
 
 			suite.mockCacheStorage.
 				EXPECT().
-				Store(gomock.Any(), gomock.Any(), gomock.Any())
+				Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should sync the user and return it", func(t *testing.T) {
@@ -159,7 +161,7 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 			suite := WhenSynchronizingCachedSlackUserBeforeEach(t)
 			initSuite(suite)
 
-			user, err := suite.sut.Sync("some-user-id")
+			user, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.NoError(t, err)
 			assert.Equal(t, "some-user-id", user.Id)
 			assert.Equal(t, "some-name", user.Name)
@@ -174,7 +176,7 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 			cacheReturn := true
 			suite.mockCacheStorage.
 				EXPECT().
-				ReadBool(gomock.Any()).
+				ReadBool(gomock.Any(), gomock.Any()).
 				Return(&cacheReturn, nil)
 		}
 
@@ -191,10 +193,10 @@ func TestWhenSynchronizingCachedSlackUser(t *testing.T) {
 				Build()
 			suite.mockSlackUserRepository.
 				EXPECT().
-				GetById(gomock.Any()).
+				GetById(gomock.Any(), gomock.Any()).
 				Return(slackUserInDb, nil)
 
-			user, err := suite.sut.Sync("some-user-id")
+			user, err := suite.sut.Sync(context.Background(), "some-user-id")
 			assert.NoError(t, err)
 			assert.Equal(t, "some-user-id", user.Id)
 			assert.Equal(t, "some-name", user.Name)

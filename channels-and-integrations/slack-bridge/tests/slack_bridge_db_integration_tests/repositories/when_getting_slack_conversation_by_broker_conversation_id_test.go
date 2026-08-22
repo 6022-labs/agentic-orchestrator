@@ -1,6 +1,8 @@
 package repositories_test
 
 import (
+	"context"
+
 	"testing"
 	"time"
 
@@ -64,7 +66,7 @@ func TestWhenGettingSlackConversationByBrokerConversationId(t *testing.T) {
 			defer WhenGettingSlackConversationByBrokerConversationIdAfterEach(suite)
 
 			brokerId := uuid.New()
-			_, err := suite.sut.Save(&models.SlackConversation{
+			_, err := suite.sut.Save(context.Background(), &models.SlackConversation{
 				SlackChannelId:       "C123",
 				SlackThreadTs:        "1728391823.001200",
 				BrokerConversationID: brokerId,
@@ -72,7 +74,7 @@ func TestWhenGettingSlackConversationByBrokerConversationId(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			got, err := suite.sut.GetByBrokerConversationId(brokerId)
+			got, err := suite.sut.GetByBrokerConversationId(context.Background(), brokerId)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "C123", got.SlackChannelId)
@@ -89,7 +91,7 @@ func TestWhenGettingSlackConversationByBrokerConversationId(t *testing.T) {
 			suite := WhenGettingSlackConversationByBrokerConversationIdBeforeEach()
 			defer WhenGettingSlackConversationByBrokerConversationIdAfterEach(suite)
 
-			entity, err := suite.sut.GetByBrokerConversationId(uuid.New())
+			entity, err := suite.sut.GetByBrokerConversationId(context.Background(), uuid.New())
 
 			assert.NoError(t, err)
 			assert.Nil(t, entity)

@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -41,30 +42,30 @@ func (m *MockCacheStorageInterface) EXPECT() *MockCacheStorageInterfaceMockRecor
 }
 
 // ReadAndDelete mocks base method.
-func (m *MockCacheStorageInterface) ReadAndDelete(key string) (string, error) {
+func (m *MockCacheStorageInterface) ReadAndDelete(ctx context.Context, key string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadAndDelete", key)
+	ret := m.ctrl.Call(m, "ReadAndDelete", ctx, key)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadAndDelete indicates an expected call of ReadAndDelete.
-func (mr *MockCacheStorageInterfaceMockRecorder) ReadAndDelete(key any) *gomock.Call {
+func (mr *MockCacheStorageInterfaceMockRecorder) ReadAndDelete(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAndDelete", reflect.TypeOf((*MockCacheStorageInterface)(nil).ReadAndDelete), key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAndDelete", reflect.TypeOf((*MockCacheStorageInterface)(nil).ReadAndDelete), ctx, key)
 }
 
 // Store mocks base method.
-func (m *MockCacheStorageInterface) Store(key, value string, expiration *time.Duration) error {
+func (m *MockCacheStorageInterface) Store(ctx context.Context, key, value string, expiration *time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Store", key, value, expiration)
+	ret := m.ctrl.Call(m, "Store", ctx, key, value, expiration)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Store indicates an expected call of Store.
-func (mr *MockCacheStorageInterfaceMockRecorder) Store(key, value, expiration any) *gomock.Call {
+func (mr *MockCacheStorageInterfaceMockRecorder) Store(ctx, key, value, expiration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCacheStorageInterface)(nil).Store), key, value, expiration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCacheStorageInterface)(nil).Store), ctx, key, value, expiration)
 }

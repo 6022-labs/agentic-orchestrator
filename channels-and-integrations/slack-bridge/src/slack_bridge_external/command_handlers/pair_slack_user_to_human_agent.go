@@ -1,6 +1,8 @@
 package command_handlers
 
 import (
+	"context"
+
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
@@ -11,7 +13,7 @@ import (
 )
 
 type PairSlackUserToHumanAgentInterface interface {
-	Pair(request *requests.PairSlackUserToHumanAgentRequest) error
+	Pair(ctx context.Context, request *requests.PairSlackUserToHumanAgentRequest) error
 }
 
 type PairSlackUserToHumanAgent struct {
@@ -35,8 +37,11 @@ func NewPairSlackUserToHumanAgent(
 	}
 }
 
-func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanAgentRequest) error {
-	requesterUser, err := p.slackUserSynchronizerCached.Sync(request.RequesterSlackUserId)
+func (p *PairSlackUserToHumanAgent) Pair(
+	ctx context.Context,
+	request *requests.PairSlackUserToHumanAgentRequest,
+) error {
+	requesterUser, err := p.slackUserSynchronizerCached.Sync(ctx, request.RequesterSlackUserId)
 	if err != nil {
 		return fmt.Errorf("failed to sync requester user : %w", err)
 	}
@@ -44,7 +49,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		return fmt.Errorf("requester needs to verify their wallet first before pairing a human agent")
 	}
 
-	agent, err := p.slackAgentSynchronizer.Sync(
+	agent, err := p.slackAgentSynchronizer.Sync(ctx,
 		request.HumanAgentCollectionAddress,
 		request.HumanAgentCollectionTokenId,
 	)
@@ -68,7 +73,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		)
 	}
 
-	alreadyPairedUserForAgent, err := p.slackUserRepository.GetByPairedHumanAgent(
+	alreadyPairedUserForAgent, err := p.slackUserRepository.GetByPairedHumanAgent(ctx,
 		request.HumanAgentCollectionAddress,
 		request.HumanAgentCollectionTokenId,
 	)
@@ -83,7 +88,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 		)
 	}
 
-	slackUserToPair, err := p.slackUserSynchronizerCached.Sync(request.SlackUserId)
+	slackUserToPair, err := p.slackUserSynchronizerCached.Sync(ctx, request.SlackUserId)
 	if err != nil {
 		return fmt.Errorf("failed to sync slack user to pair: %w", err)
 	}
@@ -91,7 +96,7 @@ func (p *PairSlackUserToHumanAgent) Pair(request *requests.PairSlackUserToHumanA
 	slackUserToPair.PairedHumanAgentCollectionAddress = &request.HumanAgentCollectionAddress
 	slackUserToPair.PairedHumanAgentCollectionTokenId = &request.HumanAgentCollectionTokenId
 
-	_, err = p.slackUserRepository.Save(slackUserToPair)
+	_, err = p.slackUserRepository.Save(ctx, slackUserToPair)
 	if err != nil {
 		return fmt.Errorf("failed to save pairing: %w", err)
 	}

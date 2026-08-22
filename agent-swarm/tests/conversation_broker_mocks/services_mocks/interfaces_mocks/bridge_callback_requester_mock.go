@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -41,15 +42,15 @@ func (m *MockBridgeCallbackRequesterInterface) EXPECT() *MockBridgeCallbackReque
 }
 
 // PostCompletion mocks base method.
-func (m *MockBridgeCallbackRequesterInterface) PostCompletion(bridge *models.Bridge, conversation *models.Conversation, agent *models.Participant, content string) error {
+func (m *MockBridgeCallbackRequesterInterface) PostCompletion(ctx context.Context, bridge *models.Bridge, conversation *models.Conversation, agent *models.Participant, content string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostCompletion", bridge, conversation, agent, content)
+	ret := m.ctrl.Call(m, "PostCompletion", ctx, bridge, conversation, agent, content)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PostCompletion indicates an expected call of PostCompletion.
-func (mr *MockBridgeCallbackRequesterInterfaceMockRecorder) PostCompletion(bridge, conversation, agent, content any) *gomock.Call {
+func (mr *MockBridgeCallbackRequesterInterfaceMockRecorder) PostCompletion(ctx, bridge, conversation, agent, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCompletion", reflect.TypeOf((*MockBridgeCallbackRequesterInterface)(nil).PostCompletion), bridge, conversation, agent, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCompletion", reflect.TypeOf((*MockBridgeCallbackRequesterInterface)(nil).PostCompletion), ctx, bridge, conversation, agent, content)
 }
