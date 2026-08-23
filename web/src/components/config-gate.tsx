@@ -6,8 +6,8 @@ import { loadAppConfig } from "@/configs/app-config"
 
 type GateState = "loading" | "error" | "ready"
 
-// Blocks rendering until the gateway's /config is loaded — the app needs the
-// chain id before AppKit initializes.
+// Blocks rendering until the orchestrator gateway's /config is loaded — the app
+// needs the chain id before AppKit initializes.
 export default function ConfigGate({
   children,
 }: {
@@ -34,15 +34,15 @@ export default function ConfigGate({
         <>
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Connecting to the agent…
+            Connecting to the orchestrator…
           </p>
         </>
       ) : (
         <>
           <Unplug className="size-8 text-muted-foreground" />
-          <p className="font-medium">Could not reach the agent gateway</p>
+          <p className="font-medium">Could not reach the orchestrator gateway</p>
           <p className="text-sm text-muted-foreground">
-            Check that the agent node is running, then try again.
+            Check that the orchestrator is running, then try again.
           </p>
           <Button variant="outline" onClick={load}>
             <RotateCcw />

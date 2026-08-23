@@ -3,7 +3,7 @@ import axios from "axios"
 import { config as envConfig } from "./env"
 
 export const initAxiosDefaults = () => {
-  // Point at the agent-node gateway through the env config so the /api
+  // Point at the orchestrator gateway through the env config so the /api
   // fallback applies when no .env is present.
   // Note: no blanket Content-Type default — axios picks application/json for
   // plain objects and multipart/form-data for FormData bodies; forcing json
