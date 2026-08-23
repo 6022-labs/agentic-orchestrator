@@ -11,8 +11,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +25,7 @@ type WhenSavingEntityTestingSuite struct {
 	sut      *repositories.SlackChannelRepository
 }
 
-func WhenSavingEntityBeforeEach() *WhenSavingEntityTestingSuite {
+func WhenSavingEntityBeforeEach(t *testing.T) *WhenSavingEntityTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -31,12 +33,18 @@ func WhenSavingEntityBeforeEach() *WhenSavingEntityTestingSuite {
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	err = dbClient.Migrate()
 	if err != nil {
@@ -66,7 +74,7 @@ func TestWhenSavingEntity(t *testing.T) {
 		t.Run("Should return created entity", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingEntityBeforeEach()
+			suite := WhenSavingEntityBeforeEach(t)
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
@@ -79,7 +87,7 @@ func TestWhenSavingEntity(t *testing.T) {
 		t.Run("Should store entity in database", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingEntityBeforeEach()
+			suite := WhenSavingEntityBeforeEach(t)
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
@@ -98,7 +106,7 @@ func TestWhenSavingEntity(t *testing.T) {
 		t.Run("Should return updated entity", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingEntityBeforeEach()
+			suite := WhenSavingEntityBeforeEach(t)
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()
@@ -114,7 +122,7 @@ func TestWhenSavingEntity(t *testing.T) {
 		t.Run("Should update entity in database", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingEntityBeforeEach()
+			suite := WhenSavingEntityBeforeEach(t)
 			defer WhenSavingEntityAfterEach(suite)
 
 			entityToCreate := model_builders.NewSlackChannelBuilder().Build()

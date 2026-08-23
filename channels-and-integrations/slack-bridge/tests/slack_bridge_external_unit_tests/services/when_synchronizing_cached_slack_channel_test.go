@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/settings"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
 	external_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
+	channel_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,8 @@ import (
 )
 
 type WhenSynchronizingCachedSlackChannelTestingSuite struct {
-	sut *services.SlackChannelSynchronizerCached
+	mockChannelMetrics *channel_metrics_mocks.MockChannelMetricsInterface
+	sut                *services.SlackChannelSynchronizerCached
 
 	cacheSettings                *settings.CacheSettings
 	mockCacheStorage             *interfaces_mocks.MockCacheStorageInterface
@@ -28,6 +30,8 @@ type WhenSynchronizingCachedSlackChannelTestingSuite struct {
 func WhenSynchronizingCachedSlackChannelBeforeEach(t *testing.T) *WhenSynchronizingCachedSlackChannelTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
+
 	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 	mockSlackChannelRepository := repositories_mocks.NewMockSlackChannelRepositoryInterface(mockController)
 	mockSlackChannelSynchronizer := external_interfaces_mocks.NewMockSlackChannelSynchronizerInterface(mockController)
@@ -37,6 +41,7 @@ func WhenSynchronizingCachedSlackChannelBeforeEach(t *testing.T) *WhenSynchroniz
 	}
 
 	sut := services.NewSlackChannelSynchronizerCached(
+		mockChannelMetrics,
 		zap.NewNop(),
 		cacheSettings,
 		mockCacheStorage,
@@ -45,7 +50,8 @@ func WhenSynchronizingCachedSlackChannelBeforeEach(t *testing.T) *WhenSynchroniz
 	)
 
 	return &WhenSynchronizingCachedSlackChannelTestingSuite{
-		sut: sut,
+		mockChannelMetrics: mockChannelMetrics,
+		sut:                sut,
 
 		cacheSettings:                cacheSettings,
 		mockCacheStorage:             mockCacheStorage,
@@ -92,6 +98,8 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
 
+			suite.mockChannelMetrics.EXPECT().RecordCacheResult(gomock.Any(), "slack_channel", false)
+
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelSynchronizer.
 				EXPECT().
@@ -133,6 +141,8 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				EXPECT().
 				ReadBool(gomock.Any(), gomock.Any()).
 				Return(nil, nil)
+
+			suite.mockChannelMetrics.EXPECT().RecordCacheResult(gomock.Any(), "slack_channel", false)
 
 			updatedChannel := model_builders.NewSlackChannelBuilder().
 				WithId("C1234567890").
@@ -180,6 +190,8 @@ func TestWhenSynchronizingCachedSlackChannel(t *testing.T) {
 				EXPECT().
 				ReadBool(gomock.Any(), gomock.Any()).
 				Return(&cacheResult, nil)
+
+			suite.mockChannelMetrics.EXPECT().RecordCacheResult(gomock.Any(), "slack_channel", true)
 		}
 
 		t.Run("Should return the channel from the database without syncing", func(t *testing.T) {

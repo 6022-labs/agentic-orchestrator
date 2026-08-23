@@ -2,6 +2,9 @@ package command_handlers
 
 import (
 	"context"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
+	"time"
 
 	"fmt"
 
@@ -18,6 +21,9 @@ type AddAgentToChannelInterface interface {
 }
 
 type AddAgentToChannel struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	slackAgentSynchronizer      interfaces.SlackAgentSynchronizerInterface
 	slackChannelSynchronizer    interfaces.SlackChannelSynchronizerInterface
 	slackChannelRepository      repositories.SlackChannelRepositoryInterface
@@ -26,6 +32,8 @@ type AddAgentToChannel struct {
 }
 
 func NewAddAgentToChannel(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	slackAgentSynchronizer interfaces.SlackAgentSynchronizerInterface,
 	slackChannelRepository repositories.SlackChannelRepositoryInterface,
 	slackChannelSynchronizer interfaces.SlackChannelSynchronizerInterface,
@@ -33,6 +41,9 @@ func NewAddAgentToChannel(
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *AddAgentToChannel {
 	return &AddAgentToChannel{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		slackAgentSynchronizer:      slackAgentSynchronizer,
 		slackChannelRepository:      slackChannelRepository,
 		slackChannelSynchronizer:    slackChannelSynchronizer,
@@ -41,7 +52,25 @@ func NewAddAgentToChannel(
 	}
 }
 
-func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentToChannelRequest) error {
+func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentToChannelRequest) (err error) {
+	ctx, span := h.channelTracer.StartCommandHandling(ctx, "agent.add")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		h.channelMetrics.RecordCommand(
+			ctx,
+			"agent.add",
+			metrics_interfaces.CommandTriggerFrom(ctx),
+			outcome,
+			time.Since(start),
+		)
+		span.End()
+	}()
+
 	slackChannel, err := h.slackChannelRepository.GetById(ctx, request.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to get channel with ID %s: %w", request.ChannelID, err)

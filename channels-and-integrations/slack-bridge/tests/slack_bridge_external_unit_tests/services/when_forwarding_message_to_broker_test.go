@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services"
 	broker_settings "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_http_agent_swarm_conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	channel_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
 	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
@@ -26,10 +27,13 @@ type WhenForwardingMessageToBrokerTestingSuite struct {
 	mockBrokerRequester             *broker_requester_mocks.MockConversationBrokerRequesterInterface
 	mockSlackConversationRepository *repositories_mocks.MockSlackConversationRepositoryInterface
 	mockSlackMessageRepository      *repositories_mocks.MockSlackMessageRepositoryInterface
+	mockChannelMetrics              *channel_metrics_mocks.MockChannelMetricsInterface
 }
 
 func WhenForwardingMessageToBrokerBeforeEach(t *testing.T) *WhenForwardingMessageToBrokerTestingSuite {
 	mockController := gomock.NewController(t)
+
+	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
 
 	bridgeId := uuid.New()
 	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
@@ -38,6 +42,7 @@ func WhenForwardingMessageToBrokerBeforeEach(t *testing.T) *WhenForwardingMessag
 
 	sut := services.NewBrokerMessageForwarder(
 		zap.NewNop(),
+		mockChannelMetrics,
 		&broker_settings.ConversationBrokerSettings{BridgeID: bridgeId},
 		mockBrokerRequester,
 		mockSlackConversationRepository,
@@ -47,9 +52,10 @@ func WhenForwardingMessageToBrokerBeforeEach(t *testing.T) *WhenForwardingMessag
 	return &WhenForwardingMessageToBrokerTestingSuite{
 		sut:                             sut,
 		bridgeId:                        bridgeId,
-		mockBrokerRequester:             mockBrokerRequester,
 		mockSlackConversationRepository: mockSlackConversationRepository,
 		mockSlackMessageRepository:      mockSlackMessageRepository,
+		mockBrokerRequester:             mockBrokerRequester,
+		mockChannelMetrics:              mockChannelMetrics,
 	}
 }
 
@@ -69,6 +75,8 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			// A deduplicated redelivery never reaches the broker, so nothing is counted.
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Any()).Times(0)
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			brokerUserId := uuid.New()
 			user := model_builders.NewSlackUserBuilder().Build()
@@ -114,6 +122,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Nil())
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			agent := model_builders.NewSlackAgentBuilder().Build()
 			agent.BrokerParticipantId = &brokerAgentId
@@ -164,6 +173,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Nil())
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			user := model_builders.NewSlackUserBuilder().Build()
 			user.BrokerParticipantId = &brokerUserId
@@ -186,6 +196,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Not(gomock.Nil()))
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			user := model_builders.NewSlackUserBuilder().Build()
 
@@ -207,6 +218,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Not(gomock.Nil()))
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			agent := model_builders.NewSlackAgentBuilder().Build()
 
@@ -237,6 +249,7 @@ func TestWhenForwardingMessageToBroker(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForwardingMessageToBrokerBeforeEach(t)
+			suite.mockChannelMetrics.EXPECT().RecordMessageForwarded(gomock.Any(), gomock.Not(gomock.Nil()))
 			channel := model_builders.NewSlackChannelBuilder().Build()
 			user := model_builders.NewSlackUserBuilder().Build()
 			user.BrokerParticipantId = &brokerUserId

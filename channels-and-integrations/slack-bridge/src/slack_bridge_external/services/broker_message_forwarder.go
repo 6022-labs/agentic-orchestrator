@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
@@ -19,6 +20,7 @@ import (
 // register-on-first-sight of the conversation, then ingest.
 type BrokerMessageForwarder struct {
 	logger                      *zap.Logger
+	channelMetrics              metrics_interfaces.ChannelMetricsInterface
 	brokerSettings              *broker_settings.ConversationBrokerSettings
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 	slackConversationRepository repositories.SlackConversationRepositoryInterface
@@ -27,6 +29,7 @@ type BrokerMessageForwarder struct {
 
 func NewBrokerMessageForwarder(
 	logger *zap.Logger,
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
 	brokerSettings *broker_settings.ConversationBrokerSettings,
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 	slackConversationRepository repositories.SlackConversationRepositoryInterface,
@@ -34,6 +37,7 @@ func NewBrokerMessageForwarder(
 ) *BrokerMessageForwarder {
 	return &BrokerMessageForwarder{
 		logger:                      logger,
+		channelMetrics:              channelMetrics,
 		brokerSettings:              brokerSettings,
 		conversationBrokerRequester: conversationBrokerRequester,
 		slackConversationRepository: slackConversationRepository,
@@ -50,7 +54,15 @@ func (f *BrokerMessageForwarder) Forward(
 	parentMessageTs, messageTs, content string,
 	authorSlackUser *models.SlackUser,
 	authorSlackAgent *models.SlackAgent,
-) error {
+) (err error) {
+	// Only a real forward is counted: a deduplicated redelivery never reaches the broker.
+	forwarded := false
+	defer func() {
+		if forwarded || err != nil {
+			f.channelMetrics.RecordMessageForwarded(ctx, err)
+		}
+	}()
+
 	alreadyForwarded, err := f.alreadyForwarded(ctx, slackChannel.Id, messageTs)
 	if err != nil {
 		return err
@@ -93,6 +105,8 @@ func (f *BrokerMessageForwarder) Forward(
 	if err != nil {
 		return fmt.Errorf("failed to save slack message mapping: %w", err)
 	}
+
+	forwarded = true
 
 	return nil
 }

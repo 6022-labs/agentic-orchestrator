@@ -11,7 +11,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +24,7 @@ type WhenUpdatingSlackAgentOwnerWalletTestingSuite struct {
 	sut *repositories.SlackAgentRepository
 }
 
-func WhenUpdatingSlackAgentOwnerWalletBeforeEach() *WhenUpdatingSlackAgentOwnerWalletTestingSuite {
+func WhenUpdatingSlackAgentOwnerWalletBeforeEach(t *testing.T) *WhenUpdatingSlackAgentOwnerWalletTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -30,12 +32,18 @@ func WhenUpdatingSlackAgentOwnerWalletBeforeEach() *WhenUpdatingSlackAgentOwnerW
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&db_settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	err = dbClient.Migrate()
 	if err != nil {
@@ -65,7 +73,7 @@ func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenUpdatingSlackAgentOwnerWalletBeforeEach()
+			suite := WhenUpdatingSlackAgentOwnerWalletBeforeEach(t)
 			defer WhenUpdatingSlackAgentOwnerWalletAfterEach(suite)
 
 			err := suite.sut.UpdateOwnerWallet(context.Background(), "0x123", 1, "0x456")
@@ -80,7 +88,7 @@ func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {
 		t.Run("Should update owner wallet", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenUpdatingSlackAgentOwnerWalletBeforeEach()
+			suite := WhenUpdatingSlackAgentOwnerWalletBeforeEach(t)
 			defer WhenUpdatingSlackAgentOwnerWalletAfterEach(suite)
 
 			slackAgent := model_builders.NewSlackAgentBuilder().Build()

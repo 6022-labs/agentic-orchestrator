@@ -2,11 +2,14 @@ package event_handlers
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
 	"go.uber.org/zap"
 )
@@ -16,24 +19,44 @@ type MessageChangedHandlerInterface interface {
 }
 
 type MessageChangedHandler struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	logger                      *zap.Logger
 	slackConversationRepository repositories.SlackConversationRepositoryInterface
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewMessageChangedHandler(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	logger *zap.Logger,
 	slackConversationRepository repositories.SlackConversationRepositoryInterface,
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *MessageChangedHandler {
 	return &MessageChangedHandler{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		logger:                      logger,
 		slackConversationRepository: slackConversationRepository,
 		conversationBrokerRequester: conversationBrokerRequester,
 	}
 }
 
-func (h *MessageChangedHandler) Handle(ctx context.Context, request *requests.MessageChangedRequest) error {
+func (h *MessageChangedHandler) Handle(ctx context.Context, request *requests.MessageChangedRequest) (err error) {
+	ctx, span := h.channelTracer.StartEventHandling(ctx, "message.updated")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		h.channelMetrics.RecordEvent(ctx, "message.updated", outcome, time.Since(start))
+		span.End()
+	}()
+
 	messageTs := request.Event.PreviousMessage.TS
 
 	h.logger.Debug("Handling message changed event", zap.String("message_ts", messageTs))
