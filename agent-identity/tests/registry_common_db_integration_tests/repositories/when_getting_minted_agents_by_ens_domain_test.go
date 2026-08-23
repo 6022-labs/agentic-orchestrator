@@ -12,8 +12,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +26,7 @@ type WhenGettingMintedAgentsByEnsTestingSuite struct {
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingMintedAgentsByEnsBeforeEach() *WhenGettingMintedAgentsByEnsTestingSuite {
+func WhenGettingMintedAgentsByEnsBeforeEach(t *testing.T) *WhenGettingMintedAgentsByEnsTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -32,12 +34,18 @@ func WhenGettingMintedAgentsByEnsBeforeEach() *WhenGettingMintedAgentsByEnsTesti
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -66,7 +74,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 		t.Run("Should return entity", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingMintedAgentsByEnsBeforeEach()
+			suite := WhenGettingMintedAgentsByEnsBeforeEach(t)
 			defer WhenGettingMintedAgentsByEnsAfterEach(suite)
 
 			existingEntity := model_builders.NewAgentBuilder().
@@ -97,7 +105,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 		t.Run("Should return nil", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingMintedAgentsByEnsBeforeEach()
+			suite := WhenGettingMintedAgentsByEnsBeforeEach(t)
 			defer WhenGettingMintedAgentsByEnsAfterEach(suite)
 
 			existingEntity := model_builders.NewAgentBuilder().
@@ -122,7 +130,7 @@ func TestWhenGettingMintedAgentsByEns(t *testing.T) {
 		t.Run("Should return nil", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingMintedAgentsByEnsBeforeEach()
+			suite := WhenGettingMintedAgentsByEnsBeforeEach(t)
 			defer WhenGettingMintedAgentsByEnsAfterEach(suite)
 
 			fetchedEntity, err := suite.sut.GetMintedByEnsDomain(context.Background(), "nonexistent.ens")

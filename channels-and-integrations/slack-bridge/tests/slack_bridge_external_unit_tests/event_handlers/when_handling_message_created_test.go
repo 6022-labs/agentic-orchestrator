@@ -8,13 +8,16 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/command_handlers_mocks"
 	external_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
+	channel_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
+	channel_traces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/traces_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -36,6 +39,23 @@ type WhenHandlingMessageCreatedTestingSuite struct {
 func WhenHandlingMessageCreatedBeforeEach(t *testing.T) *WhenHandlingMessageCreatedTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
+	mockChannelMetrics.EXPECT().
+		RecordEvent(gomock.Any(), "message.created", gomock.Any(), gomock.Any()).
+		Times(1)
+
+	// Spans are not asserted here.
+	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
+	mockSpan := channel_traces_mocks.NewMockSpan(mockController)
+	mockSpan.EXPECT().End().AnyTimes()
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockChannelTracer.EXPECT().
+		StartEventHandling(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).
+		AnyTimes()
+
 	slackSettings := &settings.SlackSettings{AppId: "test_app_id"}
 
 	mockAddAgentToChannel := command_handlers_mocks.NewMockAddAgentToChannelInterface(mockController)
@@ -50,6 +70,8 @@ func WhenHandlingMessageCreatedBeforeEach(t *testing.T) *WhenHandlingMessageCrea
 	)
 
 	sut := event_handlers.NewMessageCreatedHandler(
+		mockChannelMetrics,
+		mockChannelTracer,
 		zap.NewNop(),
 		slackSettings,
 		mockAddAgentToChannel,

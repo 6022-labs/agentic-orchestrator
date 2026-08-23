@@ -6,7 +6,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/factories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/container_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +20,9 @@ type WhenCreatingConversationBrokerDbClientTestingSuite struct {
 	sut                *factories.DatabaseClientFactory
 }
 
-func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversationBrokerDbClientTestingSuite {
+func WhenCreatingConversationBrokerDbClientBeforeEach(
+	t *testing.T,
+) *WhenCreatingConversationBrokerDbClientTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	databaseSettings := &settings.DatabaseSettings{
@@ -28,8 +32,14 @@ func WhenCreatingConversationBrokerDbClientBeforeEach() *WhenCreatingConversatio
 		MigrationsFolderPath: "",
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	sut := factories.NewDatabaseClientFactory(
 		zap.NewNop(),
+		dbQueryMetrics,
 		migrationsSettings,
 		databaseSettings,
 	)
@@ -53,7 +63,7 @@ func TestWhenCreatingConversationBrokerDbClient(t *testing.T) {
 	t.Run("Should return a new conversation broker db client", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenCreatingConversationBrokerDbClientBeforeEach()
+		suite := WhenCreatingConversationBrokerDbClientBeforeEach(t)
 		defer WhenCreatingConversationBrokerDbClientAfterEach(suite)
 
 		dbClient, err := suite.sut.CreateDatabaseClient()

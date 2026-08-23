@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -20,6 +21,7 @@ type RegisterConversationInterface interface {
 }
 
 type RegisterConversation struct {
+	brokerMetrics                     metrics_interfaces.BrokerMetricsInterface
 	bridgeRepository                  repositories.BridgeRepositoryInterface
 	conversationRepository            repositories.ConversationRepositoryInterface
 	conversationParticipantRepository repositories.ConversationParticipantRepositoryInterface
@@ -27,12 +29,14 @@ type RegisterConversation struct {
 }
 
 func NewRegisterConversation(
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
 	bridgeRepository repositories.BridgeRepositoryInterface,
 	conversationRepository repositories.ConversationRepositoryInterface,
 	conversationParticipantRepository repositories.ConversationParticipantRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
 ) *RegisterConversation {
 	return &RegisterConversation{
+		brokerMetrics:                     brokerMetrics,
 		bridgeRepository:                  bridgeRepository,
 		conversationRepository:            conversationRepository,
 		conversationParticipantRepository: conversationParticipantRepository,
@@ -84,6 +88,8 @@ func (uc *RegisterConversation) Register(
 			return nil, fmt.Errorf("failed to attach participant %s: %w", pid, err)
 		}
 	}
+
+	uc.brokerMetrics.RecordConversationStarted(ctx)
 
 	return responses.ConversationResponseFromModel(saved), nil
 }

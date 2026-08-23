@@ -3,12 +3,14 @@ package configurations
 import (
 	"time"
 
+	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc/middlewares"
 	gateway_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/settings"
 	orchestrator_mvc "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc/middlewares"
 	"github.com/gofiber/contrib/fiberzap/v2"
+	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -17,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "6022-Orchestrator-Gateway"
+const AppName = "6022-Orchestrator-Gateway"
 
 func ConfigureServer(container *dig.Container) {
 	container.Provide(newHttpServer)
@@ -30,7 +32,7 @@ func ConfigureServer(container *dig.Container) {
 
 func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   appName,
+		AppName:   AppName,
 		Network:   "tcp",
 		BodyLimit: hostSettings.BodyLimitBytes,
 	})
@@ -43,6 +45,7 @@ type registerRoutesParams struct {
 	Logger                            *zap.Logger
 	RateLimitSettings                 *gateway_settings.RateLimitSettings
 	AuthenticationMandatoryMiddleware *middlewares.AuthenticationMandatoryMiddleware
+	RequestMetrics                    *mvc_middlewares.ApiRequestMetricsMiddleware
 	Controllers                       []orchestrator_mvc.ControllerInterface         `group:"controllers"`
 	AuthInjectionMiddlewares          []middlewares.AuthInjectionMiddlewareInterface `group:"auth-injection-middlewares"`
 }
@@ -53,6 +56,10 @@ func registerRoutes(p registerRoutesParams) {
 		AllowOrigins: "*",
 		AllowHeaders: "*",
 	}))
+
+	// Spans only: ApiRequestMetrics owns http.server.*.
+	p.App.Use(otelfiber.Middleware(otelfiber.WithoutMetrics(true)))
+	p.App.Use(p.RequestMetrics.Handle)
 
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,

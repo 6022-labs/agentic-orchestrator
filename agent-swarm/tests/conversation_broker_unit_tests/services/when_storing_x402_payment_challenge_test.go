@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -22,12 +23,21 @@ type WhenStoringX402PaymentChallengeTestingSuite struct {
 }
 
 func WhenStoringX402PaymentChallengeBeforeEach(t *testing.T) *WhenStoringX402PaymentChallengeTestingSuite {
-	cacheStorage := interfaces_mocks.NewMockCacheStorageInterface(gomock.NewController(t))
+	mockController := gomock.NewController(t)
+
+	cacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
+	brokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+	brokerMetrics.EXPECT().RecordCacheResult(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	return &WhenStoringX402PaymentChallengeTestingSuite{
-		sut: services.NewX402PaymentChallengeCache(zap.NewNop(), cacheStorage, &settings.X402PaymentSettings{
-			ChallengeCacheTtlSeconds: 120,
-		}),
+		sut: services.NewX402PaymentChallengeCache(
+			zap.NewNop(),
+			brokerMetrics,
+			cacheStorage,
+			&settings.X402PaymentSettings{
+				ChallengeCacheTtlSeconds: 120,
+			},
+		),
 		cacheStorage: cacheStorage,
 	}
 }

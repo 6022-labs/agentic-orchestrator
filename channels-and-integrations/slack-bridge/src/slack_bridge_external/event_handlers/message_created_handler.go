@@ -2,14 +2,17 @@ package event_handlers
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	command_handlers_requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
@@ -32,6 +35,9 @@ type MessageCreatedHandlerInterface interface {
 }
 
 type MessageCreatedHandler struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	logger                         *zap.Logger
 	slackSettings                  *settings.SlackSettings
 	slackThreadRequester           interfaces.SlackThreadRequesterInterface
@@ -43,6 +49,8 @@ type MessageCreatedHandler struct {
 }
 
 func NewMessageCreatedHandler(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	logger *zap.Logger,
 	slackSettings *settings.SlackSettings,
 	addAgentToChannel command_handlers.AddAgentToChannelInterface,
@@ -53,6 +61,9 @@ func NewMessageCreatedHandler(
 	slackChannelSynchronizerCached external_interfaces.SlackChannelSynchronizerCachedInterface,
 ) *MessageCreatedHandler {
 	return &MessageCreatedHandler{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		logger:                         logger,
 		slackSettings:                  slackSettings,
 		addAgentToChannel:              addAgentToChannel,
@@ -64,7 +75,19 @@ func NewMessageCreatedHandler(
 	}
 }
 
-func (p *MessageCreatedHandler) Handle(ctx context.Context, request *requests.MessageCreatedRequest) error {
+func (p *MessageCreatedHandler) Handle(ctx context.Context, request *requests.MessageCreatedRequest) (err error) {
+	ctx, span := p.channelTracer.StartEventHandling(ctx, "message.created")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		p.channelMetrics.RecordEvent(ctx, "message.created", outcome, time.Since(start))
+		span.End()
+	}()
+
 	p.logger.Debug(
 		"Handling message created event",
 		zap.String("messageTs", request.Event.Ts),
@@ -235,7 +258,7 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(
 		)
 	}
 
-	err = p.addAgentToChannel.Add(ctx,
+	err = p.addAgentToChannel.Add(metrics_interfaces.WithSystemCommandTrigger(ctx),
 		&command_handlers_requests.AddAgentToChannelRequest{
 			CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
 			CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,

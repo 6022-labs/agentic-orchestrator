@@ -5,10 +5,13 @@ import (
 	"strings"
 	"time"
 
+	common_metrics "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/metrics"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_channels_and_integrations_bridge/clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_channels_and_integrations_bridge/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_channels_and_integrations_bridge/settings"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
 
@@ -21,6 +24,14 @@ func AddConversationBrokerHttpChannelsAndIntegrationsBridgeConfiguration(contain
 	err = container.Provide(func(bridgeCallbackSettings *settings.BridgeCallbackSettings) clients.ClientFactory {
 		httpClient := &http.Client{
 			Timeout: time.Duration(bridgeCallbackSettings.RequestTimeoutSeconds) * time.Second,
+			Transport: otelhttp.NewTransport(common_metrics.NewHttpMetricsRoundTripper(
+				http.DefaultTransport,
+				common_metrics.NewExternalHttpMetrics(
+					"agentic_orchestrator_conversation_broker_http_channels_and_integrations_bridge",
+				),
+			),
+				otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+			),
 		}
 		return func(baseUrl string) (clients.ClientWithResponsesInterface, error) {
 			return clients.NewClientWithResponses(strings.TrimRight(baseUrl, "/"), clients.WithHTTPClient(httpClient))

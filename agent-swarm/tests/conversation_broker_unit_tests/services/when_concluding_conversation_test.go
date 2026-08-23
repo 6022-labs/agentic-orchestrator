@@ -58,7 +58,9 @@ func TestWhenConcludingConversation(t *testing.T) {
 			suite := WhenConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Conclude(context.Background(), conversationId)
+			concluded, err := suite.sut.Conclude(context.Background(), conversationId)
+
+			assert.Equal(t, false, concluded)
 
 			assert.IsType(t, &cb_errors.NotFoundError{}, err)
 		})
@@ -86,7 +88,9 @@ func TestWhenConcludingConversation(t *testing.T) {
 			suite := WhenConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Conclude(context.Background(), conversation.ID)
+			concluded, err := suite.sut.Conclude(context.Background(), conversation.ID)
+
+			assert.Equal(t, false, concluded)
 
 			assert.Error(t, err)
 		})
@@ -119,7 +123,9 @@ func TestWhenConcludingConversation(t *testing.T) {
 			suite := WhenConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Conclude(context.Background(), conversation.ID)
+			concluded, err := suite.sut.Conclude(context.Background(), conversation.ID)
+
+			assert.Equal(t, true, concluded)
 
 			assert.NoError(t, err)
 		})
@@ -145,7 +151,9 @@ func TestWhenConcludingConversation(t *testing.T) {
 			suite := WhenConcludingConversationBeforeEach(t)
 			initSuite(suite)
 
-			err := suite.sut.Conclude(context.Background(), conversation.ID)
+			concluded, err := suite.sut.Conclude(context.Background(), conversation.ID)
+
+			assert.Equal(t, false, concluded)
 
 			assert.NoError(t, err)
 		})

@@ -1,6 +1,8 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/jwt"
@@ -12,6 +14,14 @@ import (
 )
 
 func AddGatewayConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewGatewayMetrics,
+		dig.As(new(metrics_interfaces.GatewayMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err := container.Provide(settings.NewJwtSettings)
 	if err != nil {

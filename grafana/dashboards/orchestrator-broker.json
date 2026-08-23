@@ -1,0 +1,401 @@
+{
+  "title": "Agentic \u2014 Conversation Broker",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": [
+    "agentic",
+    "orchestrator",
+    "broker"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "label": "Environment",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "query": {
+          "query": "label_values(deployment_environment_name)",
+          "refId": "environment"
+        },
+        "definition": "label_values(deployment_environment_name)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "refresh": 2,
+        "sort": 1,
+        "hide": 0
+      },
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "query": {
+          "query": "label_values(service_name)",
+          "refId": "service"
+        },
+        "definition": "label_values(service_name)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "refresh": 2,
+        "sort": 1,
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Turns in flight",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name) (broker_turn_active{deployment_environment_name=~\"$environment\", service_name=~\"$service\"})",
+          "legendFormat": "{{service_name}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Turn duration (p50 / p95 / p99)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, service_name) (rate(broker_turn_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))",
+          "legendFormat": "{{service_name}} p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, service_name) (rate(broker_turn_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))",
+          "legendFormat": "{{service_name}} p95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, service_name) (rate(broker_turn_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))",
+          "legendFormat": "{{service_name}} p99"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Turn outcome rate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, outcome) (rate(broker_turn_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} {{outcome}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Conversations started vs concluded",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name) (rate(broker_conversation_started_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} started"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (service_name, reason) (rate(broker_conversation_concluded_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} concluded {{reason}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Messages ingested by participant role",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, participant_role) (rate(broker_message_ingested_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} {{participant_role}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Daemon ticks by outcome",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, outcome) (rate(broker_daemon_tick_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} {{outcome}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Agent resolution failure ratio by resolver",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum by (service_name, resolver) (rate(broker_agent_resolution_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\", error_type!=\"\"}[5m]))\n  or 0 * sum by (service_name, resolver) (rate(broker_agent_resolution_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))\n/ clamp_min(sum by (service_name, resolver) (rate(broker_agent_resolution_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])), 0.001)",
+          "legendFormat": "{{service_name}} {{resolver}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Remote agent invocation duration (p50 / p95 / p99)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, service_name) (rate(gen_ai_client_operation_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\"}[5m])))",
+          "legendFormat": "{{service_name}} p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, service_name) (rate(gen_ai_client_operation_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\"}[5m])))",
+          "legendFormat": "{{service_name}} p95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, service_name) (rate(gen_ai_client_operation_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\"}[5m])))",
+          "legendFormat": "{{service_name}} p99"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Remote agent invocations by agent",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, gen_ai_agent_name) (rate(gen_ai_client_operation_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\"}[5m]))",
+          "legendFormat": "{{service_name}} {{gen_ai_agent_name}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Remote agent invocation errors",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, gen_ai_agent_name) (rate(gen_ai_client_operation_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\", error_type!=\"\"}[5m]))\n  or 0 * sum by (service_name, gen_ai_agent_name) (rate(gen_ai_client_operation_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", gen_ai_operation_name=\"invoke_agent\"}[5m]))",
+          "legendFormat": "{{service_name}} {{gen_ai_agent_name}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "x402 settlements by outcome",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (service_name, outcome, payment_network) (rate(payment_settlement_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "legendFormat": "{{service_name}} {{outcome}} {{payment_network}}"
+        }
+      ]
+    }
+  ]
+}

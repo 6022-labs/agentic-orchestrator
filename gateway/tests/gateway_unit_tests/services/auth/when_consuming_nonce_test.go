@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
+	metrics_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -18,17 +19,24 @@ import (
 )
 
 type WhenConsumingNonceTestingSuite struct {
-	sut              *auth.NonceStore
-	cacheStorageMock *interfaces_mocks.MockCacheStorageInterface
+	gatewayMetricsMock *metrics_mocks.MockGatewayMetricsInterface
+	sut                *auth.NonceStore
+	cacheStorageMock   *interfaces_mocks.MockCacheStorageInterface
 }
 
 func WhenConsumingNonceBeforeEach(t *testing.T) *WhenConsumingNonceTestingSuite {
 	mockController := gomock.NewController(t)
 	cacheStorageMock := interfaces_mocks.NewMockCacheStorageInterface(mockController)
+	gatewayMetricsMock := metrics_mocks.NewMockGatewayMetricsInterface(mockController)
 
 	return &WhenConsumingNonceTestingSuite{
-		sut:              auth.NewNonceStore(cacheStorageMock, &settings.JwtSettings{NonceTtl: 300}),
-		cacheStorageMock: cacheStorageMock,
+		sut: auth.NewNonceStore(
+			cacheStorageMock,
+			&settings.JwtSettings{NonceTtl: 300},
+			gatewayMetricsMock,
+		),
+		gatewayMetricsMock: gatewayMetricsMock,
+		cacheStorageMock:   cacheStorageMock,
 	}
 }
 
@@ -51,7 +59,9 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
-			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return(string(payload), nil).Times(1)
+			stringPayload := string(payload)
+			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return(&stringPayload, nil).Times(1)
+			suite.gatewayMetricsMock.EXPECT().RecordCacheResult(gomock.Any(), "nonce", true)
 			return suite
 		}
 
@@ -76,9 +86,10 @@ func TestWhenConsumingNonce(t *testing.T) {
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordCacheResult(gomock.Any(), "nonce", false)
 			suite.cacheStorageMock.EXPECT().
 				ReadAndDelete(gomock.Any(), cachePath).
-				Return("", errors.New("redis: nil")).
+				Return(nil, nil).
 				Times(1)
 			return suite
 		}
@@ -92,12 +103,37 @@ func TestWhenConsumingNonce(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the cache is unreachable", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func() *WhenConsumingNonceTestingSuite {
+			suite := WhenConsumingNonceBeforeEach(t)
+			// An outage is not a miss, so nothing is recorded.
+			suite.cacheStorageMock.EXPECT().
+				ReadAndDelete(gomock.Any(), cachePath).
+				Return(nil, errors.New("dial tcp: connection refused")).
+				Times(1)
+			return suite
+		}
+
+		t.Run("Should reject it without counting a miss", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite()
+
+			assert.Nil(t, suite.sut.Consume(context.Background(), wallet))
+		})
+	})
+
 	t.Run("Given the stored payload is corrupted", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func() *WhenConsumingNonceTestingSuite {
 			suite := WhenConsumingNonceBeforeEach(t)
-			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return("not-json", nil).Times(1)
+			corrupted := "not-json"
+			suite.cacheStorageMock.EXPECT().ReadAndDelete(gomock.Any(), cachePath).Return(&corrupted, nil).Times(1)
+			// A corrupt payload still read cleanly from the cache: a hit, then a decode failure.
+			suite.gatewayMetricsMock.EXPECT().RecordCacheResult(gomock.Any(), "nonce", true)
 			return suite
 		}
 

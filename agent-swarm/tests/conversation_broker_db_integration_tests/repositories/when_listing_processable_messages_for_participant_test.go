@@ -24,8 +24,10 @@ type WhenListingProcessableMessagesForParticipantTestingSuite struct {
 	participants  *repositories.ParticipantRepository
 }
 
-func WhenListingProcessableMessagesForParticipantBeforeEach() *WhenListingProcessableMessagesForParticipantTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenListingProcessableMessagesForParticipantBeforeEach(
+	t *testing.T,
+) *WhenListingProcessableMessagesForParticipantTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenListingProcessableMessagesForParticipantTestingSuite{
 		dbName:        dbName,
 		dbClient:      dbClient,
@@ -94,7 +96,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 		t.Run("Should return every message in the conversation", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableMessagesForParticipantBeforeEach()
+			suite := WhenListingProcessableMessagesForParticipantBeforeEach(t)
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, agent, _, allMessages := suite.seed("agent.eth")
@@ -116,7 +118,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 		t.Run("Should only return messages mentioning their ENS domain", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableMessagesForParticipantBeforeEach()
+			suite := WhenListingProcessableMessagesForParticipantBeforeEach(t)
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, agent, _, _ := suite.seed("agent.eth")
@@ -139,7 +141,7 @@ func TestWhenListingProcessableMessagesForParticipant(t *testing.T) {
 		t.Run("Should return their own messages OR messages mentioning their ENS", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableMessagesForParticipantBeforeEach()
+			suite := WhenListingProcessableMessagesForParticipantBeforeEach(t)
 			defer WhenListingProcessableMessagesForParticipantAfterEach(suite)
 
 			conv, _, human, _ := suite.seed("someone.eth")

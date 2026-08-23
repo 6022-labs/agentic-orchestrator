@@ -11,7 +11,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +23,7 @@ type WhenRemovingAgentTestingSuite struct {
 	sut *repositories.AgentRepository
 }
 
-func WhenRemovingAgentBeforeEach() *WhenRemovingAgentTestingSuite {
+func WhenRemovingAgentBeforeEach(t *testing.T) *WhenRemovingAgentTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -29,12 +31,18 @@ func WhenRemovingAgentBeforeEach() *WhenRemovingAgentTestingSuite {
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -61,7 +69,7 @@ func TestWhenRemovingAgent(t *testing.T) {
 		t.Run("Should return nil", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRemovingAgentBeforeEach()
+			suite := WhenRemovingAgentBeforeEach(t)
 			defer WhenRemovingAgentAfterEach(suite)
 
 			nonExistentAgent := model_builders.NewAgentBuilder().Build()
@@ -78,7 +86,7 @@ func TestWhenRemovingAgent(t *testing.T) {
 		t.Run("Should return nil", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRemovingAgentBeforeEach()
+			suite := WhenRemovingAgentBeforeEach(t)
 			defer WhenRemovingAgentAfterEach(suite)
 
 			agent := model_builders.NewAgentBuilder().Build()

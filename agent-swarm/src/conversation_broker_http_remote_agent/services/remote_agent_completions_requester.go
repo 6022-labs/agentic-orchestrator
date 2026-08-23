@@ -9,17 +9,29 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/clients"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/metrics/interfaces"
 	http_node_models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/models"
 	"go.uber.org/zap"
 )
 
+// knownPaymentNetworks bounds the cardinality of the settlement network label.
+var knownPaymentNetworks = map[string]struct{}{
+	"eip155:137":   {},
+	"eip155:80002": {},
+	"eip155:8453":  {},
+	"eip155:84532": {},
+	"eip155:1":     {},
+}
+
 type RemoteAgentCompletionsRequester struct {
 	logger                    *zap.Logger
+	remoteAgentMetrics        metrics_interfaces.RemoteAgentMetricsInterface
 	client                    clients.RemoteAgentClientInterface
 	x402PaymentPayloadSigner  service_interfaces.X402PaymentPayloadSignerInterface
 	x402PaymentChallengeCache service_interfaces.X402PaymentChallengeCacheInterface
@@ -27,12 +39,14 @@ type RemoteAgentCompletionsRequester struct {
 
 func NewRemoteAgentCompletionsRequester(
 	logger *zap.Logger,
+	remoteAgentMetrics metrics_interfaces.RemoteAgentMetricsInterface,
 	client clients.RemoteAgentClientInterface,
 	x402PaymentPayloadSigner service_interfaces.X402PaymentPayloadSignerInterface,
 	x402PaymentChallengeCache service_interfaces.X402PaymentChallengeCacheInterface,
 ) *RemoteAgentCompletionsRequester {
 	return &RemoteAgentCompletionsRequester{
 		logger:                    logger,
+		remoteAgentMetrics:        remoteAgentMetrics,
 		client:                    client,
 		x402PaymentPayloadSigner:  x402PaymentPayloadSigner,
 		x402PaymentChallengeCache: x402PaymentChallengeCache,
@@ -43,8 +57,13 @@ func (r *RemoteAgentCompletionsRequester) RequestCompletions(
 	ctx context.Context,
 	card *models.RemoteAgentCard,
 	input *models.RemoteAgentInput,
-) ([]string, error) {
+) (completions []string, err error) {
 	ensDomain := input.Metadata["ensDomain"]
+
+	start := time.Now()
+	defer func() {
+		r.remoteAgentMetrics.RecordInvocation(ctx, ensDomain, r.endpointUrl(card), time.Since(start), err)
+	}()
 
 	if card.Endpoints.Responses != "" {
 		return r.requestWithFreeCallRetry(ctx, ensDomain, func(paymentSignature string) ([]string, error) {
@@ -68,31 +87,70 @@ func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
 ) ([]string, error) {
 	cachedChallenge, _ := r.x402PaymentChallengeCache.Read(ctx, ensDomain)
 
-	completions, err := request(r.freeCallHeader(ensDomain, cachedChallenge))
+	presignedHeader := r.freeCallHeader(ensDomain, cachedChallenge)
+	completions, err := request(presignedHeader)
 
 	var paymentRequired *cb_errors.PaymentRequiredError
 	if err == nil || !errors.As(err, &paymentRequired) {
+		// Without this the counter would only ever see challenge-cache misses.
+		if presignedHeader != "" {
+			outcome := metrics_interfaces.PaymentOutcomeSettled
+			if err != nil {
+				outcome = metrics_interfaces.PaymentOutcomeRejected
+			}
+			r.remoteAgentMetrics.RecordPaymentSettlement(ctx, outcome, r.challengeNetwork(cachedChallenge))
+		}
 		return completions, err
 	}
 
 	challenge, decodeErr := r.decodePaymentChallengeHeader(paymentRequired.PaymentRequirements)
 	if decodeErr != nil {
 		r.logger.Warn("free-call x402 retry skipped", zap.String("ensDomain", ensDomain), zap.Error(decodeErr))
+		r.remoteAgentMetrics.RecordPaymentSettlement(ctx, metrics_interfaces.PaymentOutcomeSkipped, "unknown")
 		return nil, err
 	}
 	r.x402PaymentChallengeCache.Store(ctx, ensDomain, challenge)
 
+	network := r.challengeNetwork(challenge)
+
 	if reflect.DeepEqual(challenge, cachedChallenge) {
+		r.remoteAgentMetrics.RecordPaymentSettlement(ctx, metrics_interfaces.PaymentOutcomeSkipped, network)
 		return nil, err
 	}
 
 	signatureHeader, signErr := r.signFreeCallHeader(challenge)
 	if signErr != nil {
 		r.logger.Warn("free-call x402 retry skipped", zap.String("ensDomain", ensDomain), zap.Error(signErr))
+		r.remoteAgentMetrics.RecordPaymentSettlement(ctx, metrics_interfaces.PaymentOutcomeSkipped, network)
 		return nil, err
 	}
 
-	return request(signatureHeader)
+	retried, retryErr := request(signatureHeader)
+	outcome := metrics_interfaces.PaymentOutcomeSettled
+	if retryErr != nil {
+		outcome = metrics_interfaces.PaymentOutcomeRejected
+	}
+	r.remoteAgentMetrics.RecordPaymentSettlement(ctx, outcome, network)
+
+	return retried, retryErr
+}
+
+// challengeNetwork collapses unknown values to "other": the label comes from the remote agent.
+func (r *RemoteAgentCompletionsRequester) challengeNetwork(challenge *models.X402PaymentChallenge) string {
+	if challenge == nil || len(challenge.Accepts) == 0 {
+		return "unknown"
+	}
+	if _, known := knownPaymentNetworks[challenge.Accepts[0].Network]; known {
+		return challenge.Accepts[0].Network
+	}
+	return "other"
+}
+
+func (r *RemoteAgentCompletionsRequester) endpointUrl(card *models.RemoteAgentCard) string {
+	if card.Endpoints.Responses != "" {
+		return card.Endpoints.Responses
+	}
+	return card.Endpoints.ChatCompletions
 }
 
 func (r *RemoteAgentCompletionsRequester) freeCallHeader(

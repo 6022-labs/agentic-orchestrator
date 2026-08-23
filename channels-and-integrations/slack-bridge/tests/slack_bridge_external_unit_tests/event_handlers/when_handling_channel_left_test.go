@@ -6,10 +6,13 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
+	channel_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
 	broker_requester_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
+	channel_traces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/traces_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -26,10 +29,33 @@ type WhenHandlingChannelLeftTestingSuite struct {
 func WhenHandlingChannelLeftBeforeEach(t *testing.T) *WhenHandlingChannelLeftTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
+	mockChannelMetrics.EXPECT().
+		RecordEvent(gomock.Any(), "channel.left", gomock.Any(), gomock.Any()).
+		Times(1)
+
+	// Spans are not asserted here.
+	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
+	mockSpan := channel_traces_mocks.NewMockSpan(mockController)
+	mockSpan.EXPECT().End().AnyTimes()
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockChannelTracer.EXPECT().
+		StartEventHandling(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).
+		AnyTimes()
+
 	mockSlackConversationRepository := repositories_mocks.NewMockSlackConversationRepositoryInterface(mockController)
 	mockBrokerRequester := broker_requester_mocks.NewMockConversationBrokerRequesterInterface(mockController)
 
-	sut := event_handlers.NewChannelLeftHandler(zap.NewNop(), mockSlackConversationRepository, mockBrokerRequester)
+	sut := event_handlers.NewChannelLeftHandler(
+		mockChannelMetrics,
+		mockChannelTracer,
+		zap.NewNop(),
+		mockSlackConversationRepository,
+		mockBrokerRequester,
+	)
 
 	return &WhenHandlingChannelLeftTestingSuite{
 		sut:                             sut,

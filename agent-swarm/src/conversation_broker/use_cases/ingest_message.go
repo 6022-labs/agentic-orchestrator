@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
@@ -20,6 +21,7 @@ type IngestMessageInterface interface {
 }
 
 type IngestMessage struct {
+	brokerMetrics                 metrics_interfaces.BrokerMetricsInterface
 	conversationRepository        repositories.ConversationRepositoryInterface
 	participantRepository         repositories.ParticipantRepositoryInterface
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface
@@ -27,12 +29,14 @@ type IngestMessage struct {
 }
 
 func NewIngestMessage(
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
 	conversationRepository repositories.ConversationRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
 	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *IngestMessage {
 	return &IngestMessage{
+		brokerMetrics:                 brokerMetrics,
 		conversationRepository:        conversationRepository,
 		participantRepository:         participantRepository,
 		conversationMessageRepository: conversationMessageRepository,
@@ -64,10 +68,11 @@ func (uc *IngestMessage) Ingest(
 		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
 	}
 
-	humanAuthored, err := uc.isHumanAuthored(ctx, participant)
+	role, err := uc.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
 		return nil, err
 	}
+	humanAuthored := uc.isHumanAuthored(role)
 
 	// Reopen the conversation when a human posts
 	if conversation.Status == enums.ConversationStatusConcluded && humanAuthored {
@@ -89,14 +94,20 @@ func (uc *IngestMessage) Ingest(
 	if err != nil {
 		return nil, fmt.Errorf("failed to save message: %w", err)
 	}
+
+	uc.brokerMetrics.RecordMessageIngested(ctx, uc.participantRoleLabel(role))
+
 	return responses.ConversationMessageResponseFromModel(saved), nil
 }
 
 // isHumanAuthored covers plain users and the agent NFTs a person holds themselves.
-func (uc *IngestMessage) isHumanAuthored(ctx context.Context, participant *models.Participant) (bool, error) {
-	role, err := uc.participantRoleResolver.Resolve(ctx, participant)
-	if err != nil {
-		return false, err
+func (uc *IngestMessage) isHumanAuthored(role *enums.ParticipantRole) bool {
+	return role == nil || *role == enums.ParticipantRoleHuman
+}
+
+func (uc *IngestMessage) participantRoleLabel(role *enums.ParticipantRole) string {
+	if role == nil {
+		return "unknown"
 	}
-	return role == nil || *role == enums.ParticipantRoleHuman, nil
+	return string(*role)
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +26,7 @@ type WhenGettingSyncCheckpointTestingSuite struct {
 	sut      *repositories.SyncCheckpointRepository
 }
 
-func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestingSuite {
+func WhenGettingSyncCheckpointBeforeEach(t *testing.T) *WhenGettingSyncCheckpointTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -32,12 +34,18 @@ func WhenGettingSyncCheckpointBeforeEach() *WhenGettingSyncCheckpointTestingSuit
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -65,7 +73,7 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 		t.Run("Should return the checkpoint", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingSyncCheckpointBeforeEach()
+			suite := WhenGettingSyncCheckpointBeforeEach(t)
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
 			checkpoint := model_builders.NewSyncCheckpointBuilder().WithBlock(123).Build()
@@ -84,7 +92,7 @@ func TestWhenGettingSyncCheckpoint(t *testing.T) {
 		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingSyncCheckpointBeforeEach()
+			suite := WhenGettingSyncCheckpointBeforeEach(t)
 			defer WhenGettingSyncCheckpointAfterEach(suite)
 
 			checkpoint, err := suite.sut.Get(context.Background())

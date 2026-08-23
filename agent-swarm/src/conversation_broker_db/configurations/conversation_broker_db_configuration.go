@@ -4,13 +4,24 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
 	domain_repositories "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/factories"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/metrics"
+	db_metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/metrics/interfaces"
 	db_repositories "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/settings"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 func AddConversationBrokerDbConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		func() *metrics.DbQueryMetrics { return metrics.NewDbQueryMetrics(semconv.DBSystemNamePostgreSQL) },
+		dig.As(new(db_metrics_interfaces.DbQueryMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	err := container.Provide(factories.NewDatabaseClientFactory)
 	if err != nil {
 		panic(err)

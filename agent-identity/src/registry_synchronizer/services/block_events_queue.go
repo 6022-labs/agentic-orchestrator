@@ -1,11 +1,13 @@
 package services
 
 import (
+	"context"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"go.uber.org/zap"
@@ -15,6 +17,7 @@ const defaultBlockFinalizationDelay = 2 * time.Second
 
 type BlockEventsQueue struct {
 	logger       *zap.Logger
+	syncMetrics  metrics_interfaces.SyncMetricsInterface
 	syncSettings *settings.SyncSettings
 
 	mu                   sync.Mutex
@@ -35,10 +38,12 @@ type queueEntry struct {
 
 func NewBlockEventsQueue(
 	logger *zap.Logger,
+	syncMetrics metrics_interfaces.SyncMetricsInterface,
 	syncSettings *settings.SyncSettings,
 ) *BlockEventsQueue {
 	return &BlockEventsQueue{
 		logger:       logger,
+		syncMetrics:  syncMetrics,
 		syncSettings: syncSettings,
 
 		entries:       make(map[uint64]*queueEntry),
@@ -47,6 +52,7 @@ func NewBlockEventsQueue(
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1Minted,
 ) error {
@@ -55,12 +61,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1MintedEvents(
 
 	entry := s.ensureEntry(blockNumber)
 	entry.data.AgentCollectionV1MintedEvents = append(entry.data.AgentCollectionV1MintedEvents, events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1Transfer,
 ) error {
@@ -69,12 +77,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1TransferEvents(
 
 	entry := s.ensureEntry(blockNumber)
 	entry.data.AgentCollectionV1TransferEvents = append(entry.data.AgentCollectionV1TransferEvents, events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1AgentImageUpdated,
 ) error {
@@ -85,12 +95,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageUpdatedEvents(
 	entry.data.AgentCollectionV1AgentImageUpdatedEvents = append(
 		entry.data.AgentCollectionV1AgentImageUpdatedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1AgentImageRemoved,
 ) error {
@@ -101,12 +113,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentImageRemovedEvents(
 	entry.data.AgentCollectionV1AgentImageRemovedEvents = append(
 		entry.data.AgentCollectionV1AgentImageRemovedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1MintProposalCreated,
 ) error {
@@ -117,12 +131,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalCreatedEvents(
 	entry.data.AgentCollectionV1MintProposalCreatedEvents = append(
 		entry.data.AgentCollectionV1MintProposalCreatedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1MintProposalRemoved,
 ) error {
@@ -133,12 +149,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1MintProposalRemovedEvents(
 	entry.data.AgentCollectionV1MintProposalRemovedEvents = append(
 		entry.data.AgentCollectionV1MintProposalRemovedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1AgentAttributeUpdated,
 ) error {
@@ -149,12 +167,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentAttributeUpdatedEvents(
 	entry.data.AgentCollectionV1AgentAttributeUpdatedEvents = append(
 		entry.data.AgentCollectionV1AgentAttributeUpdatedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressAddedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1AgentAddressAdded,
 ) error {
@@ -165,12 +185,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressAddedEvents(
 	entry.data.AgentCollectionV1AgentAddressAddedEvents = append(
 		entry.data.AgentCollectionV1AgentAddressAddedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressRemovedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionV1AgentAddressRemoved,
 ) error {
@@ -181,12 +203,14 @@ func (s *BlockEventsQueue) AddAgentCollectionV1AgentAddressRemovedEvents(
 	entry.data.AgentCollectionV1AgentAddressRemovedEvents = append(
 		entry.data.AgentCollectionV1AgentAddressRemovedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
 func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(
+	ctx context.Context,
 	blockNumber uint64,
 	events []*abi.AgentCollectionsManagerCollectionCreated,
 ) error {
@@ -197,12 +221,13 @@ func (s *BlockEventsQueue) AddAgentCollectionsManagerCollectionCreatedEvents(
 	entry.data.AgentCollectionsManagerCollectionCreatedEvents = append(
 		entry.data.AgentCollectionsManagerCollectionCreatedEvents,
 		events...)
-	s.trackPendingBlock(blockNumber, entry)
+	s.trackPendingBlock(ctx, blockNumber, entry)
+	s.recordQueueState(ctx)
 
 	return nil
 }
 
-func (s *BlockEventsQueue) Dequeue() (uint64, *interfaces.QueueItem) {
+func (s *BlockEventsQueue) Dequeue(ctx context.Context) (uint64, *interfaces.QueueItem) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -216,6 +241,8 @@ func (s *BlockEventsQueue) Dequeue() (uint64, *interfaces.QueueItem) {
 	entry := s.entries[blockNumber]
 	delete(s.entries, blockNumber)
 	delete(s.pendingBlocks, blockNumber)
+
+	s.recordQueueState(ctx)
 
 	return blockNumber, entry.data
 }
@@ -246,7 +273,7 @@ func (s *BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *queueEntry)
 	delete(s.pendingBlocks, blockNumber)
 }
 
-func (s *BlockEventsQueue) trackPendingBlock(blockNumber uint64, entry *queueEntry) {
+func (s *BlockEventsQueue) trackPendingBlock(ctx context.Context, blockNumber uint64, entry *queueEntry) {
 	entry.hasEvents = true
 	if entry.enqueued {
 		return
@@ -258,18 +285,20 @@ func (s *BlockEventsQueue) trackPendingBlock(blockNumber uint64, entry *queueEnt
 	}
 
 	s.pendingBlocks[blockNumber] = entry
-	s.scheduleBlockFinalization(blockNumber)
+	s.scheduleBlockFinalization(ctx, blockNumber)
 }
 
-func (s *BlockEventsQueue) scheduleBlockFinalization(blockNumber uint64) {
+func (s *BlockEventsQueue) scheduleBlockFinalization(ctx context.Context, blockNumber uint64) {
 	if blockNumber > s.latestBlockSeen {
 		s.latestBlockSeen = blockNumber
+		s.syncMetrics.RecordHighestBlockWithEvents(ctx, blockNumber)
 	}
 
 	if s.timer != nil {
 		return
 	}
 
+	// The timer outlives the enqueue that scheduled it, so it carries no caller ctx of its own.
 	s.timer = time.AfterFunc(s.getDeliveryBuffer(), func() {
 		s.mu.Lock()
 		defer s.mu.Unlock()
@@ -282,6 +311,7 @@ func (s *BlockEventsQueue) scheduleBlockFinalization(blockNumber uint64) {
 		}
 
 		s.completePendingBlocks()
+		s.recordQueueState(context.Background())
 	})
 }
 
@@ -319,4 +349,9 @@ func (s *BlockEventsQueue) completePendingBlocks() {
 		s.enqueueIfReady(blockNumber, entry)
 		delete(s.pendingBlocks, blockNumber)
 	}
+}
+
+// recordQueueState must be called with s.mu held; the metrics port is non-reentrant.
+func (s *BlockEventsQueue) recordQueueState(ctx context.Context) {
+	s.syncMetrics.RecordQueueState(ctx, int64(len(s.readyList)), int64(len(s.pendingBlocks)))
 }

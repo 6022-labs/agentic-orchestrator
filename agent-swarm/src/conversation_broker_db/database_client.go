@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/settings"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
@@ -25,6 +27,7 @@ func NewConversationBrokerDbClient(
 	connStr string,
 	logger *zap.Logger,
 	migrationsSettings *settings.MigrationsSettings,
+	dbQueryMetrics metrics_interfaces.DbQueryMetricsInterface,
 ) (*DatabaseClient, error) {
 	dialector := postgres.Open(connStr)
 
@@ -35,6 +38,10 @@ func NewConversationBrokerDbClient(
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	if err := db.Use(metrics.NewGormMetricsPlugin(dbQueryMetrics)); err != nil {
+		return nil, fmt.Errorf("failed to register db metrics plugin: %w", err)
 	}
 
 	return &DatabaseClient{

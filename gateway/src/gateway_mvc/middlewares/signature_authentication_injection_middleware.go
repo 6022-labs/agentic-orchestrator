@@ -3,6 +3,7 @@ package middlewares
 import (
 	"encoding/base64"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v2"
@@ -57,6 +58,7 @@ func (m *SignatureAuthenticationInjectionMiddleware) Handle(c *fiber.Ctx) error 
 	authenticatedWallet := common.HexToAddress(*authenticatedWalletStr)
 
 	c.Locals("authenticated-wallet", authenticatedWallet)
+	c.Locals(AuthMethodLocal, metrics_interfaces.AuthMethodSignature)
 
 	return c.Next()
 }

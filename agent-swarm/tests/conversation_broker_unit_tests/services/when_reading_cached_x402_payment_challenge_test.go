@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -15,17 +16,21 @@ import (
 )
 
 type WhenReadingCachedX402PaymentChallengeTestingSuite struct {
-	sut *services.X402PaymentChallengeCache
+	mockBrokerMetrics *broker_metrics_mocks.MockBrokerMetricsInterface
+	sut               *services.X402PaymentChallengeCache
 
 	cacheStorage *interfaces_mocks.MockCacheStorageInterface
 }
 
 func WhenReadingCachedX402PaymentChallengeBeforeEach(t *testing.T) *WhenReadingCachedX402PaymentChallengeTestingSuite {
 	mockController := gomock.NewController(t)
+
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
 	cacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 
 	sut := services.NewX402PaymentChallengeCache(
 		zap.NewNop(),
+		mockBrokerMetrics,
 		cacheStorage,
 		&settings.X402PaymentSettings{
 			ChallengeCacheTtlSeconds: 300,
@@ -33,8 +38,9 @@ func WhenReadingCachedX402PaymentChallengeBeforeEach(t *testing.T) *WhenReadingC
 	)
 
 	return &WhenReadingCachedX402PaymentChallengeTestingSuite{
-		sut:          sut,
-		cacheStorage: cacheStorage,
+		mockBrokerMetrics: mockBrokerMetrics,
+		sut:               sut,
+		cacheStorage:      cacheStorage,
 	}
 }
 
@@ -48,6 +54,7 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().RecordCacheResult(gomock.Any(), "x402_payment_challenge", true)
 			suite.cacheStorage.EXPECT().
 				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return(`{"x402Version":2,"accepts":[{"scheme":"exact","network":"eip155:80002"}]}`, nil)
@@ -67,6 +74,7 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().RecordCacheResult(gomock.Any(), "x402_payment_challenge", false)
 			suite.cacheStorage.EXPECT().
 				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return("", assert.AnError)
@@ -85,6 +93,7 @@ func TestWhenReadingCachedX402PaymentChallenge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenReadingCachedX402PaymentChallengeBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().RecordCacheResult(gomock.Any(), "x402_payment_challenge", false)
 			suite.cacheStorage.EXPECT().
 				Read(gomock.Any(), "x402-payment-challenges/agent.eth").
 				Return("not-json", nil)

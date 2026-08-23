@@ -11,7 +11,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +26,7 @@ type WhenRemovingAgentFromChannelTestingSuite struct {
 	slackAgentRepository *repositories.SlackAgentRepository
 }
 
-func WhenRemovingAgentFromChannelBeforeEach() *WhenRemovingAgentFromChannelTestingSuite {
+func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFromChannelTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -32,12 +34,18 @@ func WhenRemovingAgentFromChannelBeforeEach() *WhenRemovingAgentFromChannelTesti
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&db_settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	err = dbClient.Migrate()
 	if err != nil {
@@ -71,7 +79,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Run("Should not remove agents from channel", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRemovingAgentFromChannelBeforeEach()
+			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 			defer WhenRemovingAgentFromChannelAfterEach(suite)
 
 			channel := model_builders.NewSlackChannelBuilder().Build()
@@ -116,7 +124,7 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Run("Should remove agent from channel", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenRemovingAgentFromChannelBeforeEach()
+			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 			defer WhenRemovingAgentFromChannelAfterEach(suite)
 
 			channel := model_builders.NewSlackChannelBuilder().Build()

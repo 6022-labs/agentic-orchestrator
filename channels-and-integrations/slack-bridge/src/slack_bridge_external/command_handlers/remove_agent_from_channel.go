@@ -2,12 +2,15 @@ package command_handlers
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	slack_bridge_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/samber/lo"
@@ -19,6 +22,9 @@ type RemoveAgentFromChannelInterface interface {
 }
 
 type RemoveAgentFromChannel struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	logger                      *zap.Logger
 	slackAgentRepository        repositories.SlackAgentRepositoryInterface
 	slackChannelSynchronizer    interfaces.SlackChannelSynchronizerInterface
@@ -28,6 +34,8 @@ type RemoveAgentFromChannel struct {
 }
 
 func NewRemoveAgentFromChannel(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	logger *zap.Logger,
 	slackAgentRepository repositories.SlackAgentRepositoryInterface,
 	slackChannelRepository repositories.SlackChannelRepositoryInterface,
@@ -36,6 +44,9 @@ func NewRemoveAgentFromChannel(
 	conversationBrokerRequester slack_bridge_interfaces.ConversationBrokerRequesterInterface,
 ) *RemoveAgentFromChannel {
 	return &RemoveAgentFromChannel{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		logger:                      logger,
 		slackAgentRepository:        slackAgentRepository,
 		slackChannelRepository:      slackChannelRepository,
@@ -45,7 +56,28 @@ func NewRemoveAgentFromChannel(
 	}
 }
 
-func (h *RemoveAgentFromChannel) Remove(ctx context.Context, request *requests.RemoveAgentFromChannelRequest) error {
+func (h *RemoveAgentFromChannel) Remove(
+	ctx context.Context,
+	request *requests.RemoveAgentFromChannelRequest,
+) (err error) {
+	ctx, span := h.channelTracer.StartCommandHandling(ctx, "agent.remove")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		h.channelMetrics.RecordCommand(
+			ctx,
+			"agent.remove",
+			metrics_interfaces.CommandTriggerFrom(ctx),
+			outcome,
+			time.Since(start),
+		)
+		span.End()
+	}()
+
 	slackChannel, err := h.slackChannelRepository.GetById(ctx, request.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to get channel with ID %s: %w", request.ChannelID, err)

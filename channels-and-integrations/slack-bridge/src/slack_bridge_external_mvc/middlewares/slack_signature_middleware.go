@@ -8,23 +8,27 @@ import (
 	"strconv"
 	"time"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type SlackSignatureMiddleware struct {
-	logger        *zap.Logger
-	slackSettings *settings.SlackSettings
+	logger         *zap.Logger
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	slackSettings  *settings.SlackSettings
 }
 
 func NewSlackSignatureMiddleware(
 	logger *zap.Logger,
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
 	slackSettings *settings.SlackSettings,
 ) *SlackSignatureMiddleware {
 	return &SlackSignatureMiddleware{
-		logger:        logger,
-		slackSettings: slackSettings,
+		logger:         logger,
+		channelMetrics: channelMetrics,
+		slackSettings:  slackSettings,
 	}
 }
 
@@ -32,18 +36,26 @@ func (m *SlackSignatureMiddleware) Handle(c *fiber.Ctx) error {
 	timestamp := c.Get("X-Slack-Request-Timestamp")
 	slackSig := c.Get("X-Slack-Signature")
 
+	// Without this guard swagger, health probes and 404s would all read as verification failures.
+	var verificationErr error
+	if timestamp != "" || slackSig != "" {
+		defer func() { m.channelMetrics.RecordWebhookVerification(c.UserContext(), verificationErr) }()
+	}
+
 	m.logger.Debug("Validating Slack signature", zap.String("timestamp", timestamp), zap.String("signature", slackSig))
 
 	// Prevent replay attacks (allow max 5 min skew)
 	ts, err := strconv.ParseInt(timestamp, 10, 64)
 	if err != nil {
 		m.logger.Warn("Invalid timestamp format", zap.String("timestamp", timestamp), zap.Error(err))
+		verificationErr = err
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	skew := m.abs(time.Now().Unix() - ts)
 	if skew > 60*5 {
 		m.logger.Warn("Timestamp skew too large", zap.Int64("skew", skew), zap.Int64("timestamp", ts))
+		verificationErr = fmt.Errorf("timestamp skew of %d seconds is too large", skew)
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
@@ -58,6 +70,7 @@ func (m *SlackSignatureMiddleware) Handle(c *fiber.Ctx) error {
 
 	if !hmac.Equal([]byte(expectedSig), []byte(slackSig)) {
 		m.logger.Warn("Slack signature mismatch", zap.String("expected", expectedSig), zap.String("received", slackSig))
+		verificationErr = fmt.Errorf("signature mismatch")
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 

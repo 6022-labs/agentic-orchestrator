@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
@@ -21,6 +22,7 @@ type ConversationProcessorDaemon struct {
 	processingWg sync.WaitGroup
 
 	logger                 *zap.Logger
+	brokerMetrics          metrics_interfaces.BrokerMetricsInterface
 	processingSettings     *settings.ProcessingSettings
 	conversationProcessor  interfaces.ConversationProcessorInterface
 	participantRepository  repositories.ParticipantRepositoryInterface
@@ -31,6 +33,7 @@ type ConversationProcessorDaemon struct {
 
 func NewConversationProcessorDaemon(
 	logger *zap.Logger,
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
 	processingSettings *settings.ProcessingSettings,
 	conversationProcessor interfaces.ConversationProcessorInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
@@ -39,6 +42,7 @@ func NewConversationProcessorDaemon(
 ) *ConversationProcessorDaemon {
 	return &ConversationProcessorDaemon{
 		logger:                 logger,
+		brokerMetrics:          brokerMetrics,
 		processingSettings:     processingSettings,
 		conversationProcessor:  conversationProcessor,
 		participantRepository:  participantRepository,
@@ -102,10 +106,12 @@ func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context
 	)
 	if err != nil {
 		d.logger.Error("Failed to fetch next participant to process", zap.Error(err))
+		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 	if participant == nil {
 		d.logger.Debug("No participants to process at the moment")
+		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeIdle)
 		return
 	}
 
@@ -113,8 +119,11 @@ func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context
 		d.logger.Error("Failed to mark participant as processing",
 			d.participantLogFields(participant, zap.Error(err))...,
 		)
+		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
+
+	d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeProcessed)
 
 	d.processingWg.Add(1)
 	go d.processConversationsForParticipant(ctx, participant)

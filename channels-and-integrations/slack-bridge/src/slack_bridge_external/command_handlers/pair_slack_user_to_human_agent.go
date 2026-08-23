@@ -2,11 +2,14 @@ package command_handlers
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"go.uber.org/zap"
@@ -17,6 +20,9 @@ type PairSlackUserToHumanAgentInterface interface {
 }
 
 type PairSlackUserToHumanAgent struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	logger                      *zap.Logger
 	slackUserRepository         repositories.SlackUserRepositoryInterface
 	slackAgentSynchronizer      interfaces.SlackAgentSynchronizerInterface
@@ -24,12 +30,17 @@ type PairSlackUserToHumanAgent struct {
 }
 
 func NewPairSlackUserToHumanAgent(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	logger *zap.Logger,
 	slackUserRepository repositories.SlackUserRepositoryInterface,
 	slackAgentSynchronizer interfaces.SlackAgentSynchronizerInterface,
 	slackUserSynchronizerCached interfaces.SlackUserSynchronizerCachedInterface,
 ) *PairSlackUserToHumanAgent {
 	return &PairSlackUserToHumanAgent{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		logger:                      logger,
 		slackUserRepository:         slackUserRepository,
 		slackAgentSynchronizer:      slackAgentSynchronizer,
@@ -40,7 +51,25 @@ func NewPairSlackUserToHumanAgent(
 func (p *PairSlackUserToHumanAgent) Pair(
 	ctx context.Context,
 	request *requests.PairSlackUserToHumanAgentRequest,
-) error {
+) (err error) {
+	ctx, span := p.channelTracer.StartCommandHandling(ctx, "user.pair")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		p.channelMetrics.RecordCommand(
+			ctx,
+			"user.pair",
+			metrics_interfaces.CommandTriggerFrom(ctx),
+			outcome,
+			time.Since(start),
+		)
+		span.End()
+	}()
+
 	requesterUser, err := p.slackUserSynchronizerCached.Sync(ctx, request.RequesterSlackUserId)
 	if err != nil {
 		return fmt.Errorf("failed to sync requester user : %w", err)

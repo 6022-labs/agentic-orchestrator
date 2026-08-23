@@ -12,7 +12,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +25,9 @@ type WhenCheckingCollectionExistenceByAddressTestingSuite struct {
 	sut      *repositories.AgentCollectionRepository
 }
 
-func WhenCheckingCollectionExistenceByAddressBeforeEach() *WhenCheckingCollectionExistenceByAddressTestingSuite {
+func WhenCheckingCollectionExistenceByAddressBeforeEach(
+	t *testing.T,
+) *WhenCheckingCollectionExistenceByAddressTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -31,12 +35,18 @@ func WhenCheckingCollectionExistenceByAddressBeforeEach() *WhenCheckingCollectio
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -62,7 +72,7 @@ func TestWhenCheckingCollectionExistenceByAddress(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return true", func(t *testing.T) {
-			suite := WhenCheckingCollectionExistenceByAddressBeforeEach()
+			suite := WhenCheckingCollectionExistenceByAddressBeforeEach(t)
 			defer WhenCheckingCollectionExistenceByAddressAfterEach(suite)
 
 			existingCollection := model_builders.NewAgentCollectionBuilder().Build()
@@ -82,7 +92,7 @@ func TestWhenCheckingCollectionExistenceByAddress(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return false", func(t *testing.T) {
-			suite := WhenCheckingCollectionExistenceByAddressBeforeEach()
+			suite := WhenCheckingCollectionExistenceByAddressBeforeEach(t)
 			defer WhenCheckingCollectionExistenceByAddressAfterEach(suite)
 
 			nonExistentAddress := "0x000000000000000000000000000000000000dead"

@@ -8,13 +8,17 @@ import (
 	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
+	broker_traces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/traces_mocks/interfaces_mocks"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -23,6 +27,8 @@ import (
 
 type WhenProcessingConversationTestingSuite struct {
 	sut *services.ConversationProcessor
+
+	mockBrokerMetrics *broker_metrics_mocks.MockBrokerMetricsInterface
 
 	mockConversationConclude            *interfaces_mocks.MockConversationConcludeInterface
 	mockBridgeCallbackRequester         *interfaces_mocks.MockBridgeCallbackRequesterInterface
@@ -67,8 +73,27 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		ConversationForceConcludeAfter:              600,
 	}
 
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+
+	// Spans are not asserted here.
+	mockBrokerTracer := broker_traces_mocks.NewMockBrokerTracerInterface(mockController)
+	mockSpan := broker_traces_mocks.NewMockSpan(mockController)
+	mockSpan.EXPECT().End().AnyTimes()
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockBrokerTracer.EXPECT().
+		StartTurn(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).
+		AnyTimes()
+	mockBrokerMetrics.EXPECT().RecordTurnStarted(gomock.Any()).Times(1)
+	mockBrokerMetrics.EXPECT().RecordTurnFinished(gomock.Any()).Times(1)
+	// The gauge must balance on every path, so both sides are pinned to exactly one call.
+
 	sut := services.NewConversationProcessor(
 		zap.NewNop(),
+		mockBrokerMetrics,
+		mockBrokerTracer,
 		processingSettings,
 		mockConversationConclude,
 		mockBridgeCallbackRequester,
@@ -85,6 +110,8 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 
 	return &WhenProcessingConversationTestingSuite{
 		sut: sut,
+
+		mockBrokerMetrics: mockBrokerMetrics,
 
 		mockConversationConclude:            mockConversationConclude,
 		mockBridgeCallbackRequester:         mockBridgeCallbackRequester,
@@ -125,14 +152,19 @@ func TestWhenProcessingConversation(t *testing.T) {
 		conversation.CreatedAt = time.Now().Add(-2 * time.Hour)
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
-			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(nil).Times(1)
+			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(true, nil).Times(1)
 		}
 
 		t.Run("Should force conclude and stop", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingConversationBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordConversationConcluded(gomock.Any(), metrics_interfaces.ConclusionReasonForced)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -157,6 +189,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleHuman), nil).
 				Times(1)
 
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
+
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
 			assert.NoError(t, err)
@@ -176,14 +211,19 @@ func TestWhenProcessingConversation(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockBridgeRepository.EXPECT().GetById(gomock.Any(), conversation.BridgeID).Return(nil, nil).Times(1)
-			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(nil).Times(1)
+			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(true, nil).Times(1)
 		}
 
 		t.Run("Should conclude the orphan conversation and stop", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingConversationBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordConversationConcluded(gomock.Any(), metrics_interfaces.ConclusionReasonOrphaned)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -219,6 +259,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -286,6 +329,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
 
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
+
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
 			assert.NoError(t, err)
@@ -344,6 +390,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
 
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
+
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
 			assert.NoError(t, err)
@@ -390,6 +439,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeFailed, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -470,14 +522,19 @@ func TestWhenProcessingConversation(t *testing.T) {
 				PostCompletion(gomock.Any(), bridge, conversation, participant, "final summary").
 				Return(nil).
 				Times(1)
-			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(nil).Times(1)
+			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(true, nil).Times(1)
 		}
 
 		t.Run("Should run the conclude turn, post both completions and conclude", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingConversationBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordConversationConcluded(gomock.Any(), metrics_interfaces.ConclusionReasonNatural)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -561,14 +618,19 @@ func TestWhenProcessingConversation(t *testing.T) {
 				PostCompletion(gomock.Any(), bridge, conversation, participant, "final summary").
 				Return(nil).
 				Times(1)
-			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(nil).Times(1)
+			suite.mockConversationConclude.EXPECT().Conclude(gomock.Any(), conversation.ID).Return(true, nil).Times(1)
 		}
 
 		t.Run("Should conclude even though the facilitator completion has no marker", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingConversationBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordConversationConcluded(gomock.Any(), metrics_interfaces.ConclusionReasonNatural)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
@@ -636,6 +698,9 @@ func TestWhenProcessingConversation(t *testing.T) {
 
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any())
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 

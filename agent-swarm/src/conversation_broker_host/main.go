@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/host_configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/settings"
@@ -28,6 +30,10 @@ func main() {
 
 	container := configurations.ConfigureDI(config)
 	configurations.ConfigureLogging(container)
+
+	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
+	defer func() { _ = shutdownTelemetry(context.Background()) }()
+
 	configurations.ConfigureServer(container)
 	configurations.ConfigureDatabase(container)
 	configurations.ConfigureDaemon(container)

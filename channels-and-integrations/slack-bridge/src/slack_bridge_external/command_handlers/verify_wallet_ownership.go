@@ -2,11 +2,14 @@ package command_handlers
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 	"net/url"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	external_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/settings"
@@ -23,6 +26,9 @@ type VerifyWalletOwnershipInterface interface {
 }
 
 type VerifyWalletOwnership struct {
+	channelMetrics metrics_interfaces.ChannelMetricsInterface
+	channelTracer  traces_interfaces.ChannelTracerInterface
+
 	logger                        *zap.Logger
 	verifyWalletOwnershipSettings *settings.VerifyWalletOwnershipSettings
 	walletOwnershipChallenge      interfaces.WalletOwnershipChallengeInterface
@@ -30,12 +36,17 @@ type VerifyWalletOwnership struct {
 }
 
 func NewVerifyWalletOwnership(
+	channelMetrics metrics_interfaces.ChannelMetricsInterface,
+	channelTracer traces_interfaces.ChannelTracerInterface,
 	logger *zap.Logger,
 	verifyWalletOwnershipSettings *settings.VerifyWalletOwnershipSettings,
 	walletOwnershipChallenge interfaces.WalletOwnershipChallengeInterface,
 	slackUserSynchronizerCached external_interfaces.SlackUserSynchronizerCachedInterface,
 ) *VerifyWalletOwnership {
 	return &VerifyWalletOwnership{
+		channelMetrics: channelMetrics,
+		channelTracer:  channelTracer,
+
 		logger:                        logger,
 		walletOwnershipChallenge:      walletOwnershipChallenge,
 		slackUserSynchronizerCached:   slackUserSynchronizerCached,
@@ -46,9 +57,26 @@ func NewVerifyWalletOwnership(
 func (h *VerifyWalletOwnership) Verify(
 	ctx context.Context,
 	request *requests.VerifyWalletOwnershipRequest,
-) (*string, error) {
-	err := request.Validate()
-	if err != nil {
+) (commandResult *string, err error) {
+	ctx, span := h.channelTracer.StartCommandHandling(ctx, "wallet.verify")
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.ChannelOutcomeHandled
+		if err != nil {
+			outcome = metrics_interfaces.ChannelOutcomeFailed
+			span.Fail(err)
+		}
+		h.channelMetrics.RecordCommand(
+			ctx,
+			"wallet.verify",
+			metrics_interfaces.CommandTriggerFrom(ctx),
+			outcome,
+			time.Since(start),
+		)
+		span.End()
+	}()
+
+	if err = request.Validate(); err != nil {
 		return nil, err
 	}
 

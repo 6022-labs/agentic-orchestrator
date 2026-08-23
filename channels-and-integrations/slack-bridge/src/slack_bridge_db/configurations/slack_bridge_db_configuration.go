@@ -4,13 +4,24 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/factories"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/metrics"
+	db_metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/metrics/interfaces"
 	db_repositories "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 func AddSlackBridgeDbConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		func() *metrics.DbQueryMetrics { return metrics.NewDbQueryMetrics(semconv.DBSystemNamePostgreSQL) },
+		dig.As(new(db_metrics_interfaces.DbQueryMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Factories
 	err := container.Provide(factories.NewDatabaseClientFactory)
 	if err != nil {

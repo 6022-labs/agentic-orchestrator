@@ -1,15 +1,35 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/prompts"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"go.uber.org/dig"
 )
 
 func AddConversationBrokerConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewBrokerMetrics,
+		dig.As(new(metrics_interfaces.BrokerMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	// Traces
+	if err := container.Provide(
+		traces.NewBrokerTracer,
+		dig.As(new(traces_interfaces.BrokerTracerInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	err := container.Provide(settings.NewProcessingSettings)
 	if err != nil {
 		panic(err)

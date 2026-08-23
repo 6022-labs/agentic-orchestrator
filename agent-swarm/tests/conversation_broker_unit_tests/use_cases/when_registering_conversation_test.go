@@ -10,6 +10,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,8 @@ import (
 )
 
 type WhenRegisteringConversationTestingSuite struct {
-	sut *use_cases.RegisterConversation
+	mockBrokerMetrics *broker_metrics_mocks.MockBrokerMetricsInterface
+	sut               *use_cases.RegisterConversation
 
 	mockBridgeRepository                  *repositories_mocks.MockBridgeRepositoryInterface
 	mockConversationRepository            *repositories_mocks.MockConversationRepositoryInterface
@@ -28,6 +30,8 @@ type WhenRegisteringConversationTestingSuite struct {
 func WhenRegisteringConversationBeforeEach(t *testing.T) *WhenRegisteringConversationTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+
 	mockBridgeRepository := repositories_mocks.NewMockBridgeRepositoryInterface(mockController)
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
 	mockConversationParticipantRepository := repositories_mocks.NewMockConversationParticipantRepositoryInterface(
@@ -36,6 +40,7 @@ func WhenRegisteringConversationBeforeEach(t *testing.T) *WhenRegisteringConvers
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 
 	sut := use_cases.NewRegisterConversation(
+		mockBrokerMetrics,
 		mockBridgeRepository,
 		mockConversationRepository,
 		mockConversationParticipantRepository,
@@ -43,7 +48,8 @@ func WhenRegisteringConversationBeforeEach(t *testing.T) *WhenRegisteringConvers
 	)
 
 	return &WhenRegisteringConversationTestingSuite{
-		sut: sut,
+		mockBrokerMetrics: mockBrokerMetrics,
+		sut:               sut,
 
 		mockBridgeRepository:                  mockBridgeRepository,
 		mockConversationRepository:            mockConversationRepository,
@@ -192,6 +198,8 @@ func TestWhenRegisteringConversation(t *testing.T) {
 				ParticipantIDs: []uuid.UUID{participant1.ID, participant2.ID},
 			}
 			initSuite(suite, request)
+
+			suite.mockBrokerMetrics.EXPECT().RecordConversationStarted(gomock.Any())
 
 			conversation, err := suite.sut.Register(context.Background(), request)
 

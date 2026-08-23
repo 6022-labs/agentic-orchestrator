@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	synchronizer_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_mocks/repositories_mocks"
+	sync_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/metrics_mocks/interfaces_mocks"
 	synchronizer_repositories_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/repositories_mocks"
 	synchronizer_interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,8 @@ import (
 )
 
 type WhenEnqueuingBlockEventsGapTestingSuite struct {
+	mockSyncMetrics *sync_metrics_mocks.MockSyncMetricsInterface
+
 	sut *services.BlockEventsGapEnqueuer
 
 	syncSettings *synchronizer_settings.SyncSettings
@@ -47,8 +50,11 @@ func WhenEnqueuingBlockEventsGapBeforeEach(t *testing.T) *WhenEnqueuingBlockEven
 		mockController,
 	)
 
+	mockSyncMetrics := sync_metrics_mocks.NewMockSyncMetricsInterface(mockController)
+
 	sut := services.NewBlockEventsGapEnqueuer(
 		zap.NewNop(),
+		mockSyncMetrics,
 		syncSettings,
 		mockBlockEventsQueue,
 		mockBlockchainRequester,
@@ -61,6 +67,8 @@ func WhenEnqueuingBlockEventsGapBeforeEach(t *testing.T) *WhenEnqueuingBlockEven
 	return &WhenEnqueuingBlockEventsGapTestingSuite{
 		sut:          sut,
 		syncSettings: syncSettings,
+
+		mockSyncMetrics: mockSyncMetrics,
 
 		mockBlockEventsQueue:                           mockBlockEventsQueue,
 		mockBlockchainRequester:                        mockBlockchainRequester,
@@ -166,6 +174,9 @@ func TestWhenEnqueuingBlockEventsGap(t *testing.T) {
 				GetCurrentBlockNumber(gomock.Any()).
 				Return(&toBlock, nil).
 				Times(1)
+
+			// No block in the range carries an event, so nothing is enqueued.
+			suite.mockSyncMetrics.EXPECT().RecordBackfilledBlocks(gomock.Any(), int64(0))
 
 			suite.mockSyncCheckpointRepository.EXPECT().
 				Get(gomock.Any()).

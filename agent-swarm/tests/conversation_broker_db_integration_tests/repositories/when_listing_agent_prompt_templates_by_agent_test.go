@@ -19,8 +19,10 @@ type WhenListingAgentPromptTemplatesByAgentTestingSuite struct {
 	sut      *repositories.AgentPromptTemplateRepository
 }
 
-func WhenListingAgentPromptTemplatesByAgentBeforeEach() *WhenListingAgentPromptTemplatesByAgentTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenListingAgentPromptTemplatesByAgentBeforeEach(
+	t *testing.T,
+) *WhenListingAgentPromptTemplatesByAgentTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenListingAgentPromptTemplatesByAgentTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -41,7 +43,7 @@ func TestWhenListingAgentPromptTemplatesByAgent(t *testing.T) {
 		t.Run("Should return an empty list", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentPromptTemplatesByAgentBeforeEach()
+			suite := WhenListingAgentPromptTemplatesByAgentBeforeEach(t)
 			defer WhenListingAgentPromptTemplatesByAgentAfterEach(suite)
 
 			templates, err := suite.sut.ListByAgent(context.Background(), "0xabc", 1)
@@ -57,7 +59,7 @@ func TestWhenListingAgentPromptTemplatesByAgent(t *testing.T) {
 		t.Run("Should return only the requested agent's templates ordered by key", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingAgentPromptTemplatesByAgentBeforeEach()
+			suite := WhenListingAgentPromptTemplatesByAgentBeforeEach(t)
 			defer WhenListingAgentPromptTemplatesByAgentAfterEach(suite)
 
 			first := model_builders.NewAgentPromptTemplateBuilder().

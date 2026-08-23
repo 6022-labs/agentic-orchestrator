@@ -19,8 +19,10 @@ type WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite struct {
 	sut      *repositories.AgentPromptTemplateRepository
 }
 
-func WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach() *WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach(
+	t *testing.T,
+) *WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenGettingAgentPromptTemplateByAgentAndKeyTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -43,7 +45,7 @@ func TestWhenGettingAgentPromptTemplateByAgentAndKey(t *testing.T) {
 		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach()
+			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach(t)
 			defer WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(suite)
 
 			template, err := suite.sut.GetByAgentAndKey(
@@ -64,7 +66,7 @@ func TestWhenGettingAgentPromptTemplateByAgentAndKey(t *testing.T) {
 		t.Run("Should return the one matching the key", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach()
+			suite := WhenGettingAgentPromptTemplateByAgentAndKeyBeforeEach(t)
 			defer WhenGettingAgentPromptTemplateByAgentAndKeyAfterEach(suite)
 
 			system := model_builders.NewAgentPromptTemplateBuilder().

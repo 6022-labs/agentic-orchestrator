@@ -46,7 +46,7 @@ func TestWhenDequeuingBlockEvents(t *testing.T) {
 
 		initSuite := func(suite *WhenDequeuingBlockEventsTestingSuite) {
 			suite.mockBlockEventsQueue.EXPECT().
-				Dequeue().
+				Dequeue(gomock.Any()).
 				Return(uint64(0), nil).
 				Times(1)
 		}
@@ -75,7 +75,7 @@ func TestWhenDequeuingBlockEvents(t *testing.T) {
 			}
 
 			basics.mockBlockEventsQueue.EXPECT().
-				Dequeue().
+				Dequeue(gomock.Any()).
 				Return(blockNumber, queueItem).
 				Times(1)
 
@@ -100,7 +100,7 @@ func TestWhenDequeuingBlockEvents(t *testing.T) {
 			}
 
 			suite.mockBlockEventsQueue.EXPECT().
-				Dequeue().
+				Dequeue(gomock.Any()).
 				Return(blockNumber, queueItem).
 				Times(1)
 
@@ -140,7 +140,7 @@ func TestWhenDequeuingBlockEvents(t *testing.T) {
 			cancel()
 
 			basics.mockBlockEventsQueue.EXPECT().
-				Dequeue().
+				Dequeue(gomock.Any()).
 				Return(blockNumber, queueItem).
 				Times(1)
 

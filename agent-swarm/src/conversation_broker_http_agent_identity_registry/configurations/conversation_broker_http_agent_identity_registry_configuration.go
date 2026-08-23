@@ -4,10 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	common_metrics "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/metrics"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_agent_identity_registry/settings"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
 
@@ -21,6 +24,14 @@ func AddConversationBrokerHttpAgentIdentityRegistryConfiguration(container *dig.
 		func(agentIdentityRegistrySettings *settings.AgentIdentityRegistrySettings) (clients.ClientWithResponsesInterface, error) {
 			httpClient := &http.Client{
 				Timeout: time.Duration(agentIdentityRegistrySettings.RequestTimeoutSeconds) * time.Second,
+				Transport: otelhttp.NewTransport(common_metrics.NewHttpMetricsRoundTripper(
+					http.DefaultTransport,
+					common_metrics.NewExternalHttpMetrics(
+						"agentic_orchestrator_conversation_broker_http_agent_identity_registry",
+					),
+				),
+					otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+				),
 			}
 			return clients.NewClientWithResponses(
 				agentIdentityRegistrySettings.BaseUrl,

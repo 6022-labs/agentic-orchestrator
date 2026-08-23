@@ -6,12 +6,15 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_external_mocks/services_mocks/interfaces_mocks"
+	channel_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
+	channel_traces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/traces_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -28,11 +31,30 @@ type WhenPairingSlackUserToHumanAgentTestingSuite struct {
 func WhenPairingSlackUserToHumanAgentBeforeEach(t *testing.T) *WhenPairingSlackUserToHumanAgentTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
+	mockChannelMetrics.EXPECT().
+		RecordCommand(gomock.Any(), "user.pair", gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1)
+
+	// Spans are not asserted here.
+	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
+	mockSpan := channel_traces_mocks.NewMockSpan(mockController)
+	mockSpan.EXPECT().End().AnyTimes()
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockChannelTracer.EXPECT().
+		StartCommandHandling(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).
+		AnyTimes()
+
 	mockSlackUserRepository := repositories_mocks.NewMockSlackUserRepositoryInterface(mockController)
 	mockSlackAgentSynchronizer := interfaces_mocks.NewMockSlackAgentSynchronizerInterface(mockController)
 	mockSlackUserSynchronizerCached := interfaces_mocks.NewMockSlackUserSynchronizerCachedInterface(mockController)
 
 	sut := command_handlers.NewPairSlackUserToHumanAgent(
+		mockChannelMetrics,
+		mockChannelTracer,
 		zap.NewNop(),
 		mockSlackUserRepository,
 		mockSlackAgentSynchronizer,

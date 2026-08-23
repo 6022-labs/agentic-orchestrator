@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +21,7 @@ type WhenForcingConcludeTestingSuite struct {
 	sut *use_cases.ForceConclude
 
 	mockConversationConclude *interfaces_mocks.MockConversationConcludeInterface
+	mockBrokerMetrics        *broker_metrics_mocks.MockBrokerMetricsInterface
 }
 
 func WhenForcingConcludeBeforeEach(t *testing.T) *WhenForcingConcludeTestingSuite {
@@ -26,12 +29,15 @@ func WhenForcingConcludeBeforeEach(t *testing.T) *WhenForcingConcludeTestingSuit
 
 	mockConversationConclude := interfaces_mocks.NewMockConversationConcludeInterface(mockController)
 
-	sut := use_cases.NewForceConclude(mockConversationConclude)
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+
+	sut := use_cases.NewForceConclude(mockBrokerMetrics, mockConversationConclude)
 
 	return &WhenForcingConcludeTestingSuite{
 		sut: sut,
 
 		mockConversationConclude: mockConversationConclude,
+		mockBrokerMetrics:        mockBrokerMetrics,
 	}
 }
 
@@ -67,7 +73,7 @@ func TestWhenForcingConclude(t *testing.T) {
 		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationConclude.EXPECT().
 				ConcludeIfExists(gomock.Any(), request.ConversationID).
-				Return(errors.New("boom")).
+				Return(false, errors.New("boom")).
 				Times(1)
 		}
 
@@ -90,7 +96,7 @@ func TestWhenForcingConclude(t *testing.T) {
 		initSuite := func(suite *WhenForcingConcludeTestingSuite, request *requests.ConversationIdRequest) {
 			suite.mockConversationConclude.EXPECT().
 				ConcludeIfExists(gomock.Any(), request.ConversationID).
-				Return(nil).
+				Return(true, nil).
 				Times(1)
 		}
 
@@ -98,6 +104,8 @@ func TestWhenForcingConclude(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenForcingConcludeBeforeEach(t)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordConversationConcluded(gomock.Any(), metrics_interfaces.ConclusionReasonForced)
 			request := generateValidForceConcludeRequest()
 			initSuite(suite, request)
 

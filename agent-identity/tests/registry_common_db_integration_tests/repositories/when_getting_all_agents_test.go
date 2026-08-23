@@ -13,8 +13,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +27,7 @@ type WhenGettingAllAgentsTestingSuite struct {
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestingSuite {
+func WhenGettingAllAgentsBeforeEach(t *testing.T) *WhenGettingAllAgentsTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -33,12 +35,18 @@ func WhenGettingAllAgentsBeforeEach() *WhenGettingAllAgentsTestingSuite {
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -67,7 +75,7 @@ func TestWhenGettingAllAgents(t *testing.T) {
 		t.Run("Should return entity", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingAllAgentsBeforeEach()
+			suite := WhenGettingAllAgentsBeforeEach(t)
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			entity := model_builders.NewAgentBuilder().Build()
@@ -87,7 +95,7 @@ func TestWhenGettingAllAgents(t *testing.T) {
 		t.Run("Should return entities", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingAllAgentsBeforeEach()
+			suite := WhenGettingAllAgentsBeforeEach(t)
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			createdEntities := []*models.Agent{}
@@ -116,7 +124,7 @@ func TestWhenGettingAllAgents(t *testing.T) {
 		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingAllAgentsBeforeEach()
+			suite := WhenGettingAllAgentsBeforeEach(t)
 			defer WhenGettingAllAgentsAfterEach(suite)
 
 			nonExistentID := uuid.New()

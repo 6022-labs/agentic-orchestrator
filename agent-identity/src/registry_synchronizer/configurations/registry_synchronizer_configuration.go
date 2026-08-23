@@ -1,13 +1,33 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/traces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/traces/interfaces"
 	"go.uber.org/dig"
 )
 
 func AddRegistrySynchronizerConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewSyncMetrics,
+		dig.As(new(metrics_interfaces.SyncMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	// Traces
+	if err := container.Provide(
+		traces.NewSyncTracer,
+		dig.As(new(traces_interfaces.SyncTracerInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Settings
 	err := container.Provide(settings.NewSyncSettings)
 	if err != nil {

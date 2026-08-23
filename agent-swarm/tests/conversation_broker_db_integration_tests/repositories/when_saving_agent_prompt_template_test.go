@@ -18,8 +18,8 @@ type WhenSavingAgentPromptTemplateTestingSuite struct {
 	sut      *repositories.AgentPromptTemplateRepository
 }
 
-func WhenSavingAgentPromptTemplateBeforeEach() *WhenSavingAgentPromptTemplateTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingAgentPromptTemplateBeforeEach(t *testing.T) *WhenSavingAgentPromptTemplateTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingAgentPromptTemplateTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -40,7 +40,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Run("Should be retrievable by agent and key", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingAgentPromptTemplateBeforeEach()
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			defer WhenSavingAgentPromptTemplateAfterEach(suite)
 
 			entity := model_builders.NewAgentPromptTemplateBuilder().Build()
@@ -65,7 +65,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		t.Run("Should overwrite the content on save", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingAgentPromptTemplateBeforeEach()
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
 			defer WhenSavingAgentPromptTemplateAfterEach(suite)
 
 			entity := model_builders.NewAgentPromptTemplateBuilder().WithContent("old").Build()

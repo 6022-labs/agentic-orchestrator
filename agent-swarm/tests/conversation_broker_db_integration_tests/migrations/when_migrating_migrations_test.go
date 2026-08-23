@@ -7,8 +7,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/container_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/pressly/goose"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +21,7 @@ type WhenMigratingMigrationsTestingSuite struct {
 	sut *conversation_broker_db.DatabaseClient
 }
 
-func WhenMigratingMigrationsBeforeEach() *WhenMigratingMigrationsTestingSuite {
+func WhenMigratingMigrationsBeforeEach(t *testing.T) *WhenMigratingMigrationsTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindConversationBrokerMigrationFolderPath()
@@ -31,10 +33,16 @@ func WhenMigratingMigrationsBeforeEach() *WhenMigratingMigrationsTestingSuite {
 		MigrationsFolderPath: *migrationFolderPath,
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := conversation_broker_db.NewConversationBrokerDbClient(
 		connectionString,
 		zap.NewNop(),
 		migrationsSettings,
+		dbQueryMetrics,
 	)
 
 	return &WhenMigratingMigrationsTestingSuite{
@@ -58,7 +66,7 @@ func TestWhenMigratingMigrations(t *testing.T) {
 		t.Run("Should not apply migrations again and not return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenMigratingMigrationsBeforeEach()
+			suite := WhenMigratingMigrationsBeforeEach(t)
 			defer WhenMigratingMigrationsAfterEach(suite)
 
 			err := suite.sut.Migrate()
@@ -75,7 +83,7 @@ func TestWhenMigratingMigrations(t *testing.T) {
 		t.Run("Should apply the remaining migrations and not return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenMigratingMigrationsBeforeEach()
+			suite := WhenMigratingMigrationsBeforeEach(t)
 			defer WhenMigratingMigrationsAfterEach(suite)
 
 			err := suite.sut.Migrate()
@@ -99,7 +107,7 @@ func TestWhenMigratingMigrations(t *testing.T) {
 		t.Run("Should apply all migrations and not return an error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenMigratingMigrationsBeforeEach()
+			suite := WhenMigratingMigrationsBeforeEach(t)
 			defer WhenMigratingMigrationsAfterEach(suite)
 
 			err := suite.sut.Migrate()

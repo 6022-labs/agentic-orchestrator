@@ -10,11 +10,13 @@ import (
 	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -25,6 +27,8 @@ const facilitatorConcludeMarker = ":end:"
 
 type ConversationProcessor struct {
 	logger                          *zap.Logger
+	brokerMetrics                   metrics_interfaces.BrokerMetricsInterface
+	brokerTracer                    traces_interfaces.BrokerTracerInterface
 	processingSettings              *settings.ProcessingSettings
 	conversationConclude            interfaces.ConversationConcludeInterface
 	bridgeCallbackRequester         interfaces.BridgeCallbackRequesterInterface
@@ -45,6 +49,8 @@ type ConversationProcessor struct {
 
 func NewConversationProcessor(
 	logger *zap.Logger,
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
+	brokerTracer traces_interfaces.BrokerTracerInterface,
 	processingSettings *settings.ProcessingSettings,
 	conversationConclude interfaces.ConversationConcludeInterface,
 	bridgeCallbackRequester interfaces.BridgeCallbackRequesterInterface,
@@ -60,6 +66,8 @@ func NewConversationProcessor(
 ) *ConversationProcessor {
 	return &ConversationProcessor{
 		logger:                          logger,
+		brokerMetrics:                   brokerMetrics,
+		brokerTracer:                    brokerTracer,
 		processingSettings:              processingSettings,
 		conversationConclude:            conversationConclude,
 		bridgeCallbackRequester:         bridgeCallbackRequester,
@@ -79,13 +87,31 @@ func (p *ConversationProcessor) ProcessConversation(
 	ctx context.Context,
 	participant *models.Participant,
 	conversation *models.Conversation,
-) error {
+) (err error) {
+	ctx, span := p.brokerTracer.StartTurn(ctx, conversation.ID.String())
+	start := time.Now()
+	p.brokerMetrics.RecordTurnStarted(ctx)
+	defer func() {
+		outcome := metrics_interfaces.TurnOutcomeCompleted
+		if err != nil {
+			outcome = metrics_interfaces.TurnOutcomeFailed
+			span.Fail(err)
+		}
+		p.brokerMetrics.RecordTurnFinished(ctx)
+		p.brokerMetrics.RecordTurn(ctx, outcome, time.Since(start))
+		span.End()
+	}()
+
 	logFields := p.processingLogFields(participant, conversation)
 
 	if p.shouldForceConcludeConversation(conversation) {
 		p.logger.Warn("Force concluding conversation", logFields...)
-		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
-			return fmt.Errorf("failed to force conclude conversation: %w", err)
+		concluded, concludeErr := p.conversationConclude.Conclude(ctx, conversation.ID)
+		if concludeErr != nil {
+			return fmt.Errorf("failed to force conclude conversation: %w", concludeErr)
+		}
+		if concluded {
+			p.brokerMetrics.RecordConversationConcluded(ctx, metrics_interfaces.ConclusionReasonForced)
 		}
 		return nil
 	}
@@ -106,8 +132,12 @@ func (p *ConversationProcessor) ProcessConversation(
 	}
 	if bridge == nil {
 		p.logger.Warn("Bridge not found for conversation", logFields...)
-		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
-			return fmt.Errorf("failed to conclude orphan conversation: %w", err)
+		concluded, concludeErr := p.conversationConclude.Conclude(ctx, conversation.ID)
+		if concludeErr != nil {
+			return fmt.Errorf("failed to conclude orphan conversation: %w", concludeErr)
+		}
+		if concluded {
+			p.brokerMetrics.RecordConversationConcluded(ctx, metrics_interfaces.ConclusionReasonOrphaned)
 		}
 		return nil
 	}
@@ -274,8 +304,12 @@ func (p *ConversationProcessor) sendCompletionsToBridge(
 		p.logger.Info("Conversation is concluded by facilitator",
 			p.processingLogFields(participant, conversation)...,
 		)
-		if err := p.conversationConclude.Conclude(ctx, conversation.ID); err != nil {
-			return fmt.Errorf("failed to conclude conversation: %w", err)
+		concluded, concludeErr := p.conversationConclude.Conclude(ctx, conversation.ID)
+		if concludeErr != nil {
+			return fmt.Errorf("failed to conclude conversation: %w", concludeErr)
+		}
+		if concluded {
+			p.brokerMetrics.RecordConversationConcluded(ctx, metrics_interfaces.ConclusionReasonNatural)
 		}
 	}
 
