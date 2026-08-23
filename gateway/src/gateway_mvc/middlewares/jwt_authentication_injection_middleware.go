@@ -3,6 +3,7 @@ package middlewares
 import (
 	"strings"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/ethereum/go-ethereum/common"
@@ -84,6 +85,7 @@ func (m *JWTAuthenticationInjectionMiddleware) Handle(c *fiber.Ctx) error {
 	authenticatedWallet := common.HexToAddress(*authenticatedWalletStr)
 
 	c.Locals("authenticated-wallet", authenticatedWallet)
+	c.Locals(AuthMethodLocal, metrics_interfaces.AuthMethodJwt)
 
 	return c.Next()
 }

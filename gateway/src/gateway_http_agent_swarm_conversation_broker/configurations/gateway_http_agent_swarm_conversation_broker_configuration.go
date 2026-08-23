@@ -1,6 +1,9 @@
 package configurations
 
 import (
+	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"net/http"
 	"time"
 
@@ -15,7 +18,14 @@ import (
 func newConversationBrokerClient(
 	conversationBrokerSettings *settings.ConversationBrokerSettings,
 ) (clients.ClientWithResponsesInterface, error) {
-	httpClient := &http.Client{Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second}
+	httpClient := &http.Client{Timeout: time.Duration(conversationBrokerSettings.RequestTimeoutSeconds) * time.Second,
+		Transport: otelhttp.NewTransport(common_metrics.NewHttpMetricsRoundTripper(
+			http.DefaultTransport,
+			common_metrics.NewExternalHttpMetrics("agentic_orchestrator_gateway_http_agent_swarm_conversation_broker"),
+		),
+			otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+		),
+	}
 	return clients.NewClientWithResponses(conversationBrokerSettings.BaseUrl, clients.WithHTTPClient(httpClient))
 }
 

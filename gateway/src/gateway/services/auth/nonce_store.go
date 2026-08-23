@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 
 	"crypto/rand"
 	"encoding/hex"
@@ -15,6 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const nonceCacheName = "nonce"
+
 const (
 	challengeCachePathTemplate = "auth/challenges/%s"
 	nonceByteLength            = 32
@@ -22,14 +25,20 @@ const (
 
 // NonceStore keeps single-use login challenges in the shared cache storage.
 type NonceStore struct {
-	cacheStorage interfaces.CacheStorageInterface
-	ttl          time.Duration
+	gatewayMetrics metrics_interfaces.GatewayMetricsInterface
+	cacheStorage   interfaces.CacheStorageInterface
+	ttl            time.Duration
 }
 
-func NewNonceStore(cacheStorage interfaces.CacheStorageInterface, jwtSettings *settings.JwtSettings) *NonceStore {
+func NewNonceStore(
+	cacheStorage interfaces.CacheStorageInterface,
+	jwtSettings *settings.JwtSettings,
+	gatewayMetrics metrics_interfaces.GatewayMetricsInterface,
+) *NonceStore {
 	return &NonceStore{
-		cacheStorage: cacheStorage,
-		ttl:          time.Duration(jwtSettings.NonceTtl) * time.Second,
+		gatewayMetrics: gatewayMetrics,
+		cacheStorage:   cacheStorage,
+		ttl:            time.Duration(jwtSettings.NonceTtl) * time.Second,
 	}
 }
 
@@ -68,8 +77,15 @@ func (s *NonceStore) Consume(ctx context.Context, address common.Address) *inter
 	if err != nil {
 		return nil
 	}
+
+	// A cache outage errors out above, so hit/miss is never inflated by one.
+	s.gatewayMetrics.RecordCacheResult(ctx, nonceCacheName, payload != nil)
+	if payload == nil {
+		return nil
+	}
+
 	var entry interfaces.ChallengeEntry
-	if err := json.Unmarshal([]byte(payload), &entry); err != nil {
+	if err := json.Unmarshal([]byte(*payload), &entry); err != nil {
 		return nil
 	}
 	return &entry

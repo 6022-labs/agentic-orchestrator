@@ -7,8 +7,10 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_redis/services"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests/container_builders"
+	metrics_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_redis_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 type WhenStoringTestingSuite struct {
@@ -16,11 +18,15 @@ type WhenStoringTestingSuite struct {
 	sut         *services.RedisStorage
 }
 
-func WhenStoringBeforeEach() *WhenStoringTestingSuite {
+func WhenStoringBeforeEach(t *testing.T) *WhenStoringTestingSuite {
 	redisClient := container_builders.GetRedisConnection()
+
+	redisMetrics := metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
+	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	sut := services.NewRedisStorage(
 		redisClient,
+		redisMetrics,
 	)
 
 	return &WhenStoringTestingSuite{
@@ -42,7 +48,7 @@ func TestWhenStoring(t *testing.T) {
 		t.Run("Should store value", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenStoringBeforeEach()
+			suite := WhenStoringBeforeEach(t)
 			defer WhenStoringAfterEach(suite)
 
 			err := suite.sut.Store(context.Background(), "test-key-1", "test-value", nil)
@@ -56,7 +62,7 @@ func TestWhenStoring(t *testing.T) {
 		t.Run("Should store value", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenStoringBeforeEach()
+			suite := WhenStoringBeforeEach(t)
 			defer WhenStoringAfterEach(suite)
 
 			duration := time.Second
@@ -72,7 +78,7 @@ func TestWhenStoring(t *testing.T) {
 		t.Run("Should not be able to read value after expiration", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenStoringBeforeEach()
+			suite := WhenStoringBeforeEach(t)
 			defer WhenStoringAfterEach(suite)
 
 			duration := time.Second

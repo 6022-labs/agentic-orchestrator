@@ -9,6 +9,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
+	metrics_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
@@ -17,7 +18,8 @@ import (
 )
 
 type WhenVerifyingWalletForBridgeTestingSuite struct {
-	sut *use_cases.VerifyWalletForBridge
+	gatewayMetricsMock *metrics_mocks.MockGatewayMetricsInterface
+	sut                *use_cases.VerifyWalletForBridge
 
 	mockSignatureVerifier       interfaces_mocks.MockSignatureVerifierInterface
 	mockPlatformBridgeRequester interfaces_mocks.MockPlatformBridgeRequesterInterface
@@ -29,13 +31,17 @@ func WhenVerifyingWalletForBridgeBeforeEach(t *testing.T) *WhenVerifyingWalletFo
 	mockSignatureVerifier := interfaces_mocks.NewMockSignatureVerifierInterface(mockController)
 	mockPlatformBridgeRequester := interfaces_mocks.NewMockPlatformBridgeRequesterInterface(mockController)
 
+	gatewayMetricsMock := metrics_mocks.NewMockGatewayMetricsInterface(mockController)
+
 	sut := use_cases.NewVerifyWalletForBridge(
+		gatewayMetricsMock,
 		mockSignatureVerifier,
 		mockPlatformBridgeRequester,
 	)
 
 	return &WhenVerifyingWalletForBridgeTestingSuite{
 		sut:                         sut,
+		gatewayMetricsMock:          gatewayMetricsMock,
 		mockSignatureVerifier:       *mockSignatureVerifier,
 		mockPlatformBridgeRequester: *mockPlatformBridgeRequester,
 	}
@@ -64,6 +70,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Platform = enums.BridgePlatform("none")
@@ -76,6 +83,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Challenge = "   "
@@ -88,6 +96,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 
 			request := generateValidVerifyWalletForBridgeRequest()
 			request.Signature = "   "
@@ -111,6 +120,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 			request := generateValidVerifyWalletForBridgeRequest()
 			initSuite(suite, request)
 
@@ -140,6 +150,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 				t.Parallel()
 
 				suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+				suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 				request := generateValidVerifyWalletForBridgeRequest()
 				initSuite(suite, request)
 
@@ -168,6 +179,7 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Nil())
 			request := generateValidVerifyWalletForBridgeRequest()
 			initSuite(suite, request)
 

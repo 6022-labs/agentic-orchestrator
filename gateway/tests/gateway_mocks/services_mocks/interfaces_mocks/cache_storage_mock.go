@@ -42,10 +42,10 @@ func (m *MockCacheStorageInterface) EXPECT() *MockCacheStorageInterfaceMockRecor
 }
 
 // ReadAndDelete mocks base method.
-func (m *MockCacheStorageInterface) ReadAndDelete(ctx context.Context, key string) (string, error) {
+func (m *MockCacheStorageInterface) ReadAndDelete(ctx context.Context, key string) (*string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadAndDelete", ctx, key)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
