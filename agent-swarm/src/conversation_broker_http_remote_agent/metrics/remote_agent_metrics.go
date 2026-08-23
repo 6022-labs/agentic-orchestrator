@@ -13,9 +13,6 @@ import (
 
 const meterName = "agentic_orchestrator_conversation_broker_remote_agent"
 
-// errorTypeOther is the semconv catch-all for an error with no lower-cardinality classification.
-const errorTypeOther = "_OTHER"
-
 // providerName is required by semconv; the remote node picks its own model vendor, so this names the dialect.
 const providerName = "6022.agent"
 
@@ -67,7 +64,7 @@ func (m *RemoteAgentMetrics) RecordInvocation(
 	attrs = append(attrs, common_metrics.ServerAttributes(endpointUrl)...)
 	// error.type is conditionally required, and only on a failed operation.
 	if err != nil {
-		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
+		attrs = append(attrs, attribute.String("error.type", common_metrics.ErrorType(err)))
 	}
 	m.invocationHistogram.Record(ctx, duration.Seconds(), metric.WithAttributes(attrs...))
 }

@@ -2,6 +2,9 @@ package configurations
 
 import (
 	"context"
+	"net/http"
+	"strconv"
+
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/metrics"
@@ -13,8 +16,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
-	"net/http"
-	"strconv"
 )
 
 func AddConversationBrokerBlockchainConfiguration(container *dig.Container) {

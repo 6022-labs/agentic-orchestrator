@@ -305,6 +305,33 @@
           "legendFormat": "{{service_name}} {{chain_event_name}} {{outcome}}"
         }
       ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Last block durably indexed",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (service_name) (sync_checkpoint_block{deployment_environment_name=~\"$environment\", service_name=~\"$service\"})",
+          "legendFormat": "{{service_name}}"
+        }
+      ]
     }
   ]
 }

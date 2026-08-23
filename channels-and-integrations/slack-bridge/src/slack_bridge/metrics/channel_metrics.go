@@ -14,9 +14,6 @@ import (
 // meterName is shared by every channels-and-integrations bridge; channel.platform separates their series.
 const meterName = "agentic_orchestrator_channels_and_integrations"
 
-// errorTypeOther is the semconv catch-all for an error with no lower-cardinality classification.
-const errorTypeOther = "_OTHER"
-
 type ChannelMetrics struct {
 	platform attribute.KeyValue
 
@@ -134,7 +131,7 @@ func (m *ChannelMetrics) RecordCacheResult(ctx context.Context, cacheName string
 func (m *ChannelMetrics) outcomeAttributes(err error) []attribute.KeyValue {
 	attrs := []attribute.KeyValue{m.platform}
 	if err != nil {
-		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
+		attrs = append(attrs, attribute.String("error.type", common_metrics.ErrorType(err)))
 	}
 	return attrs
 }

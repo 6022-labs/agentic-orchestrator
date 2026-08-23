@@ -1,13 +1,13 @@
 package configurations
 
 import (
-	"go.opentelemetry.io/contrib/bridges/otelzap"
-	logglobal "go.opentelemetry.io/otel/log/global"
-	"go.uber.org/zap/zapcore"
 	"os"
 
+	"go.opentelemetry.io/contrib/bridges/otelzap"
+	logglobal "go.opentelemetry.io/otel/log/global"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const logBridgeScope = "github.com/6022-labs/agentic-orchestrator/gateway"

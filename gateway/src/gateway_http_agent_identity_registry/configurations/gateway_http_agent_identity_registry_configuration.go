@@ -1,16 +1,16 @@
 package configurations
 
 import (
-	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"net/http"
 	"time"
 
+	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	http_registry_clients "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/clients"
 	http_registry_services "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/services"
 	http_registry_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_identity_registry/settings"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
 

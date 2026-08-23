@@ -1,10 +1,10 @@
 package configurations
 
 import (
-	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
 	"net/http"
 	"time"
 
+	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_channels_and_integrations_bridge/clients"

@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -10,9 +11,6 @@ import (
 )
 
 const meterName = "agentic_orchestrator_gateway"
-
-// errorTypeOther is the semconv catch-all for an error with no lower-cardinality classification.
-const errorTypeOther = "_OTHER"
 
 type GatewayMetrics struct {
 	authSuccessCounter      metric.Int64Counter
@@ -43,7 +41,7 @@ func NewGatewayMetrics() *GatewayMetrics {
 
 	walletVerificationCount, err := meter.Int64Counter(
 		"gateway.wallet.verification",
-		metric.WithDescription("Wallet ownership verifications for a bridge, by outcome"),
+		metric.WithDescription("Wallet ownership verifications for a bridge; failures carry error.type"),
 	)
 	if err != nil {
 		walletVerificationCount, _ = noopMeter.Int64Counter("gateway.wallet.verification")
@@ -78,7 +76,7 @@ func (m *GatewayMetrics) RecordWalletVerification(ctx context.Context, err error
 	attrs := []attribute.KeyValue{}
 	// error.type is conditionally required, and only on a failed operation.
 	if err != nil {
-		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
+		attrs = append(attrs, attribute.String("error.type", common_metrics.ErrorType(err)))
 	}
 	m.walletVerificationCount.Add(ctx, 1, metric.WithAttributes(attrs...))
 }

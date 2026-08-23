@@ -13,9 +13,6 @@ import (
 
 const meterName = "agentic_orchestrator_conversation_broker"
 
-// errorTypeOther is the semconv catch-all for an error with no lower-cardinality classification.
-const errorTypeOther = "_OTHER"
-
 type BrokerMetrics struct {
 	conversationsStarted   metric.Int64Counter
 	conversationsConcluded metric.Int64Counter
@@ -141,7 +138,7 @@ func (m *BrokerMetrics) RecordAgentResolution(ctx context.Context, resolver stri
 	attrs := []attribute.KeyValue{attribute.String("resolver", resolver)}
 	// error.type is conditionally required, and only on a failed operation.
 	if err != nil {
-		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
+		attrs = append(attrs, attribute.String("error.type", common_metrics.ErrorType(err)))
 	}
 	m.agentResolutions.Add(ctx, 1, metric.WithAttributes(attrs...))
 }

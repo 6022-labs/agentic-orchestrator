@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
-
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -11,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/ethereum/go-ethereum/common"
