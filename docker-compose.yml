@@ -200,7 +200,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   pgadmin:
-    image: "dpage/pgadmin4:9.14"
+    image: "dpage/pgadmin4:9.17"
     container_name: pgadmin
     user: "root"
     depends_on:
@@ -226,7 +226,7 @@ services:
       orchestrator-network:
 
   evm-node:
-    image: ghcr.io/foundry-rs/foundry:v1.5.0
+    image: ghcr.io/foundry-rs/foundry:v1.7.1
     container_name: evm-node
     ports:
       - "8545:8545"
