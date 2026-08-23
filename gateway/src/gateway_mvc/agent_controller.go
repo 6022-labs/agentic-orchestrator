@@ -5,7 +5,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/zapext"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -71,13 +71,13 @@ func (controller *AgentController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Success      200 {object} responses.AgentResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
-func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
+func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
-	if err := c.ParamsParser(request); err != nil {
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgent.Get(c.UserContext(), request)
+	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to get agent", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -102,13 +102,13 @@ func (controller *AgentController) GetAgent(c *fiber.Ctx) error {
 // @Success      200 {object} responses.ListAgentsResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agents [get]
-func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
+func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 	request := new(requests.ListAgentsRequest)
-	if err := c.QueryParser(request); err != nil {
+	if err := c.Bind().Query(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	resp, err := controller.listAgents.List(c.UserContext(), request)
+	resp, err := controller.listAgents.List(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to list agents", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -136,13 +136,13 @@ func (controller *AgentController) ListAgents(c *fiber.Ctx) error {
 // @Failure      502 {string} string "Bad Gateway"
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/card [get]
-func (controller *AgentController) GetAgentCard(c *fiber.Ctx) error {
+func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
-	if err := c.ParamsParser(request); err != nil {
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentCard.Get(c.UserContext(), request)
+	response, err := controller.getAgentCard.Get(c.Context(), request)
 	if err != nil {
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
@@ -166,13 +166,13 @@ func (controller *AgentController) GetAgentCard(c *fiber.Ctx) error {
 // @Failure      502 {string} string "Bad Gateway"
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/url [get]
-func (controller *AgentController) GetAgentUrl(c *fiber.Ctx) error {
+func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
-	if err := c.ParamsParser(request); err != nil {
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentUrl.Get(c.UserContext(), request)
+	response, err := controller.getAgentUrl.Get(c.Context(), request)
 	if err != nil {
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
@@ -197,13 +197,13 @@ func (controller *AgentController) GetAgentUrl(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [get]
-func (controller *AgentController) GetAgentPromptTemplate(c *fiber.Ctx) error {
+func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 	request := new(requests.GetAgentPromptTemplateRequest)
-	if err := c.ParamsParser(request); err != nil {
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.getAgentPromptTemplate.Get(c.UserContext(), request)
+	response, err := controller.getAgentPromptTemplate.Get(c.Context(), request)
 	if err != nil {
 		return controller.writeUseCaseError(c, err)
 	}
@@ -226,16 +226,16 @@ func (controller *AgentController) GetAgentPromptTemplate(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [post]
-func (controller *AgentController) SaveAgentPromptTemplate(c *fiber.Ctx) error {
+func (controller *AgentController) SaveAgentPromptTemplate(c fiber.Ctx) error {
 	request := new(requests.SaveAgentPromptTemplateRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	if err := c.ParamsParser(&request.GetAgentPromptTemplateRequest); err != nil {
+	if err := c.Bind().URI(&request.GetAgentPromptTemplateRequest); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.saveAgentPromptTemplate.Save(c.UserContext(), request)
+	response, err := controller.saveAgentPromptTemplate.Save(c.Context(), request)
 	if err != nil {
 		return controller.writeUseCaseError(c, err)
 	}
@@ -244,7 +244,7 @@ func (controller *AgentController) SaveAgentPromptTemplate(c *fiber.Ctx) error {
 }
 
 // writeUseCaseError maps domain error types to HTTP statuses.
-func (controller *AgentController) writeUseCaseError(c *fiber.Ctx, err error) error {
+func (controller *AgentController) writeUseCaseError(c fiber.Ctx, err error) error {
 	if validationErr, ok := err.(*errors.ValidationError); ok {
 		return c.Status(fiber.StatusBadRequest).JSON(validationErr)
 	}

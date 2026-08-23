@@ -1,6 +1,6 @@
 package orchestrator_gateway_mvc
 
-import "github.com/gofiber/fiber/v2"
+import "github.com/gofiber/fiber/v3"
 
 const (
 	PING_ENDPOINT = "/ping"
@@ -27,6 +27,6 @@ func (controller *PingController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Produce      plain
 // @Success      200 {string} string "pong"
 // @Router       /ping [get]
-func (controller *PingController) Ping(c *fiber.Ctx) error {
+func (controller *PingController) Ping(c fiber.Ctx) error {
 	return c.SendString("pong")
 }

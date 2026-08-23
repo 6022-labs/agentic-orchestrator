@@ -25,7 +25,7 @@ import (
 	mvc_configuration "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_mvc/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/container_builders"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
@@ -167,7 +167,7 @@ func (s *httpSuite) do(method, path string, body any) (*http.Response, []byte) {
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	resp, err := s.app.Test(req, -1)
+	resp, err := s.app.Test(req, fiber.TestConfig{Timeout: 0, FailOnTimeout: false})
 	if err != nil {
 		panic(err)
 	}

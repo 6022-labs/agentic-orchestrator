@@ -12,7 +12,7 @@ package middlewares_mocks
 import (
 	reflect "reflect"
 
-	fiber "github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v3"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,7 +41,7 @@ func (m *MockAuthInjectionMiddlewareInterface) EXPECT() *MockAuthInjectionMiddle
 }
 
 // Handle mocks base method.
-func (m *MockAuthInjectionMiddlewareInterface) Handle(c *fiber.Ctx) error {
+func (m *MockAuthInjectionMiddlewareInterface) Handle(c fiber.Ctx) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handle", c)
 	ret0, _ := ret[0].(error)

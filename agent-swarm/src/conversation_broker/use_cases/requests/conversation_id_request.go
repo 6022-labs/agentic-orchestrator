@@ -7,7 +7,7 @@ import (
 
 // ConversationIdRequest is shared by ForceConclude and GetConversation.
 type ConversationIdRequest struct {
-	ConversationID uuid.UUID `params:"id"`
+	ConversationID uuid.UUID `uri:"id"`
 }
 
 func (r *ConversationIdRequest) Validate() error {

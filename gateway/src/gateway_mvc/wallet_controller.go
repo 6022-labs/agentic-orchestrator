@@ -5,7 +5,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -49,12 +49,16 @@ func (controller *WalletController) InitUnauthenticatedRoutes(app fiber.Router) 
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /wallet/verify-for-bridge [post]
-func (controller *WalletController) VerifyWalletForBridge(c *fiber.Ctx) error {
+func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
 	controller.logger.Info("Verify wallet for bridge request received")
-	controller.logger.Debug("Request", zap.Any("params", c.AllParams()))
+	params := make(map[string]string, len(c.Route().Params))
+	for _, name := range c.Route().Params {
+		params[name] = c.Params(name)
+	}
+	controller.logger.Debug("Request", zap.Any("params", params))
 
 	request := new(requests.VerifyWalletForBridgeRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		controller.logger.Error("Failed to parse request", zap.Error(err))
 		return err
 	}
@@ -68,7 +72,7 @@ func (controller *WalletController) VerifyWalletForBridge(c *fiber.Ctx) error {
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
-	err := controller.verifyWalletForBridge.Verify(c.UserContext(), request)
+	err := controller.verifyWalletForBridge.Verify(c.Context(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)

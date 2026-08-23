@@ -3,7 +3,7 @@ package slack_bridge_external_mvc
 import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -62,12 +62,12 @@ func (controller *EventHandlerController) InitRoutes(app fiber.Router) {
 // @Failure      400 {string} string "Bad Request"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /event-handler [post]
-func (controller *EventHandlerController) HandleEventRequest(c *fiber.Ctx) error {
+func (controller *EventHandlerController) HandleEventRequest(c fiber.Ctx) error {
 	controller.logger.Info("Received event request")
 
 	// Parse the body as a generic map to check the "type" field
 	var bodyMap map[string]interface{}
-	if err := c.BodyParser(&bodyMap); err != nil {
+	if err := c.Bind().Body(&bodyMap); err != nil {
 		return err
 	}
 
@@ -128,7 +128,7 @@ func (controller *EventHandlerController) HandleEventRequest(c *fiber.Ctx) error
 	return c.Status(fiber.StatusBadRequest).SendString("Unsupported request type")
 }
 
-func (controller *EventHandlerController) handleUrlVerification(c *fiber.Ctx, bodyMap map[string]interface{}) error {
+func (controller *EventHandlerController) handleUrlVerification(c fiber.Ctx, bodyMap map[string]interface{}) error {
 	controller.logger.Info("Received URL verification request")
 
 	if challenge, ok := bodyMap["challenge"].(string); ok {
@@ -138,7 +138,7 @@ func (controller *EventHandlerController) handleUrlVerification(c *fiber.Ctx, bo
 	return c.Status(fiber.StatusBadRequest).SendString("Missing challenge field")
 }
 
-func (controller *EventHandlerController) handleMessageEvent(c *fiber.Ctx, bodyMap map[string]interface{}) error {
+func (controller *EventHandlerController) handleMessageEvent(c fiber.Ctx, bodyMap map[string]interface{}) error {
 	subtype, _ := bodyMap["event"].(map[string]interface{})["subtype"].(string)
 
 	if subtype == "" || subtype == "bot_message" {
@@ -158,13 +158,13 @@ func (controller *EventHandlerController) handleMessageEvent(c *fiber.Ctx, bodyM
 
 }
 
-func (controller *EventHandlerController) handleMessageCreatedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleMessageCreatedEvent(c fiber.Ctx) error {
 	request := new(requests.MessageCreatedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.messageCreatedHandler.Handle(c.UserContext(), request)
+	err := controller.messageCreatedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -175,13 +175,13 @@ func (controller *EventHandlerController) handleMessageCreatedEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleMessageChangedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleMessageChangedEvent(c fiber.Ctx) error {
 	request := new(requests.MessageChangedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.messageChangedHandler.Handle(c.UserContext(), request)
+	err := controller.messageChangedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -192,13 +192,13 @@ func (controller *EventHandlerController) handleMessageChangedEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleMessageDeletedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleMessageDeletedEvent(c fiber.Ctx) error {
 	request := new(requests.MessageDeletedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.messageDeletedHandler.Handle(c.UserContext(), request)
+	err := controller.messageDeletedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -209,13 +209,13 @@ func (controller *EventHandlerController) handleMessageDeletedEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleChannelCreatedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleChannelCreatedEvent(c fiber.Ctx) error {
 	request := new(requests.ChannelCreatedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.channelCreatedHandler.Handle(c.UserContext(), request)
+	err := controller.channelCreatedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -226,13 +226,13 @@ func (controller *EventHandlerController) handleChannelCreatedEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleChannelDeletedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleChannelDeletedEvent(c fiber.Ctx) error {
 	request := new(requests.ChannelDeletedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.channelDeletedHandler.Handle(c.UserContext(), request)
+	err := controller.channelDeletedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -243,13 +243,13 @@ func (controller *EventHandlerController) handleChannelDeletedEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleChannelArchiveEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleChannelArchiveEvent(c fiber.Ctx) error {
 	request := new(requests.ChannelArchiveRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.channelArchiveHandler.Handle(c.UserContext(), request)
+	err := controller.channelArchiveHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -260,13 +260,13 @@ func (controller *EventHandlerController) handleChannelArchiveEvent(c *fiber.Ctx
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleChannelLeftEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleChannelLeftEvent(c fiber.Ctx) error {
 	request := new(requests.ChannelLeftRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.channelLeftHandler.Handle(c.UserContext(), request)
+	err := controller.channelLeftHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -277,13 +277,13 @@ func (controller *EventHandlerController) handleChannelLeftEvent(c *fiber.Ctx) e
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (controller *EventHandlerController) handleChannelIdChangedEvent(c *fiber.Ctx) error {
+func (controller *EventHandlerController) handleChannelIdChangedEvent(c fiber.Ctx) error {
 	request := new(requests.ChannelIdChangedRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return err
 	}
 
-	err := controller.channelIdChangedHandler.Handle(c.UserContext(), request)
+	err := controller.channelIdChangedHandler.Handle(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to handle event", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

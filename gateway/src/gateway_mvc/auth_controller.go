@@ -5,7 +5,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -52,13 +52,13 @@ func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Failure      400 {object} errors.ValidationError
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /auth/challenge [get]
-func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
+func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 	request := new(requests.GetAuthChallengeRequest)
-	if err := c.QueryParser(request); err != nil {
+	if err := c.Bind().Query(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	challenge, err := controller.getAuthChallenge.Execute(c.UserContext(), request)
+	challenge, err := controller.getAuthChallenge.Execute(c.Context(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -81,13 +81,13 @@ func (controller *AuthController) GetAuthChallenge(c *fiber.Ctx) error {
 // @Failure      401 {object} errors.UnauthorizedError "challenge_not_found | signature_mismatch"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /auth/verify [post]
-func (controller *AuthController) VerifyAuth(c *fiber.Ctx) error {
+func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 	request := new(requests.VerifyAuthRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	response, err := controller.verifyAuth.Execute(c.UserContext(), request)
+	response, err := controller.verifyAuth.Execute(c.Context(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return c.Status(fiber.StatusBadRequest).JSON(validationErr)

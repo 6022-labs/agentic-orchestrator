@@ -8,7 +8,7 @@ import (
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc/middlewares"
 	metrics_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/metrics_mocks/interfaces_mocks"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -34,7 +34,7 @@ func (s *WhenRequiringAuthenticationTestingSuite) build(injectedWallet any, inje
 	sut := middlewares.NewAuthenticationMandatoryMiddleware(zap.NewNop(), s.gatewayMetricsMock)
 
 	s.app = fiber.New()
-	s.app.Use(func(c *fiber.Ctx) error {
+	s.app.Use(func(c fiber.Ctx) error {
 		if injectedWallet != nil {
 			c.Locals("authenticated-wallet", injectedWallet)
 		}
@@ -44,7 +44,7 @@ func (s *WhenRequiringAuthenticationTestingSuite) build(injectedWallet any, inje
 		return c.Next()
 	})
 	s.app.Use(sut.Handle)
-	s.app.Get("/protected", func(c *fiber.Ctx) error {
+	s.app.Get("/protected", func(c fiber.Ctx) error {
 		s.downstreamRan = true
 		return c.SendStatus(fiber.StatusOK)
 	})

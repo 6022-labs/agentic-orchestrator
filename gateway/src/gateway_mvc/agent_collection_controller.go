@@ -3,7 +3,7 @@ package orchestrator_gateway_mvc
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -42,10 +42,10 @@ func (controller *AgentCollectionController) InitUnauthenticatedRoutes(app fiber
 // @Success      200 {array} responses.AgentCollectionResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent-collections [get]
-func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) error {
+func (controller *AgentCollectionController) ListAgentCollections(c fiber.Ctx) error {
 	controller.logger.Info("List agent collections request received")
 
-	collections, err := controller.listAgentCollections.List(c.UserContext())
+	collections, err := controller.listAgentCollections.List(c.Context())
 	if err != nil {
 		controller.logger.Error("Failed to list agent collections", zap.Error(err))
 

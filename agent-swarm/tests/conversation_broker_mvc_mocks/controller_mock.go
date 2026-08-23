@@ -12,7 +12,7 @@ package conversation_broker_mvc_mocks
 import (
 	reflect "reflect"
 
-	fiber "github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v3"
 	gomock "go.uber.org/mock/gomock"
 )
 

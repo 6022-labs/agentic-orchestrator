@@ -90,15 +90,15 @@ func (mr *MockBrokerMetricsInterfaceMockRecorder) RecordConversationStarted(ctx 
 }
 
 // RecordDaemonTick mocks base method.
-func (m *MockBrokerMetricsInterface) RecordDaemonTick(ctx context.Context, result string) {
+func (m *MockBrokerMetricsInterface) RecordDaemonTick(ctx context.Context, outcome string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordDaemonTick", ctx, result)
+	m.ctrl.Call(m, "RecordDaemonTick", ctx, outcome)
 }
 
 // RecordDaemonTick indicates an expected call of RecordDaemonTick.
-func (mr *MockBrokerMetricsInterfaceMockRecorder) RecordDaemonTick(ctx, result any) *gomock.Call {
+func (mr *MockBrokerMetricsInterfaceMockRecorder) RecordDaemonTick(ctx, outcome any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordDaemonTick", reflect.TypeOf((*MockBrokerMetricsInterface)(nil).RecordDaemonTick), ctx, result)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordDaemonTick", reflect.TypeOf((*MockBrokerMetricsInterface)(nil).RecordDaemonTick), ctx, outcome)
 }
 
 // RecordMessageIngested mocks base method.

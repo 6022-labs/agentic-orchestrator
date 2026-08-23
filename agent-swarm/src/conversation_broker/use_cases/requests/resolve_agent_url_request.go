@@ -8,7 +8,7 @@ import (
 
 // ResolveAgentUrlRequest identifies the agent by its ENS domain.
 type ResolveAgentUrlRequest struct {
-	EnsDomain string `params:"ensDomain"`
+	EnsDomain string `uri:"ensDomain"`
 }
 
 func (r *ResolveAgentUrlRequest) Validate() error {

@@ -8,9 +8,9 @@ import (
 )
 
 type GetAgentPromptTemplateRequest struct {
-	AgentCollectionAddress string `params:"agentCollectionAddress"`
-	AgentCollectionTokenId string `params:"agentCollectionTokenId"`
-	Key                    string `params:"key"`
+	AgentCollectionAddress string `uri:"agentCollectionAddress"`
+	AgentCollectionTokenId string `uri:"agentCollectionTokenId"`
+	Key                    string `uri:"key"`
 }
 
 func (r *GetAgentPromptTemplateRequest) Validate() error {

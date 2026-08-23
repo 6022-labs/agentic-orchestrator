@@ -11,7 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/settings"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -49,7 +49,7 @@ func main() {
 
 		serverErrCh := make(chan error, 1)
 		go func() {
-			serverErrCh <- app.Listen(port)
+			serverErrCh <- app.Listen(port, fiber.ListenConfig{ListenerNetwork: "tcp"})
 		}()
 
 		sigCh := make(chan os.Signal, 1)

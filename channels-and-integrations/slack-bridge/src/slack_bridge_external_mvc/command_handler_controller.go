@@ -5,7 +5,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -65,11 +65,11 @@ func (controller *CommandHandlerController) InitRoutes(app fiber.Router) {
 // @Failure      400 {string} string "Invalid request body"
 // @Failure      500 {string} string "Failed to handle command"
 // @Router       /command-handler/add-agent-to-channel [post]
-func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fiber.Ctx) error {
+func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received add agent command request")
 
 	var request requests.CommandRequest
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
@@ -83,7 +83,7 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fi
 			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
-	if err := controller.addAgentToChannel.Add(c.UserContext(), addRequest); err != nil {
+	if err := controller.addAgentToChannel.Add(c.Context(), addRequest); err != nil {
 		controller.logger.Error("Failed to handle add agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}
@@ -104,11 +104,11 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c *fi
 // @Failure      400 {string} string "Invalid request body"
 // @Failure      500 {string} string "Failed to handle command"
 // @Router       /command-handler/list-agents-in-channel [post]
-func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *fiber.Ctx) error {
+func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received list agents command request")
 
 	var request requests.CommandRequest
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
@@ -121,7 +121,7 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
 	}
 
-	result, err := controller.listAgentsInChannel.List(c.UserContext(), listRequest)
+	result, err := controller.listAgentsInChannel.List(c.Context(), listRequest)
 	if err != nil {
 		controller.logger.Error("Failed to handle list agents command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
@@ -151,11 +151,11 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c *
 // @Failure      400 {string} string "Invalid request body"
 // @Failure      500 {string} string "Failed to handle command"
 // @Router       /command-handler/remove-agent-from-channel [post]
-func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(c *fiber.Ctx) error {
+func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received remove agent command request")
 
 	var request requests.CommandRequest
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
@@ -169,7 +169,7 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 			SendString("Invalid command format, expected: [collection address] [token ID]")
 	}
 
-	if err := controller.removeAgentFromChannel.Remove(c.UserContext(), removeRequest); err != nil {
+	if err := controller.removeAgentFromChannel.Remove(c.Context(), removeRequest); err != nil {
 		controller.logger.Error("Failed to handle remove agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}
@@ -190,11 +190,11 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 // @Failure      400 {string} string "Invalid command format"
 // @Failure      500 {string} string "Failed to handle command"
 // @Router       /command-handler/verify-wallet-ownership [post]
-func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c *fiber.Ctx) error {
+func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received verify wallet ownership command request")
 
 	var request requests.CommandRequest
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
@@ -207,7 +207,7 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
 	}
 
-	resp, err := controller.verifyWalletOwnership.Verify(c.UserContext(), verifyWalletOwnershipRequest)
+	resp, err := controller.verifyWalletOwnership.Verify(c.Context(), verifyWalletOwnershipRequest)
 	if err != nil {
 		controller.logger.Error("Failed to verify wallet ownership", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
@@ -229,11 +229,11 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 // @Failure      400 {string} string "Invalid command format"
 // @Failure      500 {string} string "Failed to handle command"
 // @Router       /command-handler/pair-slack-user-to-human-agent [post]
-func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentCommand(c *fiber.Ctx) error {
+func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received pair slack user to human agent command request")
 
 	var request requests.CommandRequest
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.Bind().Body(&request); err != nil {
 		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
@@ -248,7 +248,7 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 				"[slack user ID] [human agent collection address] [human agent collection token ID]")
 	}
 
-	if err := controller.pairSlackUserToHumanAgent.Pair(c.UserContext(), pairRequest); err != nil {
+	if err := controller.pairSlackUserToHumanAgent.Pair(c.Context(), pairRequest); err != nil {
 		controller.logger.Error("Failed to handle pair slack user to human agent command", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
 	}

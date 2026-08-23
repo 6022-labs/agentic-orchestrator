@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockListAgentsInterface) EXPECT() *MockListAgentsInterfaceMockRecorder 
 }
 
 // List mocks base method.
-func (m *MockListAgentsInterface) List(request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
+func (m *MockListAgentsInterface) List(ctx context.Context, request *requests.ListAgentsRequest) (*responses.ListAgentsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", request)
+	ret := m.ctrl.Call(m, "List", ctx, request)
 	ret0, _ := ret[0].(*responses.ListAgentsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockListAgentsInterfaceMockRecorder) List(request any) *gomock.Call {
+func (mr *MockListAgentsInterfaceMockRecorder) List(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListAgentsInterface)(nil).List), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListAgentsInterface)(nil).List), ctx, request)
 }
