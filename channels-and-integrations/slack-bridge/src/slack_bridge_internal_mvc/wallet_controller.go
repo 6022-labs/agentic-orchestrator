@@ -5,7 +5,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -43,19 +43,23 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 // @Failure      400 {string} string "Bad Request"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /wallet/set-ownership-to-slack-user [post]
-func (controller *WalletController) SetWalletOwnershipToSlackUser(c *fiber.Ctx) error {
+func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) error {
 	controller.logger.Info("Set wallet ownership to Slack user request received")
-	controller.logger.Debug("Request", zap.Any("params", c.AllParams()))
+	params := make(map[string]string, len(c.Route().Params))
+	for _, name := range c.Route().Params {
+		params[name] = c.Params(name)
+	}
+	controller.logger.Debug("Request", zap.Any("params", params))
 
 	request := new(requests.SetWalletOwnershipToSlackUserRequest)
-	if err := c.BodyParser(request); err != nil {
+	if err := c.Bind().Body(request); err != nil {
 		controller.logger.Error("Failed to parse request", zap.Error(err))
 		return err
 	}
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
-	err := controller.setWalletOwnershipToSlackPlayer.Set(c.UserContext(), request)
+	err := controller.setWalletOwnershipToSlackPlayer.Set(c.Context(), request)
 	if err != nil {
 		if errors.Is(err, requests.ErrValidation) {
 			controller.logger.Warn("Set wallet ownership failed validation", zap.Error(err))

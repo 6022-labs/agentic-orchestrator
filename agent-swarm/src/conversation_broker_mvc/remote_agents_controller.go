@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -45,8 +45,8 @@ func (c *RemoteAgentsController) InitRoutes(app fiber.Router) {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 502 {string} string "Bad Gateway"
 // @Router /remote-agents/{ensDomain}/card [get]
-func (c *RemoteAgentsController) GetCard(ctx *fiber.Ctx) error {
-	card, err := c.getRemoteAgentCard.Get(ctx.UserContext(), ctx.Params("ensDomain"))
+func (c *RemoteAgentsController) GetCard(ctx fiber.Ctx) error {
+	card, err := c.getRemoteAgentCard.Get(ctx.Context(), ctx.Params("ensDomain"))
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -66,13 +66,13 @@ func (c *RemoteAgentsController) GetCard(ctx *fiber.Ctx) error {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 502 {string} string "Bad Gateway"
 // @Router /remote-agents/{ensDomain}/url [get]
-func (c *RemoteAgentsController) GetUrl(ctx *fiber.Ctx) error {
+func (c *RemoteAgentsController) GetUrl(ctx fiber.Ctx) error {
 	request := new(requests.ResolveAgentUrlRequest)
-	if err := ctx.ParamsParser(request); err != nil {
+	if err := ctx.Bind().URI(request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	url, err := c.resolveAgentUrl.Resolve(ctx.UserContext(), request)
+	url, err := c.resolveAgentUrl.Resolve(ctx.Context(), request)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

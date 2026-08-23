@@ -10,6 +10,7 @@
 package use_cases_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	requests "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
@@ -42,16 +43,16 @@ func (m *MockGetAgentInterface) EXPECT() *MockGetAgentInterfaceMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockGetAgentInterface) Get(request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentResponse, error) {
+func (m *MockGetAgentInterface) Get(ctx context.Context, request *requests.AgentByCollectionTokenIdRequest) (*responses.AgentResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", request)
+	ret := m.ctrl.Call(m, "Get", ctx, request)
 	ret0, _ := ret[0].(*responses.AgentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockGetAgentInterfaceMockRecorder) Get(request any) *gomock.Call {
+func (mr *MockGetAgentInterfaceMockRecorder) Get(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetAgentInterface)(nil).Get), request)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetAgentInterface)(nil).Get), ctx, request)
 }

@@ -10,9 +10,9 @@ import (
 
 // GetAgentPromptTemplateRequest identifies one agent-scoped template row.
 type GetAgentPromptTemplateRequest struct {
-	CollectionAddress string `params:"collectionAddress"`
-	CollectionTokenId string `params:"collectionTokenId"`
-	Key               string `params:"key"`
+	CollectionAddress string `uri:"collectionAddress"`
+	CollectionTokenId string `uri:"collectionTokenId"`
+	Key               string `uri:"key"`
 }
 
 func (r *GetAgentPromptTemplateRequest) Validate() error {

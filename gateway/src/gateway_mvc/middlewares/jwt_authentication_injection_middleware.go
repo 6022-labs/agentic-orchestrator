@@ -7,7 +7,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
@@ -30,7 +30,7 @@ func NewJWTAuthenticationInjectionMiddleware(
 	}
 }
 
-func (m *JWTAuthenticationInjectionMiddleware) Handle(c *fiber.Ctx) error {
+func (m *JWTAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 	alreadyInjectedAuthenticatedWallet := c.Locals("authenticated-wallet")
 	if alreadyInjectedAuthenticatedWallet != nil {
 		return c.Next()

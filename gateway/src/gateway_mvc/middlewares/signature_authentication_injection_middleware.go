@@ -6,7 +6,7 @@ import (
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -25,13 +25,13 @@ func NewSignatureAuthenticationInjectionMiddleware(
 	}
 }
 
-func (m *SignatureAuthenticationInjectionMiddleware) Handle(c *fiber.Ctx) error {
+func (m *SignatureAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 	alreadyInjectedAuthenticatedWallet := c.Locals("authenticated-wallet")
 	if alreadyInjectedAuthenticatedWallet != nil {
 		return c.Next()
 	}
 
-	requestQuery := c.Context().QueryArgs().QueryString()
+	requestQuery := c.RequestCtx().QueryArgs().QueryString()
 	requestBody := c.Body()
 
 	payload := append(requestQuery, requestBody...)

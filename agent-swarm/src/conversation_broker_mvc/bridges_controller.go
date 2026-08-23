@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -34,12 +34,12 @@ func (c *BridgesController) InitRoutes(app fiber.Router) {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /bridges [post]
-func (c *BridgesController) RegisterBridge(ctx *fiber.Ctx) error {
+func (c *BridgesController) RegisterBridge(ctx fiber.Ctx) error {
 	req := new(requests.RegisterBridgeRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	bridge, existed, err := c.registerBridge.Register(ctx.UserContext(), req)
+	bridge, existed, err := c.registerBridge.Register(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

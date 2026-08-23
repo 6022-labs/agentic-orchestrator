@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/dig"
 )
 
@@ -13,7 +13,7 @@ import (
 func ConfigureDaemon(container *dig.Container) {
 	err := container.Invoke(func(app *fiber.App, daemon interfaces.ConversationProcessorDaemonInterface) {
 		daemon.Start(context.Background())
-		app.Hooks().OnShutdown(func() error {
+		app.Hooks().OnPreShutdown(func() error {
 			daemon.Stop()
 			return nil
 		})

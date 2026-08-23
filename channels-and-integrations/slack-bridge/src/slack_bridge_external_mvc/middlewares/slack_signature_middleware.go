@@ -10,7 +10,7 @@ import (
 
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -32,14 +32,14 @@ func NewSlackSignatureMiddleware(
 	}
 }
 
-func (m *SlackSignatureMiddleware) Handle(c *fiber.Ctx) error {
+func (m *SlackSignatureMiddleware) Handle(c fiber.Ctx) error {
 	timestamp := c.Get("X-Slack-Request-Timestamp")
 	slackSig := c.Get("X-Slack-Signature")
 
 	// Without this guard swagger, health probes and 404s would all read as verification failures.
 	var verificationErr error
 	if timestamp != "" || slackSig != "" {
-		defer func() { m.channelMetrics.RecordWebhookVerification(c.UserContext(), verificationErr) }()
+		defer func() { m.channelMetrics.RecordWebhookVerification(c.Context(), verificationErr) }()
 	}
 
 	m.logger.Debug("Validating Slack signature", zap.String("timestamp", timestamp), zap.String("signature", slackSig))

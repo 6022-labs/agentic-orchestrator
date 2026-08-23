@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -48,12 +48,12 @@ func (c *ParticipantsController) InitRoutes(app fiber.Router) {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /participants/agents [post]
-func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
+func (c *ParticipantsController) RegisterAgent(ctx fiber.Ctx) error {
 	req := new(requests.RegisterAgentRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, existed, err := c.registerAgent.Register(ctx.UserContext(), req)
+	p, existed, err := c.registerAgent.Register(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -81,12 +81,12 @@ func (c *ParticipantsController) RegisterAgent(ctx *fiber.Ctx) error {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /participants/users [post]
-func (c *ParticipantsController) RegisterUser(ctx *fiber.Ctx) error {
+func (c *ParticipantsController) RegisterUser(ctx fiber.Ctx) error {
 	req := new(requests.RegisterUserRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	p, err := c.registerUser.Register(ctx.UserContext(), req)
+	p, err := c.registerUser.Register(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

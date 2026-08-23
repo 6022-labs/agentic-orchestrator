@@ -2,7 +2,7 @@ package registry_mvc
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -37,8 +37,8 @@ func (controller *AgentCollectionController) RegisterRoutes(app fiber.Router) {
 // @Success      200 {array} responses.AgentCollectionResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent-collections [get]
-func (controller *AgentCollectionController) ListAgentCollections(c *fiber.Ctx) error {
-	collections, err := controller.listAgentCollections.List(c.UserContext())
+func (controller *AgentCollectionController) ListAgentCollections(c fiber.Ctx) error {
+	collections, err := controller.listAgentCollections.List(c.Context())
 	if err != nil {
 		controller.logger.Error("Failed to list agent collections", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

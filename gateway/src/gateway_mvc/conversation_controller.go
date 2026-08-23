@@ -2,7 +2,7 @@ package orchestrator_gateway_mvc
 
 import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -65,16 +65,16 @@ func (controller *ConversationController) InitUnauthenticatedRoutes(app fiber.Ro
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /conversations [get]
-func (controller *ConversationController) List(c *fiber.Ctx) error {
+func (controller *ConversationController) List(c fiber.Ctx) error {
 	var page, elementsPerPage *uint
-	if v := c.QueryInt("page", 0); v > 0 {
+	if v := fiber.Query[int](c, "page", 0); v > 0 {
 		page = lo.ToPtr(uint(v))
 	}
-	if v := c.QueryInt("elementsPerPage", 0); v > 0 {
+	if v := fiber.Query[int](c, "elementsPerPage", 0); v > 0 {
 		elementsPerPage = lo.ToPtr(uint(v))
 	}
 
-	response, err := controller.listConversations.List(c.UserContext(), page, elementsPerPage)
+	response, err := controller.listConversations.List(c.Context(), page, elementsPerPage)
 	if err != nil {
 		controller.logger.Error("Failed to list conversations", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -92,13 +92,13 @@ func (controller *ConversationController) List(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /conversations/{id} [get]
-func (controller *ConversationController) Get(c *fiber.Ctx) error {
+func (controller *ConversationController) Get(c fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversation.Get(c.UserContext(), id)
+	response, err := controller.getConversation.Get(c.Context(), id)
 	if err != nil {
 		controller.logger.Error("Failed to get conversation", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -116,13 +116,13 @@ func (controller *ConversationController) Get(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /conversations/{id}/messages [get]
-func (controller *ConversationController) GetMessages(c *fiber.Ctx) error {
+func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversationMessages.Get(c.UserContext(), id)
+	response, err := controller.getConversationMessages.Get(c.Context(), id)
 	if err != nil {
 		controller.logger.Error("Failed to get conversation messages", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -140,13 +140,13 @@ func (controller *ConversationController) GetMessages(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /conversations/{id}/participants [get]
-func (controller *ConversationController) ListParticipants(c *fiber.Ctx) error {
+func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.listConversationParticipants.List(c.UserContext(), id)
+	response, err := controller.listConversationParticipants.List(c.Context(), id)
 	if err != nil {
 		controller.logger.Error("Failed to list conversation participants", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -163,13 +163,13 @@ func (controller *ConversationController) ListParticipants(c *fiber.Ctx) error {
 // @Failure      500 {string} string "Internal Server Error"
 // @Security     BearerAuth
 // @Router       /conversations/{id}/force-conclude [post]
-func (controller *ConversationController) ForceConclude(c *fiber.Ctx) error {
+func (controller *ConversationController) ForceConclude(c fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	if err := controller.forceConcludeConversation.Conclude(c.UserContext(), id); err != nil {
+	if err := controller.forceConcludeConversation.Conclude(c.Context(), id); err != nil {
 		controller.logger.Error("Failed to force conclude conversation", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}

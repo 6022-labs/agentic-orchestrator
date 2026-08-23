@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -48,13 +48,13 @@ func (c *PromptTemplatesController) InitRoutes(app fiber.Router) {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [get]
-func (c *PromptTemplatesController) Get(ctx *fiber.Ctx) error {
+func (c *PromptTemplatesController) Get(ctx fiber.Ctx) error {
 	req := &requests.GetAgentPromptTemplateRequest{
 		CollectionAddress: ctx.Params("collectionAddress"),
 		CollectionTokenId: ctx.Params("collectionTokenId"),
 		Key:               ctx.Params("key"),
 	}
-	template, err := c.getAgentPromptTemplate.Get(ctx.UserContext(), req)
+	template, err := c.getAgentPromptTemplate.Get(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -82,16 +82,16 @@ func (c *PromptTemplatesController) Get(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [post]
-func (c *PromptTemplatesController) Save(ctx *fiber.Ctx) error {
+func (c *PromptTemplatesController) Save(ctx fiber.Ctx) error {
 	req := new(requests.SaveAgentPromptTemplateRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.CollectionAddress = ctx.Params("collectionAddress")
 	req.CollectionTokenId = ctx.Params("collectionTokenId")
 	req.Key = ctx.Params("key")
 
-	template, err := c.saveAgentPromptTemplate.Save(ctx.UserContext(), req)
+	template, err := c.saveAgentPromptTemplate.Save(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

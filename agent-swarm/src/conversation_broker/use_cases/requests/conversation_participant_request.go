@@ -7,8 +7,8 @@ import (
 
 // ConversationParticipantRequest is shared by Attach and Detach use cases.
 type ConversationParticipantRequest struct {
-	ConversationID uuid.UUID `json:"-"             params:"id"`
-	ParticipantID  uuid.UUID `json:"participantId" params:"participantId"`
+	ConversationID uuid.UUID `json:"-"             uri:"id"`
+	ParticipantID  uuid.UUID `json:"participantId" uri:"participantId"`
 }
 
 func (r *ConversationParticipantRequest) Validate() error {

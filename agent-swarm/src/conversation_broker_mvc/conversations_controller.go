@@ -4,7 +4,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -86,12 +86,12 @@ func (c *ConversationsController) InitRoutes(app fiber.Router) {
 // @Success 200 {object} responses.ListConversationsResponse
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations [get]
-func (c *ConversationsController) List(ctx *fiber.Ctx) error {
+func (c *ConversationsController) List(ctx fiber.Ctx) error {
 	req := new(requests.ListConversationsRequest)
-	if err := ctx.QueryParser(req); err != nil {
+	if err := ctx.Bind().Query(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	resp, err := c.listConversations.List(ctx.UserContext(), req)
+	resp, err := c.listConversations.List(ctx.Context(), req)
 	if err != nil {
 		c.logger.Error("internal error", zap.Error(err))
 		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -109,13 +109,13 @@ func (c *ConversationsController) List(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/messages [get]
-func (c *ConversationsController) GetMessages(ctx *fiber.Ctx) error {
+func (c *ConversationsController) GetMessages(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	messages, err := c.getConversationMessages.Get(
-		ctx.UserContext(),
+		ctx.Context(),
 		&requests.ConversationIdRequest{ConversationID: id},
 	)
 	if err != nil {
@@ -141,13 +141,13 @@ func (c *ConversationsController) GetMessages(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/participants [get]
-func (c *ConversationsController) ListParticipants(ctx *fiber.Ctx) error {
+func (c *ConversationsController) ListParticipants(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	participants, err := c.listConversationParticipants.List(
-		ctx.UserContext(),
+		ctx.Context(),
 		&requests.ConversationIdRequest{ConversationID: id},
 	)
 	if err != nil {
@@ -175,17 +175,17 @@ func (c *ConversationsController) ListParticipants(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/description [patch]
-func (c *ConversationsController) UpdateDescription(ctx *fiber.Ctx) error {
+func (c *ConversationsController) UpdateDescription(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	req := new(requests.UpdateConversationDescriptionRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	if err := c.updateConversationDescription.Update(ctx.UserContext(), req); err != nil {
+	if err := c.updateConversationDescription.Update(ctx.Context(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -209,12 +209,12 @@ func (c *ConversationsController) UpdateDescription(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations [post]
-func (c *ConversationsController) Register(ctx *fiber.Ctx) error {
+func (c *ConversationsController) Register(ctx fiber.Ctx) error {
 	req := new(requests.RegisterConversationRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	conv, err := c.registerConversation.Register(ctx.UserContext(), req)
+	conv, err := c.registerConversation.Register(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -238,12 +238,12 @@ func (c *ConversationsController) Register(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id} [get]
-func (c *ConversationsController) Get(ctx *fiber.Ctx) error {
+func (c *ConversationsController) Get(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
-	conv, err := c.getConversation.Get(ctx.UserContext(), &requests.ConversationIdRequest{ConversationID: id})
+	conv, err := c.getConversation.Get(ctx.Context(), &requests.ConversationIdRequest{ConversationID: id})
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
@@ -266,13 +266,13 @@ func (c *ConversationsController) Get(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/force-conclude [post]
-func (c *ConversationsController) ForceConclude(ctx *fiber.Ctx) error {
+func (c *ConversationsController) ForceConclude(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	if err := c.forceConclude.Conclude(
-		ctx.UserContext(),
+		ctx.Context(),
 		&requests.ConversationIdRequest{ConversationID: id},
 	); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
@@ -299,17 +299,17 @@ func (c *ConversationsController) ForceConclude(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/participants [post]
-func (c *ConversationsController) Attach(ctx *fiber.Ctx) error {
+func (c *ConversationsController) Attach(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	req := new(requests.ConversationParticipantRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	if err := c.attachParticipant.Attach(ctx.UserContext(), req); err != nil {
+	if err := c.attachParticipant.Attach(ctx.Context(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -331,7 +331,7 @@ func (c *ConversationsController) Attach(ctx *fiber.Ctx) error {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/participants/{participantId} [delete]
-func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
+func (c *ConversationsController) Detach(ctx fiber.Ctx) error {
 	convID, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
@@ -341,7 +341,7 @@ func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid participant id")
 	}
 	req := &requests.ConversationParticipantRequest{ConversationID: convID, ParticipantID: partID}
-	if err := c.detachParticipant.Detach(ctx.UserContext(), req); err != nil {
+	if err := c.detachParticipant.Detach(ctx.Context(), req); err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
 		}
@@ -366,17 +366,17 @@ func (c *ConversationsController) Detach(ctx *fiber.Ctx) error {
 // @Failure 404 {object} errors.NotFoundError
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /conversations/{id}/messages [post]
-func (c *ConversationsController) Ingest(ctx *fiber.Ctx) error {
+func (c *ConversationsController) Ingest(ctx fiber.Ctx) error {
 	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 	req := new(requests.IngestMessageRequest)
-	if err := ctx.BodyParser(req); err != nil {
+	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	req.ConversationID = id
-	msg, err := c.ingestMessage.Ingest(ctx.UserContext(), req)
+	msg, err := c.ingestMessage.Ingest(ctx.Context(), req)
 	if err != nil {
 		if validationErr, ok := err.(*errors.ValidationError); ok {
 			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)

@@ -10,7 +10,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/host_configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/settings"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -44,7 +44,7 @@ func main() {
 
 		serverErrCh := make(chan error, 1)
 		go func() {
-			serverErrCh <- app.Listen(fmt.Sprintf(":%s", apiPort))
+			serverErrCh <- app.Listen(fmt.Sprintf(":%s", apiPort), fiber.ListenConfig{ListenerNetwork: "tcp"})
 		}()
 
 		sigCh := make(chan os.Signal, 1)

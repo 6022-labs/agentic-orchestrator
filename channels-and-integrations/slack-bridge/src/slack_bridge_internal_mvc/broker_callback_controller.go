@@ -5,7 +5,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -44,14 +44,14 @@ func (c *BrokerCallbackController) InitRoutes(app fiber.Router) {
 // @Failure      404 {string} string "Not Found"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /broker/callback [post]
-func (c *BrokerCallbackController) Handle(ctx *fiber.Ctx) error {
+func (c *BrokerCallbackController) Handle(ctx fiber.Ctx) error {
 	request := new(requests.PostBrokerCompletionToSlackRequest)
-	if err := ctx.BodyParser(request); err != nil {
+	if err := ctx.Bind().Body(request); err != nil {
 		c.logger.Warn("Failed to parse broker callback payload", zap.Error(err))
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
-	if err := c.postBrokerCompletionToSlack.Post(ctx.UserContext(), request); err != nil {
+	if err := c.postBrokerCompletionToSlack.Post(ctx.Context(), request); err != nil {
 		if errors.Is(err, requests.ErrValidation) {
 			c.logger.Warn("Broker callback failed validation", zap.Error(err))
 			return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
