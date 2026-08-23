@@ -30,7 +30,7 @@ func startPostgres() string {
 	if postgresContainer == nil {
 		ctx := context.Background()
 		req := testcontainers.ContainerRequest{
-			Image:        "postgres:latest",
+			Image:        "postgres:18-alpine",
 			ExposedPorts: []string{"5432/tcp"},
 			Env: map[string]string{
 				"POSTGRES_USER":     "postgres",
