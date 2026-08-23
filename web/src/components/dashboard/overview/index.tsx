@@ -1,5 +1,4 @@
 import React from "react"
-import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import { Bot, Hourglass, Layers, MessagesSquare } from "lucide-react"
 
@@ -21,20 +20,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import EmptyState from "@/components/dashboard/empty-state"
-import { extractErrorMessage } from "@/lib/api-errors"
+import { useAsyncData } from "@/hooks/use-async-data"
 import { formatRelativeTime } from "@/lib/format"
-import type { Conversation } from "@/models/conversation"
 import { listAgents } from "@/queries/api/agents.queries"
 import { listAgentCollections } from "@/queries/api/collections.queries"
 import { listConversations } from "@/queries/api/conversations.queries"
-
-type OverviewStats = {
-  mintedAgentsCount: number
-  proposalsCount: number
-  collectionsCount: number
-  conversationsCount: number
-  activeConversationsCount: number
-}
 
 function StatCard({
   title,
@@ -69,79 +59,67 @@ function StatCard({
 
 export default function OverviewSection() {
   const navigate = useNavigate()
-  const [loading, setLoading] = React.useState(true)
-  const [stats, setStats] = React.useState<OverviewStats | null>(null)
-  const [recentConversations, setRecentConversations] = React.useState<
-    Conversation[]
-  >([])
 
-  const load = React.useCallback(async () => {
-    setLoading(true)
-    try {
-      const [
-        mintedAgentsResponse,
-        proposalsResponse,
-        collectionsResponse,
-        conversationsResponse,
-      ] = await Promise.all([
-        listAgents({ page: 1, elementsPerPage: 1, isMinted: true }),
-        listAgents({ page: 1, elementsPerPage: 1, isMinted: false }),
-        listAgentCollections(),
-        listConversations(1, 10),
-      ])
+  const mintedAgents = useAsyncData(
+    React.useCallback(
+      () => listAgents({ page: 1, elementsPerPage: 1, isMinted: true }),
+      []
+    ),
+    "Failed to load agents"
+  )
+  const proposals = useAsyncData(
+    React.useCallback(
+      () => listAgents({ page: 1, elementsPerPage: 1, isMinted: false }),
+      []
+    ),
+    "Failed to load proposals"
+  )
+  const collections = useAsyncData(
+    React.useCallback(() => listAgentCollections(), []),
+    "Failed to load collections"
+  )
+  const conversations = useAsyncData(
+    React.useCallback(() => listConversations(1, 10), []),
+    "Failed to load conversations"
+  )
 
-      const conversations = conversationsResponse.data.conversations ?? []
-      setStats({
-        mintedAgentsCount: mintedAgentsResponse.data.totalElements,
-        proposalsCount: proposalsResponse.data.totalElements,
-        collectionsCount: collectionsResponse.data.length,
-        conversationsCount: conversationsResponse.data.totalElements,
-        activeConversationsCount: conversations.filter(
-          (c) => c.status === "active"
-        ).length,
-      })
-      setRecentConversations(conversations.slice(0, 5))
-    } catch (error) {
-      toast.error(extractErrorMessage(error, "Failed to load overview"))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  React.useEffect(() => {
-    void load()
-  }, [load])
+  const conversationList = conversations.data?.data.conversations ?? []
+  const recentConversations = conversationList.slice(0, 5)
+  const activeConversationsCount = conversationList.filter(
+    (conversation) => conversation.status === "active"
+  ).length
+  const conversationsCount = conversations.data?.data.totalElements ?? 0
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Agents"
-          value={stats?.mintedAgentsCount ?? 0}
+          value={mintedAgents.data?.data.totalElements ?? 0}
           description="Minted on-chain"
           icon={Bot}
-          loading={loading}
+          loading={mintedAgents.loading}
         />
         <StatCard
           title="Proposals"
-          value={stats?.proposalsCount ?? 0}
+          value={proposals.data?.data.totalElements ?? 0}
           description="Awaiting mint"
           icon={Hourglass}
-          loading={loading}
+          loading={proposals.loading}
         />
         <StatCard
           title="Collections"
-          value={stats?.collectionsCount ?? 0}
+          value={collections.data?.data.length ?? 0}
           description="On-chain agent collections"
           icon={Layers}
-          loading={loading}
+          loading={collections.loading}
         />
         <StatCard
           title="Active conversations"
-          value={stats?.activeConversationsCount ?? 0}
-          description={`Of ${stats?.conversationsCount ?? 0} conversations total`}
+          value={activeConversationsCount}
+          description={`Of ${conversationsCount} conversations total`}
           icon={MessagesSquare}
-          loading={loading}
+          loading={conversations.loading}
         />
       </div>
 
@@ -153,7 +131,7 @@ export default function OverviewSection() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {conversations.loading ? (
             <div className="space-y-2">
               <Skeleton className="h-9 w-full" />
               <Skeleton className="h-9 w-full" />

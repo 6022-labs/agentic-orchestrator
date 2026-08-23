@@ -15,13 +15,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import ConfirmDialog from "@/components/dashboard/confirm-dialog"
 import EmptyState from "@/components/dashboard/empty-state"
+import { useAsyncData } from "@/hooks/use-async-data"
 import { extractErrorMessage } from "@/lib/api-errors"
 import { formatRelativeTime } from "@/lib/format"
-import type {
-  Conversation,
-  ConversationMessage,
-  ConversationParticipant,
-} from "@/models/conversation"
 import {
   forceConcludeConversation,
   getConversation,
@@ -33,50 +29,35 @@ import { participantLabel } from "@/components/dashboard/conversations/conversat
 
 export default function ConversationDetailSection() {
   const { conversationId } = useParams<{ conversationId: string }>()
+  const id = conversationId ?? ""
 
-  const [loading, setLoading] = React.useState(true)
-  const [conversation, setConversation] = React.useState<Conversation | null>(
-    null
-  )
-  const [messages, setMessages] = React.useState<ConversationMessage[]>([])
-  const [participants, setParticipants] = React.useState<
-    ConversationParticipant[]
-  >([])
   const [concluding, setConcluding] = React.useState(false)
 
-  const load = React.useCallback(async () => {
-    if (!conversationId) return
+  const conversationSource = useAsyncData(
+    React.useCallback(() => getConversation(id), [id]),
+    "Failed to load the conversation"
+  )
+  const messagesSource = useAsyncData(
+    React.useCallback(() => getConversationMessages(id), [id]),
+    "Failed to load the transcript"
+  )
+  const participantsSource = useAsyncData(
+    React.useCallback(() => getConversationParticipants(id), [id]),
+    "Failed to load the participants"
+  )
 
-    setLoading(true)
-    try {
-      const [conversationResponse, messagesResponse, participantsResponse] =
-        await Promise.all([
-          getConversation(conversationId),
-          getConversationMessages(conversationId),
-          getConversationParticipants(conversationId),
-        ])
-      setConversation(conversationResponse.data)
-      setMessages(messagesResponse.data ?? [])
-      setParticipants(participantsResponse.data ?? [])
-    } catch (error) {
-      toast.error(extractErrorMessage(error, "Failed to load the conversation"))
-    } finally {
-      setLoading(false)
-    }
-  }, [conversationId])
-
-  React.useEffect(() => {
-    void load()
-  }, [load])
+  const conversation = conversationSource.data?.data ?? null
+  const messages = messagesSource.data?.data ?? []
+  const participants = participantsSource.data?.data ?? []
 
   const onForceConclude = async () => {
-    if (!conversationId) return
-
     setConcluding(true)
     try {
-      await forceConcludeConversation(conversationId)
+      await forceConcludeConversation(id)
       toast.success("Conversation concluded")
-      await load()
+      conversationSource.reload()
+      messagesSource.reload()
+      participantsSource.reload()
     } catch (error) {
       toast.error(
         extractErrorMessage(error, "Failed to conclude the conversation")
@@ -110,91 +91,95 @@ export default function ConversationDetailSection() {
         ) : null}
       </div>
 
-      {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      ) : !conversation ? (
-        <EmptyState
-          icon={MessagesSquare}
-          title="Conversation not found"
-          description="The orchestrator has no conversation with this id."
-        />
-      ) : (
-        <>
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversation</CardTitle>
-                <CardDescription>
-                  {conversation.description || conversation.bridgeId}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge
-                    variant={
-                      conversation.status === "active" ? "default" : "secondary"
-                    }
-                  >
-                    {conversation.status}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Created</span>
-                  <span>{formatRelativeTime(conversation.createdAt)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Updated</span>
-                  <span>{formatRelativeTime(conversation.updatedAt)}</span>
-                </div>
-                {conversation.concludedAt ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Concluded</span>
-                    <span>{formatRelativeTime(conversation.concludedAt)}</span>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Participants</CardTitle>
-                <CardDescription>
-                  Everyone taking part in the conversation.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {participants.length === 0 ? (
-                  <EmptyState icon={Users} title="No participants" />
-                ) : (
-                  <ul className="flex flex-col gap-2">
-                    {participants.map((participant) => (
-                      <li
-                        key={participant.id}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <span className="truncate font-medium">
-                          {participantLabel(participant)}
-                        </span>
-                        {participant.role ? (
-                          <Badge variant="outline">{participant.role}</Badge>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <ConversationTranscript
-            messages={messages}
-            participants={participants}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {conversationSource.loading ? (
+          <Skeleton className="h-56 w-full" />
+        ) : !conversation ? (
+          <EmptyState
+            icon={MessagesSquare}
+            title="Conversation not found"
+            description="The orchestrator has no conversation with this id."
           />
-        </>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Conversation</CardTitle>
+              <CardDescription>
+                {conversation.description || conversation.bridgeId}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Status</span>
+                <Badge
+                  variant={
+                    conversation.status === "active" ? "default" : "secondary"
+                  }
+                >
+                  {conversation.status}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Created</span>
+                <span>{formatRelativeTime(conversation.createdAt)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Updated</span>
+                <span>{formatRelativeTime(conversation.updatedAt)}</span>
+              </div>
+              {conversation.concludedAt ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Concluded</span>
+                  <span>{formatRelativeTime(conversation.concludedAt)}</span>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Participants</CardTitle>
+            <CardDescription>
+              Everyone taking part in the conversation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {participantsSource.loading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-5 w-full" />
+              </div>
+            ) : participants.length === 0 ? (
+              <EmptyState icon={Users} title="No participants" />
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {participants.map((participant) => (
+                  <li
+                    key={participant.id}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <span className="truncate font-medium">
+                      {participantLabel(participant)}
+                    </span>
+                    {participant.role ? (
+                      <Badge variant="outline">{participant.role}</Badge>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {messagesSource.loading ? (
+        <Skeleton className="h-64 w-full" />
+      ) : (
+        <ConversationTranscript
+          messages={messages}
+          participants={participants}
+        />
       )}
     </div>
   )
