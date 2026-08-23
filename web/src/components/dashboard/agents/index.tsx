@@ -1,5 +1,4 @@
 import React from "react"
-import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import { Bot, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 
@@ -25,10 +24,8 @@ import EmptyState from "@/components/dashboard/empty-state"
 import CreateCollectionDialog from "@/components/dashboard/agents/dialogs/create-collection-dialog"
 import TransferAgentDialog from "@/components/dashboard/agents/dialogs/transfer-agent-dialog"
 import AgentAvatar from "@/components/dashboard/agents/agent-avatar"
-import { extractErrorMessage } from "@/lib/api-errors"
+import { useAsyncData } from "@/hooks/use-async-data"
 import { truncateEthAddress } from "@/lib/utils"
-import type { Agent } from "@/models/agent"
-import type { AgentCollection } from "@/models/agent-collection"
 import { canManageAgent } from "@/lib/agent-access"
 import { openAgentNode } from "@/lib/agent-node"
 import { listAgents } from "@/queries/api/agents.queries"
@@ -71,39 +68,33 @@ const FILTERS: {
 export default function AgentsSection() {
   const navigate = useNavigate()
   const { address } = useWallet()
-  const [loading, setLoading] = React.useState(true)
-  const [agents, setAgents] = React.useState<Agent[]>([])
-  const [collections, setCollections] = React.useState<AgentCollection[]>([])
   const [page, setPage] = React.useState(1)
-  const [totalElements, setTotalElements] = React.useState(0)
   const [filter, setFilter] = React.useState<AgentFilter>("minted")
 
   const activeFilter = FILTERS.find((f) => f.value === filter) ?? FILTERS[1]
 
-  const load = React.useCallback(async () => {
-    setLoading(true)
-    try {
-      const [agentsResponse, collectionsResponse] = await Promise.all([
+  const agentsSource = useAsyncData(
+    React.useCallback(
+      () =>
         listAgents({
           page,
           elementsPerPage: ELEMENTS_PER_PAGE,
           isMinted: activeFilter.isMinted,
         }),
-        listAgentCollections(),
-      ])
-      setAgents(agentsResponse.data.agents ?? [])
-      setTotalElements(agentsResponse.data.totalElements)
-      setCollections(collectionsResponse.data ?? [])
-    } catch (error) {
-      toast.error(extractErrorMessage(error, "Failed to load agents"))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, activeFilter])
+      [page, activeFilter]
+    ),
+    "Failed to load agents"
+  )
+  // Collections only name the agent rows — a failing lookup must not blank the table.
+  const collectionsSource = useAsyncData(
+    React.useCallback(() => listAgentCollections(), []),
+    "Failed to load collections"
+  )
 
-  React.useEffect(() => {
-    void load()
-  }, [load])
+  const loading = agentsSource.loading
+  const agents = agentsSource.data?.data.agents ?? []
+  const totalElements = agentsSource.data?.data.totalElements ?? 0
+  const collections = collectionsSource.data?.data ?? []
 
   const collectionName = (address: string) =>
     collections.find(
@@ -122,7 +113,12 @@ export default function AgentsSection() {
               Every agent identity the orchestrator knows about.
             </CardDescription>
           </div>
-          <CreateCollectionDialog onCreated={() => void load()} />
+          <CreateCollectionDialog
+            onCreated={() => {
+              agentsSource.reload()
+              collectionsSource.reload()
+            }}
+          />
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -237,7 +233,7 @@ export default function AgentsSection() {
                             collectionAddress={agent.collectionAddress}
                             collectionTokenId={String(agent.collectionTokenId)}
                             agentName={agent.name}
-                            onTransferred={() => void load()}
+                            onTransferred={() => agentsSource.reload()}
                           />
                         )}
                       </div>
