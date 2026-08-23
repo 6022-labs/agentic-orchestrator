@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/traces/interfaces"
 	"github.com/avast/retry-go/v4"
 	"github.com/google/uuid"
 	"go.uber.org/dig"
@@ -23,6 +25,9 @@ const (
 
 type BlockEventsProcessor struct {
 	logger *zap.Logger
+
+	syncMetrics metrics_interfaces.SyncMetricsInterface
+	syncTracer  traces_interfaces.SyncTracerInterface
 
 	syncCheckpointMu         sync.Mutex
 	syncCheckpointRepository repositories.SyncCheckpointRepositoryInterface
@@ -47,6 +52,9 @@ type NewBlockEventsProcessorParams struct {
 
 	Logger *zap.Logger
 
+	SyncMetrics metrics_interfaces.SyncMetricsInterface
+	SyncTracer  traces_interfaces.SyncTracerInterface
+
 	SyncCheckpointRepository repositories.SyncCheckpointRepositoryInterface
 
 	AgentCollectionV1MintedHandler                interfaces.MintedEventHandlerInterface
@@ -70,6 +78,9 @@ func NewBlockEventsProcessor(
 	return &BlockEventsProcessor{
 		logger: params.Logger,
 
+		syncMetrics: params.SyncMetrics,
+		syncTracer:  params.SyncTracer,
+
 		syncCheckpointRepository: params.SyncCheckpointRepository,
 
 		agentCollectionV1MintedHandler:                params.AgentCollectionV1MintedHandler,
@@ -88,7 +99,23 @@ func NewBlockEventsProcessor(
 	}
 }
 
-func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uint64, item *interfaces.QueueItem) error {
+func (p *BlockEventsProcessor) ProcessBlock(
+	ctx context.Context,
+	blockNumber uint64,
+	item *interfaces.QueueItem,
+) (err error) {
+	ctx, span := p.syncTracer.StartBlockProcessing(ctx, blockNumber)
+	start := time.Now()
+	defer func() {
+		outcome := metrics_interfaces.BlockOutcomeProcessed
+		if err != nil {
+			outcome = metrics_interfaces.BlockOutcomeFailed
+			span.Fail(err)
+		}
+		p.syncMetrics.RecordBlockProcessed(ctx, outcome, time.Since(start))
+		span.End()
+	}()
+
 	p.logger.Info(
 		"Processing block events",
 		zap.Uint64("blockNumber", blockNumber),
@@ -197,7 +224,7 @@ func (p *BlockEventsProcessor) ProcessBlock(ctx context.Context, blockNumber uin
 		return nil
 	}
 
-	if err := retry.Do(
+	if err = retry.Do(
 		operation,
 		retry.Attempts(blockEventsRetryAttempts),
 		retry.Delay(blockEventsRetryDelay),
@@ -232,6 +259,7 @@ func (p *BlockEventsProcessor) saveOrUpdateSyncCheckpoint(ctx context.Context, b
 		if _, err := p.syncCheckpointRepository.Save(ctx, newCheckpoint); err != nil {
 			return fmt.Errorf("failed to create sync checkpoint at block %d: %w", blockNumber, err)
 		}
+		p.syncMetrics.RecordCheckpoint(ctx, blockNumber)
 		return nil
 	}
 
@@ -243,6 +271,7 @@ func (p *BlockEventsProcessor) saveOrUpdateSyncCheckpoint(ctx context.Context, b
 	if _, err := p.syncCheckpointRepository.Save(ctx, checkpoint); err != nil {
 		return fmt.Errorf("failed to update sync checkpoint at block %d: %w", blockNumber, err)
 	}
+	p.syncMetrics.RecordCheckpoint(ctx, blockNumber)
 	return nil
 }
 
@@ -250,8 +279,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1Minted,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "Minted")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1MintedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -263,8 +300,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1TransferEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1Transfer,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "Transfer")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1TransferHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -276,8 +321,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageUpdatedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1AgentImageUpdated,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "AgentImageUpdated")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentImageUpdatedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -289,8 +342,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentImageRemovedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1AgentImageRemoved,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "AgentImageRemoved")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentImageRemovedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -302,8 +363,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalCreatedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1MintProposalCreated,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "MintProposalCreated")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1MintProposalCreatedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -315,8 +384,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1MintProposalRemovedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1MintProposalRemoved,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "MintProposalRemoved")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1MintProposalRemovedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -328,8 +405,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAttributeUpdatedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1AgentAttributeUpdated,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "AgentAttributeUpdated")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAttributeUpdatedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -341,8 +426,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressAddedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1AgentAddressAdded,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "AgentAddressAdded")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAddressAddedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -354,8 +447,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionV1AgentAddressRemovedEvents(
 	ctx context.Context,
 	events []*abi.AgentCollectionV1AgentAddressRemoved,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "AgentAddressRemoved")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionV1AgentAddressRemovedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}
@@ -367,8 +468,16 @@ func (p *BlockEventsProcessor) syncAgentCollectionsManagerCollectionCreatedEvent
 	ctx context.Context,
 	events []*abi.AgentCollectionsManagerCollectionCreated,
 ) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	ctx, span := p.syncTracer.StartEventHandling(ctx, "CollectionCreated")
+	defer span.End()
+
 	for _, event := range events {
 		if err := p.agentCollectionManagerCollectionCreatedHandler.Handle(ctx, event); err != nil {
+			span.Fail(err)
 			return err
 		}
 	}

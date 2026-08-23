@@ -6,7 +6,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/factories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +20,7 @@ type WhenCreatingOrchestratorDbClientTestingSuite struct {
 	sut                          *factories.DatabaseClientFactory
 }
 
-func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbClientTestingSuite {
+func WhenCreatingOrchestratorDbClientBeforeEach(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	databaseSettings := &settings.DatabaseSettings{
@@ -28,8 +30,14 @@ func WhenCreatingOrchestratorDbClientBeforeEach() *WhenCreatingOrchestratorDbCli
 		MigrationsFolderPath: "",
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	sut := factories.NewDatabaseClientFactory(
 		zap.NewNop(),
+		dbQueryMetrics,
 		databaseSettings,
 		migrationsSettings,
 	)
@@ -53,7 +61,7 @@ func TestWhenCreatingOrchestratorDbClient(t *testing.T) {
 	t.Run("Should return a new orchestrator db client", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenCreatingOrchestratorDbClientBeforeEach()
+		suite := WhenCreatingOrchestratorDbClientBeforeEach(t)
 		defer WhenCreatingOrchestratorDbClientAfterEach(suite)
 
 		dbClient, err := suite.sut.CreateDatabaseClient()

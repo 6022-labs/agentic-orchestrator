@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	common_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	synchronizer_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
@@ -18,6 +19,8 @@ import (
 
 type BlockEventsGapEnqueuer struct {
 	logger *zap.Logger
+
+	syncMetrics metrics_interfaces.SyncMetricsInterface
 
 	syncSettings *settings.SyncSettings
 
@@ -34,6 +37,8 @@ type BlockEventsGapEnqueuer struct {
 func NewBlockEventsGapEnqueuer(
 	logger *zap.Logger,
 
+	syncMetrics metrics_interfaces.SyncMetricsInterface,
+
 	syncSettings *settings.SyncSettings,
 
 	blockEventsQueue interfaces.BlockEventsQueueInterface,
@@ -47,6 +52,8 @@ func NewBlockEventsGapEnqueuer(
 ) *BlockEventsGapEnqueuer {
 	return &BlockEventsGapEnqueuer{
 		logger: logger,
+
+		syncMetrics: syncMetrics,
 
 		syncSettings: syncSettings,
 
@@ -242,6 +249,8 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		},
 	)
 
+	enqueuedBlocks := int64(0)
+
 	for blockNumber := minimumBlockToStartFrom; blockNumber <= *toBlock; blockNumber++ {
 		collectionCreatedEventsForBlock := collectionCreatedEventsByBlock[blockNumber]
 
@@ -268,7 +277,10 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			continue
 		}
 
+		enqueuedBlocks++
+
 		if err = b.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(
+			ctx,
 			blockNumber,
 			collectionCreatedEventsForBlock,
 		); err != nil {
@@ -279,11 +291,16 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			)
 		}
 
-		if err = b.blockEventsQueue.AddAgentCollectionV1MintedEvents(blockNumber, mintedEventsForBlock); err != nil {
+		if err = b.blockEventsQueue.AddAgentCollectionV1MintedEvents(
+			ctx,
+			blockNumber,
+			mintedEventsForBlock,
+		); err != nil {
 			return fmt.Errorf("failed to enqueue agent collection v1 minted events for block %d: %w", blockNumber, err)
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1TransferEvents(
+			ctx,
 			blockNumber,
 			transferEventsForBlock,
 		); err != nil {
@@ -295,6 +312,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentImageUpdatedEvents(
+			ctx,
 			blockNumber,
 			imageUpdatedEventsForBlock,
 		); err != nil {
@@ -306,6 +324,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentImageRemovedEvents(
+			ctx,
 			blockNumber,
 			imageRemovedEventsForBlock,
 		); err != nil {
@@ -317,6 +336,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentAttributeUpdatedEvents(
+			ctx,
 			blockNumber,
 			attributeUpdatedEventsForBlock,
 		); err != nil {
@@ -328,6 +348,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentAddressAddedEvents(
+			ctx,
 			blockNumber,
 			walletAddedEventsForBlock,
 		); err != nil {
@@ -339,6 +360,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1AgentAddressRemovedEvents(
+			ctx,
 			blockNumber,
 			walletRemovedEventsForBlock,
 		); err != nil {
@@ -350,6 +372,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1MintProposalCreatedEvents(
+			ctx,
 			blockNumber,
 			mintProposalCreatedEventsForBlock,
 		); err != nil {
@@ -361,6 +384,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1MintProposalRemovedEvents(
+			ctx,
 			blockNumber,
 			mintProposalRemovedEventsForBlock,
 		); err != nil {
@@ -371,6 +395,8 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			)
 		}
 	}
+
+	b.syncMetrics.RecordBackfilledBlocks(ctx, enqueuedBlocks)
 
 	return nil
 }

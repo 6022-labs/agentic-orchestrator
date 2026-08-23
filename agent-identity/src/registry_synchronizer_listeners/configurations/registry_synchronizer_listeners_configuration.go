@@ -3,10 +3,20 @@ package configurations
 import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/metrics/interfaces"
 	"go.uber.org/dig"
 )
 
 func AddRegistrySynchronizerListenersConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		metrics.NewChainEventMetrics,
+		dig.As(new(metrics_interfaces.ChainEventMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	err := addAgentCollectionMintedListenerConfiguration(container)
 	if err != nil {
 		panic(err)

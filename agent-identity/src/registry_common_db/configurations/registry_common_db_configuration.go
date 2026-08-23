@@ -4,14 +4,25 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	infra_factories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/factories"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/metrics/interfaces"
 	infra_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
 	synchronizer_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
 
 func AddRegistryCommonDbConfiguration(container *dig.Container) {
+	// Metrics
+	if err := container.Provide(
+		func() *metrics.DbQueryMetrics { return metrics.NewDbQueryMetrics(semconv.DBSystemNamePostgreSQL) },
+		dig.As(new(metrics_interfaces.DbQueryMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	// Factories
 	err := container.Provide(infra_factories.NewDatabaseClientFactory)
 	if err != nil {

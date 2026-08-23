@@ -2,13 +2,16 @@ package registry_synchronizer_listeners
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 	"sync"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	common_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/metrics/interfaces"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -16,6 +19,9 @@ import (
 
 type AgentCollectionsManagerCollectionCreatedListener struct {
 	logger *zap.Logger
+
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface
+	chainId           uint64
 
 	agentCollectionsManagerSettings                  *settings.AgentCollectionsManagerSettings
 	blockEventsQueue                                 interfaces.BlockEventsQueueInterface
@@ -29,12 +35,17 @@ type AgentCollectionsManagerCollectionCreatedListener struct {
 
 func NewAgentCollectionsManagerCollectionCreatedListener(
 	logger *zap.Logger,
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
+	blockchainSettings *common_settings.BlockchainSettings,
 	agentCollectionsManagerSettings *settings.AgentCollectionsManagerSettings,
 	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionsManagerEventSubscriptionProvider interfaces.AgentCollectionsManagerEventSubscriptionProviderInterface,
 ) *AgentCollectionsManagerCollectionCreatedListener {
 	return &AgentCollectionsManagerCollectionCreatedListener{
 		logger: logger,
+
+		chainEventMetrics: chainEventMetrics,
+		chainId:           uint64(blockchainSettings.ChainId),
 
 		agentCollectionsManagerSettings:                  agentCollectionsManagerSettings,
 		blockEventsQueue:                                 blockEventsQueue,
@@ -97,9 +108,11 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionsManagerCollectionCreated,
 ) {
+	listener.chainEventMetrics.RecordSubscriptionOpened(ctx, "CollectionCreated", listener.chainId)
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
+		defer listener.chainEventMetrics.RecordSubscriptionClosed(ctx, "CollectionCreated", listener.chainId)
 
 		listener.logger.Info("listening for AgentCollectionsManager.CollectionCreated events")
 
@@ -113,22 +126,35 @@ func (listener *AgentCollectionsManagerCollectionCreatedListener) startSubscript
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(
+				start := time.Now()
+				err := listener.blockEventsQueue.AddAgentCollectionsManagerCollectionCreatedEvents(
+					ctx,
 					event.Raw.BlockNumber,
 					[]*abi.AgentCollectionsManagerCollectionCreated{event},
-				); err != nil {
+				)
+				outcome := metrics_interfaces.ChainEventOutcomeHandled
+				if err != nil {
+					outcome = metrics_interfaces.ChainEventOutcomeFailed
 					listener.logger.Error(
 						"failed to enqueue AgentCollectionsManager.CollectionCreated event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),
 						zap.Error(err),
 					)
 				}
+				listener.chainEventMetrics.RecordEvent(
+					ctx,
+					"CollectionCreated",
+					listener.chainId,
+					outcome,
+					time.Since(start),
+				)
 			case <-ctx.Done():
 				return
 			case err := <-subscription.Err():
 				if err == nil {
 					return
 				}
+				listener.chainEventMetrics.RecordSubscriptionError(ctx, "CollectionCreated", listener.chainId)
 				select {
 				case listener.errCh <- fmt.Errorf("agent collections manager collection created subscription error: %w", err):
 				default:

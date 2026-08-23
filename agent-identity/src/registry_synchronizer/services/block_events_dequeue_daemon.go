@@ -95,7 +95,7 @@ func (d *BlockEventsDequeueDaemon) run(ctx context.Context) error {
 }
 
 func (d *BlockEventsDequeueDaemon) DequeueAndProcess(ctx context.Context) error {
-	blockNumber, item := d.blockEventsQueue.Dequeue()
+	blockNumber, item := d.blockEventsQueue.Dequeue(ctx)
 	if item == nil {
 		return nil
 	}

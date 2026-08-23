@@ -13,7 +13,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +25,9 @@ type WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdTestingSuite st
 	sut *repositories.AgentRepository
 }
 
-func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach() *WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdTestingSuite {
+func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach(
+	t *testing.T,
+) *WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -31,12 +35,18 @@ func WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach() *W
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -65,7 +75,7 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndProposalId(t *testing
 		t.Run("Should return agent", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach()
+			suite := WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach(t)
 			defer WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdAfterEach(suite)
 
 			agent := model_builders.NewAgentBuilder().WithCollectionTokenId(nil).Build()
@@ -89,7 +99,7 @@ func TestWhenGettingNotYetMintedAgentByCollectionAddressAndProposalId(t *testing
 		t.Parallel()
 
 		t.Run("Should return nil", func(t *testing.T) {
-			suite := WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach()
+			suite := WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdBeforeEach(t)
 			defer WhenGettingNotYetMintedAgentByCollectionAddressAndProposalIdAfterEach(suite)
 
 			max := new(big.Int).Lsh(big.NewInt(1), 64)

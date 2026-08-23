@@ -14,7 +14,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +27,9 @@ type WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite struct 
 	sut      *repositories.AgentRepository
 }
 
-func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite {
+func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach(
+	t *testing.T,
+) *WhenGettingAgentByCollectionAddressAndCollectionTokenIdTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -33,12 +37,18 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach() *WhenGe
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -67,7 +77,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return entity", func(t *testing.T) {
-			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach()
+			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach(t)
 			defer WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite)
 
 			existingEntity := model_builders.NewAgentBuilder().
@@ -99,7 +109,7 @@ func TestWhenGettingAgentByCollectionAddressAndCollectionTokenId(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return nil without error", func(t *testing.T) {
-			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach()
+			suite := WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach(t)
 			defer WhenGettingAgentByCollectionAddressAndCollectionTokenIdAfterEach(suite)
 
 			max := new(big.Int).Lsh(big.NewInt(1), 64)

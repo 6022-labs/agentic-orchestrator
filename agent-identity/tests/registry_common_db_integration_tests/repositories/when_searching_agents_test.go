@@ -13,8 +13,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
+	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +27,7 @@ type WhenSearchingAgentsTestingSuite struct {
 	sut      *db_repositories.AgentRepository
 }
 
-func WhenSearchingAgentsBeforeEach() *WhenSearchingAgentsTestingSuite {
+func WhenSearchingAgentsBeforeEach(t *testing.T) *WhenSearchingAgentsTestingSuite {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
@@ -33,12 +35,18 @@ func WhenSearchingAgentsBeforeEach() *WhenSearchingAgentsTestingSuite {
 		panic(err)
 	}
 
+	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
+	dbQueryMetrics.EXPECT().
+		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		AnyTimes()
+
 	dbClient, _ := registry_common_db.NewDatabaseClient(
 		connectionString,
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,
 		},
+		dbQueryMetrics,
 	)
 	if err = dbClient.Migrate(); err != nil {
 		panic(err)
@@ -65,7 +73,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 		t.Run("Should return all agents", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenSearchingAgentsBeforeEach()
+			suite := WhenSearchingAgentsBeforeEach(t)
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			firstAgent := model_builders.NewAgentBuilder().Build()
@@ -86,7 +94,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 		t.Run("Should return correct number of agents per page", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenSearchingAgentsBeforeEach()
+			suite := WhenSearchingAgentsBeforeEach(t)
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 5; i++ {
@@ -106,7 +114,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 		t.Run("Should return correct agents for second page", func(t *testing.T) {
 			t.Parallel()
-			suite := WhenSearchingAgentsBeforeEach()
+			suite := WhenSearchingAgentsBeforeEach(t)
 			defer WhenSearchingAgentsAfterEach(suite)
 
 			for i := 0; i < 5; i++ {
@@ -140,7 +148,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 			t.Run("Should return only minted agents", func(t *testing.T) {
 				t.Parallel()
-				suite := WhenSearchingAgentsBeforeEach()
+				suite := WhenSearchingAgentsBeforeEach(t)
 				defer WhenSearchingAgentsAfterEach(suite)
 				saveMixedAgents(suite)
 
@@ -159,7 +167,7 @@ func TestWhenSearchingAgents(t *testing.T) {
 
 			t.Run("Should return only proposal agents", func(t *testing.T) {
 				t.Parallel()
-				suite := WhenSearchingAgentsBeforeEach()
+				suite := WhenSearchingAgentsBeforeEach(t)
 				defer WhenSearchingAgentsAfterEach(suite)
 				saveMixedAgents(suite)
 

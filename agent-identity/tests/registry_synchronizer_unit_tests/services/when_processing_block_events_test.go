@@ -6,12 +6,16 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
+	sync_metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	sync_traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
+	sync_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
+	sync_traces_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/traces_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -19,6 +23,7 @@ import (
 )
 
 type WhenProcessingBlockEventsTestingSuite struct {
+	syncMetricsMock                       *sync_metrics_mocks.MockSyncMetricsInterface
 	syncCheckpointRepositoryMock          *repositories_mocks.MockSyncCheckpointRepositoryInterface
 	mintedEventHandlerMock                *interfaces_mocks.MockMintedEventHandlerInterface
 	transferEventHandlerMock              *interfaces_mocks.MockTransferEventHandlerInterface
@@ -51,12 +56,34 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	)
 	collectionCreatedEventHandlerMock := interfaces_mocks.NewMockCollectionCreatedEventHandlerInterface(mockController)
 
+	syncMetricsMock := sync_metrics_mocks.NewMockSyncMetricsInterface(mockController)
+
+	// Spans are not asserted here.
+	syncTracerMock := sync_traces_mocks.NewMockSyncTracerInterface(mockController)
+	spanMock := sync_traces_mocks.NewMockSpan(mockController)
+	spanMock.EXPECT().End().AnyTimes()
+	spanMock.EXPECT().Fail(gomock.Any()).AnyTimes()
+	syncTracerMock.EXPECT().
+		StartBlockProcessing(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ uint64) (context.Context, sync_traces_interfaces.Span) {
+			return ctx, spanMock
+		}).
+		AnyTimes()
+	syncTracerMock.EXPECT().
+		StartEventHandling(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string) (context.Context, sync_traces_interfaces.Span) {
+			return ctx, spanMock
+		}).
+		AnyTimes()
+
 	sut := services.NewBlockEventsProcessor(
 		services.NewBlockEventsProcessorParams{
-			Logger:                                         zap.NewNop(),
-			SyncCheckpointRepository:                       syncCheckpointRepositoryMock,
-			AgentCollectionV1MintedHandler:                 mintedEventHandlerMock,
-			AgentCollectionV1TransferHandler:               transferEventHandlerMock,
+			Logger:                           zap.NewNop(),
+			SyncMetrics:                      syncMetricsMock,
+			SyncTracer:                       syncTracerMock,
+			SyncCheckpointRepository:         syncCheckpointRepositoryMock,
+			AgentCollectionV1MintedHandler:   mintedEventHandlerMock,
+			AgentCollectionV1TransferHandler: transferEventHandlerMock,
 			AgentCollectionV1AgentImageUpdatedHandler:      agentImageUpdatedEventHandlerMock,
 			AgentCollectionV1AgentImageRemovedHandler:      agentImageRemovedEventHandlerMock,
 			AgentCollectionV1MintProposalCreatedHandler:    mintProposalCreatedEventHandlerMock,
@@ -67,6 +94,7 @@ func WhenProcessingBlockEventsBeforeEach(t *testing.T) *WhenProcessingBlockEvent
 	)
 
 	return &WhenProcessingBlockEventsTestingSuite{
+		syncMetricsMock:                       syncMetricsMock,
 		syncCheckpointRepositoryMock:          syncCheckpointRepositoryMock,
 		mintedEventHandlerMock:                mintedEventHandlerMock,
 		transferEventHandlerMock:              transferEventHandlerMock,
@@ -132,6 +160,10 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 			item := newQueueItem()
 			initSuite(suite, item)
 
+			suite.syncMetricsMock.EXPECT().
+				RecordBlockProcessed(gomock.Any(), sync_metrics_interfaces.BlockOutcomeProcessed, gomock.Any())
+			suite.syncMetricsMock.EXPECT().RecordCheckpoint(gomock.Any(), uint64(42))
+
 			err := suite.sut.ProcessBlock(context.Background(), 42, item)
 
 			assert.NoError(t, err)
@@ -155,6 +187,9 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 			suite := WhenProcessingBlockEventsBeforeEach(t)
 			item := newQueueItem()
 			initSuite(suite, item)
+
+			suite.syncMetricsMock.EXPECT().
+				RecordBlockProcessed(gomock.Any(), sync_metrics_interfaces.BlockOutcomeFailed, gomock.Any())
 
 			err := suite.sut.ProcessBlock(context.Background(), 77, item)
 
@@ -205,6 +240,10 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 			suite := WhenProcessingBlockEventsBeforeEach(t)
 			item := initSuite(suite)
 
+			suite.syncMetricsMock.EXPECT().
+				RecordBlockProcessed(gomock.Any(), sync_metrics_interfaces.BlockOutcomeProcessed, gomock.Any())
+			suite.syncMetricsMock.EXPECT().RecordCheckpoint(gomock.Any(), uint64(51))
+
 			err := suite.sut.ProcessBlock(context.Background(), 51, item)
 
 			assert.NoError(t, err)
@@ -235,6 +274,9 @@ func TestWhenProcessingBlockEvents(t *testing.T) {
 
 			suite := WhenProcessingBlockEventsBeforeEach(t)
 			item := initSuite(suite)
+
+			suite.syncMetricsMock.EXPECT().
+				RecordBlockProcessed(gomock.Any(), sync_metrics_interfaces.BlockOutcomeFailed, gomock.Any())
 
 			err := suite.sut.ProcessBlock(context.Background(), 52, item)
 

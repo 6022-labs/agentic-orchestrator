@@ -2,13 +2,16 @@ package registry_synchronizer_listeners
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 	"slices"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
+	common_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_listeners/metrics/interfaces"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
@@ -19,6 +22,9 @@ type AgentCollectionTransferListener struct {
 
 	logger *zap.Logger
 
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface
+	chainId           uint64
+
 	agentCollectionRepository                repositories.AgentCollectionRepositoryInterface
 	blockEventsQueue                         interfaces.BlockEventsQueueInterface
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface
@@ -28,12 +34,17 @@ type AgentCollectionTransferListener struct {
 
 func NewAgentCollectionTransferListener(
 	logger *zap.Logger,
+	chainEventMetrics metrics_interfaces.ChainEventMetricsInterface,
+	blockchainSettings *common_settings.BlockchainSettings,
 	agentCollectionRepository repositories.AgentCollectionRepositoryInterface,
 	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	agentCollectionEventSubscriptionProvider interfaces.AgentCollectionEventSubscriptionProviderInterface,
 ) *AgentCollectionTransferListener {
 	el := &AgentCollectionTransferListener{
 		logger: logger,
+
+		chainEventMetrics: chainEventMetrics,
+		chainId:           uint64(blockchainSettings.ChainId),
 
 		agentCollectionRepository:                agentCollectionRepository,
 		blockEventsQueue:                         blockEventsQueue,
@@ -135,9 +146,11 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(ctx co
 	subscription ethereum.Subscription,
 	eventChan <-chan *abi.AgentCollectionV1Transfer,
 ) {
+	listener.chainEventMetrics.RecordSubscriptionOpened(ctx, "Transfer", listener.chainId)
 	listener.wg.Add(1)
 	go func() {
 		defer listener.wg.Done()
+		defer listener.chainEventMetrics.RecordSubscriptionClosed(ctx, "Transfer", listener.chainId)
 
 		for {
 			select {
@@ -149,16 +162,22 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(ctx co
 					continue
 				}
 
-				if err := listener.blockEventsQueue.AddAgentCollectionV1TransferEvents(
+				start := time.Now()
+				err := listener.blockEventsQueue.AddAgentCollectionV1TransferEvents(
+					ctx,
 					event.Raw.BlockNumber,
 					[]*abi.AgentCollectionV1Transfer{event},
-				); err != nil {
+				)
+				outcome := metrics_interfaces.ChainEventOutcomeHandled
+				if err != nil {
+					outcome = metrics_interfaces.ChainEventOutcomeFailed
 					listener.logger.Error(
 						"failed to enqueue AgentCollection.Transfer event",
 						zap.Uint64("blockNumber", event.Raw.BlockNumber),
 						zap.Error(err),
 					)
 				}
+				listener.chainEventMetrics.RecordEvent(ctx, "Transfer", listener.chainId, outcome, time.Since(start))
 
 				listener.onBlockSeen(event.Raw.BlockNumber)
 			case <-ctx.Done():
@@ -167,6 +186,7 @@ func (listener *AgentCollectionTransferListener) startSubscriptionHandler(ctx co
 				if err == nil {
 					return
 				}
+				listener.chainEventMetrics.RecordSubscriptionError(ctx, "Transfer", listener.chainId)
 				select {
 				case listener.errCh <- fmt.Errorf("agent collection transfer subscription error: %w", err):
 				default:

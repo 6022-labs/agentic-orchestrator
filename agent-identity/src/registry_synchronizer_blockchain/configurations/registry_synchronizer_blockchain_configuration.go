@@ -3,13 +3,19 @@ package configurations
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
+	common_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/dig"
 )
 
@@ -67,6 +73,15 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	// Metrics
+	err = container.Provide(
+		metrics.NewBlockchainRpcMetrics,
+		dig.As(new(metrics_interfaces.BlockchainRpcMetricsInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Ethereum clients
 	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
 		return ethclient.Dial(rpcNodeSettings.WsUrl)
@@ -76,9 +91,18 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 	}
 
 	// Only the http client is time-bounded: the ws one carries long-lived subscriptions.
-	err = container.Provide(func(rpcNodeSettings *settings.RpcNodeSettings) (*ethclient.Client, error) {
+	err = container.Provide(func(
+		rpcNodeSettings *settings.RpcNodeSettings,
+		blockchainSettings *common_settings.BlockchainSettings,
+		blockchainRpcMetrics metrics_interfaces.BlockchainRpcMetricsInterface,
+	) (*ethclient.Client, error) {
+		chainId := strconv.FormatInt(blockchainSettings.ChainId, 10)
 		httpClient := &http.Client{
 			Timeout: time.Duration(rpcNodeSettings.RequestTimeoutSeconds) * time.Second,
+			Transport: otelhttp.NewTransport(
+				metrics.NewRpcRoundTripper(http.DefaultTransport, blockchainRpcMetrics, chainId),
+				otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
+			),
 		}
 
 		rpcClient, err := rpc.DialOptions(
