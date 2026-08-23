@@ -18,8 +18,8 @@ type WhenSavingParticipantTestingSuite struct {
 	sut      *repositories.ParticipantRepository
 }
 
-func WhenSavingParticipantBeforeEach() *WhenSavingParticipantTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingParticipantBeforeEach(t *testing.T) *WhenSavingParticipantTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingParticipantTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -40,7 +40,7 @@ func TestWhenSavingParticipant(t *testing.T) {
 		t.Run("Should be retrievable by id and by collection key", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingParticipantBeforeEach()
+			suite := WhenSavingParticipantBeforeEach(t)
 			defer WhenSavingParticipantAfterEach(suite)
 
 			entity := model_builders.NewAgentParticipantBuilder().Build()
@@ -65,7 +65,7 @@ func TestWhenSavingParticipant(t *testing.T) {
 		t.Run("Should be retrievable by id", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingParticipantBeforeEach()
+			suite := WhenSavingParticipantBeforeEach(t)
 			defer WhenSavingParticipantAfterEach(suite)
 
 			entity := model_builders.NewUserParticipantBuilder().Build()

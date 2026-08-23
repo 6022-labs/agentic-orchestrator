@@ -19,8 +19,8 @@ type WhenGettingNextAgentToProcessTestingSuite struct {
 	sut      *repositories.ParticipantRepository
 }
 
-func WhenGettingNextAgentToProcessBeforeEach() *WhenGettingNextAgentToProcessTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenGettingNextAgentToProcessBeforeEach(t *testing.T) *WhenGettingNextAgentToProcessTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenGettingNextAgentToProcessTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -41,7 +41,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			next, err := suite.sut.GetNextAgentToProcess(context.Background(), 20)
@@ -57,7 +57,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should not return it", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			p := model_builders.NewAgentParticipantBuilder().WithIsProcessing(true).Build()
@@ -76,7 +76,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should not return it", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			recent := time.Now().UTC().Add(-5 * time.Second)
@@ -96,7 +96,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should return the one with the oldest last_processed_at", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			older := time.Now().UTC().Add(-40 * time.Second)
@@ -121,7 +121,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should return the one with NULL last_processed_at first", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			older := time.Now().UTC().Add(-40 * time.Second)
@@ -145,7 +145,7 @@ func TestWhenGettingNextAgentToProcess(t *testing.T) {
 		t.Run("Should return nil without error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenGettingNextAgentToProcessBeforeEach()
+			suite := WhenGettingNextAgentToProcessBeforeEach(t)
 			defer WhenGettingNextAgentToProcessAfterEach(suite)
 
 			human := model_builders.NewUserParticipantBuilder().Build()

@@ -7,9 +7,11 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_redis/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/container_builders"
+	redis_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_redis_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 type WhenReadingTestingSuite struct {
@@ -17,11 +19,15 @@ type WhenReadingTestingSuite struct {
 	sut         *services.RedisStorage
 }
 
-func WhenReadingBeforeEach() *WhenReadingTestingSuite {
+func WhenReadingBeforeEach(t *testing.T) *WhenReadingTestingSuite {
 	redisClient := container_builders.GetRedisConnection()
+
+	redisMetrics := redis_metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
+	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	sut := services.NewRedisStorage(
 		redisClient,
+		redisMetrics,
 	)
 
 	return &WhenReadingTestingSuite{
@@ -43,7 +49,7 @@ func TestWhenReading(t *testing.T) {
 		t.Run("Should return value", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenReadingBeforeEach()
+			suite := WhenReadingBeforeEach(t)
 			defer WhenReadingAfterEach(suite)
 
 			key := uuid.New().String()
@@ -62,7 +68,7 @@ func TestWhenReading(t *testing.T) {
 		t.Run("Should return error", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenReadingBeforeEach()
+			suite := WhenReadingBeforeEach(t)
 			defer WhenReadingAfterEach(suite)
 
 			key := uuid.New().String()

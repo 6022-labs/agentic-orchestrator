@@ -22,8 +22,8 @@ type WhenSavingConversationMessageTestingSuite struct {
 	participants  *repositories.ParticipantRepository
 }
 
-func WhenSavingConversationMessageBeforeEach() *WhenSavingConversationMessageTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingConversationMessageBeforeEach(t *testing.T) *WhenSavingConversationMessageTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingConversationMessageTestingSuite{
 		dbName:        dbName,
 		dbClient:      dbClient,
@@ -47,7 +47,7 @@ func TestWhenSavingConversationMessage(t *testing.T) {
 		t.Run("Should list them ordered by created_at ASC", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingConversationMessageBeforeEach()
+			suite := WhenSavingConversationMessageBeforeEach(t)
 			defer WhenSavingConversationMessageAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()

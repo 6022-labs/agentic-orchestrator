@@ -42,11 +42,12 @@ func (m *MockConversationConcludeInterface) EXPECT() *MockConversationConcludeIn
 }
 
 // Conclude mocks base method.
-func (m *MockConversationConcludeInterface) Conclude(ctx context.Context, conversationId uuid.UUID) error {
+func (m *MockConversationConcludeInterface) Conclude(ctx context.Context, conversationId uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Conclude", ctx, conversationId)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Conclude indicates an expected call of Conclude.
@@ -56,11 +57,12 @@ func (mr *MockConversationConcludeInterfaceMockRecorder) Conclude(ctx, conversat
 }
 
 // ConcludeIfExists mocks base method.
-func (m *MockConversationConcludeInterface) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) error {
+func (m *MockConversationConcludeInterface) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConcludeIfExists", ctx, conversationId)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ConcludeIfExists indicates an expected call of ConcludeIfExists.

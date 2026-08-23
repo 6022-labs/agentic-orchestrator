@@ -23,31 +23,34 @@ func NewConversationConclude(
 	return &ConversationConclude{conversationRepository: conversationRepository}
 }
 
-func (s *ConversationConclude) Conclude(ctx context.Context, conversationId uuid.UUID) error {
+func (s *ConversationConclude) Conclude(ctx context.Context, conversationId uuid.UUID) (bool, error) {
 	conversation, err := s.conversationRepository.GetById(ctx, conversationId)
 	if err != nil {
-		return fmt.Errorf("failed to load conversation: %w", err)
+		return false, fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
-		return cb_errors.NewNotFoundError("conversation", conversationId.String())
+		return false, cb_errors.NewNotFoundError("conversation", conversationId.String())
 	}
 	return s.concludeConversation(ctx, conversation)
 }
 
-func (s *ConversationConclude) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) error {
+func (s *ConversationConclude) ConcludeIfExists(ctx context.Context, conversationId uuid.UUID) (bool, error) {
 	conversation, err := s.conversationRepository.GetById(ctx, conversationId)
 	if err != nil {
-		return fmt.Errorf("failed to load conversation: %w", err)
+		return false, fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
-		return nil
+		return false, nil
 	}
 	return s.concludeConversation(ctx, conversation)
 }
 
-func (s *ConversationConclude) concludeConversation(ctx context.Context, conversation *models.Conversation) error {
+func (s *ConversationConclude) concludeConversation(
+	ctx context.Context,
+	conversation *models.Conversation,
+) (bool, error) {
 	if conversation.Status == enums.ConversationStatusConcluded {
-		return nil
+		return false, nil
 	}
 
 	now := time.Now()
@@ -56,7 +59,7 @@ func (s *ConversationConclude) concludeConversation(ctx context.Context, convers
 	conversation.UnconcludedAt = nil
 
 	if _, err := s.conversationRepository.Save(ctx, conversation); err != nil {
-		return fmt.Errorf("failed to conclude conversation: %w", err)
+		return false, fmt.Errorf("failed to conclude conversation: %w", err)
 	}
-	return nil
+	return true, nil
 }

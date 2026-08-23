@@ -19,8 +19,8 @@ type WhenSavingBridgeTestingSuite struct {
 	sut      *repositories.BridgeRepository
 }
 
-func WhenSavingBridgeBeforeEach() *WhenSavingBridgeTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingBridgeBeforeEach(t *testing.T) *WhenSavingBridgeTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingBridgeTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -41,7 +41,7 @@ func TestWhenSavingBridge(t *testing.T) {
 		t.Run("Should store bridge in database", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingBridgeBeforeEach()
+			suite := WhenSavingBridgeBeforeEach(t)
 			defer WhenSavingBridgeAfterEach(suite)
 
 			entity := model_builders.NewBridgeBuilder().Build()
@@ -62,7 +62,7 @@ func TestWhenSavingBridge(t *testing.T) {
 		t.Run("Should list all of them via ListByKind", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingBridgeBeforeEach()
+			suite := WhenSavingBridgeBeforeEach(t)
 			defer WhenSavingBridgeAfterEach(suite)
 
 			first := model_builders.NewBridgeBuilder().Build()

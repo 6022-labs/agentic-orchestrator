@@ -12,8 +12,11 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
+	broker_traces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/traces_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -29,12 +32,29 @@ type WhenResolvingRegistryAgentTestingSuite struct {
 func WhenResolvingRegistryAgentBeforeEach(t *testing.T) *WhenResolvingRegistryAgentTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+	mockBrokerMetrics.EXPECT().RecordCacheResult(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockBrokerMetrics.EXPECT().RecordAgentResolution(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	mockBrokerTracer := broker_traces_mocks.NewMockBrokerTracerInterface(mockController)
+	mockSpan := broker_traces_mocks.NewMockSpan(mockController)
+	mockSpan.EXPECT().End().AnyTimes()
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockBrokerTracer.EXPECT().
+		StartAgentResolution(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string, _ string) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).
+		AnyTimes()
+
 	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 	mockAgentRegistryRequester := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
 
 	return &WhenResolvingRegistryAgentTestingSuite{
 		sut: services.NewRegistryAgentResolver(
 			zap.NewNop(),
+			mockBrokerMetrics,
+			mockBrokerTracer,
 			mockCacheStorage,
 			mockAgentRegistryRequester,
 			&settings.RegistryAgentResolutionSettings{CacheTtlSeconds: 60},

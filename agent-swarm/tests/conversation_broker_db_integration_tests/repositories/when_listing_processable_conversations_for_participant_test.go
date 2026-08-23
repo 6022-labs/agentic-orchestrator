@@ -27,8 +27,10 @@ type WhenListingProcessableConversationsForParticipantTestingSuite struct {
 	messages                 *repositories.ConversationMessageRepository
 }
 
-func WhenListingProcessableConversationsForParticipantBeforeEach() *WhenListingProcessableConversationsForParticipantTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenListingProcessableConversationsForParticipantBeforeEach(
+	t *testing.T,
+) *WhenListingProcessableConversationsForParticipantTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenListingProcessableConversationsForParticipantTestingSuite{
 		dbName:                   dbName,
 		dbClient:                 dbClient,
@@ -85,7 +87,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 		t.Run("Should return an empty list", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+			suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 			facilitator := model_builders.NewAgentParticipantBuilder().
@@ -109,7 +111,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 		t.Run("Should not return the conversation", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+			suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
@@ -146,7 +148,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -174,7 +176,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should not return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -203,7 +205,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -236,7 +238,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should not return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -270,7 +272,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -303,7 +305,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -334,7 +336,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -372,7 +374,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should not return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -404,7 +406,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should not return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -437,7 +439,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -471,7 +473,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should not return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -502,7 +504,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 			t.Run("Should return the conversation", func(t *testing.T) {
 				t.Parallel()
 
-				suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+				suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 				defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 				bridge := model_builders.NewBridgeBuilder().Build()
@@ -535,7 +537,7 @@ func TestWhenListingProcessableConversationsForParticipant(t *testing.T) {
 		t.Run("Should not return the other's conversation", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingProcessableConversationsForParticipantBeforeEach()
+			suite := WhenListingProcessableConversationsForParticipantBeforeEach(t)
 			defer WhenListingProcessableConversationsForParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()

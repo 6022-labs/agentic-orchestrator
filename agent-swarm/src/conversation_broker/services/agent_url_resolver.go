@@ -8,10 +8,14 @@ import (
 	"sync"
 	"time"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"go.uber.org/zap"
 )
+
+const agentUrlCacheName = "agent_url"
 
 const agentUrlCachePathTemplate = "agent-urls/%s"
 
@@ -19,6 +23,8 @@ const agentUrlCachePathTemplate = "agent-urls/%s"
 // by the store). Failures are never cached.
 type AgentUrlResolver struct {
 	logger                        *zap.Logger
+	brokerMetrics                 metrics_interfaces.BrokerMetricsInterface
+	brokerTracer                  traces_interfaces.BrokerTracerInterface
 	cacheStorage                  interfaces.CacheStorageInterface
 	ensUrlResolver                interfaces.EnsUrlResolverInterface
 	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings
@@ -27,23 +33,37 @@ type AgentUrlResolver struct {
 
 func NewAgentUrlResolver(
 	logger *zap.Logger,
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
+	brokerTracer traces_interfaces.BrokerTracerInterface,
 	cacheStorage interfaces.CacheStorageInterface,
 	ensUrlResolver interfaces.EnsUrlResolverInterface,
 	remoteAgentResolutionSettings *settings.RemoteAgentResolutionSettings,
 ) *AgentUrlResolver {
 	return &AgentUrlResolver{
 		logger:                        logger,
+		brokerMetrics:                 brokerMetrics,
+		brokerTracer:                  brokerTracer,
 		cacheStorage:                  cacheStorage,
 		ensUrlResolver:                ensUrlResolver,
 		remoteAgentResolutionSettings: remoteAgentResolutionSettings,
 	}
 }
 
-func (r *AgentUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (string, error) {
+func (r *AgentUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (resolved string, err error) {
 	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 	cachePath := fmt.Sprintf(agentUrlCachePathTemplate, ensDomain)
 
+	ctx, span := r.brokerTracer.StartAgentResolution(ctx, metrics_interfaces.ResolverEns, ensDomain)
+	defer func() {
+		if err != nil {
+			span.Fail(err)
+		}
+		r.brokerMetrics.RecordAgentResolution(ctx, metrics_interfaces.ResolverEns, err)
+		span.End()
+	}()
+
 	if url, ok := r.readCachedUrl(ctx, cachePath); ok {
+		r.brokerMetrics.RecordCacheResult(ctx, agentUrlCacheName, true)
 		return url, nil
 	}
 
@@ -53,8 +73,10 @@ func (r *AgentUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (st
 	defer mutex.Unlock()
 
 	if url, ok := r.readCachedUrl(ctx, cachePath); ok {
+		r.brokerMetrics.RecordCacheResult(ctx, agentUrlCacheName, true)
 		return url, nil
 	}
+	r.brokerMetrics.RecordCacheResult(ctx, agentUrlCacheName, false)
 
 	return r.resolveAndCacheUrl(ctx, ensDomain, cachePath)
 }

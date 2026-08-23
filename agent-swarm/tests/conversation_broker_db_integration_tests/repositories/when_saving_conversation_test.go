@@ -19,8 +19,8 @@ type WhenSavingConversationTestingSuite struct {
 	bridges  *repositories.BridgeRepository
 }
 
-func WhenSavingConversationBeforeEach() *WhenSavingConversationTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingConversationBeforeEach(t *testing.T) *WhenSavingConversationTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingConversationTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -42,7 +42,7 @@ func TestWhenSavingConversation(t *testing.T) {
 		t.Run("Should be retrievable by id", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingConversationBeforeEach()
+			suite := WhenSavingConversationBeforeEach(t)
 			defer WhenSavingConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()

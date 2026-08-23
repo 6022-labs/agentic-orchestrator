@@ -19,8 +19,8 @@ type WhenListingConversationsTestingSuite struct {
 	bridges  *repositories.BridgeRepository
 }
 
-func WhenListingConversationsBeforeEach() *WhenListingConversationsTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenListingConversationsBeforeEach(t *testing.T) *WhenListingConversationsTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenListingConversationsTestingSuite{
 		dbName:   dbName,
 		dbClient: dbClient,
@@ -42,7 +42,7 @@ func TestWhenListingConversations(t *testing.T) {
 		t.Run("Should return an empty list", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingConversationsBeforeEach()
+			suite := WhenListingConversationsBeforeEach(t)
 			defer WhenListingConversationsAfterEach(suite)
 
 			conversations, err := suite.sut.List(context.Background(), 1, 10)
@@ -58,7 +58,7 @@ func TestWhenListingConversations(t *testing.T) {
 		t.Run("Should paginate and order by most recently updated", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingConversationsBeforeEach()
+			suite := WhenListingConversationsBeforeEach(t)
 			defer WhenListingConversationsAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()

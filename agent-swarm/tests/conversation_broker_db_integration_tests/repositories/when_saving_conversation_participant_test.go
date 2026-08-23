@@ -21,8 +21,8 @@ type WhenSavingConversationParticipantTestingSuite struct {
 	participants  *repositories.ParticipantRepository
 }
 
-func WhenSavingConversationParticipantBeforeEach() *WhenSavingConversationParticipantTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenSavingConversationParticipantBeforeEach(t *testing.T) *WhenSavingConversationParticipantTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenSavingConversationParticipantTestingSuite{
 		dbName:        dbName,
 		dbClient:      dbClient,
@@ -46,7 +46,7 @@ func TestWhenSavingConversationParticipant(t *testing.T) {
 		t.Run("Should attach, list and detach the participant", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenSavingConversationParticipantBeforeEach()
+			suite := WhenSavingConversationParticipantBeforeEach(t)
 			defer WhenSavingConversationParticipantAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()

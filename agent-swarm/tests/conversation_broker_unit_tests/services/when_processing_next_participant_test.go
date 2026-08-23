@@ -6,11 +6,13 @@ import (
 	"errors"
 	"testing"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/samber/lo"
@@ -20,7 +22,8 @@ import (
 )
 
 type WhenProcessingNextParticipantTestingSuite struct {
-	sut *services.ConversationProcessorDaemon
+	mockBrokerMetrics *broker_metrics_mocks.MockBrokerMetricsInterface
+	sut               *services.ConversationProcessorDaemon
 
 	mockConversationProcessor   *interfaces_mocks.MockConversationProcessorInterface
 	mockParticipantRepository   *repositories_mocks.MockParticipantRepositoryInterface
@@ -30,6 +33,8 @@ type WhenProcessingNextParticipantTestingSuite struct {
 
 func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextParticipantTestingSuite {
 	mockController := gomock.NewController(t)
+
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
 
 	mockConversationProcessor := interfaces_mocks.NewMockConversationProcessorInterface(mockController)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
@@ -45,6 +50,7 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 
 	sut := services.NewConversationProcessorDaemon(
 		zap.NewNop(),
+		mockBrokerMetrics,
 		processingSettings,
 		mockConversationProcessor,
 		mockParticipantRepository,
@@ -53,7 +59,8 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 	)
 
 	return &WhenProcessingNextParticipantTestingSuite{
-		sut: sut,
+		mockBrokerMetrics: mockBrokerMetrics,
+		sut:               sut,
 
 		mockConversationProcessor:  mockConversationProcessor,
 		mockParticipantRepository:  mockParticipantRepository,
@@ -84,6 +91,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			initSuite(suite)
 
 			// No panics, no further interactions — mock controller enforces it.
+			suite.mockBrokerMetrics.EXPECT().
+				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeIdle)
+
 			suite.sut.Tick(context.Background())
 		})
 	})
@@ -129,6 +139,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
 
+			suite.mockBrokerMetrics.EXPECT().
+				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeProcessed)
+
 			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()
 		})
@@ -172,6 +185,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
 
+			suite.mockBrokerMetrics.EXPECT().
+				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeProcessed)
+
 			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()
 		})
@@ -209,6 +225,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 			suite := WhenProcessingNextParticipantBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeProcessed)
 
 			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()

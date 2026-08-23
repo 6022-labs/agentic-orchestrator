@@ -9,9 +9,11 @@ import (
 	"sync"
 	"time"
 
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/traces/interfaces"
 	"go.uber.org/zap"
 )
 
@@ -21,8 +23,12 @@ const (
 )
 
 // RegistryAgentResolver caches the registry's agent projection under every lookup key, so one fetch warms both paths.
+const registryAgentCacheName = "registry_agent"
+
 type RegistryAgentResolver struct {
 	logger                          *zap.Logger
+	brokerMetrics                   metrics_interfaces.BrokerMetricsInterface
+	brokerTracer                    traces_interfaces.BrokerTracerInterface
 	cacheStorage                    interfaces.CacheStorageInterface
 	agentRegistryRequester          interfaces.AgentRegistryRequesterInterface
 	registryAgentResolutionSettings *settings.RegistryAgentResolutionSettings
@@ -31,12 +37,16 @@ type RegistryAgentResolver struct {
 
 func NewRegistryAgentResolver(
 	logger *zap.Logger,
+	brokerMetrics metrics_interfaces.BrokerMetricsInterface,
+	brokerTracer traces_interfaces.BrokerTracerInterface,
 	cacheStorage interfaces.CacheStorageInterface,
 	agentRegistryRequester interfaces.AgentRegistryRequesterInterface,
 	registryAgentResolutionSettings *settings.RegistryAgentResolutionSettings,
 ) *RegistryAgentResolver {
 	return &RegistryAgentResolver{
 		logger:                          logger,
+		brokerMetrics:                   brokerMetrics,
+		brokerTracer:                    brokerTracer,
 		cacheStorage:                    cacheStorage,
 		agentRegistryRequester:          agentRegistryRequester,
 		registryAgentResolutionSettings: registryAgentResolutionSettings,
@@ -49,6 +59,7 @@ func (r *RegistryAgentResolver) ResolveByCollection(
 	collectionTokenId uint64,
 ) (*models.RegistryAgent, error) {
 	return r.resolve(ctx,
+		fmt.Sprintf("%s/%d", collectionAddress, collectionTokenId),
 		r.collectionCachePath(collectionAddress, collectionTokenId),
 		func() (*models.RegistryAgent, error) {
 			return r.agentRegistryRequester.GetAgent(ctx, collectionAddress, collectionTokenId)
@@ -62,7 +73,7 @@ func (r *RegistryAgentResolver) ResolveByEnsDomain(
 ) (*models.RegistryAgent, error) {
 	ensDomain = strings.ToLower(strings.TrimSpace(ensDomain))
 
-	return r.resolve(ctx, r.ensDomainCachePath(ensDomain), func() (*models.RegistryAgent, error) {
+	return r.resolve(ctx, ensDomain, r.ensDomainCachePath(ensDomain), func() (*models.RegistryAgent, error) {
 		return r.agentRegistryRequester.GetMintedAgentByEnsDomain(ctx, ensDomain)
 	})
 }
@@ -82,10 +93,21 @@ func (r *RegistryAgentResolver) ensDomainCachePath(ensDomain string) string {
 // resolve takes a per-key lock so concurrent misses collapse into one registry call.
 func (r *RegistryAgentResolver) resolve(
 	ctx context.Context,
+	agentName string,
 	cachePath string,
 	fetch func() (*models.RegistryAgent, error),
-) (*models.RegistryAgent, error) {
+) (resolved *models.RegistryAgent, err error) {
+	ctx, span := r.brokerTracer.StartAgentResolution(ctx, metrics_interfaces.ResolverRegistry, agentName)
+	defer func() {
+		if err != nil {
+			span.Fail(err)
+		}
+		r.brokerMetrics.RecordAgentResolution(ctx, metrics_interfaces.ResolverRegistry, err)
+		span.End()
+	}()
+
 	if agent, ok := r.readCachedAgent(ctx, cachePath); ok {
+		r.brokerMetrics.RecordCacheResult(ctx, registryAgentCacheName, true)
 		return agent, nil
 	}
 
@@ -95,8 +117,10 @@ func (r *RegistryAgentResolver) resolve(
 	defer mutex.Unlock()
 
 	if agent, ok := r.readCachedAgent(ctx, cachePath); ok {
+		r.brokerMetrics.RecordCacheResult(ctx, registryAgentCacheName, true)
 		return agent, nil
 	}
+	r.brokerMetrics.RecordCacheResult(ctx, registryAgentCacheName, false)
 
 	agent, err := fetch()
 	if err != nil {

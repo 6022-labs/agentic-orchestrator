@@ -10,9 +10,11 @@ import (
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/metrics/interfaces"
 	http_node_models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_http_remote_agent_mocks/clients_mocks"
+	remote_agent_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_http_remote_agent_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +23,8 @@ import (
 )
 
 type WhenRequestingRemoteAgentCompletionsTestingSuite struct {
-	sut *services.RemoteAgentCompletionsRequester
+	mockRemoteAgentMetrics *remote_agent_metrics_mocks.MockRemoteAgentMetricsInterface
+	sut                    *services.RemoteAgentCompletionsRequester
 
 	mockRemoteAgentClient     *clients_mocks.MockRemoteAgentClientInterface
 	x402PaymentPayloadSigner  *interfaces_mocks.MockX402PaymentPayloadSignerInterface
@@ -31,19 +34,23 @@ type WhenRequestingRemoteAgentCompletionsTestingSuite struct {
 func WhenRequestingRemoteAgentCompletionsBeforeEach(t *testing.T) *WhenRequestingRemoteAgentCompletionsTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockRemoteAgentMetrics := remote_agent_metrics_mocks.NewMockRemoteAgentMetricsInterface(mockController)
+
 	mockRemoteAgentClient := clients_mocks.NewMockRemoteAgentClientInterface(mockController)
 	x402PaymentPayloadSigner := interfaces_mocks.NewMockX402PaymentPayloadSignerInterface(mockController)
 	x402PaymentChallengeCache := interfaces_mocks.NewMockX402PaymentChallengeCacheInterface(mockController)
 
 	sut := services.NewRemoteAgentCompletionsRequester(
 		zap.NewNop(),
+		mockRemoteAgentMetrics,
 		mockRemoteAgentClient,
 		x402PaymentPayloadSigner,
 		x402PaymentChallengeCache,
 	)
 
 	return &WhenRequestingRemoteAgentCompletionsTestingSuite{
-		sut: sut,
+		mockRemoteAgentMetrics: mockRemoteAgentMetrics,
+		sut:                    sut,
 
 		mockRemoteAgentClient:     mockRemoteAgentClient,
 		x402PaymentPayloadSigner:  x402PaymentPayloadSigner,
@@ -130,6 +137,9 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			turn := turnForTest()
 			initSuite(suite, turn)
 
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+
 			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
 
 			assert.NoError(t, err)
@@ -163,6 +173,9 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
 
 			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
@@ -207,6 +220,9 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			turn := turnForTest()
 			initSuite(suite, turn)
 
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+
 			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
 
 			assert.NoError(t, err)
@@ -235,6 +251,9 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
 
 			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
@@ -285,6 +304,11 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSettled, "eip155:80002")
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+
 			completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			assert.NoError(t, err)
@@ -326,6 +350,12 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+			// The pre-signed call was accepted, so it settled on the first attempt.
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSettled, gomock.Any())
 
 			completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
@@ -373,6 +403,11 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
 
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSkipped, "eip155:80002")
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+
 			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
 			var paymentRequired *cb_errors.PaymentRequiredError
@@ -405,6 +440,11 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSkipped, gomock.Any())
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
 
 			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 
@@ -449,6 +489,11 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
 			initSuite(t, suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeRejected, gomock.Any())
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
 
 			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
 

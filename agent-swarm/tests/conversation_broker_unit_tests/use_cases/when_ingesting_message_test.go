@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
+	broker_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
@@ -20,7 +21,8 @@ import (
 )
 
 type WhenIngestingMessageTestingSuite struct {
-	sut *use_cases.IngestMessage
+	mockBrokerMetrics *broker_metrics_mocks.MockBrokerMetricsInterface
+	sut               *use_cases.IngestMessage
 
 	mockParticipantRoleResolver       *interfaces_mocks.MockParticipantRoleResolverInterface
 	mockConversationRepository        *repositories_mocks.MockConversationRepositoryInterface
@@ -31,6 +33,8 @@ type WhenIngestingMessageTestingSuite struct {
 func WhenIngestingMessageBeforeEach(t *testing.T) *WhenIngestingMessageTestingSuite {
 	mockController := gomock.NewController(t)
 
+	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
+
 	mockConversationRepository := repositories_mocks.NewMockConversationRepositoryInterface(mockController)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
 	mockConversationMessageRepository := repositories_mocks.NewMockConversationMessageRepositoryInterface(
@@ -40,6 +44,7 @@ func WhenIngestingMessageBeforeEach(t *testing.T) *WhenIngestingMessageTestingSu
 	mockParticipantRoleResolver := interfaces_mocks.NewMockParticipantRoleResolverInterface(mockController)
 
 	sut := use_cases.NewIngestMessage(
+		mockBrokerMetrics,
 		mockConversationRepository,
 		mockParticipantRepository,
 		mockConversationMessageRepository,
@@ -47,7 +52,8 @@ func WhenIngestingMessageBeforeEach(t *testing.T) *WhenIngestingMessageTestingSu
 	)
 
 	return &WhenIngestingMessageTestingSuite{
-		sut: sut,
+		mockBrokerMetrics: mockBrokerMetrics,
+		sut:               sut,
 
 		mockParticipantRoleResolver:       mockParticipantRoleResolver,
 		mockConversationRepository:        mockConversationRepository,
@@ -197,6 +203,8 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
+			suite.mockBrokerMetrics.EXPECT().RecordMessageIngested(gomock.Any(), "unknown")
+
 			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
@@ -250,6 +258,8 @@ func TestWhenIngestingMessage(t *testing.T) {
 			}
 			initSuite(suite, request)
 
+			suite.mockBrokerMetrics.EXPECT().RecordMessageIngested(gomock.Any(), string(enums.ParticipantRoleHuman))
+
 			message, err := suite.sut.Ingest(context.Background(), request)
 
 			assert.NoError(t, err)
@@ -292,6 +302,8 @@ func TestWhenIngestingMessage(t *testing.T) {
 				Content:        "final word",
 			}
 			initSuite(suite, request)
+
+			suite.mockBrokerMetrics.EXPECT().RecordMessageIngested(gomock.Any(), string(enums.ParticipantRoleClone))
 
 			message, err := suite.sut.Ingest(context.Background(), request)
 
@@ -340,6 +352,8 @@ func TestWhenIngestingMessage(t *testing.T) {
 				Content:        "hi",
 			}
 			initSuite(suite, request)
+
+			suite.mockBrokerMetrics.EXPECT().RecordMessageIngested(gomock.Any(), string(enums.ParticipantRoleClone))
 
 			message, err := suite.sut.Ingest(context.Background(), request)
 

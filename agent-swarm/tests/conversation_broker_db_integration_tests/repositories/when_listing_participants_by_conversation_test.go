@@ -22,8 +22,8 @@ type WhenListingParticipantsByConversationTestingSuite struct {
 	conversationParticipants *repositories.ConversationParticipantRepository
 }
 
-func WhenListingParticipantsByConversationBeforeEach() *WhenListingParticipantsByConversationTestingSuite {
-	dbName, dbClient := newMigratedDatabase()
+func WhenListingParticipantsByConversationBeforeEach(t *testing.T) *WhenListingParticipantsByConversationTestingSuite {
+	dbName, dbClient := newMigratedDatabase(t)
 	return &WhenListingParticipantsByConversationTestingSuite{
 		dbName:                   dbName,
 		dbClient:                 dbClient,
@@ -47,7 +47,7 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 		t.Run("Should return all of them and exclude participants from other conversations", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingParticipantsByConversationBeforeEach()
+			suite := WhenListingParticipantsByConversationBeforeEach(t)
 			defer WhenListingParticipantsByConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
@@ -99,7 +99,7 @@ func TestWhenListingParticipantsByConversation(t *testing.T) {
 		t.Run("Should return an empty list", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenListingParticipantsByConversationBeforeEach()
+			suite := WhenListingParticipantsByConversationBeforeEach(t)
 			defer WhenListingParticipantsByConversationAfterEach(suite)
 
 			bridge := model_builders.NewBridgeBuilder().Build()
