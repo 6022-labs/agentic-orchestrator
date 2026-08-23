@@ -7,6 +7,11 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=gateway-1
+      - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=5000
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
@@ -36,6 +41,11 @@ services:
       dockerfile: ./src/registry_synchronizer_host/Dockerfile
     container_name: registry-synchronizer-host
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=registry-synchronizer-1
+      - TELEMETRY__ENVIRONMENT=local
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - BLOCKCHAIN__CHAIN_ID=80002
       - AGENT_COLLECTIONS_MANAGER__SMART_CONTRACT_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
@@ -61,6 +71,11 @@ services:
     ports:
       - "5005:5000"
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=registry-1
+      - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=5000
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
     networks:
@@ -77,6 +92,11 @@ services:
     ports:
       - "5004:3000"
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=conversation-broker-1
+      - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
@@ -111,6 +131,11 @@ services:
     ports:
       - "5101:3000"
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=slack-bridge-internal-1
+      - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - REDIS__HOST=redis:6379
@@ -141,6 +166,11 @@ services:
     ports:
       - "5102:3000"
     environment:
+      - TELEMETRY__ENABLED=true
+      - TELEMETRY__ENDPOINT=orchestrator-alloy:4317
+      - TELEMETRY__INSECURE=true
+      - TELEMETRY__INSTANCE_ID=slack-bridge-external-1
+      - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - REDIS__HOST=redis:6379
@@ -239,6 +269,90 @@ services:
     networks:
       orchestrator-network:
 
+  # Observability stack: Alloy (OTLP) -> Mimir + Loki + Tempo, shown in Grafana.
+  orchestrator-alloy:
+    build: ./grafana/alloy
+    container_name: orchestrator-alloy
+    environment:
+      - LOKI_URL=http://orchestrator-loki:3100
+      - MIMIR_URL=http://orchestrator-mimir:9009
+      - TEMPO_OTLP_URL=http://orchestrator-tempo:4318
+      # Ingest auth is off by default. htpasswd (one credential per sender, `$$` escaped) wins
+      # over token (one shared by every sender).
+      # - OTLP_AUTH_HTPASSWD=ingest-user:secret
+      # - OTLP_AUTH_TOKEN=shared-secret
+      # - OTLP_TLS_CERT_FILE=/certs/alloy.crt
+      # - OTLP_TLS_KEY_FILE=/certs/alloy.key
+      # - OTLP_TLS_CLIENT_CA_FILE=/certs/ca.crt
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    networks:
+      orchestrator-network:
+
+  orchestrator-mimir:
+    image: "grafana/mimir:3.2.0"
+    container_name: orchestrator-mimir
+    command: ["--config.file=/etc/mimir/mimir.yml", "--target=all"]
+    volumes:
+      - ./grafana/mimir/mimir-config.yaml:/etc/mimir/mimir.yml
+      - orchestrator-mimir-data:/mimir-data
+    ports:
+      - "9009:9009"
+    networks:
+      orchestrator-network:
+
+  orchestrator-loki:
+    image: "grafana/loki:3.7.6"
+    container_name: orchestrator-loki
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./grafana/loki/loki-config.yaml:/etc/loki/loki.yaml
+      - orchestrator-loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      orchestrator-network:
+
+  orchestrator-tempo:
+    image: "grafana/tempo:3.0.3"
+    container_name: orchestrator-tempo
+    depends_on:
+      - orchestrator-mimir
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./grafana/tempo/tempo-config.yaml:/etc/tempo/tempo.yml
+      - orchestrator-tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    networks:
+      orchestrator-network:
+
+  orchestrator-grafana:
+    image: "grafana/grafana:13.2.0"
+    container_name: orchestrator-grafana
+    depends_on:
+      - orchestrator-mimir
+      - orchestrator-loki
+      - orchestrator-tempo
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      # Local dev only; this stack is not meant to be exposed.
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      MIMIR_URL: "http://orchestrator-mimir:9009"
+      LOKI_URL: "http://orchestrator-loki:3100"
+      TEMPO_URL: "http://orchestrator-tempo:3200"
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      orchestrator-network:
+
+
 networks:
   orchestrator-network:
     name: orchestrator-network
@@ -246,3 +360,6 @@ networks:
 volumes:
   db-data:
   evm-node-data:
+  orchestrator-mimir-data:
+  orchestrator-loki-data:
+  orchestrator-tempo-data:
