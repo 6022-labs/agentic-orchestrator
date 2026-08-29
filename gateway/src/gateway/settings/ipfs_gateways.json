@@ -1,0 +1,9 @@
+{
+  "_comment": "Gateways the console tries in order. Path form: the node pins CIDv0 hashes, which subdomain gateways cannot serve. Override with ipfs.gateway_url_templates (IPFS__GATEWAY_URL_TEMPLATES, comma-separated).",
+  "templates": [
+    "https://w3s.link/ipfs/{cid}",
+    "https://4everland.io/ipfs/{cid}",
+    "https://dweb.link/ipfs/{cid}",
+    "https://ipfs.io/ipfs/{cid}"
+  ]
+}

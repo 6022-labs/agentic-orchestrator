@@ -7,10 +7,12 @@ export type EvmChainConfig = {
   scannerBaseUrl: string
 }
 
-// Config served by the gateway's GET /config at boot; evmChains keyed by chain id.
+// Config served by the gateway's GET /config at boot; evmChains keyed by chain id,
+// ipfsGatewayUrlTemplates tried in order to resolve a CID ({cid} substituted).
 export type AppConfig = {
   evmChains: Record<string, EvmChainConfig>
   orchestratorAddress: string
+  ipfsGatewayUrlTemplates: string[]
 }
 
 let appConfig: AppConfig | null = null
@@ -42,9 +44,7 @@ export function getAppConfig(): AppConfig {
 
 // getEvmChainConfig returns the config for a chain id, or undefined if the
 // gateway does not serve that chain.
-function getEvmChainConfig(
-  chainId: string,
-): EvmChainConfig | undefined {
+function getEvmChainConfig(chainId: string): EvmChainConfig | undefined {
   return getAppConfig().evmChains[chainId]
 }
 

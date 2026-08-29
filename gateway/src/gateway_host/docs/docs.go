@@ -492,19 +492,19 @@ const docTemplate = `{
         },
         "/config": {
             "get": {
-                "description": "The EVM chain config (keyed by chain id) the console boots from",
+                "description": "The chain config (keyed by chain id) and IPFS gateways the console boots from",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "config"
                 ],
-                "summary": "Public chain config",
+                "summary": "Public node config",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BlockchainConfigResponse"
+                            "$ref": "#/definitions/responses.ConfigResponse"
                         }
                     },
                     "500": {
@@ -1005,20 +1005,6 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BlockchainConfigResponse": {
-            "type": "object",
-            "properties": {
-                "evmChains": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/responses.EvmChainConfig"
-                    }
-                },
-                "orchestratorAddress": {
-                    "type": "string"
-                }
-            }
-        },
         "responses.BrokerConversationResponse": {
             "type": "object",
             "properties": {
@@ -1084,6 +1070,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "evmChains": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/responses.EvmChainConfig"
+                    }
+                },
+                "ipfsGatewayUrlTemplates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "orchestratorAddress": {
                     "type": "string"
                 }
             }

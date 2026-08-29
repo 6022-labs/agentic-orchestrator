@@ -5,7 +5,6 @@ interface ImportMetaEnv {
   readonly VITE_ENVIRONMENT?: string
   readonly VITE_GATEWAY_API_BASE_URL?: string
   readonly VITE_SCANNER_BASE_URL?: string
-  readonly VITE_IPFS_GATEWAY?: string
   readonly VITE_AGENT_COLLECTIONS_MANAGER_ADDRESS?: string
   readonly VITE_AGENT_COLLECTION_CREATOR_ADDRESS?: string
 }

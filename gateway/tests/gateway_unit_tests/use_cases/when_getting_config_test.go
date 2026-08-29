@@ -9,30 +9,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WhenGettingBlockchainConfigTestingSuite struct {
-	sut *use_cases.GetBlockchainConfig
+type WhenGettingConfigTestingSuite struct {
+	sut *use_cases.GetConfig
 }
 
-func WhenGettingBlockchainConfigBeforeEach(
+func WhenGettingConfigBeforeEach(
 	blockchainConfigSettings *settings.BlockchainConfigSettings,
-) *WhenGettingBlockchainConfigTestingSuite {
+) *WhenGettingConfigTestingSuite {
 	walletSettings := &settings.WalletSettings{
 		Address: common.HexToAddress("0x2222222222222222222222222222222222222222"),
 	}
 
-	return &WhenGettingBlockchainConfigTestingSuite{
-		sut: use_cases.NewGetBlockchainConfig(blockchainConfigSettings, walletSettings),
+	ipfsGatewaysSettings := &settings.IpfsGatewaysSettings{
+		GatewayUrlTemplates: []string{"https://{cid}.ipfs.example.com"},
+	}
+
+	return &WhenGettingConfigTestingSuite{
+		sut: use_cases.NewGetConfig(blockchainConfigSettings, walletSettings, ipfsGatewaysSettings),
 	}
 }
 
-func TestWhenGettingBlockchainConfig(t *testing.T) {
+func TestWhenGettingConfig(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Given chains are configured", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func() *WhenGettingBlockchainConfigTestingSuite {
-			return WhenGettingBlockchainConfigBeforeEach(&settings.BlockchainConfigSettings{
+		initSuite := func() *WhenGettingConfigTestingSuite {
+			return WhenGettingConfigBeforeEach(&settings.BlockchainConfigSettings{
 				EvmChains: map[string]settings.EvmChainSettings{
 					"80002": {
 						CollectionsManagerAddress: "0x39DD75a025145770a8b8278Cc8BA705116443Ea7",
@@ -69,13 +73,24 @@ func TestWhenGettingBlockchainConfig(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, "0x2222222222222222222222222222222222222222", resp.OrchestratorAddress)
 		})
+
+		t.Run("Should expose the configured ipfs gateways", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite()
+
+			resp, err := suite.sut.Get()
+
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"https://{cid}.ipfs.example.com"}, resp.IpfsGatewayUrlTemplates)
+		})
 	})
 
 	t.Run("Given no chain is configured", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func() *WhenGettingBlockchainConfigTestingSuite {
-			return WhenGettingBlockchainConfigBeforeEach(
+		initSuite := func() *WhenGettingConfigTestingSuite {
+			return WhenGettingConfigBeforeEach(
 				&settings.BlockchainConfigSettings{EvmChains: map[string]settings.EvmChainSettings{}},
 			)
 		}

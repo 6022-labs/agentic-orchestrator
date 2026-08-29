@@ -5,26 +5,29 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
 
-type GetBlockchainConfigInterface interface {
-	Get() (*responses.BlockchainConfigResponse, error)
+type GetConfigInterface interface {
+	Get() (*responses.ConfigResponse, error)
 }
 
-type GetBlockchainConfig struct {
+type GetConfig struct {
 	blockchainConfigSettings *settings.BlockchainConfigSettings
 	walletSettings           *settings.WalletSettings
+	ipfsGatewaysSettings     *settings.IpfsGatewaysSettings
 }
 
-func NewGetBlockchainConfig(
+func NewGetConfig(
 	blockchainConfigSettings *settings.BlockchainConfigSettings,
 	walletSettings *settings.WalletSettings,
-) *GetBlockchainConfig {
-	return &GetBlockchainConfig{
+	ipfsGatewaysSettings *settings.IpfsGatewaysSettings,
+) *GetConfig {
+	return &GetConfig{
 		blockchainConfigSettings: blockchainConfigSettings,
 		walletSettings:           walletSettings,
+		ipfsGatewaysSettings:     ipfsGatewaysSettings,
 	}
 }
 
-func (uc *GetBlockchainConfig) Get() (*responses.BlockchainConfigResponse, error) {
+func (uc *GetConfig) Get() (*responses.ConfigResponse, error) {
 	evmChains := make(map[string]responses.EvmChainConfig, len(uc.blockchainConfigSettings.EvmChains))
 	for chainId, chain := range uc.blockchainConfigSettings.EvmChains {
 		evmChains[chainId] = responses.EvmChainConfig{
@@ -34,8 +37,9 @@ func (uc *GetBlockchainConfig) Get() (*responses.BlockchainConfigResponse, error
 		}
 	}
 
-	return &responses.BlockchainConfigResponse{
-		EvmChains:           evmChains,
-		OrchestratorAddress: uc.walletSettings.Address.Hex(),
+	return &responses.ConfigResponse{
+		EvmChains:               evmChains,
+		OrchestratorAddress:     uc.walletSettings.Address.Hex(),
+		IpfsGatewayUrlTemplates: uc.ipfsGatewaysSettings.GatewayUrlTemplates,
 	}, nil
 }

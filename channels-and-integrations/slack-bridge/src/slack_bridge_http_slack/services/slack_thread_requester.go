@@ -61,7 +61,7 @@ func (s *SlackThreadRequester) PushCompletionToThread(
 	}
 
 	if slackAgent != nil && slackAgent.IconImageCid != nil {
-		iconUrl := fmt.Sprintf(s.ipfsGatewaySettings.GatewayUrlTemplate, *slackAgent.IconImageCid)
+		iconUrl := s.ipfsGatewaySettings.ImageUrl(*slackAgent.IconImageCid)
 		request.IconUrl = &iconUrl
 	}
 

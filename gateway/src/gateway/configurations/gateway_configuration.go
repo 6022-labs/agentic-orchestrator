@@ -33,6 +33,11 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewIpfsGatewaysSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(settings.NewBlockchainConfigSettings)
 	if err != nil {
 		panic(err)
@@ -139,8 +144,8 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
-		use_cases.NewGetBlockchainConfig,
-		dig.As(new(use_cases.GetBlockchainConfigInterface)),
+		use_cases.NewGetConfig,
+		dig.As(new(use_cases.GetConfigInterface)),
 	)
 	if err != nil {
 		panic(err)

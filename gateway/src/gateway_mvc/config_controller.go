@@ -9,15 +9,15 @@ import (
 const GET_CONFIG_ENDPOINT = "/config"
 
 type ConfigController struct {
-	logger              *zap.Logger
-	getBlockchainConfig use_cases.GetBlockchainConfigInterface
+	logger    *zap.Logger
+	getConfig use_cases.GetConfigInterface
 }
 
 func NewConfigController(
 	logger *zap.Logger,
-	getBlockchainConfig use_cases.GetBlockchainConfigInterface,
+	getConfig use_cases.GetConfigInterface,
 ) *ConfigController {
-	return &ConfigController{logger: logger, getBlockchainConfig: getBlockchainConfig}
+	return &ConfigController{logger: logger, getConfig: getConfig}
 }
 
 func (controller *ConfigController) InitAuthenticatedRoutes(app fiber.Router) {
@@ -29,15 +29,15 @@ func (controller *ConfigController) InitUnauthenticatedRoutes(app fiber.Router) 
 }
 
 // Get godoc
-// @Summary      Public chain config
-// @Description  The EVM chain config (keyed by chain id) the console boots from
+// @Summary      Public node config
+// @Description  The chain config (keyed by chain id) and IPFS gateways the console boots from
 // @Tags         config
 // @Produce      json
-// @Success      200 {object} responses.BlockchainConfigResponse
+// @Success      200 {object} responses.ConfigResponse
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /config [get]
 func (controller *ConfigController) Get(c fiber.Ctx) error {
-	response, err := controller.getBlockchainConfig.Get()
+	response, err := controller.getConfig.Get()
 	if err != nil {
 		controller.logger.Error("Failed to get config", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")

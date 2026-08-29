@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import ConfirmDialog from "@/components/dashboard/confirm-dialog"
 import EmptyState from "@/components/dashboard/empty-state"
+import IpfsImage from "@/components/ipfs-image"
 import { extractErrorMessage } from "@/lib/api-errors"
 import type { AgentCollection } from "@/models/agent-collection"
 import { useWallet } from "@/contexts/wallet-provider-context"
@@ -39,7 +40,7 @@ type ProposalsPanelProps<TProposal extends { id: number }> = {
     proposalId: number,
     wallet: Eip1193Provider
   ) => Promise<unknown>
-  getImage: (proposal: TProposal) => { url?: string; alt: string }
+  getImage: (proposal: TProposal) => { value?: string; alt: string }
   renderBody: (proposal: TProposal) => React.ReactNode
   rejectDialog: (proposal: TProposal) => { title: string; description: string }
 }
@@ -80,7 +81,10 @@ export default function ProposalsPanel<TProposal extends { id: number }>({
       const entries = await Promise.all(
         collections.map(
           async (collection) =>
-            [collection.address, await list(collection.address, wallet)] as const
+            [
+              collection.address,
+              await list(collection.address, wallet),
+            ] as const
         )
       )
       setProposalsByCollection(Object.fromEntries(entries))
@@ -173,13 +177,11 @@ export default function ProposalsPanel<TProposal extends { id: number }>({
                         key={actionKey}
                         className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row"
                       >
-                        {image.url ? (
-                          <img
-                            src={image.url}
-                            alt={image.alt}
-                            className="size-24 shrink-0 rounded-lg object-cover"
-                          />
-                        ) : null}
+                        <IpfsImage
+                          value={image.value}
+                          alt={image.alt}
+                          className="size-24 shrink-0 rounded-lg object-cover"
+                        />
                         <div className="flex min-w-0 flex-1 flex-col gap-2">
                           {renderBody(proposal)}
                         </div>

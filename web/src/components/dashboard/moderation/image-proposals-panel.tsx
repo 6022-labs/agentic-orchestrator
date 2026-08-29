@@ -2,7 +2,6 @@ import { ImageIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import ProposalsPanel from "@/components/dashboard/moderation/proposals-panel"
-import { ipfsImageUrl } from "@/lib/ipfs"
 import type { AddOrUpdateImageProposal } from "@/models/add-or-update-image-proposal"
 import type { AgentCollection } from "@/models/agent-collection"
 import {
@@ -28,7 +27,7 @@ export default function ImageProposalsPanel({
       accept={addOrUpdateAgentImageFromProposal}
       reject={refuseAddOrUpdateAgentImageProposal}
       getImage={(proposal) => ({
-        url: ipfsImageUrl(proposal.image?.value) ?? undefined,
+        value: proposal.image?.value,
         alt: proposal.image.key,
       })}
       renderBody={(proposal) => (

@@ -15,7 +15,7 @@ import { canManageAgent } from "@/lib/agent-access"
 import { openAgentNode } from "@/lib/agent-node"
 import { extractErrorMessage } from "@/lib/api-errors"
 import { useWallet } from "@/contexts/wallet-provider-context"
-import { ipfsImageUrl } from "@/lib/ipfs"
+import IpfsImage from "@/components/ipfs-image"
 import { chainIdFromEnsDomain } from "@/lib/ens-label"
 import {
   getEnsAppUrl,
@@ -101,10 +101,8 @@ export default function AgentDetailSection() {
   }
 
   const chainId = agent ? chainIdFromEnsDomain(agent.ensDomain) : ""
-  const imageUrl = agent
-    ? ipfsImageUrl(
-        agent.images?.default ?? Object.values(agent.images ?? {})[0]
-      )
+  const imageValue = agent
+    ? (agent.images?.default ?? Object.values(agent.images ?? {})[0])
     : null
   const tokenId = agent?.collectionTokenId ?? null
   const openSeaUrl = agent
@@ -174,19 +172,18 @@ export default function AgentDetailSection() {
           <Card>
             <CardContent className="flex flex-col gap-6">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
-                {imageUrl || openSeaUrl || raribleUrl ? (
+                {imageValue || openSeaUrl || raribleUrl ? (
                   <div className="flex w-full shrink-0 flex-col gap-2 sm:w-64">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={agent.name}
-                        className="w-full rounded-lg border"
-                      />
-                    ) : (
-                      <div className="flex aspect-square w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
-                        <Bot className="size-1/3" />
-                      </div>
-                    )}
+                    <IpfsImage
+                      value={imageValue}
+                      alt={agent.name}
+                      className="w-full rounded-lg border"
+                      fallback={
+                        <div className="flex aspect-square w-full items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                          <Bot className="size-1/3" />
+                        </div>
+                      }
+                    />
                     {openSeaUrl || raribleUrl ? (
                       <div className="grid grid-cols-2 gap-2">
                         {openSeaUrl ? (

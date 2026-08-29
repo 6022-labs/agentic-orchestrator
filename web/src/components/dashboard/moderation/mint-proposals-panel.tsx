@@ -3,7 +3,6 @@ import { Inbox } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import ProposalAddress from "@/components/dashboard/moderation/proposal-address"
 import ProposalsPanel from "@/components/dashboard/moderation/proposals-panel"
-import { ipfsImageUrl } from "@/lib/ipfs"
 import type { AgentCollection } from "@/models/agent-collection"
 import type { MintProposal } from "@/models/mint-proposal"
 import {
@@ -29,7 +28,7 @@ export default function MintProposalsPanel({
       accept={mintFromProposal}
       reject={refuseMintProposal}
       getImage={(proposal) => ({
-        url: ipfsImageUrl(proposal.images[0]?.value) ?? undefined,
+        value: proposal.images[0]?.value,
         alt: proposal.name,
       })}
       renderBody={(proposal) => (

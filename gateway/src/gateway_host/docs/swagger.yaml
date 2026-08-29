@@ -134,15 +134,6 @@ definitions:
       url:
         type: string
     type: object
-  responses.BlockchainConfigResponse:
-    properties:
-      evmChains:
-        additionalProperties:
-          $ref: '#/definitions/responses.EvmChainConfig'
-        type: object
-      orchestratorAddress:
-        type: string
-    type: object
   responses.BrokerConversationResponse:
     properties:
       bridgeId:
@@ -186,6 +177,19 @@ definitions:
       id:
         type: string
       role:
+        type: string
+    type: object
+  responses.ConfigResponse:
+    properties:
+      evmChains:
+        additionalProperties:
+          $ref: '#/definitions/responses.EvmChainConfig'
+        type: object
+      ipfsGatewayUrlTemplates:
+        items:
+          type: string
+        type: array
+      orchestratorAddress:
         type: string
     type: object
   responses.EvmChainConfig:
@@ -557,19 +561,20 @@ paths:
       - authentication
   /config:
     get:
-      description: The EVM chain config (keyed by chain id) the console boots from
+      description: The chain config (keyed by chain id) and IPFS gateways the console
+        boots from
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.BlockchainConfigResponse'
+            $ref: '#/definitions/responses.ConfigResponse'
         "500":
           description: Internal Server Error
           schema:
             type: string
-      summary: Public chain config
+      summary: Public node config
       tags:
       - config
   /conversations:

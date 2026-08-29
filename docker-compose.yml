@@ -200,7 +200,6 @@ services:
       args:
         VITE_APP_KIT_PROJECT_ID: ""
         VITE_ENVIRONMENT: local
-        VITE_IPFS_GATEWAY: https://ipfs.io/ipfs/
     container_name: web-ui
     ports:
       - "3000:80"
