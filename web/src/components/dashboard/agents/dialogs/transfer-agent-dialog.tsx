@@ -47,7 +47,12 @@ export default function TransferAgentDialog({
 
     setSaving(true)
     try {
-      await transferFrom(collectionAddress, collectionTokenId, values.to, wallet)
+      await transferFrom(
+        collectionAddress,
+        collectionTokenId,
+        values.to,
+        wallet
+      )
       toast.success("Agent transferred")
       setOpen(false)
       await onTransferred()
@@ -87,10 +92,10 @@ export default function TransferAgentDialog({
         <div className="flex items-start gap-2 rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-500">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           <span>
-            The new owner takes over this agent. This wallet can no longer manage
-            it here, and the agent's own node console — which only lets its NFT
-            owner sign in — will reject this wallet too. Only the new owner can
-            transfer it back.
+            The new owner takes over this agent. This wallet can no longer
+            manage it here, and the agent's own node console — which only lets
+            its NFT owner sign in — will reject this wallet too. Only the new
+            owner can transfer it back.
           </span>
         </div>
 

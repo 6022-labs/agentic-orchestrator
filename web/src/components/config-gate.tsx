@@ -40,7 +40,9 @@ export default function ConfigGate({
       ) : (
         <>
           <Unplug className="size-8 text-muted-foreground" />
-          <p className="font-medium">Could not reach the orchestrator gateway</p>
+          <p className="font-medium">
+            Could not reach the orchestrator gateway
+          </p>
           <p className="text-sm text-muted-foreground">
             Check that the orchestrator is running, then try again.
           </p>

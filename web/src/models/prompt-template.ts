@@ -46,4 +46,3 @@ export const getPromptTemplateKeysForRole = (
       return EXPERT_PROMPT_TEMPLATE_KEYS
   }
 }
-

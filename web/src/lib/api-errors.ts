@@ -59,8 +59,7 @@ export const extractErrorMessage = (
 ): string => {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
-      | { code?: string; message?: string; field?: string }
-      | undefined
+      { code?: string; message?: string; field?: string } | undefined
     if (data?.message) {
       return sanitize(data.message, fallback)
     }

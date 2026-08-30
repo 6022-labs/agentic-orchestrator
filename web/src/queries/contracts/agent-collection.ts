@@ -187,7 +187,11 @@ export async function transferFrom(
   )
 
   try {
-    const tx = await contract.transferFrom(await signer.getAddress(), to, tokenId)
+    const tx = await contract.transferFrom(
+      await signer.getAddress(),
+      to,
+      tokenId
+    )
     await tx.wait()
   } catch (error) {
     logDecodedError(error)

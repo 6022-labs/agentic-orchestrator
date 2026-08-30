@@ -82,11 +82,7 @@ export default function CreateCollectionDialog({ onCreated }: Props) {
         <CreateCollectionForm onFormComplete={onFormComplete} />
 
         <DialogFooter>
-          <Button
-            type="submit"
-            form="create-collection-form"
-            loading={saving}
-          >
+          <Button type="submit" form="create-collection-form" loading={saving}>
             Create collection
           </Button>
         </DialogFooter>
