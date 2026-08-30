@@ -74,6 +74,14 @@ func (c *DatabaseClient) GetDB() *gorm.DB {
 	return c.DB
 }
 
+func (c *DatabaseClient) Close() error {
+	sqlDB, err := c.DB.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
+}
+
 func (c *DatabaseClient) HealthCheck() error {
 	sqlDB, err := c.DB.DB()
 	if err != nil {

@@ -19,6 +19,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	broker_traces_mocks "github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/traces_mocks/interfaces_mocks"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -40,6 +41,8 @@ type WhenProcessingConversationTestingSuite struct {
 	mockConversationRepository          *repositories_mocks.MockConversationRepositoryInterface
 	mockConversationMessageRepository   *repositories_mocks.MockConversationMessageRepositoryInterface
 	mockParticipantRepository           *repositories_mocks.MockParticipantRepositoryInterface
+	mockMemorySessionResolver           *interfaces_mocks.MockMemorySessionResolverInterface
+	mockMemorySessionExtractor          *interfaces_mocks.MockMemorySessionExtractorInterface
 	mockEmojiDecoder                    *interfaces_mocks.MockEmojiDecoderInterface
 }
 
@@ -60,6 +63,9 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		mockController,
 	)
 	mockParticipantRepository := repositories_mocks.NewMockParticipantRepositoryInterface(mockController)
+
+	mockMemorySessionResolver := interfaces_mocks.NewMockMemorySessionResolverInterface(mockController)
+	mockMemorySessionExtractor := interfaces_mocks.NewMockMemorySessionExtractorInterface(mockController)
 
 	mockEmojiDecoder := interfaces_mocks.NewMockEmojiDecoderInterface(mockController)
 	mockEmojiDecoder.EXPECT().DemojizeContent(gomock.Any()).
@@ -105,6 +111,8 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		mockConversationRepository,
 		mockConversationMessageRepository,
 		mockParticipantRepository,
+		mockMemorySessionResolver,
+		mockMemorySessionExtractor,
 		mockEmojiDecoder,
 	)
 
@@ -123,6 +131,8 @@ func WhenProcessingConversationBeforeEach(t *testing.T) *WhenProcessingConversat
 		mockConversationRepository:          mockConversationRepository,
 		mockConversationMessageRepository:   mockConversationMessageRepository,
 		mockParticipantRepository:           mockParticipantRepository,
+		mockMemorySessionResolver:           mockMemorySessionResolver,
+		mockMemorySessionExtractor:          mockMemorySessionExtractor,
 		mockEmojiDecoder:                    mockEmojiDecoder,
 	}
 }
@@ -269,6 +279,56 @@ func TestWhenProcessingConversation(t *testing.T) {
 		})
 	})
 
+	t.Run("Given endpoint resolution fails", func(t *testing.T) {
+		t.Parallel()
+
+		participant := model_builders.NewAgentParticipantBuilder().Build()
+		conversation := model_builders.NewConversationBuilder().Build()
+		conversation.CreatedAt = time.Now()
+		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
+
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
+
+		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(gomock.Any(), participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
+			suite.mockBridgeRepository.EXPECT().
+				GetById(gomock.Any(), conversation.BridgeID).
+				Return(bridge, nil).
+				Times(1)
+			suite.mockConversationMessageRepository.EXPECT().
+				ListProcessableForParticipantAndConversation(gomock.Any(), participant, gomock.Any(), conversation.ID).
+				Return(messages, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(gomock.Any(), conversation.ID).
+				Return([]*models.Participant{participant}, nil).
+				Times(1)
+			suite.mockRemoteAgentCardResolver.EXPECT().
+				ResolveCard(gomock.Any(), *participant.EnsDomain).
+				Return(nil, errors.New("boom")).
+				Times(1)
+		}
+
+		t.Run("Should propagate the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingConversationBeforeEach(t)
+			initSuite(suite)
+
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeFailed, gomock.Any())
+
+			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
+
+			assert.Error(t, err)
+		})
+	})
+
 	t.Run("Given the agent node answers the turn", func(t *testing.T) {
 		t.Parallel()
 
@@ -305,8 +365,21 @@ func TestWhenProcessingConversation(t *testing.T) {
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
 				Return(card, nil).
 				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildInput(gomock.Any(), string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					gomock.Any(),
+				).
 				Return(turn, nil).
 				Times(1)
 			suite.mockRemoteAgentCompletionsRequester.EXPECT().
@@ -374,8 +447,21 @@ func TestWhenProcessingConversation(t *testing.T) {
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
 				Return(card, nil).
 				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildInput(gomock.Any(), string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					gomock.Any(),
+				).
 				Return(turn, nil).
 				Times(1)
 			suite.mockRemoteAgentCompletionsRequester.EXPECT().
@@ -399,7 +485,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 		})
 	})
 
-	t.Run("Given endpoint resolution fails", func(t *testing.T) {
+	t.Run("Given an unbound expert names a memory session", func(t *testing.T) {
 		t.Parallel()
 
 		participant := model_builders.NewAgentParticipantBuilder().Build()
@@ -410,11 +496,15 @@ func TestWhenProcessingConversation(t *testing.T) {
 		messages := []*models.ConversationMessage{
 			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
 		}
+		participants := []*models.Participant{participant}
+		card := remoteAgentCardForTest()
+		turn := agentTurnRequestForTest()
+		sessionId := uuid.MustParse("3f2b7c41-9a1e-4d0b-8c33-2f6a1b9d5c91")
 
 		initSuite := func(suite *WhenProcessingConversationTestingSuite) {
 			suite.mockParticipantRoleResolver.EXPECT().
 				Resolve(gomock.Any(), participant).
-				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Return(lo.ToPtr(enums.ParticipantRoleExpert), nil).
 				Times(1)
 			suite.mockBridgeRepository.EXPECT().
 				GetById(gomock.Any(), conversation.BridgeID).
@@ -426,26 +516,203 @@ func TestWhenProcessingConversation(t *testing.T) {
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
 				ListByConversationId(gomock.Any(), conversation.ID).
-				Return([]*models.Participant{participant}, nil).
+				Return(participants, nil).
 				Times(1)
 			suite.mockRemoteAgentCardResolver.EXPECT().
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
-				Return(nil, errors.New("boom")).
+				Return(card, nil).
+				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), conversation, participant, participants).
+				Return(nil, nil).
+				Times(1)
+			suite.mockConversationPromptBuilder.EXPECT().
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					nil,
+				).
+				Return(turn, nil).
+				Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(gomock.Any(), card, turn).
+				Return([]string{"the answer\n\n" + sessionId.String()}, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
 				Times(1)
 		}
 
-		t.Run("Should propagate the error", func(t *testing.T) {
+		t.Run("Should bind the session and post the stripped completion", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingConversationBeforeEach(t)
 			initSuite(suite)
 
+			suite.mockMemorySessionExtractor.EXPECT().
+				Extract(gomock.Any(), gomock.Any()).
+				Return(&sessionId, []string{"the answer"}).
+				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Bind(gomock.Any(), conversation, participant, sessionId).
+				Return(nil).
+				Times(1)
 			suite.mockBrokerMetrics.EXPECT().
-				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeFailed, gomock.Any())
+				RecordMemorySessionBinding(gomock.Any(), metrics_interfaces.MemorySessionOutcomeBound).
+				Times(1)
+			suite.mockBridgeCallbackRequester.EXPECT().
+				PostCompletion(gomock.Any(), bridge, conversation, participant, "the answer").
+				Return(nil).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any()).
+				Times(1)
 
 			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
 
-			assert.Error(t, err)
+			assert.NoError(t, err)
+		})
+
+		t.Run("Should post the completion untouched when the reply names nothing", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingConversationBeforeEach(t)
+			initSuite(suite)
+
+			suite.mockMemorySessionExtractor.EXPECT().
+				Extract(gomock.Any(), gomock.Any()).
+				Return(nil, []string{"the answer\n\n" + sessionId.String()}).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordMemorySessionBinding(gomock.Any(), metrics_interfaces.MemorySessionOutcomeMissed).
+				Times(1)
+			suite.mockBridgeCallbackRequester.EXPECT().
+				PostCompletion(gomock.Any(), bridge, conversation, participant, "the answer\n\n"+sessionId.String()).
+				Return(nil).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any()).
+				Times(1)
+
+			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
+
+			assert.NoError(t, err)
+		})
+
+		t.Run("Should post the stripped completion even when binding fails", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingConversationBeforeEach(t)
+			initSuite(suite)
+
+			suite.mockMemorySessionExtractor.EXPECT().
+				Extract(gomock.Any(), gomock.Any()).
+				Return(&sessionId, []string{"the answer"}).
+				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Bind(gomock.Any(), conversation, participant, sessionId).
+				Return(assert.AnError).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordMemorySessionBinding(gomock.Any(), metrics_interfaces.MemorySessionOutcomeMissed).
+				Times(1)
+			suite.mockBridgeCallbackRequester.EXPECT().
+				PostCompletion(gomock.Any(), bridge, conversation, participant, "the answer").
+				Return(nil).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any()).
+				Times(1)
+
+			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
+
+			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given a bound expert answers the turn", func(t *testing.T) {
+		t.Parallel()
+
+		participant := model_builders.NewAgentParticipantBuilder().Build()
+		conversation := model_builders.NewConversationBuilder().Build()
+		conversation.CreatedAt = time.Now()
+		bridge := model_builders.NewBridgeBuilder().WithID(conversation.BridgeID).Build()
+
+		messages := []*models.ConversationMessage{
+			model_builders.NewConversationMessageBuilder().WithConversationID(conversation.ID).Build(),
+		}
+		participants := []*models.Participant{participant}
+		card := remoteAgentCardForTest()
+		turn := agentTurnRequestForTest()
+		sessionId := uuid.MustParse("3f2b7c41-9a1e-4d0b-8c33-2f6a1b9d5c91")
+
+		t.Run("Should reuse the bound session and never scan the reply", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingConversationBeforeEach(t)
+
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(gomock.Any(), participant).
+				Return(lo.ToPtr(enums.ParticipantRoleExpert), nil).
+				Times(1)
+			suite.mockBridgeRepository.EXPECT().
+				GetById(gomock.Any(), conversation.BridgeID).
+				Return(bridge, nil).
+				Times(1)
+			suite.mockConversationMessageRepository.EXPECT().
+				ListProcessableForParticipantAndConversation(gomock.Any(), participant, gomock.Any(), conversation.ID).
+				Return(messages, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				ListByConversationId(gomock.Any(), conversation.ID).
+				Return(participants, nil).
+				Times(1)
+			suite.mockRemoteAgentCardResolver.EXPECT().
+				ResolveCard(gomock.Any(), *participant.EnsDomain).
+				Return(card, nil).
+				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), conversation, participant, participants).
+				Return(&sessionId, nil).
+				Times(1)
+			suite.mockConversationPromptBuilder.EXPECT().
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					&sessionId,
+				).
+				Return(turn, nil).
+				Times(1)
+			suite.mockRemoteAgentCompletionsRequester.EXPECT().
+				RequestCompletions(gomock.Any(), card, turn).
+				Return([]string{"bound reply"}, nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				GetById(gomock.Any(), conversation.ID).
+				Return(conversation, nil).
+				Times(1)
+			suite.mockBridgeCallbackRequester.EXPECT().
+				PostCompletion(gomock.Any(), bridge, conversation, participant, "bound reply").
+				Return(nil).
+				Times(1)
+			suite.mockBrokerMetrics.EXPECT().
+				RecordTurn(gomock.Any(), metrics_interfaces.TurnOutcomeCompleted, gomock.Any()).
+				Times(1)
+
+			err := suite.sut.ProcessConversation(context.Background(), participant, conversation)
+
+			assert.NoError(t, err)
 		})
 	})
 
@@ -486,8 +753,21 @@ func TestWhenProcessingConversation(t *testing.T) {
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
 				Return(card, nil).
 				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildInput(gomock.Any(), string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					gomock.Any(),
+				).
 				Return(turn, nil).
 				Times(1)
 			suite.mockRemoteAgentCompletionsRequester.EXPECT().
@@ -503,6 +783,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 					conversation,
 					messages,
 					participants,
+					gomock.Any(),
 				).
 				Return(concludeTurn, nil).
 				Times(1)
@@ -582,8 +863,21 @@ func TestWhenProcessingConversation(t *testing.T) {
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
 				Return(card, nil).
 				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildInput(gomock.Any(), string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					gomock.Any(),
+				).
 				Return(turn, nil).
 				Times(1)
 			suite.mockRemoteAgentCompletionsRequester.EXPECT().
@@ -599,6 +893,7 @@ func TestWhenProcessingConversation(t *testing.T) {
 					conversation,
 					messages,
 					participants,
+					gomock.Any(),
 				).
 				Return(concludeTurn, nil).
 				Times(1)
@@ -679,8 +974,21 @@ func TestWhenProcessingConversation(t *testing.T) {
 				ResolveCard(gomock.Any(), *participant.EnsDomain).
 				Return(card, nil).
 				Times(1)
+			suite.mockMemorySessionResolver.EXPECT().
+				Resolve(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				Times(1)
 			suite.mockConversationPromptBuilder.EXPECT().
-				BuildInput(gomock.Any(), string(bridge.Kind), participant, gomock.Any(), conversation, messages, participants).
+				BuildInput(
+					gomock.Any(),
+					string(bridge.Kind),
+					participant,
+					gomock.Any(),
+					conversation,
+					messages,
+					participants,
+					gomock.Any(),
+				).
 				Return(turn, nil).
 				Times(1)
 			suite.mockRemoteAgentCompletionsRequester.EXPECT().

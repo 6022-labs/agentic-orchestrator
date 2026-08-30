@@ -84,6 +84,14 @@ func AddConversationBrokerDbConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		db_repositories.NewConversationMemoryBindingRepository,
+		dig.As(new(domain_repositories.ConversationMemoryBindingRepositoryInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		db_repositories.NewConversationMessageRepository,
 		dig.As(new(domain_repositories.ConversationMessageRepositoryInterface)),
 	)

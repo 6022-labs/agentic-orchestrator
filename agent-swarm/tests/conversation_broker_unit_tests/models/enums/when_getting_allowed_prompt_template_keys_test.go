@@ -43,6 +43,8 @@ func TestWhenGettingAllowedPromptTemplateKeys(t *testing.T) {
 		expected := enums.AgentPromptTemplateKeyList{
 			enums.AgentPromptTemplateKeyExpertSystem,
 			enums.AgentPromptTemplateKeyExpertDefault,
+			enums.AgentPromptTemplateKeyExpertContextFound,
+			enums.AgentPromptTemplateKeyExpertContextNotFound,
 		}
 
 		t.Run("Should return the expert keys for expert", func(t *testing.T) {

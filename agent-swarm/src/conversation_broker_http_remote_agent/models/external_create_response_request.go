@@ -6,7 +6,12 @@ package models
 type ExternalCreateResponseRequest struct {
 	Instructions string                          `json:"instructions,omitempty"`
 	Input        []*ExternalResponseInputMessage `json:"input"`
+	Conversation *ExternalConversationRef        `json:"conversation,omitempty"`
 	Metadata     map[string]string               `json:"metadata,omitempty"`
+}
+
+type ExternalConversationRef struct {
+	Id string `json:"id"`
 }
 
 type ExternalResponseInputMessage struct {

@@ -54,6 +54,20 @@ func (mr *MockDatabaseClientInterfaceMockRecorder) BeginTransaction() *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTransaction", reflect.TypeOf((*MockDatabaseClientInterface)(nil).BeginTransaction))
 }
 
+// Close mocks base method.
+func (m *MockDatabaseClientInterface) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockDatabaseClientInterfaceMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDatabaseClientInterface)(nil).Close))
+}
+
 // CommitTransaction mocks base method.
 func (m *MockDatabaseClientInterface) CommitTransaction(tx *gorm.DB) {
 	m.ctrl.T.Helper()

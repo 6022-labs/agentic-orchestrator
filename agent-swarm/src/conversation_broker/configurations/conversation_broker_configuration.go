@@ -136,6 +136,22 @@ func AddConversationBrokerConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewMemorySessionResolver,
+		dig.As(new(service_interfaces.MemorySessionResolverInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewMemorySessionExtractor,
+		dig.As(new(service_interfaces.MemorySessionExtractorInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewConversationProcessor,
 		dig.As(new(service_interfaces.ConversationProcessorInterface)),
 	)

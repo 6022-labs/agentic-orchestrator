@@ -16,6 +16,7 @@ func main() {
 		&models.Participant{},
 		&models.Conversation{},
 		&models.ConversationParticipant{},
+		&models.ConversationMemoryBinding{},
 		&models.ConversationMessage{},
 		&models.AgentPromptTemplate{},
 	)

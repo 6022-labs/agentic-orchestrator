@@ -101,6 +101,18 @@ func (mr *MockBrokerMetricsInterfaceMockRecorder) RecordDaemonTick(ctx, outcome 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordDaemonTick", reflect.TypeOf((*MockBrokerMetricsInterface)(nil).RecordDaemonTick), ctx, outcome)
 }
 
+// RecordMemorySessionBinding mocks base method.
+func (m *MockBrokerMetricsInterface) RecordMemorySessionBinding(ctx context.Context, outcome string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RecordMemorySessionBinding", ctx, outcome)
+}
+
+// RecordMemorySessionBinding indicates an expected call of RecordMemorySessionBinding.
+func (mr *MockBrokerMetricsInterfaceMockRecorder) RecordMemorySessionBinding(ctx, outcome any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordMemorySessionBinding", reflect.TypeOf((*MockBrokerMetricsInterface)(nil).RecordMemorySessionBinding), ctx, outcome)
+}
+
 // RecordMessageIngested mocks base method.
 func (m *MockBrokerMetricsInterface) RecordMessageIngested(ctx context.Context, participantRole string) {
 	m.ctrl.T.Helper()

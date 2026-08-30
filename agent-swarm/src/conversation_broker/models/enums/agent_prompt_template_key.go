@@ -16,8 +16,11 @@ const (
 	AgentPromptTemplateKeyFacilitatorDefault  AgentPromptTemplateKey = "facilitator-default"
 	AgentPromptTemplateKeyFacilitatorConclude AgentPromptTemplateKey = "facilitator-conclude"
 
-	AgentPromptTemplateKeyExpertSystem  AgentPromptTemplateKey = "expert-system"
-	AgentPromptTemplateKeyExpertDefault AgentPromptTemplateKey = "expert-default"
+	AgentPromptTemplateKeyExpertSystem AgentPromptTemplateKey = "expert-system"
+	// AgentPromptTemplateKeyExpertDefault is no longer selected by the builder; agents may still hold overrides for it.
+	AgentPromptTemplateKeyExpertDefault         AgentPromptTemplateKey = "expert-default"
+	AgentPromptTemplateKeyExpertContextFound    AgentPromptTemplateKey = "expert-context-found"
+	AgentPromptTemplateKeyExpertContextNotFound AgentPromptTemplateKey = "expert-context-not-found"
 )
 
 func GetAllAgentPromptTemplateKeys() AgentPromptTemplateKeyList {
@@ -29,6 +32,8 @@ func GetAllAgentPromptTemplateKeys() AgentPromptTemplateKeyList {
 		AgentPromptTemplateKeyFacilitatorConclude,
 		AgentPromptTemplateKeyExpertSystem,
 		AgentPromptTemplateKeyExpertDefault,
+		AgentPromptTemplateKeyExpertContextFound,
+		AgentPromptTemplateKeyExpertContextNotFound,
 	}
 }
 
@@ -51,6 +56,8 @@ func (r ParticipantRole) AllowedPromptTemplateKeys() AgentPromptTemplateKeyList 
 		return AgentPromptTemplateKeyList{
 			AgentPromptTemplateKeyExpertSystem,
 			AgentPromptTemplateKeyExpertDefault,
+			AgentPromptTemplateKeyExpertContextFound,
+			AgentPromptTemplateKeyExpertContextNotFound,
 		}
 	}
 }

@@ -17,6 +17,7 @@ type BrokerMetrics struct {
 	conversationsStarted   metric.Int64Counter
 	conversationsConcluded metric.Int64Counter
 	messagesIngested       metric.Int64Counter
+	memorySessionBindings  metric.Int64Counter
 	turnHistogram          metric.Float64Histogram
 	activeTurns            metric.Int64UpDownCounter
 	daemonTicks            metric.Int64Counter
@@ -42,6 +43,15 @@ func NewBrokerMetrics() *BrokerMetrics {
 	)
 	if err != nil {
 		conversationsConcluded, _ = noopMeter.Int64Counter("broker.conversation.concluded")
+	}
+
+	memorySessionBindings, err := meter.Int64Counter(
+		"broker.memory_session.binding",
+		metric.WithUnit("{attempt}"),
+		metric.WithDescription("Number of expert memory-session discovery attempts by outcome"),
+	)
+	if err != nil {
+		memorySessionBindings, _ = noopMeter.Int64Counter("broker.memory_session.binding")
 	}
 
 	messagesIngested, err := meter.Int64Counter(
@@ -98,6 +108,7 @@ func NewBrokerMetrics() *BrokerMetrics {
 		conversationsStarted:   conversationsStarted,
 		conversationsConcluded: conversationsConcluded,
 		messagesIngested:       messagesIngested,
+		memorySessionBindings:  memorySessionBindings,
 		turnHistogram:          turnHistogram,
 		activeTurns:            activeTurns,
 		daemonTicks:            daemonTicks,
@@ -116,6 +127,10 @@ func (m *BrokerMetrics) RecordConversationConcluded(ctx context.Context, reason 
 
 func (m *BrokerMetrics) RecordMessageIngested(ctx context.Context, participantRole string) {
 	m.messagesIngested.Add(ctx, 1, metric.WithAttributes(attribute.String("participant.role", participantRole)))
+}
+
+func (m *BrokerMetrics) RecordMemorySessionBinding(ctx context.Context, outcome string) {
+	m.memorySessionBindings.Add(ctx, 1, metric.WithAttributes(attribute.String("outcome", outcome)))
 }
 
 func (m *BrokerMetrics) RecordTurn(ctx context.Context, outcome string, duration time.Duration) {

@@ -2,6 +2,10 @@ package prompts
 
 import "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 
+// expertTurn opens every expert turn; the context keys append to it.
+const expertTurn = `{{.LatestRequest.Author.Name}} said: {{.LatestRequest.Content}}
+Answer with your expert view.`
+
 // defaultTemplates are the built-in fallbacks used when an agent has no
 // stored override for a key; per-agent personality lives in the agent node.
 var defaultTemplates = map[enums.AgentPromptTemplateKey]string{
@@ -18,8 +22,18 @@ Reply to the conversation.`,
 Participants: {{range .ChannelMembers}}{{.Name}} {{end}}.
 Provide precise, factual answers within your expertise.`,
 
-	enums.AgentPromptTemplateKeyExpertDefault: `{{.LatestRequest.Author.Name}} said: {{.LatestRequest.Content}}
-Answer with your expert view.`,
+	enums.AgentPromptTemplateKeyExpertDefault: expertTurn,
+
+	enums.AgentPromptTemplateKeyExpertContextNotFound: expertTurn + `
+
+This conversation is not attached to one of your memory sessions yet.
+List your memory sessions, pick the one that fits this conversation, or create a
+new named one if none does. Then end your reply with that session's id alone on
+the very last line, nothing else on it.`,
+
+	enums.AgentPromptTemplateKeyExpertContextFound: expertTurn + `
+
+This conversation runs on your memory session {{.MemorySessionId}}.`,
 
 	enums.AgentPromptTemplateKeyFacilitatorSystem: `You facilitate a group conversation` +
 		`{{if .ChannelDescription}} about: {{.ChannelDescription}}{{end}}.

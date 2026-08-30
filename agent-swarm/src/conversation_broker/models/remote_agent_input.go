@@ -5,9 +5,10 @@ import "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_b
 // RemoteAgentInput is one fully-prepared inference turn for a remote agent
 // node: resolved instructions plus the conversation window as input messages.
 type RemoteAgentInput struct {
-	Instructions string
-	Input        []*RemoteAgentInputMessage
-	Metadata     map[string]string
+	Instructions         string
+	Input                []*RemoteAgentInputMessage
+	Metadata             map[string]string
+	RemoteConversationId string
 }
 
 type RemoteAgentInputMessage struct {

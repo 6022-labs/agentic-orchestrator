@@ -113,6 +113,7 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 					assert.Equal(t, "message", request.Input[0].Type)
 					assert.Equal(t, "user", request.Input[0].Role)
 					assert.Equal(t, "assistant", request.Input[1].Role)
+					assert.Nil(t, request.Conversation)
 					return &http_node_models.ExternalResponse{
 						Status: "completed",
 						Output: []*http_node_models.ExternalResponseOutput{
@@ -147,6 +148,51 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the turn carries a memory session", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		t.Run("Should send it as the conversation ref", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+			turn := turnForTest()
+			turn.RemoteConversationId = "3f2b7c41-9a1e-4d0b-8c33-2f6a1b9d5c91"
+
+			suite.noCachedChallenge()
+			suite.mockRemoteAgentClient.EXPECT().
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				DoAndReturn(func(_ context.Context, _, _ string, request *http_node_models.ExternalCreateResponseRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalResponse, error) {
+					assert.NotNil(t, request.Conversation)
+					assert.Equal(t, turn.RemoteConversationId, request.Conversation.Id)
+					return &http_node_models.ExternalResponse{
+						Status: "completed",
+						Output: []*http_node_models.ExternalResponseOutput{
+							{
+								Type: "message",
+								Role: "assistant",
+								Content: []*http_node_models.ExternalResponseOutputContent{
+									{Type: "output_text", Text: "answer"},
+								},
+							},
+						},
+					}, nil
+				}).
+				Times(1)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
+
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"answer"}, completions)
+		})
+	})
+
 	t.Run("Given the response carries an error payload", func(t *testing.T) {
 		t.Parallel()
 
@@ -165,6 +211,37 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 					},
 					nil,
 				).
+				Times(1)
+		}
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+			initSuite(suite)
+
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the response carries no message output", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			suite.mockRemoteAgentClient.EXPECT().
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				Return(&http_node_models.ExternalResponse{Status: "completed"}, nil).
 				Times(1)
 		}
 
@@ -230,34 +307,46 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the response carries no message output", func(t *testing.T) {
+	t.Run("Given the turn carries a memory session and the card only advertises chat completions", func(t *testing.T) {
 		t.Parallel()
 
 		card := &models.RemoteAgentCard{
 			Protocol:  "6022",
-			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+			Endpoints: models.RemoteAgentCardEndpoints{ChatCompletions: "https://node.example/api/chat"},
 		}
 
-		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
-			suite.noCachedChallenge()
-			suite.mockRemoteAgentClient.EXPECT().
-				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
-				Return(&http_node_models.ExternalResponse{Status: "completed"}, nil).
-				Times(1)
-		}
-
-		t.Run("Should return an error", func(t *testing.T) {
+		t.Run("Should carry the session in metadata, the only field that dialect has", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
-			initSuite(suite)
+			turn := turnForTest()
+			turn.RemoteConversationId = "3f2b7c41-9a1e-4d0b-8c33-2f6a1b9d5c91"
+			turn.Metadata["memorySessionId"] = turn.RemoteConversationId
 
+			suite.noCachedChallenge()
+			suite.mockRemoteAgentClient.EXPECT().
+				CreateChatCompletion(gomock.Any(), card.Endpoints.ChatCompletions, "agent.eth", gomock.Any(), gomock.Nil()).
+				DoAndReturn(func(_ context.Context, _, _ string, request *http_node_models.ExternalChatCompletionRequest, _ *http_node_models.ExternalRequestHeaders) (*http_node_models.ExternalChatCompletionResponse, error) {
+					assert.Equal(t, turn.RemoteConversationId, request.Metadata["memorySessionId"])
+					return &http_node_models.ExternalChatCompletionResponse{
+						Choices: []*http_node_models.ExternalChatCompletionChoice{
+							{
+								Message: &http_node_models.ExternalChatCompletionMessage{
+									Role:    "assistant",
+									Content: "chat answer",
+								},
+							},
+						},
+					}, nil
+				}).
+				Times(1)
 			suite.mockRemoteAgentMetrics.EXPECT().
-				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
 
-			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+			completions, err := suite.sut.RequestCompletions(context.Background(), card, turn)
 
-			assert.Error(t, err)
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"chat answer"}, completions)
 		})
 	})
 

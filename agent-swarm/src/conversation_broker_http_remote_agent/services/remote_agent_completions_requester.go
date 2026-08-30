@@ -223,15 +223,20 @@ func (r *RemoteAgentCompletionsRequester) requestResponsesTurn(
 		}
 	}
 
+	request := &http_node_models.ExternalCreateResponseRequest{
+		Instructions: turn.Instructions,
+		Input:        input,
+		Metadata:     turn.Metadata,
+	}
+	if turn.RemoteConversationId != "" {
+		request.Conversation = &http_node_models.ExternalConversationRef{Id: turn.RemoteConversationId}
+	}
+
 	response, err := r.client.CreateResponse(
 		ctx,
 		endpointUrl,
 		ensDomain,
-		&http_node_models.ExternalCreateResponseRequest{
-			Instructions: turn.Instructions,
-			Input:        input,
-			Metadata:     turn.Metadata,
-		},
+		request,
 		r.requestHeaders(paymentSignature),
 	)
 	if err != nil {

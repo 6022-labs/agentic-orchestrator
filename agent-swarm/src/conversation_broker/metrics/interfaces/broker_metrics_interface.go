@@ -17,6 +17,9 @@ const (
 	DaemonTickOutcomeIdle      = "idle"
 	DaemonTickOutcomeFailed    = "failed"
 
+	MemorySessionOutcomeBound  = "bound"
+	MemorySessionOutcomeMissed = "missed"
+
 	ResolverEns      = "ens"
 	ResolverRegistry = "registry"
 	ResolverCard     = "card"
@@ -34,4 +37,6 @@ type BrokerMetricsInterface interface {
 	RecordDaemonTick(ctx context.Context, outcome string)
 	RecordAgentResolution(ctx context.Context, resolver string, err error)
 	RecordCacheResult(ctx context.Context, cacheName string, hit bool)
+	// RecordMemorySessionBinding closes one discovery attempt (outcome: bound, missed).
+	RecordMemorySessionBinding(ctx context.Context, outcome string)
 }

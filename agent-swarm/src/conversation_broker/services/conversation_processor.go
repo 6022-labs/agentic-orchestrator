@@ -40,6 +40,8 @@ type ConversationProcessor struct {
 	conversationRepository          repositories.ConversationRepositoryInterface
 	conversationMessageRepository   repositories.ConversationMessageRepositoryInterface
 	participantRepository           repositories.ParticipantRepositoryInterface
+	memorySessionResolver           interfaces.MemorySessionResolverInterface
+	memorySessionExtractor          interfaces.MemorySessionExtractorInterface
 	emojiDecoder                    interfaces.EmojiDecoderInterface
 
 	// One lock per conversation. In-process only — swap for a Postgres
@@ -62,6 +64,8 @@ func NewConversationProcessor(
 	conversationRepository repositories.ConversationRepositoryInterface,
 	conversationMessageRepository repositories.ConversationMessageRepositoryInterface,
 	participantRepository repositories.ParticipantRepositoryInterface,
+	memorySessionResolver interfaces.MemorySessionResolverInterface,
+	memorySessionExtractor interfaces.MemorySessionExtractorInterface,
 	emojiDecoder interfaces.EmojiDecoderInterface,
 ) *ConversationProcessor {
 	return &ConversationProcessor{
@@ -79,6 +83,8 @@ func NewConversationProcessor(
 		conversationRepository:          conversationRepository,
 		conversationMessageRepository:   conversationMessageRepository,
 		participantRepository:           participantRepository,
+		memorySessionResolver:           memorySessionResolver,
+		memorySessionExtractor:          memorySessionExtractor,
 		emojiDecoder:                    emojiDecoder,
 	}
 }
@@ -169,6 +175,11 @@ func (p *ConversationProcessor) ProcessConversation(
 		return fmt.Errorf("failed to resolve remote agent card: %w", err)
 	}
 
+	memorySessionId, err := p.memorySessionResolver.Resolve(ctx, role, conversation, participant, participants)
+	if err != nil {
+		return err
+	}
+
 	turn, err := p.conversationPromptBuilder.BuildInput(ctx,
 		string(bridge.Kind),
 		participant,
@@ -176,6 +187,7 @@ func (p *ConversationProcessor) ProcessConversation(
 		conversation,
 		messages,
 		participants,
+		memorySessionId,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to build turn: %w", err)
@@ -196,10 +208,15 @@ func (p *ConversationProcessor) ProcessConversation(
 
 	completions = p.demojizeAll(completions)
 
+	// Only an expert names its session.
+	if role != nil && *role == enums.ParticipantRoleExpert && memorySessionId == nil {
+		completions = p.bindMemorySessionIfNamed(ctx, participant, conversation, turn, completions)
+	}
+
 	isFinal := false
 	if role != nil && *role == enums.ParticipantRoleFacilitator {
 		completions, isFinal, err = p.concludeByFacilitatorIfNeeded(ctx,
-			participant, conversation, card, turn, completions, role, messages, participants,
+			participant, conversation, card, turn, completions, role, messages, participants, memorySessionId,
 		)
 		if err != nil {
 			return err
@@ -213,9 +230,46 @@ func (p *ConversationProcessor) ProcessConversation(
 	return nil
 }
 
-// concludeByFacilitatorIfNeeded reproduces the facilitator wrap-up: when the
-// broker timer elapsed or the conclude marker appears in a fresh completion or
-// the latest inbound message, the facilitator gets one extra conclude turn.
+// bindMemorySessionIfNamed pins the session the expert named; a failed bind never fails the turn.
+func (p *ConversationProcessor) bindMemorySessionIfNamed(
+	ctx context.Context,
+	participant *models.Participant,
+	conversation *models.Conversation,
+	turn *models.RemoteAgentInput,
+	completions []string,
+) []string {
+	sessionId, completions := p.memorySessionExtractor.Extract(completions, p.sentTexts(turn))
+	if sessionId == nil {
+		p.brokerMetrics.RecordMemorySessionBinding(ctx, metrics_interfaces.MemorySessionOutcomeMissed)
+		return completions
+	}
+
+	if err := p.memorySessionResolver.Bind(ctx, conversation, participant, *sessionId); err != nil {
+		p.logger.Warn("Failed to bind memory session",
+			zap.String("conversationId", conversation.ID.String()),
+			zap.String("participantId", participant.ID.String()),
+			zap.String("memorySessionId", sessionId.String()),
+			zap.Error(err),
+		)
+		p.brokerMetrics.RecordMemorySessionBinding(ctx, metrics_interfaces.MemorySessionOutcomeMissed)
+		return completions
+	}
+
+	p.brokerMetrics.RecordMemorySessionBinding(ctx, metrics_interfaces.MemorySessionOutcomeBound)
+	return completions
+}
+
+// sentTexts is what the broker itself put on the wire; a uuid echoed back is not a choice.
+func (p *ConversationProcessor) sentTexts(turn *models.RemoteAgentInput) []string {
+	texts := make([]string, 0, len(turn.Input)+1)
+	texts = append(texts, turn.Instructions)
+	for _, message := range turn.Input {
+		texts = append(texts, message.Content)
+	}
+	return texts
+}
+
+// concludeByFacilitatorIfNeeded gives the facilitator one extra turn to wrap up.
 func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 	ctx context.Context,
 	participant *models.Participant,
@@ -226,6 +280,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 	role *enums.ParticipantRole,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
+	memorySessionId *uuid.UUID,
 ) ([]string, bool, error) {
 	readyToConclude := p.shouldForceConcludeByFacilitator(conversation) ||
 		p.carriesConcludeMarker(completions, messages)
@@ -241,6 +296,7 @@ func (p *ConversationProcessor) concludeByFacilitatorIfNeeded(
 		conversation,
 		messages,
 		participants,
+		memorySessionId,
 	)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to build conclude turn: %w", err)

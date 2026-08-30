@@ -36,6 +36,7 @@ func (b *ConversationPromptBuilder) BuildInput(
 	conversation *models.Conversation,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
+	memorySessionId *uuid.UUID,
 ) (*models.RemoteAgentInput, error) {
 	if role == nil {
 		return nil, fmt.Errorf("participant %s has no role", agent.ID)
@@ -44,12 +45,12 @@ func (b *ConversationPromptBuilder) BuildInput(
 		return nil, fmt.Errorf("no messages to build a turn from")
 	}
 
-	systemKey, defaultKey, err := b.templateKeysForRole(*role)
+	systemKey, defaultKey, err := b.templateKeysForRole(*role, memorySessionId)
 	if err != nil {
 		return nil, err
 	}
 
-	parameters, err := b.buildParameters(ctx, conversation, messages, participants, len(messages))
+	parameters, err := b.buildParameters(ctx, conversation, messages, participants, len(messages), memorySessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -70,18 +71,25 @@ func (b *ConversationPromptBuilder) BuildInput(
 		Content: turnPrompt,
 	})
 
+	remoteConversationId := conversation.ID.String()
+	if memorySessionId != nil {
+		remoteConversationId = memorySessionId.String()
+	}
+
 	metadata := map[string]string{
-		"conversationId": conversation.ID.String(),
-		"platform":       platform,
+		"conversationId":  conversation.ID.String(),
+		"memorySessionId": remoteConversationId,
+		"platform":        platform,
 	}
 	if agent.EnsDomain != nil {
 		metadata["ensDomain"] = *agent.EnsDomain
 	}
 
 	return &models.RemoteAgentInput{
-		Instructions: instructions,
-		Input:        input,
-		Metadata:     metadata,
+		Instructions:         instructions,
+		Input:                input,
+		Metadata:             metadata,
+		RemoteConversationId: remoteConversationId,
 	}, nil
 }
 
@@ -94,8 +102,16 @@ func (b *ConversationPromptBuilder) BuildConcludeInput(
 	conversation *models.Conversation,
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
+	memorySessionId *uuid.UUID,
 ) (*models.RemoteAgentInput, error) {
-	parameters, err := b.buildParameters(ctx, conversation, messages, participants, len(turn.Input)+len(completions))
+	parameters, err := b.buildParameters(
+		ctx,
+		conversation,
+		messages,
+		participants,
+		len(turn.Input)+len(completions),
+		memorySessionId,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -119,9 +135,10 @@ func (b *ConversationPromptBuilder) BuildConcludeInput(
 	})
 
 	return &models.RemoteAgentInput{
-		Instructions: turn.Instructions,
-		Input:        input,
-		Metadata:     turn.Metadata,
+		Instructions:         turn.Instructions,
+		Input:                input,
+		Metadata:             turn.Metadata,
+		RemoteConversationId: turn.RemoteConversationId,
 	}, nil
 }
 
@@ -149,6 +166,7 @@ func (b *ConversationPromptBuilder) buildParameters(
 	messages []*models.ConversationMessage,
 	participants []*models.Participant,
 	messageCount int,
+	memorySessionId *uuid.UUID,
 ) (map[string]any, error) {
 	channelMembers := make([]string, 0, len(participants))
 	for _, p := range participants {
@@ -174,7 +192,13 @@ func (b *ConversationPromptBuilder) buildParameters(
 	initialMessage := messages[0]
 	latestMessage := messages[len(messages)-1]
 
+	memorySession := ""
+	if memorySessionId != nil {
+		memorySession = memorySessionId.String()
+	}
+
 	return NewPromptParametersBuilder(b.registryAgentResolver).
+		WithParam([]string{"MemorySessionId"}, memorySession, nil).
 		WithParam([]string{"ChannelMembers"}, channelMembers, lo.ToPtr(PromptParameterTypePotentialAgentArray)).
 		WithParam([]string{"ChannelDescription"}, description, nil).
 		WithParam([]string{"ConversationId"}, conversation.ID.String(), nil).
@@ -248,12 +272,16 @@ func (b *ConversationPromptBuilder) authorName(
 
 func (b *ConversationPromptBuilder) templateKeysForRole(
 	role enums.ParticipantRole,
+	memorySessionId *uuid.UUID,
 ) (enums.AgentPromptTemplateKey, enums.AgentPromptTemplateKey, error) {
 	switch role {
 	case enums.ParticipantRoleClone:
 		return enums.AgentPromptTemplateKeyCloneSystem, enums.AgentPromptTemplateKeyCloneDefault, nil
 	case enums.ParticipantRoleExpert:
-		return enums.AgentPromptTemplateKeyExpertSystem, enums.AgentPromptTemplateKeyExpertDefault, nil
+		if memorySessionId == nil {
+			return enums.AgentPromptTemplateKeyExpertSystem, enums.AgentPromptTemplateKeyExpertContextNotFound, nil
+		}
+		return enums.AgentPromptTemplateKeyExpertSystem, enums.AgentPromptTemplateKeyExpertContextFound, nil
 	case enums.ParticipantRoleFacilitator:
 		return enums.AgentPromptTemplateKeyFacilitatorSystem, enums.AgentPromptTemplateKeyFacilitatorDefault, nil
 	default:
