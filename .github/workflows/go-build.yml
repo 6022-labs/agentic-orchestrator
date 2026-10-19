@@ -4,13 +4,30 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "agent-identity/**"
+      - "agent-swarm/**"
+      - "channels-and-integrations/slack-bridge/**"
+      - "gateway/**"
+      - ".golangci.yml"
+      - ".github/workflows/go-build.yml"
   pull_request:
-    branches:
-      - main
+    paths:
+      - "agent-identity/**"
+      - "agent-swarm/**"
+      - "channels-and-integrations/slack-bridge/**"
+      - "gateway/**"
+      - ".golangci.yml"
+      - ".github/workflows/go-build.yml"
+
+concurrency:
+  group: go-build-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     strategy:
       fail-fast: false
@@ -23,13 +40,24 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: "1.26.2"
-          cache-dependency-path: ${{ matrix.module }}/go.sum
+          cache: false
+
+      # Sole writer of each module's Go cache: parallel jobs saving the same key race and waste the upload.
+      - name: Cache Go modules and build cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-1.26.2-${{ matrix.module }}-${{ hashFiles(format('{0}/go.sum', matrix.module)) }}
+          restore-keys: |
+            ${{ runner.os }}-go-1.26.2-${{ matrix.module }}-
 
       - name: Build
         working-directory: ${{ matrix.module }}
