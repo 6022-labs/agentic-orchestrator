@@ -4,13 +4,30 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "agent-identity/**"
+      - "agent-swarm/**"
+      - "channels-and-integrations/slack-bridge/**"
+      - "gateway/**"
+      - ".golangci.yml"
+      - ".github/workflows/go-lint.yml"
   pull_request:
-    branches:
-      - main
+    paths:
+      - "agent-identity/**"
+      - "agent-swarm/**"
+      - "channels-and-integrations/slack-bridge/**"
+      - "gateway/**"
+      - ".golangci.yml"
+      - ".github/workflows/go-lint.yml"
+
+concurrency:
+  group: go-lint-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
@@ -23,18 +40,28 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: "1.26.2"
-          cache-dependency-path: ${{ matrix.module }}/go.sum
+          cache: false
 
+      - name: Restore Go modules and build cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-1.26.2-${{ matrix.module }}-${{ hashFiles(format('{0}/go.sum', matrix.module)) }}
+          restore-keys: |
+            ${{ runner.os }}-go-1.26.2-${{ matrix.module }}-
+
+      # The prebuilt binary panics on a toolchain newer than the Go it was built with.
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.12.2
-          install-mode: goinstall
+          version: v2.15.0
           working-directory: ${{ matrix.module }}
           args: ./...
