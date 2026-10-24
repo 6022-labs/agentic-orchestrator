@@ -32,20 +32,20 @@ func (uc *GetAgentPromptTemplate) Get(
 	ctx context.Context,
 	request *requests.GetAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 
 	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
 		request.CollectionAddress,
-		request.ParsedCollectionTokenId(),
-		request.ParsedKey(),
+		request.CollectionTokenId,
+		request.Key,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load agent prompt template: %w", err)
 	}
 	if template == nil {
-		return nil, cb_errors.NewNotFoundError("agent prompt template", request.Key)
+		return nil, cb_errors.NewNotFoundError("agent prompt template", request.Key.String())
 	}
 
 	return responses.AgentPromptTemplateResponseFromModel(template), nil

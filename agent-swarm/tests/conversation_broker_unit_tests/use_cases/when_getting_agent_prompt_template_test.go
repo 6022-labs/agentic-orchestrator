@@ -2,11 +2,13 @@ package use_cases_test
 
 import (
 	"context"
+	"strings"
 
 	"errors"
 	"testing"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/model_builders"
@@ -39,8 +41,8 @@ func WhenGettingAgentPromptTemplateBeforeEach(t *testing.T) *WhenGettingAgentPro
 
 func generateValidGetAgentPromptTemplateRequest() *requests.GetAgentPromptTemplateRequest {
 	return &requests.GetAgentPromptTemplateRequest{
-		CollectionAddress: "0xabc",
-		CollectionTokenId: "1",
+		CollectionAddress: "0xabc00000000000000000000000000000000000de",
+		CollectionTokenId: 1,
 		Key:               "clone-system",
 	}
 }
@@ -51,40 +53,99 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 	t.Run("Given request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Because collectionAddress is empty", func(t *testing.T) {
+		t.Run("Because collectionAddress has no 0x prefix", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
 			request := generateValidGetAgentPromptTemplateRequest()
-			request.CollectionAddress = ""
+			request.CollectionAddress = strings.TrimPrefix(request.CollectionAddress, "0x")
 
 			_, err := suite.sut.Get(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
 		})
+	})
 
-		t.Run("Because collectionTokenId is not a number", func(t *testing.T) {
+	t.Run("Given an uppercase key", func(t *testing.T) {
+		t.Parallel()
+
+		template := model_builders.NewAgentPromptTemplateBuilder().
+			WithCollectionAddress("0xabc00000000000000000000000000000000000de").
+			WithCollectionTokenId(1).
+			WithKey(enums.AgentPromptTemplateKeyCloneSystem).
+			Build()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockAgentPromptTemplateRepository.EXPECT().
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), uint64(1), enums.AgentPromptTemplateKeyCloneSystem).
+				Return(template, nil).
+				Times(1)
+		}
+
+		t.Run("Should look the template up by the canonical key", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
 			request := generateValidGetAgentPromptTemplateRequest()
-			request.CollectionTokenId = "abc"
+			request.Key = "CLONE-SYSTEM"
 
-			_, err := suite.sut.Get(context.Background(), request)
+			got, err := suite.sut.Get(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.ValidationError{}, err)
+			assert.NoError(t, err)
+			assert.Equal(t, template.ID, got.ID)
 		})
+	})
 
-		t.Run("Because key is unknown", func(t *testing.T) {
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		template := model_builders.NewAgentPromptTemplateBuilder().
+			WithCollectionAddress("0xabc00000000000000000000000000000000000de").
+			WithCollectionTokenId(1).
+			Build()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockAgentPromptTemplateRepository.EXPECT().
+				GetByAgentAndKey(gomock.Any(), "0xabc00000000000000000000000000000000000de", uint64(1), template.Key).
+				Return(template, nil).
+				Times(1)
+		}
+
+		t.Run("Should look the template up by the lowercased address", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
 			request := generateValidGetAgentPromptTemplateRequest()
-			request.Key = "unknown-key"
+			request.CollectionAddress = "0xAbC00000000000000000000000000000000000dE"
 
-			_, err := suite.sut.Get(context.Background(), request)
+			got, err := suite.sut.Get(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.ValidationError{}, err)
+			assert.NoError(t, err)
+			assert.Equal(t, template.ID, got.ID)
+		})
+	})
+
+	t.Run("Given repository fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockAgentPromptTemplateRepository.EXPECT().
+				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("boom")).
+				Times(1)
+		}
+
+		t.Run("Should propagate the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
+
+			assert.Error(t, err)
 		})
 	})
 
@@ -114,13 +175,13 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		t.Parallel()
 
 		template := model_builders.NewAgentPromptTemplateBuilder().
-			WithCollectionAddress("0xabc").
+			WithCollectionAddress("0xabc00000000000000000000000000000000000de").
 			WithCollectionTokenId(1).
 			Build()
 
 		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
 			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), "0xabc", uint64(1), template.Key).
+				GetByAgentAndKey(gomock.Any(), "0xabc00000000000000000000000000000000000de", uint64(1), template.Key).
 				Return(template, nil).
 				Times(1)
 		}
@@ -135,28 +196,6 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, template.ID, got.ID)
-		})
-	})
-
-	t.Run("Given repository fails", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockAgentPromptTemplateRepository.EXPECT().
-				GetByAgentAndKey(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, errors.New("boom")).
-				Times(1)
-		}
-
-		t.Run("Should propagate the error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
-
-			assert.Error(t, err)
 		})
 	})
 }

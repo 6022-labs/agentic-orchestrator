@@ -1,31 +1,28 @@
 package requests
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type RegisterAgentRequest struct {
 	CollectionAddress string `json:"collectionAddress"`
-	CollectionTokenId string `json:"collectionTokenId"`
+	CollectionTokenId uint64 `json:"collectionTokenId,string"`
 }
 
-func (r *RegisterAgentRequest) Validate() error {
-	if strings.TrimSpace(r.CollectionAddress) == "" {
-		return errors.NewValidationError("collectionAddress", "must not be empty")
+// ValidateAndSanitize lowercases the collection address so it matches the stored rows.
+func (r *RegisterAgentRequest) ValidateAndSanitize() error {
+	r.CollectionAddress = strings.TrimSpace(r.CollectionAddress)
+	if !strings.HasPrefix(r.CollectionAddress, "0x") || !common.IsHexAddress(r.CollectionAddress) {
+		return errors.NewValidationError("collectionAddress", "must be a 0x-prefixed hex address")
 	}
-	if strings.TrimSpace(r.CollectionTokenId) == "" {
-		return errors.NewValidationError("collectionTokenId", "must not be empty")
+	// Token IDs start at 1 on-chain, so 0 can never identify an agent.
+	if r.CollectionTokenId == 0 {
+		return errors.NewValidationError("collectionTokenId", "must be a positive integer")
 	}
-	if _, err := strconv.ParseUint(r.CollectionTokenId, 10, 64); err != nil {
-		return errors.NewValidationError("collectionTokenId", "must be a valid unsigned integer")
-	}
+
+	r.CollectionAddress = strings.ToLower(r.CollectionAddress)
 	return nil
-}
-
-func (r *RegisterAgentRequest) ParsedCollectionTokenId() uint64 {
-	v, _ := strconv.ParseUint(r.CollectionTokenId, 10, 64)
-	return v
 }

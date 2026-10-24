@@ -9,6 +9,8 @@ components:
       - facilitator-conclude
       - expert-system
       - expert-default
+      - expert-context-found
+      - expert-context-not-found
       type: string
       x-enum-varnames:
       - AgentPromptTemplateKeyCloneSystem
@@ -18,6 +20,8 @@ components:
       - AgentPromptTemplateKeyFacilitatorConclude
       - AgentPromptTemplateKeyExpertSystem
       - AgentPromptTemplateKeyExpertDefault
+      - AgentPromptTemplateKeyExpertContextFound
+      - AgentPromptTemplateKeyExpertContextNotFound
     enums.BridgeKind:
       enum:
       - slack
@@ -63,6 +67,7 @@ components:
         collectionAddress:
           type: string
         collectionTokenId:
+          example: "0"
           type: string
       type: object
     requests.RegisterBridgeRequest:

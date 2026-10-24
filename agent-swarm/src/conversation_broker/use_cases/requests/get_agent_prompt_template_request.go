@@ -1,41 +1,34 @@
 package requests
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // GetAgentPromptTemplateRequest identifies one agent-scoped template row.
 type GetAgentPromptTemplateRequest struct {
-	CollectionAddress string `uri:"collectionAddress"`
-	CollectionTokenId string `uri:"collectionTokenId"`
-	Key               string `uri:"key"`
+	CollectionAddress string                       `json:"-" uri:"collectionAddress"`
+	CollectionTokenId uint64                       `json:"-" uri:"collectionTokenId"`
+	Key               enums.AgentPromptTemplateKey `json:"-" uri:"key"`
 }
 
-func (r *GetAgentPromptTemplateRequest) Validate() error {
-	if strings.TrimSpace(r.CollectionAddress) == "" {
-		return errors.NewValidationError("collectionAddress", "must not be empty")
+// ValidateAndSanitize lowercases the collection address so it matches the stored rows.
+func (r *GetAgentPromptTemplateRequest) ValidateAndSanitize() error {
+	r.CollectionAddress = strings.TrimSpace(r.CollectionAddress)
+	if !strings.HasPrefix(r.CollectionAddress, "0x") || !common.IsHexAddress(r.CollectionAddress) {
+		return errors.NewValidationError("collectionAddress", "must be a 0x-prefixed hex address")
 	}
-	if _, err := strconv.ParseUint(r.CollectionTokenId, 10, 64); err != nil {
-		return errors.NewValidationError("collectionTokenId", "must be a valid unsigned integer")
+	// Token IDs start at 1 on-chain, so 0 can never identify an agent.
+	if r.CollectionTokenId == 0 {
+		return errors.NewValidationError("collectionTokenId", "must be a positive integer")
 	}
-	var key enums.AgentPromptTemplateKey
-	if err := key.Set(r.Key); err != nil {
+	if err := r.Key.Set(string(r.Key)); err != nil {
 		return errors.NewValidationError("key", "must be one of: "+enums.GetAllAgentPromptTemplateKeys().String())
 	}
+
+	r.CollectionAddress = strings.ToLower(r.CollectionAddress)
 	return nil
-}
-
-func (r *GetAgentPromptTemplateRequest) ParsedCollectionTokenId() uint64 {
-	v, _ := strconv.ParseUint(r.CollectionTokenId, 10, 64)
-	return v
-}
-
-func (r *GetAgentPromptTemplateRequest) ParsedKey() enums.AgentPromptTemplateKey {
-	var key enums.AgentPromptTemplateKey
-	_ = key.Set(r.Key)
-	return key
 }

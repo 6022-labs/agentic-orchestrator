@@ -895,7 +895,9 @@ const docTemplate = `{
                 "facilitator-default",
                 "facilitator-conclude",
                 "expert-system",
-                "expert-default"
+                "expert-default",
+                "expert-context-found",
+                "expert-context-not-found"
             ],
             "x-enum-varnames": [
                 "AgentPromptTemplateKeyCloneSystem",
@@ -904,7 +906,9 @@ const docTemplate = `{
                 "AgentPromptTemplateKeyFacilitatorDefault",
                 "AgentPromptTemplateKeyFacilitatorConclude",
                 "AgentPromptTemplateKeyExpertSystem",
-                "AgentPromptTemplateKeyExpertDefault"
+                "AgentPromptTemplateKeyExpertDefault",
+                "AgentPromptTemplateKeyExpertContextFound",
+                "AgentPromptTemplateKeyExpertContextNotFound"
             ]
         },
         "enums.BridgeKind": {
@@ -975,7 +979,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "collectionTokenId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -1021,16 +1026,7 @@ const docTemplate = `{
         "requests.SaveAgentPromptTemplateRequest": {
             "type": "object",
             "properties": {
-                "collectionAddress": {
-                    "type": "string"
-                },
-                "collectionTokenId": {
-                    "type": "string"
-                },
                 "content": {
-                    "type": "string"
-                },
-                "key": {
                     "type": "string"
                 }
             }

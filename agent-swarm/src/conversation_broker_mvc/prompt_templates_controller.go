@@ -49,10 +49,9 @@ func (c *PromptTemplatesController) InitRoutes(app fiber.Router) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [get]
 func (c *PromptTemplatesController) Get(ctx fiber.Ctx) error {
-	req := &requests.GetAgentPromptTemplateRequest{
-		CollectionAddress: ctx.Params("collectionAddress"),
-		CollectionTokenId: ctx.Params("collectionTokenId"),
-		Key:               ctx.Params("key"),
+	req := new(requests.GetAgentPromptTemplateRequest)
+	if err := ctx.Bind().URI(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 	template, err := c.getAgentPromptTemplate.Get(ctx.Context(), req)
 	if err != nil {
@@ -87,9 +86,9 @@ func (c *PromptTemplatesController) Save(ctx fiber.Ctx) error {
 	if err := ctx.Bind().Body(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	req.CollectionAddress = ctx.Params("collectionAddress")
-	req.CollectionTokenId = ctx.Params("collectionTokenId")
-	req.Key = ctx.Params("key")
+	if err := ctx.Bind().URI(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
 
 	template, err := c.saveAgentPromptTemplate.Save(ctx.Context(), req)
 	if err != nil {

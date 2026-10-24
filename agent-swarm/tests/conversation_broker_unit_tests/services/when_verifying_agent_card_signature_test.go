@@ -53,45 +53,32 @@ func vectorSignatures() []models.AgentCardSignature {
 func TestWhenVerifyingAgentCardSignature(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given the card carries the agent node's signature", func(t *testing.T) {
+	t.Run("Given the card carries no signature at all", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should accept it", func(t *testing.T) {
+		t.Run(
+			"Should accept it — integrity is the agent node's responsibility, not ours to enforce",
+			func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+				err := suite.sut.Verify([]byte(`{`+vectorCardBody+`}`), nil, vectorSigner)
+
+				assert.NoError(t, err)
+			},
+		)
+	})
+
+	t.Run("Given the card is not a JSON object", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingAgentCardSignatureBeforeEach()
 
-			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
-			err := suite.sut.Verify(raw, vectorSignatures(), vectorSigner)
-
-			assert.NoError(t, err)
-		})
-
-		t.Run("Should accept it whatever order the members arrive in", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingAgentCardSignatureBeforeEach()
-
-			reordered := `"paymentMethods":["l402","x402"],"name":"hermes","protocolVersion":"0.1","endpoints":{"responses":"h` +
-				`ttps://agent.example.com/api/responses"},"protocol":"6022","ensDomain":"hermes.agents6022.eth"`
-			err := suite.sut.Verify(
-				signedCardBytes(reordered, vectorProtected, vectorSignature),
-				vectorSignatures(),
-				vectorSigner,
-			)
-
-			assert.NoError(t, err)
-		})
-
-		t.Run("Should match a lowercase expected signer, since addresses are not case-sensitive", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingAgentCardSignatureBeforeEach()
-
-			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
-			err := suite.sut.Verify(raw, vectorSignatures(), "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266")
-
-			assert.NoError(t, err)
+			assert.Error(t, suite.sut.Verify([]byte(`["nope"]`), vectorSignatures(), vectorSigner))
 		})
 	})
 
@@ -110,21 +97,85 @@ func TestWhenVerifyingAgentCardSignature(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the card carries no signature at all", func(t *testing.T) {
+	t.Run("Given an expected signer without the 0x prefix", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run(
-			"Should accept it — integrity is the agent node's responsibility, not ours to enforce",
-			func(t *testing.T) {
-				t.Parallel()
+		t.Run("Should reject it", func(t *testing.T) {
+			t.Parallel()
 
-				suite := WhenVerifyingAgentCardSignatureBeforeEach()
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
 
-				err := suite.sut.Verify([]byte(`{`+vectorCardBody+`}`), nil, vectorSigner)
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			err := suite.sut.Verify(raw, vectorSignatures(), "f39fd6e51aad88f6f4ce6ab8827279cfffb92266")
 
-				assert.NoError(t, err)
-			},
-		)
+			assert.ErrorContains(t, err, "not a hex address")
+		})
+	})
+
+	t.Run("Given no expected signer could be resolved", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject rather than trust the card's own jwk", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+
+			assert.Error(t, suite.sut.Verify(raw, vectorSignatures(), ""))
+		})
+	})
+
+	t.Run("Given an expected signer that is not hex", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			err := suite.sut.Verify(raw, vectorSignatures(), "0xf39fd6")
+
+			assert.ErrorContains(t, err, "not a hex address")
+		})
+	})
+
+	t.Run("Given the protected header declares another algorithm", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			// {"alg":"none","jwk":{...},"kid":"...","typ":"JOSE"}
+			noneAlg := "eyJhbGciOiJub25lIiwiandrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Imd4aFRXMVFRWFVwNnJtREFqOFJmbG" +
+				"9jWUcwX2Z4aVc5R25VX3B6bF83WFUiLCJ5IjoiTlVmeEhLaHBaa2J5ODZ5d2pqRUJhdnJDUG1NTVhSSDFuMkgtOVhzTktxVSJ9LCJraWQiOiIweG" +
+				"YzOUZkNmU1MWFhZDg4RjZGNGNlNmFCODgyNzI3OWNmZkZiOTIyNjYiLCJ0eXAiOiJKT1NFIn0"
+			signatures := []models.AgentCardSignature{{Protected: noneAlg, Signature: vectorSignature}}
+
+			assert.ErrorContains(
+				t,
+				suite.sut.Verify(signedCardBytes(vectorCardBody, noneAlg, vectorSignature), signatures, vectorSigner),
+				"algorithm",
+			)
+		})
+	})
+
+	t.Run("Given the card was signed by a different key", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it even though the signature itself is valid", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			err := suite.sut.Verify(raw, vectorSignatures(), "0x70997970C51812dc3A010C7d01b50e0d17dc79C8")
+
+			assert.ErrorContains(t, err, "expected 0x70997970c51812dc3a010c7d01b50e0d17dc79c8")
+		})
 	})
 
 	t.Run("Given the card body was tampered with after signing", func(t *testing.T) {
@@ -166,57 +217,6 @@ func TestWhenVerifyingAgentCardSignature(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the card was signed by a different key", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should reject it even though the signature itself is valid", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingAgentCardSignatureBeforeEach()
-
-			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
-			err := suite.sut.Verify(raw, vectorSignatures(), "0x70997970C51812dc3A010C7d01b50e0d17dc79C8")
-
-			assert.ErrorContains(t, err, "expected")
-		})
-	})
-
-	t.Run("Given no expected signer could be resolved", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should reject rather than trust the card's own jwk", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingAgentCardSignatureBeforeEach()
-
-			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
-
-			assert.Error(t, suite.sut.Verify(raw, vectorSignatures(), ""))
-		})
-	})
-
-	t.Run("Given the protected header declares another algorithm", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should reject it", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingAgentCardSignatureBeforeEach()
-
-			// {"alg":"none","jwk":{...},"kid":"...","typ":"JOSE"}
-			noneAlg := "eyJhbGciOiJub25lIiwiandrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Imd4aFRXMVFRWFVwNnJtREFqOFJmbG" +
-				"9jWUcwX2Z4aVc5R25VX3B6bF83WFUiLCJ5IjoiTlVmeEhLaHBaa2J5ODZ5d2pqRUJhdnJDUG1NTVhSSDFuMkgtOVhzTktxVSJ9LCJraWQiOiIweG" +
-				"YzOUZkNmU1MWFhZDg4RjZGNGNlNmFCODgyNzI3OWNmZkZiOTIyNjYiLCJ0eXAiOiJKT1NFIn0"
-			signatures := []models.AgentCardSignature{{Protected: noneAlg, Signature: vectorSignature}}
-
-			assert.ErrorContains(
-				t,
-				suite.sut.Verify(signedCardBytes(vectorCardBody, noneAlg, vectorSignature), signatures, vectorSigner),
-				"algorithm",
-			)
-		})
-	})
-
 	t.Run("Given several signatures where only the last is valid", func(t *testing.T) {
 		t.Parallel()
 
@@ -235,15 +235,45 @@ func TestWhenVerifyingAgentCardSignature(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the card is not a JSON object", func(t *testing.T) {
+	t.Run("Given the card carries the agent node's signature", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should reject it", func(t *testing.T) {
+		t.Run("Should accept it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingAgentCardSignatureBeforeEach()
 
-			assert.Error(t, suite.sut.Verify([]byte(`["nope"]`), vectorSignatures(), vectorSigner))
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			err := suite.sut.Verify(raw, vectorSignatures(), vectorSigner)
+
+			assert.NoError(t, err)
+		})
+
+		t.Run("Should accept it whatever order the members arrive in", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			reordered := `"paymentMethods":["l402","x402"],"name":"hermes","protocolVersion":"0.1","endpoints":{"responses":"h` +
+				`ttps://agent.example.com/api/responses"},"protocol":"6022","ensDomain":"hermes.agents6022.eth"`
+			err := suite.sut.Verify(
+				signedCardBytes(reordered, vectorProtected, vectorSignature),
+				vectorSignatures(),
+				vectorSigner,
+			)
+
+			assert.NoError(t, err)
+		})
+
+		t.Run("Should match a lowercase expected signer, since addresses are not case-sensitive", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			err := suite.sut.Verify(raw, vectorSignatures(), "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266")
+
+			assert.NoError(t, err)
 		})
 	})
 }

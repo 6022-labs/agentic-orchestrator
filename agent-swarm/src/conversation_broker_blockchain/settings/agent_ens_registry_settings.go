@@ -40,11 +40,11 @@ func NewAgentEnsRegistrySettings(
 		logger.Fatal("failed to parse built-in agent_ens_registries.json", zap.Error(err))
 	}
 
-	addressStr := strings.TrimSpace(k.String(AgentEnsRegistrySettingsKey + ".smart_contract_address"))
+	addressStr := strings.ToLower(strings.TrimSpace(k.String(AgentEnsRegistrySettingsKey + ".smart_contract_address")))
 	if len(addressStr) == 0 {
 		for _, registry := range file.Registries {
 			if registry.ChainId == blockchainSettings.ChainId {
-				addressStr = strings.TrimSpace(registry.Address)
+				addressStr = strings.ToLower(strings.TrimSpace(registry.Address))
 				break
 			}
 		}
@@ -58,9 +58,9 @@ func NewAgentEnsRegistrySettings(
 		)
 	}
 
-	if !common.IsHexAddress(addressStr) {
+	if !strings.HasPrefix(addressStr, "0x") || !common.IsHexAddress(addressStr) {
 		logger.Fatal(
-			"agent_ens_registry.smart_contract_address is not a valid Ethereum address",
+			"agent_ens_registry.smart_contract_address is not a 0x-prefixed hex address",
 			zap.String("smartContractAddress", addressStr),
 		)
 	}

@@ -2,6 +2,7 @@ package prompts
 
 import (
 	"context"
+	"strings"
 
 	"fmt"
 
@@ -21,7 +22,7 @@ func (p *promptTemplateProvider) templateFor(
 ) (string, error) {
 	if agent.CollectionAddress != nil && agent.CollectionTokenId != nil {
 		stored, err := p.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
-			*agent.CollectionAddress,
+			strings.ToLower(*agent.CollectionAddress),
 			*agent.CollectionTokenId,
 			key,
 		)
