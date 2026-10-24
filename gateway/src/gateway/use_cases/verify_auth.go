@@ -39,7 +39,7 @@ func (uc *VerifyAuth) Execute(
 	ctx context.Context,
 	request *requests.VerifyAuthRequest,
 ) (*responses.VerifyAuthResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 

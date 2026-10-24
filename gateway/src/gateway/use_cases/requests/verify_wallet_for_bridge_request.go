@@ -15,7 +15,7 @@ type VerifyWalletForBridgeRequest struct {
 	Signature           string               `                     json:"signature"`
 }
 
-func (r *VerifyWalletForBridgeRequest) Validate() error {
+func (r *VerifyWalletForBridgeRequest) ValidateAndSanitize() error {
 	if !enums.GetAllBridgePlatforms().Contains(r.Platform) {
 		return errors.NewValidationError(
 			"platform",

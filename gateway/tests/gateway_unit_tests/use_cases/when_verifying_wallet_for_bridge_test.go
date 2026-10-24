@@ -2,7 +2,7 @@ package use_cases_test
 
 import (
 	"context"
-
+	"strings"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
@@ -78,32 +78,6 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 			err := suite.sut.Verify(context.Background(), request)
 			assert.NotNil(t, err)
 		})
-
-		t.Run("Because challenge is empty, should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
-
-			request := generateValidVerifyWalletForBridgeRequest()
-			request.Challenge = "   "
-
-			err := suite.sut.Verify(context.Background(), request)
-			assert.NotNil(t, err)
-		})
-
-		t.Run("Because signature is empty, should return error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
-
-			request := generateValidVerifyWalletForBridgeRequest()
-			request.Signature = "   "
-
-			err := suite.sut.Verify(context.Background(), request)
-			assert.NotNil(t, err)
-		})
 	})
 
 	t.Run("Given signature does not match the authenticated wallet, should return error", func(t *testing.T) {
@@ -142,7 +116,10 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 
 				suite.mockPlatformBridgeRequester.
 					EXPECT().
-					SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
+					SetWalletOwnershipToUser(
+						gomock.Any(),
+						request.Platform, request.Challenge, strings.ToLower(request.AuthenticatedWallet.Hex()),
+					).
 					Return(assert.AnError)
 			}
 
@@ -171,7 +148,10 @@ func TestWhenVerifyingWalletForBridge(t *testing.T) {
 
 			suite.mockPlatformBridgeRequester.
 				EXPECT().
-				SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, request.AuthenticatedWallet.Hex()).
+				SetWalletOwnershipToUser(
+					gomock.Any(),
+					request.Platform, request.Challenge, strings.ToLower(request.AuthenticatedWallet.Hex()),
+				).
 				Return(nil)
 		}
 

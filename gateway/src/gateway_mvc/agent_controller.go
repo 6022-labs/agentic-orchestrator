@@ -69,6 +69,7 @@ func (controller *AgentController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Param        agentCollectionAddress path string true "collection address"
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentResponse
+// @Failure      400 {object} errors.ValidationError
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c fiber.Ctx) error {
@@ -79,6 +80,9 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 
 	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
 		controller.logger.Error("Failed to get agent", zap.Error(err))
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
@@ -132,6 +136,7 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 // @Param        agentCollectionAddress path string true "collection address"
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentCardResponse
+// @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      502 {string} string "Bad Gateway"
 // @Security     BearerAuth
@@ -144,6 +149,9 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 
 	response, err := controller.getAgentCard.Get(c.Context(), request)
 	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
 		}
@@ -162,6 +170,7 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 // @Param        agentCollectionAddress path string true "collection address"
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentUrlResponse
+// @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      502 {string} string "Bad Gateway"
 // @Security     BearerAuth
@@ -174,6 +183,9 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 
 	response, err := controller.getAgentUrl.Get(c.Context(), request)
 	if err != nil {
+		if validationErr, ok := err.(*errors.ValidationError); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
+		}
 		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
 			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
 		}

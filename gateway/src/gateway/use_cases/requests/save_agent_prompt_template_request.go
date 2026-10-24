@@ -11,8 +11,8 @@ type SaveAgentPromptTemplateRequest struct {
 	Content string `json:"content"`
 }
 
-func (r *SaveAgentPromptTemplateRequest) Validate() error {
-	if err := r.GetAgentPromptTemplateRequest.Validate(); err != nil {
+func (r *SaveAgentPromptTemplateRequest) ValidateAndSanitize() error {
+	if err := r.GetAgentPromptTemplateRequest.ValidateAndSanitize(); err != nil {
 		return err
 	}
 	if strings.TrimSpace(r.Content) == "" {

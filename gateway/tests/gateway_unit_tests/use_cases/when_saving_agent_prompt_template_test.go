@@ -38,7 +38,7 @@ func WhenSavingAgentPromptTemplateBeforeEach(t *testing.T) *WhenSavingAgentPromp
 func generateValidSaveAgentPromptTemplateRequest() *requests.SaveAgentPromptTemplateRequest {
 	return &requests.SaveAgentPromptTemplateRequest{
 		GetAgentPromptTemplateRequest: requests.GetAgentPromptTemplateRequest{
-			AgentCollectionAddress: "0xabc",
+			AgentCollectionAddress: "0x39DD75a025145770a8b8278Cc8BA705116443Ea7",
 			AgentCollectionTokenId: "1",
 			Key:                    "clone-system",
 		},
@@ -65,30 +65,6 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker saves the template", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
-			suite.mockConversationBrokerRequester.EXPECT().
-				SaveAgentPromptTemplate(gomock.Any(), "0xabc", uint64(1), "clone-system", request.Content).
-				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: request.Content}, nil).
-				Times(1)
-		}
-
-		t.Run("Should return the saved template", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
-			request := generateValidSaveAgentPromptTemplateRequest()
-			initSuite(suite, request)
-
-			response, err := suite.sut.Save(context.Background(), request)
-
-			assert.NoError(t, err)
-			assert.Equal(t, request.Content, response.Content)
-		})
-	})
-
 	t.Run("Given the broker fails", func(t *testing.T) {
 		t.Parallel()
 
@@ -108,6 +84,33 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 			_, err := suite.sut.Save(context.Background(), generateValidSaveAgentPromptTemplateRequest())
 
 			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the broker saves the template", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite, request *requests.SaveAgentPromptTemplateRequest) {
+			suite.mockConversationBrokerRequester.EXPECT().
+				SaveAgentPromptTemplate(
+					gomock.Any(),
+					"0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1), "clone-system", request.Content,
+				).
+				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: request.Content}, nil).
+				Times(1)
+		}
+
+		t.Run("Should return the saved template", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
+			request := generateValidSaveAgentPromptTemplateRequest()
+			initSuite(suite, request)
+
+			response, err := suite.sut.Save(context.Background(), request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, request.Content, response.Content)
 		})
 	})
 }

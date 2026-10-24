@@ -40,7 +40,7 @@ func WhenGettingAgentUrlBeforeEach(t *testing.T) *WhenGettingAgentUrlTestingSuit
 
 func generateValidGetAgentUrlRequest() *requests.AgentByCollectionTokenIdRequest {
 	return &requests.AgentByCollectionTokenIdRequest{
-		AgentCollectionAddress: "0xabc",
+		AgentCollectionAddress: "0x39DD75a025145770a8b8278Cc8BA705116443Ea7",
 		AgentCollectionTokenId: 1,
 	}
 }
@@ -48,12 +48,52 @@ func generateValidGetAgentUrlRequest() *requests.AgentByCollectionTokenIdRequest
 func TestWhenGettingAgentUrl(t *testing.T) {
 	t.Parallel()
 
+	t.Run("Given a collection address without the 0x prefix", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return a validation error without calling the registry", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentUrlBeforeEach(t)
+			request := generateValidGetAgentUrlRequest()
+			request.AgentCollectionAddress = "39DD75a025145770a8b8278Cc8BA705116443Ea7"
+
+			response, err := suite.sut.Get(context.Background(), request)
+
+			assert.Nil(t, response)
+			assert.IsType(t, &gw_errors.ValidationError{}, err)
+		})
+	})
+
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
+				Return(nil, nil).
+				Times(1)
+		}
+
+		t.Run("Should look up the lowercased address", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentUrlBeforeEach(t)
+			initSuite(suite)
+			request := generateValidGetAgentUrlRequest()
+
+			_, _ = suite.sut.Get(context.Background(), request)
+
+			assert.Equal(t, "0x39dd75a025145770a8b8278cc8ba705116443ea7", request.AgentCollectionAddress)
+		})
+	})
+
 	t.Run("Given the registry fails", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
 				Return(nil, errors.New("boom")).
 				Times(1)
 		}
@@ -75,7 +115,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -97,7 +137,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
 				Return(&responses.AgentResponse{}, nil).
 				Times(1)
 		}
@@ -119,7 +159,7 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 
 		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
 				Return(&responses.AgentResponse{EnsDomain: "ada.experts.80002.6022.eth"}, nil).
 				Times(1)
 			suite.mockConversationBrokerRequester.EXPECT().

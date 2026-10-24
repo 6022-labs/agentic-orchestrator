@@ -34,6 +34,10 @@ func (uc *GetAgentUrl) Get(
 	ctx context.Context,
 	request *requests.AgentByCollectionTokenIdRequest,
 ) (*responses.AgentUrlResponse, error) {
+	if err := request.ValidateAndSanitize(); err != nil {
+		return nil, err
+	}
+
 	agent, err := uc.agentRegistryRequester.GetAgent(
 		ctx,
 		request.AgentCollectionAddress,

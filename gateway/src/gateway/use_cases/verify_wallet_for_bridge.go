@@ -3,6 +3,7 @@ package use_cases
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
@@ -38,7 +39,7 @@ func (uc *VerifyWalletForBridge) Verify(
 ) (err error) {
 	defer func() { uc.gatewayMetrics.RecordWalletVerification(ctx, err) }()
 
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return err
 	}
 
@@ -50,7 +51,7 @@ func (uc *VerifyWalletForBridge) Verify(
 	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(ctx,
 		request.Platform,
 		request.Challenge,
-		request.AuthenticatedWallet.Hex(),
+		strings.ToLower(request.AuthenticatedWallet.Hex()),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to set wallet ownership to user: %w", err)

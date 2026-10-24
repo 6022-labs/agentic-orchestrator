@@ -13,11 +13,12 @@ type GetAuthChallengeRequest struct {
 	ChainId uint64 `query:"chainId"`
 }
 
-func (r *GetAuthChallengeRequest) Validate() error {
+func (r *GetAuthChallengeRequest) ValidateAndSanitize() error {
 	r.Address = strings.TrimSpace(r.Address)
 	if !helpers.IsEthAddress(r.Address) {
 		return errors.NewValidationError("address", "must be a 0x-prefixed 20-byte hex address")
 	}
+	r.Address = strings.ToLower(r.Address)
 	if r.ChainId == 0 {
 		return errors.NewValidationError("chainId", "must be a positive chain id")
 	}

@@ -34,6 +34,10 @@ func (uc *GetAgentCard) Get(
 	ctx context.Context,
 	request *requests.AgentByCollectionTokenIdRequest,
 ) (*responses.AgentCardResponse, error) {
+	if err := request.ValidateAndSanitize(); err != nil {
+		return nil, err
+	}
+
 	agent, err := uc.agentRegistryRequester.GetAgent(
 		ctx,
 		request.AgentCollectionAddress,

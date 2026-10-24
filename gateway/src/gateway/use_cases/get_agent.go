@@ -24,6 +24,10 @@ func (s *GetAgent) Get(
 	ctx context.Context,
 	request *requests.AgentByCollectionTokenIdRequest,
 ) (*responses.AgentResponse, error) {
+	if err := request.ValidateAndSanitize(); err != nil {
+		return nil, err
+	}
+
 	return s.agentRegistryRequester.GetAgent(ctx,
 		request.AgentCollectionAddress,
 		request.AgentCollectionTokenId,
