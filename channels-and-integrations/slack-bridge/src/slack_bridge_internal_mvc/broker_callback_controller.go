@@ -3,6 +3,7 @@ package slack_bridge_internal_mvc
 import (
 	"errors"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
@@ -52,7 +53,7 @@ func (c *BrokerCallbackController) Handle(ctx fiber.Ctx) error {
 	}
 
 	if err := c.postBrokerCompletionToSlack.Post(ctx.Context(), request); err != nil {
-		if errors.Is(err, requests.ErrValidation) {
+		if errors.Is(err, common_errors.ErrValidation) {
 			c.logger.Warn("Broker callback failed validation", zap.Error(err))
 			return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}

@@ -3,6 +3,7 @@ package slack_bridge_internal_mvc
 import (
 	"errors"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
@@ -61,7 +62,7 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) e
 
 	err := controller.setWalletOwnershipToSlackPlayer.Set(c.Context(), request)
 	if err != nil {
-		if errors.Is(err, requests.ErrValidation) {
+		if errors.Is(err, common_errors.ErrValidation) {
 			controller.logger.Warn("Set wallet ownership failed validation", zap.Error(err))
 			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}

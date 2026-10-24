@@ -2,10 +2,12 @@ package use_cases_test
 
 import (
 	"context"
-
 	"errors"
+	"strings"
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
@@ -56,28 +58,16 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 	t.Run("Because the request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Due to empty challenge, it should return an error", func(t *testing.T) {
+		t.Run("Due to a wallet address without the 0x prefix, it should return a validation error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSettingWalletOwnershipToSlackUserBeforeEach(t)
 			request := generateValidSetWalletOwnershipToSlackUserRequest()
-			request.Challenge = uuid.Nil
+			request.WalletAddress = strings.TrimPrefix(request.WalletAddress, "0x")
 
 			err := suite.sut.Set(context.Background(), request)
 
-			assert.NotNil(t, err)
-		})
-
-		t.Run("Due to invalid wallet address, it should return an error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSettingWalletOwnershipToSlackUserBeforeEach(t)
-			request := generateValidSetWalletOwnershipToSlackUserRequest()
-			request.WalletAddress = "invalid_address"
-
-			err := suite.sut.Set(context.Background(), request)
-
-			assert.NotNil(t, err)
+			assert.ErrorIs(t, err, common_errors.ErrValidation)
 		})
 	})
 
@@ -150,6 +140,9 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 	t.Run("Given challenge exists and slack user is updated successfully", func(t *testing.T) {
 		t.Parallel()
 
+		var savedUser *models.SlackUser
+		checksumWalletAddress := common_tests.RandomEthAddress().Hex()
+
 		initSuite := func(suite *WhenSettingWalletOwnershipToSlackUserTestingSuite, request *requests.SetWalletOwnershipToSlackUserRequest) {
 			userId := "some-user-id"
 
@@ -167,20 +160,25 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 
 			suite.mockSlackUserRepository.EXPECT().
 				Save(gomock.Any(), gomock.Any()).
-				Return(nil, nil)
+				DoAndReturn(func(_ context.Context, user *models.SlackUser) (*models.SlackUser, error) {
+					savedUser = user
+					return nil, nil
+				})
 		}
 
-		t.Run("Should return no error", func(t *testing.T) {
+		t.Run("Should save the wallet address lowercased", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenSettingWalletOwnershipToSlackUserBeforeEach(t)
 			request := generateValidSetWalletOwnershipToSlackUserRequest()
+			request.WalletAddress = checksumWalletAddress
 
 			initSuite(suite, request)
 
 			err := suite.sut.Set(context.Background(), request)
 
 			assert.Nil(t, err)
+			assert.Equal(t, strings.ToLower(checksumWalletAddress), *savedUser.WalletAddress)
 		})
 	})
 }

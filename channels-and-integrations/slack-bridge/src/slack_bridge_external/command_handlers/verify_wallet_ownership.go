@@ -2,11 +2,12 @@ package command_handlers
 
 import (
 	"context"
-	"time"
-
+	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
@@ -62,7 +63,10 @@ func (h *VerifyWalletOwnership) Verify(
 	start := time.Now()
 	defer func() {
 		outcome := metrics_interfaces.ChannelOutcomeHandled
-		if err != nil {
+		switch {
+		case errors.Is(err, common_errors.ErrValidation):
+			outcome = metrics_interfaces.ChannelOutcomeRejected
+		case err != nil:
 			outcome = metrics_interfaces.ChannelOutcomeFailed
 			span.Fail(err)
 		}

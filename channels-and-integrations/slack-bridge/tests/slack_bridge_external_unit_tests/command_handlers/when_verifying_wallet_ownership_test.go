@@ -2,9 +2,10 @@ package command_handlers_test
 
 import (
 	"context"
-
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
@@ -23,6 +24,8 @@ import (
 type WhenVerifyingWalletOwnershipTestingSuite struct {
 	sut *command_handlers.VerifyWalletOwnership
 
+	mockChannelMetrics *channel_metrics_mocks.MockChannelMetricsInterface
+
 	verifyWalletOwnershipSettings   *settings.VerifyWalletOwnershipSettings
 	mockWalletOwnershipChallenge    *interfaces_mocks.MockWalletOwnershipChallengeInterface
 	mockSlackUserSynchronizerCached *external_interfaces_mocks.MockSlackUserSynchronizerCachedInterface
@@ -32,9 +35,6 @@ func WhenVerifyingWalletOwnershipBeforeEach(t *testing.T) *WhenVerifyingWalletOw
 	mockController := gomock.NewController(t)
 
 	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
-	mockChannelMetrics.EXPECT().
-		RecordCommand(gomock.Any(), "wallet.verify", gomock.Any(), gomock.Any(), gomock.Any()).
-		Times(1)
 
 	// Spans are not asserted here.
 	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
@@ -67,7 +67,8 @@ func WhenVerifyingWalletOwnershipBeforeEach(t *testing.T) *WhenVerifyingWalletOw
 	)
 
 	return &WhenVerifyingWalletOwnershipTestingSuite{
-		sut: sut,
+		sut:                sut,
+		mockChannelMetrics: mockChannelMetrics,
 
 		mockWalletOwnershipChallenge:    mockWalletOwnershipChallenge,
 		verifyWalletOwnershipSettings:   verifyWalletOwnershipSettings,
@@ -84,19 +85,27 @@ func generateValidVerifyWalletOwnershipRequest() *requests.VerifyWalletOwnership
 func TestWhenVerifyingWalletOwnership(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given request is invalid", func(t *testing.T) {
+	t.Run("Given the request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Due to empty user id, should return an error", func(t *testing.T) {
+		t.Run("Should return a validation error and record a rejected outcome", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletOwnershipBeforeEach(t)
-			request := generateValidVerifyWalletOwnershipRequest()
-			request.UserId = ""
 
-			_, err := suite.sut.Verify(context.Background(), request)
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"wallet.verify",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeRejected,
+					gomock.Any(),
+				).
+				Times(1)
 
-			assert.Error(t, err)
+			_, err := suite.sut.Verify(context.Background(), &requests.VerifyWalletOwnershipRequest{})
+
+			assert.ErrorIs(t, err, common_errors.ErrValidation)
 		})
 	})
 
@@ -104,6 +113,16 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletOwnershipTestingSuite, request *requests.VerifyWalletOwnershipRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"wallet.verify",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.mockSlackUserSynchronizerCached.
 				EXPECT().
 				Sync(gomock.Any(), request.UserId).
@@ -128,6 +147,16 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletOwnershipTestingSuite, request *requests.VerifyWalletOwnershipRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"wallet.verify",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.UserId).
 				Build()
@@ -160,6 +189,16 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletOwnershipTestingSuite, request *requests.VerifyWalletOwnershipRequest, challenge uuid.UUID) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"wallet.verify",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.UserId).
 				Build()

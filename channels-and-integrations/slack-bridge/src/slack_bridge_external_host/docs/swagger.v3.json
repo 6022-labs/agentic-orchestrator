@@ -49,7 +49,7 @@
                                 }
                             }
                         },
-                        "description": "Agent added to channel successfully"
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice"
                     },
                     "400": {
                         "content": {
@@ -69,7 +69,7 @@
                                 }
                             }
                         },
-                        "description": "Failed to handle command"
+                        "description": "Internal Server Error"
                     }
                 },
                 "summary": "Add agent to channel",
@@ -117,7 +117,7 @@
                                 }
                             }
                         },
-                        "description": "JSON list of agents"
+                        "description": "JSON list of agents, or failure notice"
                     },
                     "400": {
                         "content": {
@@ -137,7 +137,7 @@
                                 }
                             }
                         },
-                        "description": "Failed to handle command"
+                        "description": "Internal Server Error"
                     }
                 },
                 "summary": "List agents in channel",
@@ -185,7 +185,7 @@
                                 }
                             }
                         },
-                        "description": "Slack user paired to human agent successfully"
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice"
                     },
                     "400": {
                         "content": {
@@ -195,7 +195,7 @@
                                 }
                             }
                         },
-                        "description": "Invalid command format"
+                        "description": "Invalid request body"
                     },
                     "500": {
                         "content": {
@@ -205,7 +205,7 @@
                                 }
                             }
                         },
-                        "description": "Failed to handle command"
+                        "description": "Internal Server Error"
                     }
                 },
                 "summary": "Pair Slack user to human agent",
@@ -253,7 +253,7 @@
                                 }
                             }
                         },
-                        "description": "Agent removed from channel successfully"
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice"
                     },
                     "400": {
                         "content": {
@@ -273,7 +273,7 @@
                                 }
                             }
                         },
-                        "description": "Failed to handle command"
+                        "description": "Internal Server Error"
                     }
                 },
                 "summary": "Remove agent from channel",
@@ -321,7 +321,7 @@
                                 }
                             }
                         },
-                        "description": "Verification response"
+                        "description": "Verification response, or failure notice"
                     },
                     "400": {
                         "content": {
@@ -331,7 +331,7 @@
                                 }
                             }
                         },
-                        "description": "Invalid command format"
+                        "description": "Invalid request body"
                     },
                     "500": {
                         "content": {
@@ -341,7 +341,7 @@
                                 }
                             }
                         },
-                        "description": "Failed to handle command"
+                        "description": "Internal Server Error"
                     }
                 },
                 "summary": "Verify wallet ownership",

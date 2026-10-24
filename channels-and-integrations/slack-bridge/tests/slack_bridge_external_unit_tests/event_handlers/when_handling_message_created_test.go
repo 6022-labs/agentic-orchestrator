@@ -2,13 +2,13 @@ package event_handlers_test
 
 import (
 	"context"
-
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/settings"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
+	command_handlers_requests "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/event_handlers/requests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/model_builders"
@@ -126,6 +126,38 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 	t.Run("Given channel has no facilitator", func(t *testing.T) {
 		t.Parallel()
 
+		t.Run("And error message is already sent", func(t *testing.T) {
+			t.Parallel()
+
+			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{
+						*model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleExpert).Build(),
+					}).Build()
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
+			}
+
+			t.Run("Should skip without posting again", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenHandlingMessageCreatedBeforeEach(t)
+				request := &requests.MessageCreatedRequest{
+					ApiAppId: suite.slackSettings.AppId,
+					Event: requests.MessageCreatedEvent{
+						Ts:      "1234567890.123456",
+						Channel: "C1234567890",
+						Text:    event_handlers.NO_FACILITATOR_FOUND_ERROR,
+					},
+				}
+				initSuite(suite, request)
+
+				err := suite.sut.Handle(context.Background(), request)
+				assert.NoError(t, err)
+			})
+		})
+
 		t.Run("And error message is not already sent", func(t *testing.T) {
 			t.Parallel()
 
@@ -159,38 +191,6 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				assert.NoError(t, err)
 			})
 		})
-
-		t.Run("And error message is already sent", func(t *testing.T) {
-			t.Parallel()
-
-			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
-				slackChannel := model_builders.NewSlackChannelBuilder().
-					WithAgents([]models.SlackAgent{
-						*model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleExpert).Build(),
-					}).Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().
-					Sync(gomock.Any(), request.Event.Channel).
-					Return(slackChannel, nil)
-			}
-
-			t.Run("Should skip without posting again", func(t *testing.T) {
-				t.Parallel()
-
-				suite := WhenHandlingMessageCreatedBeforeEach(t)
-				request := &requests.MessageCreatedRequest{
-					ApiAppId: suite.slackSettings.AppId,
-					Event: requests.MessageCreatedEvent{
-						Ts:      "1234567890.123456",
-						Channel: "C1234567890",
-						Text:    event_handlers.NO_FACILITATOR_FOUND_ERROR,
-					},
-				}
-				initSuite(suite, request)
-
-				err := suite.sut.Handle(context.Background(), request)
-				assert.NoError(t, err)
-			})
-		})
 	})
 
 	t.Run("Given message sent from an agent", func(t *testing.T) {
@@ -198,57 +198,6 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 		collectionAddr := "0x0000000000000000000000000000000000000001"
 		collectionTokenId := uint64(7)
-
-		t.Run("And agent is found", func(t *testing.T) {
-			t.Parallel()
-
-			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
-				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
-				slackChannel := model_builders.NewSlackChannelBuilder().
-					WithAgents([]models.SlackAgent{facilitator}).
-					Build()
-				suite.mockSlackChannelSynchronizerCached.EXPECT().
-					Sync(gomock.Any(), request.Event.Channel).
-					Return(slackChannel, nil)
-
-				agent := model_builders.NewSlackAgentBuilder().
-					WithCollectionAddress(collectionAddr).
-					WithCollectionTokenId(collectionTokenId).
-					Build()
-				suite.mockSlackAgentRepository.EXPECT().
-					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddr, collectionTokenId).
-					Return(agent, nil)
-
-				suite.mockBrokerMessageForwarder.EXPECT().
-					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, nil, agent).
-					Return(nil)
-			}
-
-			t.Run("Should forward the agent message to the broker", func(t *testing.T) {
-				t.Parallel()
-
-				suite := WhenHandlingMessageCreatedBeforeEach(t)
-				request := &requests.MessageCreatedRequest{
-					Event: requests.MessageCreatedEvent{
-						AppId:   &suite.slackSettings.AppId,
-						Ts:      "1234567890.123456",
-						Channel: "C1234567890",
-						Text:    "Agent message",
-						Metadata: &requests.MessageCreatedMetadata{
-							EventType: event_handlers.AGENT_MESSAGE_CREATED_METADATA_EVENT_TYPE,
-							EventPayload: map[string]any{
-								"collection_token_address": collectionAddr,
-								"collection_token_id":      float64(collectionTokenId),
-							},
-						},
-					},
-				}
-				initSuite(suite, request)
-
-				err := suite.sut.Handle(context.Background(), request)
-				assert.NoError(t, err)
-			})
-		})
 
 		t.Run("And metadata is missing", func(t *testing.T) {
 			t.Parallel()
@@ -323,12 +272,8 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				assert.Error(t, err)
 			})
 		})
-	})
 
-	t.Run("Given message sent from a slack user", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("And user is found and not paired", func(t *testing.T) {
+		t.Run("And agent is found", func(t *testing.T) {
 			t.Parallel()
 
 			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
@@ -340,31 +285,36 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 					Sync(gomock.Any(), request.Event.Channel).
 					Return(slackChannel, nil)
 
-				slackUser := model_builders.NewSlackUserBuilder().
-					WithId(*request.Event.User).
-					WithPairedHumanAgentCollectionAddress(nil).
-					WithPairedHumanAgentCollectionTokenId(nil).
+				agent := model_builders.NewSlackAgentBuilder().
+					WithCollectionAddress(collectionAddr).
+					WithCollectionTokenId(collectionTokenId).
 					Build()
-				suite.mockSlackUserSynchronizerCached.EXPECT().
-					Sync(gomock.Any(), *request.Event.User).
-					Return(slackUser, nil)
+				suite.mockSlackAgentRepository.EXPECT().
+					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddr, collectionTokenId).
+					Return(agent, nil)
 
 				suite.mockBrokerMessageForwarder.EXPECT().
-					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, slackUser, nil).
+					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, nil, agent).
 					Return(nil)
 			}
 
-			t.Run("Should forward the user message to the broker", func(t *testing.T) {
+			t.Run("Should forward the agent message to the broker", func(t *testing.T) {
 				t.Parallel()
 
 				suite := WhenHandlingMessageCreatedBeforeEach(t)
-				userId := "U123"
 				request := &requests.MessageCreatedRequest{
 					Event: requests.MessageCreatedEvent{
-						User:    &userId,
+						AppId:   &suite.slackSettings.AppId,
 						Ts:      "1234567890.123456",
 						Channel: "C1234567890",
-						Text:    "Hello",
+						Text:    "Agent message",
+						Metadata: &requests.MessageCreatedMetadata{
+							EventType: event_handlers.AGENT_MESSAGE_CREATED_METADATA_EVENT_TYPE,
+							EventPayload: map[string]any{
+								"collection_token_address": collectionAddr,
+								"collection_token_id":      float64(collectionTokenId),
+							},
+						},
 					},
 				}
 				initSuite(suite, request)
@@ -373,6 +323,10 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 				assert.NoError(t, err)
 			})
 		})
+	})
+
+	t.Run("Given message sent from a slack user", func(t *testing.T) {
+		t.Parallel()
 
 		t.Run("And user sync fails", func(t *testing.T) {
 			t.Parallel()
@@ -456,6 +410,120 @@ func TestWhenHandlingMessageCreated(t *testing.T) {
 
 				err := suite.sut.Handle(context.Background(), request)
 				assert.Error(t, err)
+			})
+		})
+
+		t.Run("And the user is paired to a human agent found in persistence", func(t *testing.T) {
+			t.Parallel()
+
+			pairedAddr := "0xabcdef0000000000000000000000000000000002"
+			pairedTokenId := uint64(9)
+
+			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
+				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), slackChannel.Id).
+					Return(slackChannel, nil)
+
+				slackUser := model_builders.NewSlackUserBuilder().
+					WithId(*request.Event.User).
+					WithPairedHumanAgentCollectionAddress(&pairedAddr).
+					WithPairedHumanAgentCollectionTokenId(&pairedTokenId).
+					Build()
+				suite.mockSlackUserSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), *request.Event.User).
+					Return(slackUser, nil)
+
+				pairedHumanAgent := model_builders.NewSlackAgentBuilder().
+					WithCollectionAddress(pairedAddr).
+					WithCollectionTokenId(pairedTokenId).
+					Build()
+				suite.mockSlackAgentRepository.EXPECT().
+					GetByCollectionAddressAndCollectionTokenId(gomock.Any(), pairedAddr, pairedTokenId).
+					Return(pairedHumanAgent, nil)
+
+				suite.mockAddAgentToChannel.EXPECT().
+					Add(gomock.Any(), gomock.Cond(func(addRequest *command_handlers_requests.AddAgentToChannelRequest) bool {
+						return addRequest.ChannelID == slackChannel.Id &&
+							addRequest.CollectionAddress == pairedAddr &&
+							addRequest.CollectionTokenId == pairedTokenId
+					})).
+					Return(nil)
+
+				suite.mockBrokerMessageForwarder.EXPECT().
+					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, nil, pairedHumanAgent).
+					Return(nil)
+			}
+
+			t.Run("Should add the paired human agent to the channel and forward the message as it", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenHandlingMessageCreatedBeforeEach(t)
+				userId := "U123"
+				request := &requests.MessageCreatedRequest{
+					Event: requests.MessageCreatedEvent{
+						User:    &userId,
+						Ts:      "1234567890.123456",
+						Channel: "C1234567890",
+						Text:    "Hello",
+					},
+				}
+				initSuite(suite, request)
+
+				err := suite.sut.Handle(context.Background(), request)
+				assert.NoError(t, err)
+			})
+		})
+
+		t.Run("And user is found and not paired", func(t *testing.T) {
+			t.Parallel()
+
+			initSuite := func(suite *WhenHandlingMessageCreatedTestingSuite, request *requests.MessageCreatedRequest) {
+				facilitator := *model_builders.NewSlackAgentBuilder().WithRole(enums.AgentRoleFacilitator).Build()
+				slackChannel := model_builders.NewSlackChannelBuilder().
+					WithAgents([]models.SlackAgent{facilitator}).
+					Build()
+				suite.mockSlackChannelSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), request.Event.Channel).
+					Return(slackChannel, nil)
+
+				slackUser := model_builders.NewSlackUserBuilder().
+					WithId(*request.Event.User).
+					WithPairedHumanAgentCollectionAddress(nil).
+					WithPairedHumanAgentCollectionTokenId(nil).
+					Build()
+				suite.mockSlackUserSynchronizerCached.EXPECT().
+					Sync(gomock.Any(), *request.Event.User).
+					Return(slackUser, nil)
+
+				suite.mockBrokerMessageForwarder.EXPECT().
+					Forward(gomock.Any(), slackChannel, request.Event.Ts, request.Event.Ts, request.Event.Text, slackUser, nil).
+					Return(nil)
+			}
+
+			t.Run("Should forward the user message to the broker", func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenHandlingMessageCreatedBeforeEach(t)
+				userId := "U123"
+				request := &requests.MessageCreatedRequest{
+					Event: requests.MessageCreatedEvent{
+						User:    &userId,
+						Ts:      "1234567890.123456",
+						Channel: "C1234567890",
+						Text:    "Hello",
+					},
+				}
+				initSuite(suite, request)
+
+				err := suite.sut.Handle(context.Background(), request)
+				assert.NoError(t, err)
 			})
 		})
 	})

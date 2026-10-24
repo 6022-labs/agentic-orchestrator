@@ -2,9 +2,11 @@ package command_handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -56,7 +58,10 @@ func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentT
 	start := time.Now()
 	defer func() {
 		outcome := metrics_interfaces.ChannelOutcomeHandled
-		if err != nil {
+		switch {
+		case errors.Is(err, common_errors.ErrValidation):
+			outcome = metrics_interfaces.ChannelOutcomeRejected
+		case err != nil:
 			outcome = metrics_interfaces.ChannelOutcomeFailed
 			span.Fail(err)
 		}
@@ -69,6 +74,10 @@ func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentT
 		)
 		span.End()
 	}()
+
+	if err = request.ValidateAndSanitize(); err != nil {
+		return err
+	}
 
 	slackChannel, err := h.slackChannelRepository.GetById(ctx, request.ChannelID)
 	if err != nil {

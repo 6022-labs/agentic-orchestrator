@@ -2,7 +2,9 @@ package slack_bridge_external_mvc
 
 import (
 	"encoding/json"
+	"errors"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/requests"
 	"github.com/gofiber/fiber/v3"
@@ -15,6 +17,14 @@ const (
 	REMOVE_AGENT_FROM_CHANNEL_COMMAND_ENDPOINT      = "/command-handler/remove-agent-from-channel"
 	VERIFY_WALLET_OWNERSHIP_COMMAND_ENDPOINT        = "/command-handler/verify-wallet-ownership"
 	PAIR_SLACK_USER_TO_HUMAN_AGENT_COMMAND_ENDPOINT = "/command-handler/pair-slack-user-to-human-agent"
+)
+
+// Slack only shows a slash-command reply body on HTTP 200, so command outcomes are always 200 + ephemeral text.
+const (
+	FAILED_TO_HANDLE_COMMAND_REPLY     = "Failed to handle command"
+	INVALID_AGENT_COMMAND_FORMAT_REPLY = "Invalid command format, expected: [collection address] [token ID]"
+	INVALID_PAIR_COMMAND_FORMAT_REPLY  = "Invalid command format, expected: " +
+		"[slack user ID] [human agent collection address] [human agent collection token ID]"
 )
 
 type CommandHandlerController struct {
@@ -61,9 +71,9 @@ func (controller *CommandHandlerController) InitRoutes(app fiber.Router) {
 // @Param        channel_id formData string true "Slack channel ID"
 // @Param        text formData string true "Command text: [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
-// @Success      200 {string} string "Agent added to channel successfully"
+// @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
 // @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Failed to handle command"
+// @Failure      500 {string} string "Internal Server Error"
 // @Router       /command-handler/add-agent-to-channel [post]
 func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received add agent command request")
@@ -76,16 +86,13 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fib
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
-	addRequest, err := request.ToAddAgentToChannelRequest()
-	if err != nil {
-		controller.logger.Error("Failed to convert request to AddAgentToChannelRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).
-			SendString("Invalid command format, expected: [collection address] [token ID]")
-	}
-
-	if err := controller.addAgentToChannel.Add(c.Context(), addRequest); err != nil {
+	if err := controller.addAgentToChannel.Add(c.Context(), request.ToAddAgentToChannelRequest()); err != nil {
+		if errors.Is(err, common_errors.ErrValidation) {
+			controller.logger.Info("Invalid add agent command", zap.Error(err))
+			return c.Status(fiber.StatusOK).SendString(INVALID_AGENT_COMMAND_FORMAT_REPLY)
+		}
 		controller.logger.Error("Failed to handle add agent command", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Agent added to channel successfully")
@@ -100,9 +107,9 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fib
 // @Param        channel_id formData string true "Slack channel ID"
 // @Param        text formData string false "Command text"
 // @Param        user_id formData string true "Slack user ID"
-// @Success      200 {string} string "JSON list of agents"
+// @Success      200 {string} string "JSON list of agents, or failure notice"
 // @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Failed to handle command"
+// @Failure      500 {string} string "Internal Server Error"
 // @Router       /command-handler/list-agents-in-channel [post]
 func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received list agents command request")
@@ -115,16 +122,10 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
-	listRequest := request.ToListAgentInChannelRequest()
-	if listRequest == nil {
-		controller.logger.Error("Failed to convert request to ListAgentInChannelRequest")
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
-	}
-
-	result, err := controller.listAgentsInChannel.List(c.Context(), listRequest)
+	result, err := controller.listAgentsInChannel.List(c.Context(), request.ToListAgentInChannelRequest())
 	if err != nil {
 		controller.logger.Error("Failed to handle list agents command", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	controller.logger.Debug("Response", zap.Any("result", result))
@@ -132,7 +133,7 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 	jsonResult, err := json.Marshal(result)
 	if err != nil {
 		controller.logger.Error("Failed to marshal response", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to process response")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString(string(jsonResult))
@@ -147,9 +148,9 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 // @Param        channel_id formData string true "Slack channel ID"
 // @Param        text formData string true "Command text: [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
-// @Success      200 {string} string "Agent removed from channel successfully"
+// @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
 // @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Failed to handle command"
+// @Failure      500 {string} string "Internal Server Error"
 // @Router       /command-handler/remove-agent-from-channel [post]
 func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received remove agent command request")
@@ -162,16 +163,16 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
-	removeRequest, err := request.ToRemoveAgentFromChannelRequest()
-	if err != nil {
-		controller.logger.Error("Failed to convert request to RemoveAgentFromChannelRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).
-			SendString("Invalid command format, expected: [collection address] [token ID]")
-	}
-
-	if err := controller.removeAgentFromChannel.Remove(c.Context(), removeRequest); err != nil {
+	if err := controller.removeAgentFromChannel.Remove(
+		c.Context(),
+		request.ToRemoveAgentFromChannelRequest(),
+	); err != nil {
+		if errors.Is(err, common_errors.ErrValidation) {
+			controller.logger.Info("Invalid remove agent command", zap.Error(err))
+			return c.Status(fiber.StatusOK).SendString(INVALID_AGENT_COMMAND_FORMAT_REPLY)
+		}
 		controller.logger.Error("Failed to handle remove agent command", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Agent removed from channel successfully")
@@ -186,9 +187,9 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 // @Param        channel_id formData string true "Slack channel ID"
 // @Param        text formData string false "Command text"
 // @Param        user_id formData string true "Slack user ID"
-// @Success      200 {string} string "Verification response"
-// @Failure      400 {string} string "Invalid command format"
-// @Failure      500 {string} string "Failed to handle command"
+// @Success      200 {string} string "Verification response, or failure notice"
+// @Failure      400 {string} string "Invalid request body"
+// @Failure      500 {string} string "Internal Server Error"
 // @Router       /command-handler/verify-wallet-ownership [post]
 func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received verify wallet ownership command request")
@@ -201,16 +202,10 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
-	verifyWalletOwnershipRequest := request.ToVerifyWalletOwnershipRequest()
-	if verifyWalletOwnershipRequest == nil {
-		controller.logger.Error("Failed to convert request to VerifyWalletOwnershipRequest")
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid command format")
-	}
-
-	resp, err := controller.verifyWalletOwnership.Verify(c.Context(), verifyWalletOwnershipRequest)
+	resp, err := controller.verifyWalletOwnership.Verify(c.Context(), request.ToVerifyWalletOwnershipRequest())
 	if err != nil {
 		controller.logger.Error("Failed to verify wallet ownership", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString(*resp)
@@ -225,9 +220,9 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 // @Param        channel_id formData string true "Slack channel ID"
 // @Param        text formData string true "Command text: [slack user ID] [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
-// @Success      200 {string} string "Slack user paired to human agent successfully"
-// @Failure      400 {string} string "Invalid command format"
-// @Failure      500 {string} string "Failed to handle command"
+// @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
+// @Failure      400 {string} string "Invalid request body"
+// @Failure      500 {string} string "Internal Server Error"
 // @Router       /command-handler/pair-slack-user-to-human-agent [post]
 func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received pair slack user to human agent command request")
@@ -240,17 +235,16 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
-	pairRequest, err := request.ToPairSlackUserToHumanAgentRequest()
-	if err != nil {
-		controller.logger.Error("Failed to convert request to PairSlackUserToHumanAgentRequest", zap.Error(err))
-		return c.Status(fiber.StatusBadRequest).
-			SendString("Invalid command format, expected: " +
-				"[slack user ID] [human agent collection address] [human agent collection token ID]")
-	}
-
-	if err := controller.pairSlackUserToHumanAgent.Pair(c.Context(), pairRequest); err != nil {
+	if err := controller.pairSlackUserToHumanAgent.Pair(
+		c.Context(),
+		request.ToPairSlackUserToHumanAgentRequest(),
+	); err != nil {
+		if errors.Is(err, common_errors.ErrValidation) {
+			controller.logger.Info("Invalid pair slack user to human agent command", zap.Error(err))
+			return c.Status(fiber.StatusOK).SendString(INVALID_PAIR_COMMAND_FORMAT_REPLY)
+		}
 		controller.logger.Error("Failed to handle pair slack user to human agent command", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to handle command")
+		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Slack user paired to human agent successfully")

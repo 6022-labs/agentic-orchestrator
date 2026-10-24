@@ -2,7 +2,6 @@ package use_cases
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 
@@ -45,7 +44,7 @@ func (uc *PostBrokerCompletionToSlack) Post(
 	ctx context.Context,
 	request *requests.PostBrokerCompletionToSlackRequest,
 ) error {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return err
 	}
 
