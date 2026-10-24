@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	gw_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	gw_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -77,7 +77,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should propagate the wrapped error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentCardBeforeEach(t)
@@ -86,7 +86,10 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			response, err := suite.sut.Get(context.Background(), generateValidGetAgentCardRequest())
 
 			assert.Nil(t, response)
-			assert.ErrorIs(t, err, registryErr)
+			var unavailableErr *gw_errors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableErr)
+			assert.Equal(t, "agent_registry_unavailable", unavailableErr.Code)
+			assert.Contains(t, unavailableErr.Message, registryErr.Error())
 		})
 	})
 
@@ -150,7 +153,7 @@ func TestWhenGettingAgentCard(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should propagate the error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentCardBeforeEach(t)
@@ -159,7 +162,10 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			response, err := suite.sut.Get(context.Background(), generateValidGetAgentCardRequest())
 
 			assert.Nil(t, response)
-			assert.ErrorIs(t, err, brokerErr)
+			var unavailableErr *gw_errors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableErr)
+			assert.Equal(t, "agent_node_unreachable", unavailableErr.Code)
+			assert.Contains(t, unavailableErr.Message, brokerErr.Error())
 		})
 	})
 

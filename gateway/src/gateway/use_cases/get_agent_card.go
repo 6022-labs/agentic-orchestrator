@@ -3,9 +3,7 @@ package use_cases
 import (
 	"context"
 
-	"fmt"
-
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -44,14 +42,22 @@ func (uc *GetAgentCard) Get(
 		request.AgentCollectionTokenId,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load agent: %w", err)
+		return nil, errors.NewUnavailableError("agent_registry_unavailable", "failed to load agent: "+err.Error())
 	}
 	if agent == nil {
-		return nil, errors.NewNotFoundError("agent not found: " + request.AgentCollectionAddress)
+		return nil, errors.NewNotFoundError("agent_not_found", "agent not found: "+request.AgentCollectionAddress)
 	}
 	if agent.EnsDomain == "" {
-		return nil, errors.NewNotFoundError("agent has no ens domain: " + request.AgentCollectionAddress)
+		return nil, errors.NewNotFoundError(
+			"agent_ens_domain_not_found",
+			"agent has no ens domain: "+request.AgentCollectionAddress,
+		)
 	}
 
-	return uc.conversationBrokerRequester.GetAgentCard(ctx, agent.EnsDomain)
+	response, err := uc.conversationBrokerRequester.GetAgentCard(ctx, agent.EnsDomain)
+	if err != nil {
+		return nil, errors.NewUnavailableError("agent_node_unreachable", "failed to reach agent node: "+err.Error())
+	}
+
+	return response, nil
 }

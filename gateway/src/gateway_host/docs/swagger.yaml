@@ -6,12 +6,28 @@ definitions:
     type: string
     x-enum-varnames:
     - BridgePlatformSlack
+  errors.InternalError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   errors.NotFoundError:
     properties:
+      code:
+        type: string
       message:
         type: string
     type: object
   errors.UnauthorizedError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.UnavailableError:
     properties:
       code:
         type: string
@@ -262,7 +278,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: List agent collections
       tags:
       - agent-collections
@@ -291,10 +307,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errors.ValidationError'
+        "404":
+          description: agent not found
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get agent information
       tags:
       - agent
@@ -330,7 +350,7 @@ paths:
         "502":
           description: Bad Gateway
           schema:
-            type: string
+            $ref: '#/definitions/errors.UnavailableError'
       security:
       - BearerAuth: []
       summary: Get agent node card
@@ -372,7 +392,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: Get agent prompt template
@@ -421,7 +441,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: Save agent prompt template
@@ -459,7 +479,7 @@ paths:
         "502":
           description: Bad Gateway
           schema:
-            type: string
+            $ref: '#/definitions/errors.UnavailableError'
       security:
       - BearerAuth: []
       summary: Get agent node url
@@ -499,7 +519,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: List agents
       tags:
       - agent
@@ -532,7 +552,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get authentication challenge
       tags:
       - authentication
@@ -567,7 +587,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Verify signed challenge
       tags:
       - authentication
@@ -585,7 +605,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Public node config
       tags:
       - config
@@ -610,7 +630,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: List conversations
@@ -631,10 +651,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.BrokerConversationResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: Get conversation
@@ -653,10 +677,14 @@ paths:
           description: No Content
           schema:
             type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: Force conclude a conversation
@@ -679,10 +707,14 @@ paths:
             items:
               $ref: '#/definitions/responses.BrokerMessageResponse'
             type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: Get conversation messages
@@ -705,10 +737,14 @@ paths:
             items:
               $ref: '#/definitions/responses.BrokerParticipantResponse'
             type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: List conversation participants
@@ -757,7 +793,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       security:
       - BearerAuth: []
       summary: verify wallet for bridge

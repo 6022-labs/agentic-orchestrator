@@ -3,7 +3,7 @@ package requests_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/stretchr/testify/assert"
 )
 

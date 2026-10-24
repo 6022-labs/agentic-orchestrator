@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	gw_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	gw_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -98,15 +98,51 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should propagate the error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenGettingAgentUrlBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
+			response, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
 
-			assert.Error(t, err)
+			assert.Nil(t, response)
+			var unavailableErr *gw_errors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableErr)
+			assert.Equal(t, "agent_registry_unavailable", unavailableErr.Code)
+			assert.Contains(t, unavailableErr.Message, "boom")
+		})
+	})
+
+	t.Run("Given the conversation broker fails", func(t *testing.T) {
+		t.Parallel()
+
+		brokerErr := errors.New("broker down")
+
+		initSuite := func(suite *WhenGettingAgentUrlTestingSuite) {
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
+				Return(&responses.AgentResponse{EnsDomain: "ada.experts.80002.6022.eth"}, nil).
+				Times(1)
+			suite.mockConversationBrokerRequester.EXPECT().
+				GetAgentUrl(gomock.Any(), "ada.experts.80002.6022.eth").
+				Return(nil, brokerErr).
+				Times(1)
+		}
+
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentUrlBeforeEach(t)
+			initSuite(suite)
+
+			response, err := suite.sut.Get(context.Background(), generateValidGetAgentUrlRequest())
+
+			assert.Nil(t, response)
+			var unavailableErr *gw_errors.UnavailableError
+			assert.ErrorAs(t, err, &unavailableErr)
+			assert.Equal(t, "agent_url_unresolved", unavailableErr.Code)
+			assert.Contains(t, unavailableErr.Message, brokerErr.Error())
 		})
 	})
 

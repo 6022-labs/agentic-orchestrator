@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"

@@ -21,6 +21,10 @@ func AddGatewayMvcConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(mvc_middlewares.NewRequestFailureLogMiddleware); err != nil {
+		panic(err)
+	}
+
 	// Middlewares
 	err := container.Provide(
 		middlewares.NewJWTAuthenticationInjectionMiddleware,

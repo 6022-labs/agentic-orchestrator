@@ -45,6 +45,7 @@ type registerRoutesParams struct {
 	RateLimitSettings                 *gateway_settings.RateLimitSettings
 	AuthenticationMandatoryMiddleware *middlewares.AuthenticationMandatoryMiddleware
 	RequestMetrics                    *mvc_middlewares.ApiRequestMetricsMiddleware
+	RequestFailureLog                 *mvc_middlewares.RequestFailureLogMiddleware
 	Controllers                       []orchestrator_mvc.ControllerInterface         `group:"controllers"`
 	AuthInjectionMiddlewares          []middlewares.AuthInjectionMiddlewareInterface `group:"auth-injection-middlewares"`
 }
@@ -63,6 +64,8 @@ func registerRoutes(p registerRoutesParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
+
+	p.App.Use(p.RequestFailureLog.Handle)
 
 	p.App.Use(limiter.New(limiter.Config{
 		Max:        p.RateLimitSettings.RequestsPerSecond,

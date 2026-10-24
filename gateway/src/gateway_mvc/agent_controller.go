@@ -1,7 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/zapext"
@@ -70,7 +71,8 @@ func (controller *AgentController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentResponse
 // @Failure      400 {object} errors.ValidationError
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      404 {string} string "agent not found"
+// @Failure      500 {object} errors.InternalError
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
@@ -80,11 +82,7 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 
 	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		controller.logger.Error("Failed to get agent", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 	if response == nil {
 		return c.Status(fiber.StatusNotFound).SendString("agent not found")
@@ -104,7 +102,7 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 // @Param        sortBy query string false "Sort by field"
 // @Param        isMinted query bool false "Filter on mint state (true = minted only, false = proposals only)"
 // @Success      200 {object} responses.ListAgentsResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Router       /agents [get]
 func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 	request := new(requests.ListAgentsRequest)
@@ -114,8 +112,7 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 
 	resp, err := controller.listAgents.List(c.Context(), request)
 	if err != nil {
-		controller.logger.Error("Failed to list agents", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	controller.logger.Debug(
@@ -138,7 +135,7 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 // @Success      200 {object} responses.AgentCardResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
-// @Failure      502 {string} string "Bad Gateway"
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/card [get]
 func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
@@ -149,14 +146,7 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 
 	response, err := controller.getAgentCard.Get(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
-		}
-		controller.logger.Warn("Failed to get agent card", zap.Error(err))
-		return c.Status(fiber.StatusBadGateway).SendString("failed to reach agent node")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -172,7 +162,7 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 // @Success      200 {object} responses.AgentUrlResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
-// @Failure      502 {string} string "Bad Gateway"
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/url [get]
 func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
@@ -183,14 +173,7 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 
 	response, err := controller.getAgentUrl.Get(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-			return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
-		}
-		controller.logger.Warn("Failed to get agent url", zap.Error(err))
-		return c.Status(fiber.StatusBadGateway).SendString("failed to resolve agent url")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -206,7 +189,7 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [get]
 func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
@@ -217,7 +200,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 
 	response, err := controller.getAgentPromptTemplate.Get(c.Context(), request)
 	if err != nil {
-		return controller.writeUseCaseError(c, err)
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -235,7 +218,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      404 {object} errors.NotFoundError
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [post]
 func (controller *AgentController) SaveAgentPromptTemplate(c fiber.Ctx) error {
@@ -249,20 +232,8 @@ func (controller *AgentController) SaveAgentPromptTemplate(c fiber.Ctx) error {
 
 	response, err := controller.saveAgentPromptTemplate.Save(c.Context(), request)
 	if err != nil {
-		return controller.writeUseCaseError(c, err)
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
-}
-
-// writeUseCaseError maps domain error types to HTTP statuses.
-func (controller *AgentController) writeUseCaseError(c fiber.Ctx, err error) error {
-	if validationErr, ok := err.(*errors.ValidationError); ok {
-		return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-	}
-	if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-		return c.Status(fiber.StatusNotFound).JSON(notFoundErr)
-	}
-	controller.logger.Error("internal error", zap.Error(err))
-	return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 }
