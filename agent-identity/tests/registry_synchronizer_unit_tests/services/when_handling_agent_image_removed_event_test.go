@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"strings"
 
 	"math/big"
 	"testing"
@@ -63,7 +64,7 @@ func TestWhenHandlingAgentImageRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 4, "0x01")
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(4)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(4)).
 				Return(nil, assert.AnError)
 
 			return event
@@ -90,7 +91,7 @@ func TestWhenHandlingAgentImageRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 5, "0x02")
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(5)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(5)).
 				Return(nil, nil)
 
 			return event
@@ -120,7 +121,7 @@ func TestWhenHandlingAgentImageRemovedEvent(t *testing.T) {
 				Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(6)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(6)).
 				Return(agent, nil)
 
 			return event
@@ -149,7 +150,7 @@ func TestWhenHandlingAgentImageRemovedEvent(t *testing.T) {
 				Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(7)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
@@ -187,7 +188,7 @@ func TestWhenHandlingAgentImageRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(8)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(8)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().

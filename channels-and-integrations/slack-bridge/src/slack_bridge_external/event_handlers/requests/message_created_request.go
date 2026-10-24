@@ -2,6 +2,7 @@ package requests
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -47,12 +48,13 @@ func (m *MessageCreatedMetadata) ToAgentIdentifiers() (*string, *uint64, error) 
 			collectionTokenAddressRaw,
 		)
 	}
-	if !common.IsHexAddress(collectionTokenAddress) {
+	if !strings.HasPrefix(collectionTokenAddress, "0x") || !common.IsHexAddress(collectionTokenAddress) {
 		return nil, nil, fmt.Errorf(
 			"invalid collection_token_address in metadata, got non-hex value %v",
 			collectionTokenAddress,
 		)
 	}
+	collectionTokenAddress = strings.ToLower(collectionTokenAddress)
 
 	collectionTokenIdRaw, ok := m.EventPayload["collection_token_id"]
 	if !ok {

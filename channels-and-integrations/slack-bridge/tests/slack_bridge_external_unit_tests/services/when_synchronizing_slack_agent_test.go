@@ -2,7 +2,7 @@ package services_test
 
 import (
 	"context"
-
+	"strings"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -100,62 +100,6 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given agent is found in the database", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenSynchronizingSlackAgentTestingSuite, collectionAddress string, collectionTokenId uint64) {
-			updatedCid := "initial-cid"
-			agentFromOrchestrator := model_builders.NewSlackAgentBuilder().
-				WithCollectionAddress(collectionAddress).
-				WithCollectionTokenId(collectionTokenId).
-				WithIconImageCid(&updatedCid).
-				WithOwnerWallet(common_tests.RandomEthAddress().Hex()).
-				Build()
-
-			suite.mockAgentRequester.
-				EXPECT().
-				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(agentFromOrchestrator, nil)
-
-			agentInDatabase := model_builders.NewSlackAgentBuilder().
-				WithCollectionAddress(collectionAddress).
-				WithCollectionTokenId(collectionTokenId).
-				WithIconImageCid(nil).
-				WithOwnerWallet(common_tests.RandomEthAddress().Hex()).
-				Build()
-			suite.mockSlackAgentRepository.
-				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(agentInDatabase, nil)
-
-			suite.mockSlackAgentRepository.
-				EXPECT().
-				UpdateOwnerWallet(gomock.Any(), collectionAddress, collectionTokenId, agentFromOrchestrator.OwnerWallet).
-				Return(nil)
-
-			suite.mockSlackAgentRepository.
-				EXPECT().
-				UpdateIconImageCid(gomock.Any(), collectionAddress, collectionTokenId, agentFromOrchestrator.IconImageCid).
-				Return(nil)
-		}
-
-		t.Run("Should return the updated slack agent from the database", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSynchronizingSlackAgentBeforeEach(t)
-
-			collectionAddress := common_tests.RandomEthAddress().Hex()
-			collectionTokenId := uint64(123)
-
-			initSuite(suite, collectionAddress, collectionTokenId)
-
-			agent, err := suite.sut.Sync(context.Background(), collectionAddress, collectionTokenId)
-
-			assert.Nil(t, err)
-			assert.NotNil(t, agent)
-		})
-	})
-
 	t.Run("Given agent is not found in the database", func(t *testing.T) {
 		t.Parallel()
 
@@ -199,6 +143,75 @@ func TestWhenSynchronizingSlackAgent(t *testing.T) {
 				_, err := suite.sut.Sync(context.Background(), common_tests.RandomEthAddress().Hex(), 123)
 
 				assert.Nil(t, err)
+			},
+		)
+	})
+
+	t.Run("Given agent is found in the database", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSynchronizingSlackAgentTestingSuite, collectionAddress string, collectionTokenId uint64) {
+			updatedCid := "initial-cid"
+			agentFromOrchestrator := model_builders.NewSlackAgentBuilder().
+				WithCollectionAddress(collectionAddress).
+				WithCollectionTokenId(collectionTokenId).
+				WithIconImageCid(&updatedCid).
+				WithOwnerWallet(common_tests.RandomEthAddress().Hex()).
+				Build()
+
+			suite.mockAgentRequester.
+				EXPECT().
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(agentFromOrchestrator, nil)
+
+			agentInDatabase := model_builders.NewSlackAgentBuilder().
+				WithCollectionAddress(collectionAddress).
+				WithCollectionTokenId(collectionTokenId).
+				WithIconImageCid(nil).
+				WithOwnerWallet(common_tests.RandomEthAddress().Hex()).
+				Build()
+			suite.mockSlackAgentRepository.
+				EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(agentInDatabase, nil)
+
+			suite.mockSlackAgentRepository.
+				EXPECT().
+				UpdateOwnerWallet(
+					gomock.Any(),
+					strings.ToLower(collectionAddress),
+					collectionTokenId,
+					strings.ToLower(agentFromOrchestrator.OwnerWallet),
+				).
+				Return(nil)
+
+			suite.mockSlackAgentRepository.
+				EXPECT().
+				UpdateIconImageCid(
+					gomock.Any(),
+					strings.ToLower(collectionAddress),
+					collectionTokenId,
+					agentFromOrchestrator.IconImageCid,
+				).
+				Return(nil)
+		}
+
+		t.Run(
+			"Should update the agent under its lowercased address with its owner wallet lowercased",
+			func(t *testing.T) {
+				t.Parallel()
+
+				suite := WhenSynchronizingSlackAgentBeforeEach(t)
+
+				collectionAddress := common_tests.RandomEthAddress().Hex()
+				collectionTokenId := uint64(123)
+
+				initSuite(suite, collectionAddress, collectionTokenId)
+
+				agent, err := suite.sut.Sync(context.Background(), collectionAddress, collectionTokenId)
+
+				assert.Nil(t, err)
+				assert.NotNil(t, agent)
 			},
 		)
 	})

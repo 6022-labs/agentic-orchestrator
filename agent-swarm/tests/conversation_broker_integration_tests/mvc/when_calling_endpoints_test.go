@@ -201,12 +201,12 @@ func TestWhenCallingEndpoints(t *testing.T) {
 				Id:                lo.ToPtr(agentId.String()),
 				Attributes:        lo.ToPtr(map[string]string{"role": "clone"}),
 				EnsDomain:         lo.ToPtr("demo.eth"),
-				CollectionAddress: lo.ToPtr("0xabc"),
+				CollectionAddress: lo.ToPtr("0xabc00000000000000000000000000000000000de"),
 				CollectionTokenId: lo.ToPtr(int(tokenId)),
 			}
 			resp, _ = suite.do(http.MethodPost, "/participants/agents", &requests.RegisterAgentRequest{
-				CollectionAddress: "0xabc",
-				CollectionTokenId: "1",
+				CollectionAddress: "0xAbC00000000000000000000000000000000000dE",
+				CollectionTokenId: tokenId,
 			})
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 

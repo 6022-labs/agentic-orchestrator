@@ -58,6 +58,8 @@ func (r *RegistryAgentResolver) ResolveByCollection(
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.RegistryAgent, error) {
+	collectionAddress = strings.ToLower(strings.TrimSpace(collectionAddress))
+
 	return r.resolve(ctx,
 		fmt.Sprintf("%s/%d", collectionAddress, collectionTokenId),
 		r.collectionCachePath(collectionAddress, collectionTokenId),
@@ -81,7 +83,7 @@ func (r *RegistryAgentResolver) ResolveByEnsDomain(
 func (r *RegistryAgentResolver) collectionCachePath(collectionAddress string, collectionTokenId uint64) string {
 	return fmt.Sprintf(
 		registryAgentByCollectionCachePathTemplate,
-		strings.ToLower(strings.TrimSpace(collectionAddress)),
+		collectionAddress,
 		collectionTokenId,
 	)
 }

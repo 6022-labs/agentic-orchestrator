@@ -1,8 +1,8 @@
 package slack_bridge_internal_mvc
 
 import (
-	"errors"
-
+	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
@@ -37,11 +37,11 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 // @Description  Confirms wallet ownership for a Slack user by providing a signed challenge
 // @Tags         Wallet
 // @Accept       json
-// @Produce      plain
+// @Produce      json
 // @Param        request body requests.SetWalletOwnershipToSlackUserRequest true "Wallet ownership verification"
 // @Success      200 {string} string "OK"
-// @Failure      400 {string} string "Bad Request"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.ValidationError
+// @Failure      500 {object} errors.InternalError
 // @Router       /wallet/set-ownership-to-slack-user [post]
 func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) error {
 	controller.logger.Info("Set wallet ownership to Slack user request received")
@@ -61,12 +61,7 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) e
 
 	err := controller.setWalletOwnershipToSlackPlayer.Set(c.Context(), request)
 	if err != nil {
-		if errors.Is(err, requests.ErrValidation) {
-			controller.logger.Warn("Set wallet ownership failed validation", zap.Error(err))
-			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-		}
-		controller.logger.Error("Failed to set wallet ownership", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	controller.logger.Info("Set wallet ownership to Slack user request processed successfully")

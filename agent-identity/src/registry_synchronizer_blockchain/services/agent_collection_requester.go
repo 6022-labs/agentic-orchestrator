@@ -130,7 +130,7 @@ func (a *AgentCollectionRequester) getMintProposals(
 		}
 
 		msg := map[string]interface{}{
-			"to":   agentCollectionAddress.Hex(),
+			"to":   strings.ToLower(agentCollectionAddress.Hex()),
 			"data": "0x" + common.Bytes2Hex(data),
 		}
 

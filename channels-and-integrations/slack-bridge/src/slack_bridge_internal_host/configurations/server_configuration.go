@@ -35,10 +35,11 @@ func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 type useRestApiParams struct {
 	dig.In
 
-	App            *fiber.App
-	Logger         *zap.Logger
-	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
-	Controllers    []slack_bridge_internal_mvc.ControllerInterface `group:"controllers"`
+	App               *fiber.App
+	Logger            *zap.Logger
+	RequestMetrics    *mvc_middlewares.ApiRequestMetricsMiddleware
+	RequestFailureLog *mvc_middlewares.RequestFailureLogMiddleware
+	Controllers       []slack_bridge_internal_mvc.ControllerInterface `group:"controllers"`
 }
 
 func useRestApi(p useRestApiParams) {
@@ -54,6 +55,8 @@ func useRestApi(p useRestApiParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
+
+	p.App.Use(p.RequestFailureLog.Handle)
 
 	p.App.Get("/swagger/*", swaggo.New())
 

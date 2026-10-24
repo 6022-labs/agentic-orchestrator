@@ -3,7 +3,7 @@ package use_cases
 import (
 	"context"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -39,7 +39,7 @@ func (uc *VerifyAuth) Execute(
 	ctx context.Context,
 	request *requests.VerifyAuthRequest,
 ) (*responses.VerifyAuthResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 

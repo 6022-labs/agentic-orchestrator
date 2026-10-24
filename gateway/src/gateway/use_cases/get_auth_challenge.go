@@ -32,7 +32,7 @@ func (uc *GetAuthChallenge) Execute(
 	ctx context.Context,
 	request *requests.GetAuthChallengeRequest,
 ) (*responses.GetAuthChallengeResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 

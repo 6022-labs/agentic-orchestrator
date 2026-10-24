@@ -5,6 +5,7 @@ const (
 	X402SchemeExact                = "exact"
 	X402AssetTransferMethodEip3009 = "eip3009"
 	X402AssetTransferMethodPermit2 = "permit2"
+	X402NetworkEvmPrefix           = "eip155:"
 )
 
 // X402PaymentOption is one accepted way to pay; Extra carries the asset's EIP-712 domain for eip3009 signing.

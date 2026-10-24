@@ -39,14 +39,13 @@ func (uc *RegisterAgent) Register(
 	ctx context.Context,
 	request *requests.RegisterAgentRequest,
 ) (*responses.ParticipantResponse, bool, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, false, err
 	}
 
-	tokenId := request.ParsedCollectionTokenId()
 	existing, err := uc.participantRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		request.CollectionAddress,
-		tokenId,
+		request.CollectionTokenId,
 	)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to lookup agent participant: %w", err)
@@ -55,15 +54,17 @@ func (uc *RegisterAgent) Register(
 		return responses.ParticipantResponseFromModel(existing), true, nil
 	}
 
-	registryAgent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, tokenId)
+	registryAgent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, request.CollectionTokenId)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to fetch agent from registry: %w", err)
 	}
 	if registryAgent == nil {
-		return nil, false, cb_errors.NewNotFoundError("agent", request.CollectionAddress+"/"+request.CollectionTokenId)
+		agentKey := fmt.Sprintf("%s/%d", request.CollectionAddress, request.CollectionTokenId)
+		return nil, false, cb_errors.NewNotFoundError("agent", agentKey)
 	}
 
 	participant := registryAgent.ToParticipant()
+	participant.CollectionAddress = &request.CollectionAddress
 
 	saved, err := uc.participantRepository.Save(ctx, participant)
 	if err != nil {

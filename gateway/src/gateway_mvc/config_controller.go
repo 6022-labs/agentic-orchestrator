@@ -1,6 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
@@ -34,13 +36,12 @@ func (controller *ConfigController) InitUnauthenticatedRoutes(app fiber.Router) 
 // @Tags         config
 // @Produce      json
 // @Success      200 {object} responses.ConfigResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Router       /config [get]
 func (controller *ConfigController) Get(c fiber.Ctx) error {
 	response, err := controller.getConfig.Get()
 	if err != nil {
-		controller.logger.Error("Failed to get config", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 	return c.JSON(response)
 }

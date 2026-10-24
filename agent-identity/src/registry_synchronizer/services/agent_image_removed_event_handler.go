@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
@@ -36,7 +37,7 @@ func (handler *AgentImageRemovedEventHandler) Handle(
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
-		event.Raw.Address.Hex(),
+		strings.ToLower(event.Raw.Address.Hex()),
 		event.TokenId.Uint64(),
 	)
 	if err != nil {

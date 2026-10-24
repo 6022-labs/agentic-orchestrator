@@ -3,6 +3,7 @@ package services
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -39,7 +40,7 @@ func (e *ECDSASignature) RecoverPublicKey(data []byte, signature []byte) (*strin
 	}
 
 	// Compute Ethereum address from public key
-	address := crypto.PubkeyToAddress(*pubKey).Hex()
+	address := strings.ToLower(crypto.PubkeyToAddress(*pubKey).Hex())
 
 	return &address, nil
 }

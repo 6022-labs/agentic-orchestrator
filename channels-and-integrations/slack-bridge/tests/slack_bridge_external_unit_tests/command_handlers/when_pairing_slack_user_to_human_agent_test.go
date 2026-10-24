@@ -2,9 +2,11 @@ package command_handlers_test
 
 import (
 	"context"
-
+	"strings"
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
@@ -23,6 +25,8 @@ import (
 type WhenPairingSlackUserToHumanAgentTestingSuite struct {
 	sut *command_handlers.PairSlackUserToHumanAgent
 
+	channelMetrics *channel_metrics_mocks.MockChannelMetricsInterface
+
 	slackUserRepository         repositories_mocks.MockSlackUserRepositoryInterface
 	slackAgentSynchronizer      interfaces_mocks.MockSlackAgentSynchronizerInterface
 	slackUserSynchronizerCached interfaces_mocks.MockSlackUserSynchronizerCachedInterface
@@ -32,9 +36,6 @@ func WhenPairingSlackUserToHumanAgentBeforeEach(t *testing.T) *WhenPairingSlackU
 	mockController := gomock.NewController(t)
 
 	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
-	mockChannelMetrics.EXPECT().
-		RecordCommand(gomock.Any(), "user.pair", gomock.Any(), gomock.Any(), gomock.Any()).
-		Times(1)
 
 	// Spans are not asserted here.
 	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
@@ -62,7 +63,8 @@ func WhenPairingSlackUserToHumanAgentBeforeEach(t *testing.T) *WhenPairingSlackU
 	)
 
 	return &WhenPairingSlackUserToHumanAgentTestingSuite{
-		sut: sut,
+		sut:            sut,
+		channelMetrics: mockChannelMetrics,
 
 		slackUserRepository:         *mockSlackUserRepository,
 		slackAgentSynchronizer:      *mockSlackAgentSynchronizer,
@@ -74,7 +76,7 @@ func generateValidPairSlackUserToHumanAgentRequest() *requests.PairSlackUserToHu
 	return &requests.PairSlackUserToHumanAgentRequest{
 		RequesterSlackUserId:        "U123456",
 		SlackUserId:                 "U654321",
-		HumanAgentCollectionAddress: common_tests.RandomEthAddress().Hex(),
+		HumanAgentCollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
 		HumanAgentCollectionTokenId: uint64(1),
 	}
 }
@@ -82,10 +84,48 @@ func generateValidPairSlackUserToHumanAgentRequest() *requests.PairSlackUserToHu
 func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 	t.Parallel()
 
+	t.Run("Given the request is invalid", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return a validation error and record a rejected outcome", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenPairingSlackUserToHumanAgentBeforeEach(t)
+
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeRejected,
+					gomock.Any(),
+				).
+				Times(1)
+
+			err := suite.sut.Pair(context.Background(), &requests.PairSlackUserToHumanAgentRequest{
+				RequesterSlackUserId: "U123456",
+			})
+
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "slackUserId", validationError.Field)
+		})
+	})
+
 	t.Run("Given an error occurs while syncing the requester slack user", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.slackUserSynchronizerCached.
 				EXPECT().
 				Sync(gomock.Any(), request.RequesterSlackUserId).
@@ -111,6 +151,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
 				WithWalletAddress(nil).
@@ -141,6 +191,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -177,6 +237,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -218,6 +288,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -260,6 +340,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -307,6 +397,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -362,6 +462,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).
@@ -414,6 +524,16 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenPairingSlackUserToHumanAgentTestingSuite, request *requests.PairSlackUserToHumanAgentRequest) {
+			suite.channelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"user.pair",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackUserWalletAddress := common_tests.RandomEthAddress().Hex()
 			slackUser := model_builders.NewSlackUserBuilder().
 				WithId(request.RequesterSlackUserId).

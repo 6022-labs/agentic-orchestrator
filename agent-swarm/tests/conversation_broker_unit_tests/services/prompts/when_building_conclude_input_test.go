@@ -43,6 +43,53 @@ func WhenBuildingConcludeInputBeforeEach(t *testing.T) *WhenBuildingConcludeInpu
 func TestWhenBuildingConcludeInput(t *testing.T) {
 	t.Parallel()
 
+	t.Run("Given an agent stored with a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		agent := model_builders.NewAgentParticipantBuilder().Build()
+		agent.CollectionAddress = lo.ToPtr("0xAbC")
+		conversation := model_builders.NewConversationBuilder().Build()
+		message := model_builders.NewConversationMessageBuilder().
+			WithConversationID(conversation.ID).
+			WithParticipantID(agent.ID).
+			Build()
+		baseTurn := &models.RemoteAgentInput{Instructions: "instructions"}
+
+		initSuite := func(suite *WhenBuildingConcludeInputTestingSuite) {
+			suite.mockAgentPromptTemplateRepository.EXPECT().
+				GetByAgentAndKey(gomock.Any(),
+					"0xabc",
+					*agent.CollectionTokenId,
+					enums.AgentPromptTemplateKeyFacilitatorConclude,
+				).
+				Return(nil, nil).
+				Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain(gomock.Any(), gomock.Any()).
+				Return(nil, nil).
+				AnyTimes()
+		}
+
+		t.Run("Should look its prompt template up by the lowercased address", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenBuildingConcludeInputBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.BuildConcludeInput(context.Background(),
+				baseTurn,
+				nil,
+				agent,
+				lo.ToPtr(enums.ParticipantRoleFacilitator),
+				conversation,
+				[]*models.ConversationMessage{message},
+				[]*models.Participant{agent},
+				nil,
+			)
+
+			assert.NoError(t, err)
+		})
+	})
 	t.Run("Given a facilitator conclude turn", func(t *testing.T) {
 		t.Parallel()
 

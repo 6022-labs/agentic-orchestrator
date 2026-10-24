@@ -41,20 +41,21 @@ func (uc *SaveAgentPromptTemplate) Save(
 	ctx context.Context,
 	request *requests.SaveAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 
-	agent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, request.ParsedCollectionTokenId())
+	agent, err := uc.agentRegistryRequester.GetAgent(ctx, request.CollectionAddress, request.CollectionTokenId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch agent from registry: %w", err)
 	}
 	if agent == nil {
-		return nil, cb_errors.NewNotFoundError("agent", request.CollectionAddress+"/"+request.CollectionTokenId)
+		agentKey := fmt.Sprintf("%s/%d", request.CollectionAddress, request.CollectionTokenId)
+		return nil, cb_errors.NewNotFoundError("agent", agentKey)
 	}
 
 	allowed := enums.ParticipantRoleFromAttributes(agent.Attributes).AllowedPromptTemplateKeys()
-	if !allowed.Contains(request.ParsedKey()) {
+	if !allowed.Contains(request.Key) {
 		return nil, cb_errors.NewValidationError(
 			"key",
 			fmt.Sprintf("must be one of: %s for agent role %q", allowed.String(), agent.Attributes["role"]),
@@ -63,8 +64,8 @@ func (uc *SaveAgentPromptTemplate) Save(
 
 	template, err := uc.agentPromptTemplateRepository.GetByAgentAndKey(ctx,
 		request.CollectionAddress,
-		request.ParsedCollectionTokenId(),
-		request.ParsedKey(),
+		request.CollectionTokenId,
+		request.Key,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load agent prompt template: %w", err)
@@ -73,8 +74,8 @@ func (uc *SaveAgentPromptTemplate) Save(
 	if template == nil {
 		template = &models.AgentPromptTemplate{
 			CollectionAddress: request.CollectionAddress,
-			CollectionTokenId: request.ParsedCollectionTokenId(),
-			Key:               request.ParsedKey(),
+			CollectionTokenId: request.CollectionTokenId,
+			Key:               request.Key,
 		}
 	}
 	template.Content = request.Content

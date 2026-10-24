@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -34,10 +34,13 @@ func (s *SlackAgentSynchronizer) Sync(
 	collectionAddress string,
 	collectionTokenId uint64,
 ) (*models.SlackAgent, error) {
+	collectionAddress = strings.ToLower(collectionAddress)
+
 	agentIdentity, err := s.agentRequester.GetAgent(ctx, collectionAddress, collectionTokenId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent from orchestrator: %w", err)
 	}
+	ownerWallet := strings.ToLower(agentIdentity.OwnerWallet)
 
 	slackAgentInDatabase, err := s.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		collectionAddress,
@@ -63,7 +66,7 @@ func (s *SlackAgentSynchronizer) Sync(
 			EnsDomain:           agentIdentity.EnsDomain,
 			Role:                agentIdentity.Role,
 			IconImageCid:        agentIdentity.IconImageCid,
-			OwnerWallet:         agentIdentity.OwnerWallet,
+			OwnerWallet:         ownerWallet,
 			BrokerParticipantId: &brokerParticipantId,
 		}
 
@@ -75,13 +78,13 @@ func (s *SlackAgentSynchronizer) Sync(
 		return slackAgentInDatabase, nil
 	}
 
-	if slackAgentInDatabase.OwnerWallet != agentIdentity.OwnerWallet {
-		slackAgentInDatabase.OwnerWallet = agentIdentity.OwnerWallet
+	if slackAgentInDatabase.OwnerWallet != ownerWallet {
+		slackAgentInDatabase.OwnerWallet = ownerWallet
 		err = s.slackAgentRepository.UpdateOwnerWallet(
 			ctx,
 			collectionAddress,
 			collectionTokenId,
-			agentIdentity.OwnerWallet,
+			ownerWallet,
 		)
 		if err != nil {
 			return nil, err

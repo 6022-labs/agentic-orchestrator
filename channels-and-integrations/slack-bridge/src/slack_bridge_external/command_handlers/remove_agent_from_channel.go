@@ -2,10 +2,11 @@ package command_handlers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
-	"fmt"
-
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -64,7 +65,10 @@ func (h *RemoveAgentFromChannel) Remove(
 	start := time.Now()
 	defer func() {
 		outcome := metrics_interfaces.ChannelOutcomeHandled
-		if err != nil {
+		switch {
+		case errors.As(err, new(*common_errors.ValidationError)):
+			outcome = metrics_interfaces.ChannelOutcomeRejected
+		case err != nil:
 			outcome = metrics_interfaces.ChannelOutcomeFailed
 			span.Fail(err)
 		}
@@ -77,6 +81,10 @@ func (h *RemoveAgentFromChannel) Remove(
 		)
 		span.End()
 	}()
+
+	if err = request.ValidateAndSanitize(); err != nil {
+		return err
+	}
 
 	slackChannel, err := h.slackChannelRepository.GetById(ctx, request.ChannelID)
 	if err != nil {

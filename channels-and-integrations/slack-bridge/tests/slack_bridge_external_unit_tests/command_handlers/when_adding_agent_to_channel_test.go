@@ -2,9 +2,11 @@ package command_handlers_test
 
 import (
 	"context"
-
+	"strings"
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
@@ -24,6 +26,8 @@ import (
 type WhenAddingAgentToChannelTestingSuite struct {
 	sut *command_handlers.AddAgentToChannel
 
+	mockChannelMetrics *channel_metrics_mocks.MockChannelMetricsInterface
+
 	mockSlackAgentSynchronizer      *interfaces_mocks.MockSlackAgentSynchronizerInterface
 	mockSlackChannelSynchronizer    *interfaces_mocks.MockSlackChannelSynchronizerInterface
 	mockSlackChannelRepository      *repositories_mocks.MockSlackChannelRepositoryInterface
@@ -35,9 +39,6 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 	mockController := gomock.NewController(t)
 
 	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
-	mockChannelMetrics.EXPECT().
-		RecordCommand(gomock.Any(), "agent.add", gomock.Any(), gomock.Any(), gomock.Any()).
-		Times(1)
 
 	// Spans are not asserted here.
 	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
@@ -68,7 +69,8 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 	)
 
 	return &WhenAddingAgentToChannelTestingSuite{
-		sut: sut,
+		sut:                sut,
+		mockChannelMetrics: mockChannelMetrics,
 
 		mockSlackAgentSynchronizer:      mockSlackAgentSynchronizer,
 		mockSlackChannelRepository:      mockSlackChannelRepository,
@@ -81,10 +83,49 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 func TestWhenAddingAgentToChannel(t *testing.T) {
 	t.Parallel()
 
+	t.Run("Given the request is invalid", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return a validation error and record a rejected outcome", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenAddingAgentToChannelBeforeEach(t)
+
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeRejected,
+					gomock.Any(),
+				).
+				Times(1)
+
+			err := suite.sut.Add(context.Background(), &requests.AddAgentToChannelRequest{
+				ChannelID:             "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{},
+			})
+
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
+		})
+	})
+
 	t.Run("Given error occurs while getting the channel from the database", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.mockSlackChannelRepository.
 				EXPECT().
 				GetById(gomock.Any(), request.ChannelID).
@@ -97,9 +138,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -114,6 +157,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				WithAgents([]models.SlackAgent{
 					*model_builders.NewSlackAgentBuilder().
@@ -134,9 +187,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -151,6 +206,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				Build()
 			suite.mockSlackChannelRepository.
@@ -170,9 +235,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -187,6 +254,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				Build()
 			suite.mockSlackChannelRepository.
@@ -211,9 +288,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -228,6 +307,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				Build()
 			suite.mockSlackChannelRepository.
@@ -260,9 +349,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -279,6 +370,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		brokerAgentId := uuid.New()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), request.ChannelID).Return(nil, nil)
 
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
@@ -308,9 +409,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -329,6 +432,16 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 		convId2 := uuid.New()
 
 		initSuite := func(suite *WhenAddingAgentToChannelTestingSuite, request *requests.AddAgentToChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.add",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().Build()
 			suite.mockSlackChannelRepository.EXPECT().GetById(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
 			suite.mockSlackChannelSynchronizer.EXPECT().Sync(gomock.Any(), request.ChannelID).Return(slackChannel, nil)
@@ -363,9 +476,11 @@ func TestWhenAddingAgentToChannel(t *testing.T) {
 			suite := WhenAddingAgentToChannelBeforeEach(t)
 
 			request := &requests.AddAgentToChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)

@@ -2,11 +2,11 @@ package models
 
 const (
 	// Uniswap's canonical Permit2 — same address on every chain via CREATE2.
-	X402Permit2ContractAddress = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+	X402Permit2ContractAddress = "0x000000000022d473030f116ddee9f6b43ac78ba3"
 	// Permit2's domain has NO version field — adding one breaks the digest.
 	X402Permit2DomainName = "Permit2"
 	// The x402 proxy the signature authorizes to pull the tokens.
-	X402Permit2Spender = "0x402085c248EeA27D92E8b30b2C58ed07f9E20001"
+	X402Permit2Spender = "0x402085c248eea27d92e8b30b2c58ed07f9e20001"
 )
 
 // X402Eip3009Authorization mirrors EIP-3009 TransferWithAuthorization; Nonce is 0x-hex 32 bytes, the rest decimal.

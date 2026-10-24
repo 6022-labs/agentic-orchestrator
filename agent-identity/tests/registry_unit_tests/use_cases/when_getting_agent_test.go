@@ -5,6 +5,7 @@ import (
 
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -39,6 +40,60 @@ func WhenGettingAgentBeforeEach(t *testing.T) *WhenGettingAgentTestingSuite {
 
 func TestWhenGettingAgent(t *testing.T) {
 	t.Parallel()
+
+	t.Run("Given a collection address without the 0x prefix", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return a validation error without querying the repository", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenGettingAgentBeforeEach(t)
+
+			req := &requests.AgentByCollectionTokenIdRequest{
+				AgentCollectionAddress: "1234567890abcdef1234567890abcdef12345678",
+				AgentCollectionTokenId: 1,
+			}
+			resp, err := basics.sut.Get(context.Background(), req)
+
+			assert.Nil(t, resp)
+			var validationError *common_errors.ValidationError
+			if assert.ErrorAs(t, err, &validationError) {
+				assert.Equal(t, "agentCollectionAddress", validationError.Field)
+			}
+		})
+	})
+
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should look the agent up by its lowercased collection address", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenGettingAgentBeforeEach(t)
+
+			agent := model_builders.NewAgentBuilder().
+				WithCollectionAddress("0xabcdef0000000000000000000000000000000001").
+				Build()
+
+			basics.mockAgentRepository.EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), agent.CollectionAddress, *agent.CollectionTokenId).
+				Return(agent, nil).
+				Times(1)
+
+			basics.mockAgentAddressRepository.EXPECT().
+				GetAllByAgentId(gomock.Any(), agent.ID).
+				Return([]*models.AgentAddress{}, nil).
+				Times(1)
+
+			req := &requests.AgentByCollectionTokenIdRequest{
+				AgentCollectionAddress: "0xAbCdEf0000000000000000000000000000000001",
+				AgentCollectionTokenId: *agent.CollectionTokenId,
+			}
+			resp, err := basics.sut.Get(context.Background(), req)
+
+			assert.Nil(t, err)
+			assert.NotNil(t, resp)
+			assert.Equal(t, agent.ID, resp.ID)
+		})
+	})
 
 	t.Run("Given error happens while fetching agent from the database", func(t *testing.T) {
 		t.Parallel()

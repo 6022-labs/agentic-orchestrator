@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -47,6 +48,7 @@ func (handler *MintProposalCreatedEventHandler) Handle(
 	event *abi.AgentCollectionV1MintProposalCreated,
 ) error {
 	collectionAddress := common.HexToAddress(event.Raw.Address.Hex())
+	storedCollectionAddress := strings.ToLower(collectionAddress.Hex())
 	proposalId := new(big.Int).SetUint64(event.ProposalId.Uint64())
 
 	atBlock := event.Raw.BlockNumber
@@ -73,22 +75,22 @@ func (handler *MintProposalCreatedEventHandler) Handle(
 	}
 
 	// An agent already minted (or drafted in another collection) holds one of the addresses; nothing to sync.
-	if agent != nil && (agent.CollectionAddress != collectionAddress.Hex() || agent.CollectionTokenId != nil) {
+	if agent != nil && (agent.CollectionAddress != storedCollectionAddress || agent.CollectionTokenId != nil) {
 		return nil
 	}
 
 	if agent == nil {
-		agentCollection, err := handler.agentCollectionRepository.GetByAddress(ctx, collectionAddress.Hex())
+		agentCollection, err := handler.agentCollectionRepository.GetByAddress(ctx, storedCollectionAddress)
 		if err != nil {
 			return fmt.Errorf("failed to get agent collection by address %s: %w", collectionAddress.Hex(), err)
 		}
 
-		ownerHex := mintProposal.Owner.Hex()
+		ownerHex := strings.ToLower(mintProposal.Owner.Hex())
 
 		agent = &models.Agent{
-			CollectionAddress: collectionAddress.Hex(),
+			CollectionAddress: storedCollectionAddress,
 			Name:              mintProposal.Name,
-			Creator:           mintProposal.Creator.Hex(),
+			Creator:           strings.ToLower(mintProposal.Creator.Hex()),
 			Owner:             &ownerHex,
 			EnsDomain: handler.decentralizedDomainNameBuilder.BuildDomainName(
 				mintProposal.Name,

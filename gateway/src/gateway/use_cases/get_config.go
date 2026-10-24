@@ -1,6 +1,8 @@
 package use_cases
 
 import (
+	"strings"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
@@ -31,15 +33,15 @@ func (uc *GetConfig) Get() (*responses.ConfigResponse, error) {
 	evmChains := make(map[string]responses.EvmChainConfig, len(uc.blockchainConfigSettings.EvmChains))
 	for chainId, chain := range uc.blockchainConfigSettings.EvmChains {
 		evmChains[chainId] = responses.EvmChainConfig{
-			CollectionsManagerAddress: chain.CollectionsManagerAddress,
-			CollectionCreatorAddress:  chain.CollectionCreatorAddress,
+			CollectionsManagerAddress: strings.ToLower(chain.CollectionsManagerAddress),
+			CollectionCreatorAddress:  strings.ToLower(chain.CollectionCreatorAddress),
 			ScannerBaseUrl:            chain.ScannerBaseUrl,
 		}
 	}
 
 	return &responses.ConfigResponse{
 		EvmChains:               evmChains,
-		OrchestratorAddress:     uc.walletSettings.Address.Hex(),
+		OrchestratorAddress:     strings.ToLower(uc.walletSettings.Address.Hex()),
 		IpfsGatewayUrlTemplates: uc.ipfsGatewaysSettings.GatewayUrlTemplates,
 	}, nil
 }

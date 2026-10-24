@@ -75,63 +75,38 @@ func registryAgentForTest() *models.RegistryAgent {
 		WithName("hermes").
 		WithRole("facilitator").
 		WithEnsDomain("hermes.agents6022.eth").
-		WithCollection("0xABC", 1).
-		WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
+		WithCollection("0xabc", 1).
+		WithAddress(models.EvmAddressType, "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266").
 		Build()
 }
 
 func TestWhenResolvingRegistryAgent(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given the agent is not cached", func(t *testing.T) {
+	t.Run("Given a checksummed collection address is not cached", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
 			suite.mockCacheStorage.EXPECT().
-				Read(gomock.Any(), registryAgentEnsCachePath).
+				Read(gomock.Any(), registryAgentCollectionCachePath).
 				Return("", errors.New("miss")).
 				Times(2)
 			suite.mockAgentRegistryRequester.EXPECT().
-				GetMintedAgentByEnsDomain(gomock.Any(), "hermes.agents6022.eth").
-				Return(registryAgentForTest(), nil).
-				Times(1)
-			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), registryAgentEnsCachePath, gomock.Any(), gomock.Any()).
-				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
-					assert.Equal(t, 60*time.Second, *ttl)
-					assert.Contains(t, value, "facilitator")
-					return nil
-				}).
-				Times(1)
-			// One fetch warms the other lookup path too.
-			suite.mockCacheStorage.EXPECT().
-				Store(gomock.Any(), registryAgentCollectionCachePath, gomock.Any(), gomock.Any()).
-				Return(nil).
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				Return(nil, nil).
 				Times(1)
 		}
 
-		t.Run("Should fetch it once and cache it with the TTL", func(t *testing.T) {
+		t.Run("Should query the registry with the lowercased address", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingRegistryAgentBeforeEach(t)
 			initSuite(suite)
 
-			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "hermes.agents6022.eth")
+			agent, err := suite.sut.ResolveByCollection(context.Background(), " 0xABC ", 1)
 
 			assert.NoError(t, err)
-			assert.Equal(t, "hermes", agent.Name)
-		})
-
-		t.Run("Should normalise the domain so casing does not split the cache", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingRegistryAgentBeforeEach(t)
-			initSuite(suite)
-
-			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "  Hermes.Agents6022.ETH  ")
-
-			assert.NoError(t, err)
-			assert.Equal(t, "hermes", agent.Name)
+			assert.Nil(t, agent)
 		})
 	})
 
@@ -155,55 +130,6 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, "hermes", agent.Name)
-		})
-	})
-
-	t.Run("Given the registry does not know the agent", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), "0xabc", uint64(1)).
-				Return(nil, nil).
-				Times(1)
-		}
-
-		t.Run("Should not cache the miss, so a freshly minted agent is visible at once", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingRegistryAgentBeforeEach(t)
-			initSuite(suite)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-
-			agent, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
-
-			assert.NoError(t, err)
-			assert.Nil(t, agent)
-		})
-	})
-
-	t.Run("Given the registry fails", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
-			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
-			suite.mockAgentRegistryRequester.EXPECT().
-				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, errors.New("boom")).
-				Times(1)
-		}
-
-		t.Run("Should propagate the error and cache nothing", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenResolvingRegistryAgentBeforeEach(t)
-			initSuite(suite)
-			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-
-			_, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
-
-			assert.Error(t, err)
 		})
 	})
 
@@ -298,6 +224,107 @@ func TestWhenResolvingRegistryAgent(t *testing.T) {
 			wg.Wait()
 
 			assert.Equal(t, results[0].Name, results[1].Name)
+		})
+	})
+
+	t.Run("Given the registry fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, errors.New("boom")).
+				Times(1)
+		}
+
+		t.Run("Should propagate the error and cache nothing", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRegistryAgentBeforeEach(t)
+			initSuite(suite)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			_, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
+
+			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the registry does not know the agent", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
+			suite.mockCacheStorage.EXPECT().Read(gomock.Any(), gomock.Any()).Return("", errors.New("miss")).Times(2)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), "0xabc", uint64(1)).
+				Return(nil, nil).
+				Times(1)
+		}
+
+		t.Run("Should not cache the miss, so a freshly minted agent is visible at once", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRegistryAgentBeforeEach(t)
+			initSuite(suite)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			agent, err := suite.sut.ResolveByCollection(context.Background(), "0xabc", 1)
+
+			assert.NoError(t, err)
+			assert.Nil(t, agent)
+		})
+	})
+
+	t.Run("Given the agent is not cached", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingRegistryAgentTestingSuite) {
+			suite.mockCacheStorage.EXPECT().
+				Read(gomock.Any(), registryAgentEnsCachePath).
+				Return("", errors.New("miss")).
+				Times(2)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetMintedAgentByEnsDomain(gomock.Any(), "hermes.agents6022.eth").
+				Return(registryAgentForTest(), nil).
+				Times(1)
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), registryAgentEnsCachePath, gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, key, value string, ttl *time.Duration) error {
+					assert.Equal(t, 60*time.Second, *ttl)
+					assert.Contains(t, value, "facilitator")
+					return nil
+				}).
+				Times(1)
+			// One fetch warms the other lookup path too.
+			suite.mockCacheStorage.EXPECT().
+				Store(gomock.Any(), registryAgentCollectionCachePath, gomock.Any(), gomock.Any()).
+				Return(nil).
+				Times(1)
+		}
+
+		t.Run("Should fetch it once and cache it with the TTL", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRegistryAgentBeforeEach(t)
+			initSuite(suite)
+
+			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "hermes.agents6022.eth")
+
+			assert.NoError(t, err)
+			assert.Equal(t, "hermes", agent.Name)
+		})
+
+		t.Run("Should normalise the domain so casing does not split the cache", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRegistryAgentBeforeEach(t)
+			initSuite(suite)
+
+			agent, err := suite.sut.ResolveByEnsDomain(context.Background(), "  Hermes.Agents6022.ETH  ")
+
+			assert.NoError(t, err)
+			assert.Equal(t, "hermes", agent.Name)
 		})
 	})
 

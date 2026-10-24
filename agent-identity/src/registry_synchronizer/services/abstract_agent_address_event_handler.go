@@ -27,7 +27,7 @@ func NewAbstractAgentAddressEventHandler(
 	}
 }
 
-// typedAddresses maps on-chain entries to one address per known type (first entry wins, unknown types skipped).
+// typedAddresses maps on-chain entries to one lowercased address per known type (first wins, unknown/invalid skipped).
 func (handler *AbstractAgentAddressEventHandler) typedAddresses(
 	entries []abi.AgentAddress,
 ) map[enums.AddressType]string {
@@ -37,9 +37,13 @@ func (handler *AbstractAgentAddressEventHandler) typedAddresses(
 		if err := addressType.Set(entry.AddressType); err != nil {
 			continue
 		}
-		if _, exists := addresses[addressType]; !exists {
-			addresses[addressType] = entry.Value
+		if _, exists := addresses[addressType]; exists {
+			continue
 		}
+		if err := entry.ValidateAndSanitize(); err != nil {
+			continue
+		}
+		addresses[addressType] = entry.Value
 	}
 	return addresses
 }

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -37,7 +37,7 @@ func WhenGettingAgentPromptTemplateBeforeEach(t *testing.T) *WhenGettingAgentPro
 
 func generateValidGetAgentPromptTemplateRequest() *requests.GetAgentPromptTemplateRequest {
 	return &requests.GetAgentPromptTemplateRequest{
-		AgentCollectionAddress: "0xabc",
+		AgentCollectionAddress: "0x39DD75a025145770a8b8278Cc8BA705116443Ea7",
 		AgentCollectionTokenId: "1",
 		Key:                    "clone-system",
 	}
@@ -62,29 +62,6 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the broker returns the template", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
-			suite.mockConversationBrokerRequester.EXPECT().
-				GetAgentPromptTemplate(gomock.Any(), "0xabc", uint64(1), "clone-system").
-				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: "tpl"}, nil).
-				Times(1)
-		}
-
-		t.Run("Should return the template", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
-			initSuite(suite)
-
-			response, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
-
-			assert.NoError(t, err)
-			assert.Equal(t, "tpl", response.Content)
-		})
-	})
-
 	t.Run("Given the broker fails", func(t *testing.T) {
 		t.Parallel()
 
@@ -104,6 +81,29 @@ func TestWhenGettingAgentPromptTemplate(t *testing.T) {
 			_, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
 
 			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the broker returns the template", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenGettingAgentPromptTemplateTestingSuite) {
+			suite.mockConversationBrokerRequester.EXPECT().
+				GetAgentPromptTemplate(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1), "clone-system").
+				Return(&responses.AgentPromptTemplateResponse{Key: "clone-system", Content: "tpl"}, nil).
+				Times(1)
+		}
+
+		t.Run("Should return the template", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGettingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			response, err := suite.sut.Get(context.Background(), generateValidGetAgentPromptTemplateRequest())
+
+			assert.NoError(t, err)
+			assert.Equal(t, "tpl", response.Content)
 		})
 	})
 }

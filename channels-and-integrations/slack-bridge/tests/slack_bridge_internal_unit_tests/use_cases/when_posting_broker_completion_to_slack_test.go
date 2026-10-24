@@ -2,13 +2,15 @@ package use_cases_test
 
 import (
 	"context"
-
 	"errors"
+	"strings"
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/repositories_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_mocks/services_mocks/interfaces_mocks"
 	"github.com/google/uuid"
@@ -48,7 +50,7 @@ func WhenPostingBrokerCompletionToSlackBeforeEach(t *testing.T) *WhenPostingBrok
 func generateValidPostBrokerCompletionToSlackRequest() *requests.PostBrokerCompletionToSlackRequest {
 	return &requests.PostBrokerCompletionToSlackRequest{
 		ConversationId:    uuid.New(),
-		CollectionAddress: "0xabc",
+		CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
 		CollectionTokenId: 7,
 		Content:           "hello back",
 	}
@@ -60,26 +62,50 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 	t.Run("Given the request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Because conversationId is empty", func(t *testing.T) {
+		t.Run("Because collectionAddress has no 0x prefix", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
 			req := generateValidPostBrokerCompletionToSlackRequest()
-			req.ConversationId = uuid.Nil
+			req.CollectionAddress = strings.TrimPrefix(req.CollectionAddress, "0x")
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, requests.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
+	})
 
-		t.Run("Because content is empty", func(t *testing.T) {
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		checksumAddress := common_tests.RandomEthAddress().Hex()
+
+		initSuite := func(suite *WhenPostingBrokerCompletionToSlackTestingSuite, req *requests.PostBrokerCompletionToSlackRequest) {
+			suite.mockSlackConversationRepository.EXPECT().
+				GetByBrokerConversationId(gomock.Any(), req.ConversationId).
+				Return(&models.SlackConversation{
+					SlackChannelId:       "C-target",
+					SlackThreadTs:        "1.0",
+					BrokerConversationID: req.ConversationId,
+				}, nil)
+			suite.mockSlackAgentRepository.EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(checksumAddress), req.CollectionTokenId).
+				Return(nil, nil)
+		}
+
+		t.Run("Should look the agent up by its lowercased address", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
 			req := generateValidPostBrokerCompletionToSlackRequest()
-			req.Content = ""
+			req.CollectionAddress = checksumAddress
+			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, requests.ErrValidation)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_agent_not_found", notFoundError.Code)
 		})
 	})
 
@@ -92,7 +118,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				Return(nil, nil)
 		}
 
-		t.Run("Should return ErrConversationLinkNotFound", func(t *testing.T) {
+		t.Run("Should return a slack conversation link not found error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
@@ -100,7 +126,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, use_cases.ErrConversationLinkNotFound)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_conversation_link_not_found", notFoundError.Code)
 		})
 	})
 
@@ -120,7 +148,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				Return(nil, nil)
 		}
 
-		t.Run("Should return ErrSlackAgentNotFound", func(t *testing.T) {
+		t.Run("Should return a slack agent not found error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
@@ -128,7 +156,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, use_cases.ErrSlackAgentNotFound)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_agent_not_found", notFoundError.Code)
 		})
 	})
 

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/ethereum/go-ethereum/common"
@@ -55,6 +56,10 @@ func (v *AgentCardSignatureVerifier) Verify(
 		return err
 	}
 
+	// common.Address equality makes the comparison independent of the registry's address casing.
+	if !strings.HasPrefix(expectedSigner, "0x") || !common.IsHexAddress(expectedSigner) {
+		return fmt.Errorf("expected signer %q is not a hex address", expectedSigner)
+	}
 	expected := common.HexToAddress(expectedSigner)
 	if expected == (common.Address{}) {
 		return fmt.Errorf("no expected signer to verify the agent card against")
@@ -70,7 +75,7 @@ func (v *AgentCardSignatureVerifier) Verify(
 		return nil
 	}
 
-	return fmt.Errorf("no valid agent card signature for %s: %w", expected.Hex(), lastErr)
+	return fmt.Errorf("no valid agent card signature for %s: %w", strings.ToLower(expected.Hex()), lastErr)
 }
 
 // canonicalizeWithoutSignatures digests the received bytes, so unknown members and number formats survive.
@@ -117,7 +122,10 @@ func (v *AgentCardSignatureVerifier) verifyOne(
 		return fmt.Errorf("invalid agent card signing key: %w", err)
 	}
 	if crypto.PubkeyToAddress(*signer) != expected {
-		return fmt.Errorf("agent card signed by %s, expected %s", crypto.PubkeyToAddress(*signer).Hex(), expected.Hex())
+		return fmt.Errorf("agent card signed by %s, expected %s",
+			strings.ToLower(crypto.PubkeyToAddress(*signer).Hex()),
+			strings.ToLower(expected.Hex()),
+		)
 	}
 
 	rawSignature, err := base64.RawURLEncoding.DecodeString(signature.Signature)

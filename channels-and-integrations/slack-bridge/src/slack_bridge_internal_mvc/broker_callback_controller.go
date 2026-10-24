@@ -1,8 +1,8 @@
 package slack_bridge_internal_mvc
 
 import (
-	"errors"
-
+	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
@@ -37,31 +37,21 @@ func (c *BrokerCallbackController) InitRoutes(app fiber.Router) {
 // @Description  Receives an agent completion from the conversation broker and posts it to the originating Slack thread.
 // @Tags         BrokerCallback
 // @Accept       json
-// @Produce      plain
+// @Produce      json
 // @Param        request body requests.PostBrokerCompletionToSlackRequest true "Broker callback payload"
 // @Success      204 {string} string ""
-// @Failure      400 {string} string "Bad Request"
-// @Failure      404 {string} string "Not Found"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.ValidationError
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {object} errors.InternalError
 // @Router       /broker/callback [post]
 func (c *BrokerCallbackController) Handle(ctx fiber.Ctx) error {
 	request := new(requests.PostBrokerCompletionToSlackRequest)
 	if err := ctx.Bind().Body(request); err != nil {
-		c.logger.Warn("Failed to parse broker callback payload", zap.Error(err))
 		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	if err := c.postBrokerCompletionToSlack.Post(ctx.Context(), request); err != nil {
-		if errors.Is(err, requests.ErrValidation) {
-			c.logger.Warn("Broker callback failed validation", zap.Error(err))
-			return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
-		}
-		if errors.Is(err, use_cases.ErrConversationLinkNotFound) || errors.Is(err, use_cases.ErrSlackAgentNotFound) {
-			c.logger.Warn("Broker callback referred to unknown entity", zap.Error(err))
-			return ctx.Status(fiber.StatusNotFound).SendString(err.Error())
-		}
-		c.logger.Error("Failed to post broker completion to slack", zap.Error(err))
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)

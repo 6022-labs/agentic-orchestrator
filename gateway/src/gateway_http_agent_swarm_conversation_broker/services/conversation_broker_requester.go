@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/mappings"
@@ -63,7 +63,7 @@ func (r *ConversationBrokerRequester) GetConversation(
 		return nil, err
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return nil, errors.NewNotFoundError("conversation not found")
+		return nil, errors.NewNotFoundError("conversation_not_found", "conversation not found")
 	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
@@ -81,7 +81,7 @@ func (r *ConversationBrokerRequester) GetConversationMessages(
 		return nil, err
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return nil, errors.NewNotFoundError("conversation not found")
+		return nil, errors.NewNotFoundError("conversation_not_found", "conversation not found")
 	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
@@ -104,7 +104,7 @@ func (r *ConversationBrokerRequester) ListConversationParticipants(
 		return nil, err
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return nil, errors.NewNotFoundError("conversation not found")
+		return nil, errors.NewNotFoundError("conversation_not_found", "conversation not found")
 	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
@@ -124,7 +124,7 @@ func (r *ConversationBrokerRequester) ForceConcludeConversation(ctx context.Cont
 		return err
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return errors.NewNotFoundError("conversation not found")
+		return errors.NewNotFoundError("conversation_not_found", "conversation not found")
 	}
 	if rsp.StatusCode() != http.StatusNoContent {
 		return r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
@@ -148,7 +148,7 @@ func (r *ConversationBrokerRequester) GetAgentPromptTemplate(
 		return nil, err
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return nil, errors.NewNotFoundError("prompt template not found")
+		return nil, errors.NewNotFoundError("prompt_template_not_found", "prompt template not found")
 	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)
@@ -187,7 +187,7 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
 		return nil, errors.NewValidationError("request", string(rsp.Body))
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
-		return nil, errors.NewNotFoundError("agent not found")
+		return nil, errors.NewNotFoundError("agent_not_found", "agent not found")
 	}
 	if rsp.JSON200 == nil {
 		return nil, r.unexpectedStatus(rsp.StatusCode(), rsp.Body)

@@ -38,7 +38,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -77,10 +77,22 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "404": {
+                        "description": "agent not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -124,6 +136,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentCardResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -133,7 +151,7 @@ const docTemplate = `{
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -198,7 +216,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -273,7 +291,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -317,6 +335,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentUrlResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -326,7 +350,7 @@ const docTemplate = `{
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -384,7 +408,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -432,7 +456,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -484,7 +508,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -510,7 +534,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -554,7 +578,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -590,10 +614,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.BrokerConversationResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -626,10 +656,16 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -668,10 +704,16 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -710,10 +752,16 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -790,7 +838,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -807,15 +855,40 @@ const docTemplate = `{
                 "BridgePlatformSlack"
             ]
         },
+        "errors.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.NotFoundError": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 }
             }
         },
         "errors.UnauthorizedError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.UnavailableError": {
             "type": "object",
             "properties": {
                 "code": {

@@ -69,60 +69,48 @@ func TestWhenHandlingAgentAddressAddedEvent(t *testing.T) {
 		}
 	}
 
-	t.Run("Given an address was added on-chain", func(t *testing.T) {
+	t.Run("Given the event carries an evm value that is not hex", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenHandlingAgentAddressAddedEventTestingSuite) (*abi.AgentCollectionV1AgentAddressAdded, common.Address) {
-			collectionAddress := common_tests.RandomEthAddress()
-			newWallet := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 7, newWallet)
-
-			agent := model_builders.NewAgentBuilder().Build()
-
-			suite.agentRepositoryMock.
-				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
-				Return(agent, nil).
-				Times(1)
-
-			suite.agentCollectionBlockchainRequesterMock.
-				EXPECT().
-				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
-				Return(&abi.AgentInformation{Addresses: []abi.AgentAddress{
-					{AddressType: "btc", Value: "bc1qexampleonly"},
-					{AddressType: "evm", Value: strings.ToLower(newWallet.Hex())},
-				}}, nil).
-				Times(1)
-
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				GetAllByAgentId(gomock.Any(), agent.ID).
-				Return([]*models.AgentAddress{
-					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress("0xstalevalue").Build(),
-				}, nil).
-				Times(1)
-
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				ReplaceAllForAgent(gomock.Any(), agent.ID, map[enums.AddressType]string{
-					enums.AddressTypeEvm: strings.ToLower(newWallet.Hex()),
-					enums.AddressTypeBtc: "bc1qexampleonly",
-				}).
-				Return(nil).
-				Times(1)
-
-			return event, newWallet
-		}
-
-		t.Run("Should re-sync the agent addresses from the chain", func(t *testing.T) {
+		t.Run("Should skip it without error and without touching the repositories", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingAgentAddressAddedEventBeforeEach(t)
-			event, _ := initSuite(suite)
+			event := newEvent(common_tests.RandomEthAddress(), 7, common_tests.RandomEthAddress())
+			event.Value = "0xnothex"
 
 			err := suite.sut.Handle(context.Background(), event)
 
 			assert.NoError(t, err)
+		})
+	})
+
+	t.Run("Given agent lookup fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingAgentAddressAddedEventTestingSuite) *abi.AgentCollectionV1AgentAddressAdded {
+			collectionAddress := common_tests.RandomEthAddress()
+			event := newEvent(collectionAddress, 7, common_tests.RandomEthAddress())
+
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(7)).
+				Return(nil, assert.AnError).
+				Times(1)
+
+			return event
+		}
+
+		t.Run("Should return wrapped error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingAgentAddressAddedEventBeforeEach(t)
+			event := initSuite(suite)
+
+			err := suite.sut.Handle(context.Background(), event)
+
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "failed to get agent by collection")
 		})
 	})
 
@@ -138,7 +126,7 @@ func TestWhenHandlingAgentAddressAddedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(7)).
 				Return(agent, nil).
 				Times(1)
 
@@ -182,32 +170,61 @@ func TestWhenHandlingAgentAddressAddedEvent(t *testing.T) {
 		})
 	})
 
-	t.Run("Given agent lookup fails", func(t *testing.T) {
+	t.Run("Given an address was added on-chain", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenHandlingAgentAddressAddedEventTestingSuite) *abi.AgentCollectionV1AgentAddressAdded {
+		initSuite := func(suite *WhenHandlingAgentAddressAddedEventTestingSuite) (*abi.AgentCollectionV1AgentAddressAdded, common.Address) {
 			collectionAddress := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 7, common_tests.RandomEthAddress())
+			newWallet := common_tests.RandomEthAddress()
+			event := newEvent(collectionAddress, 7, newWallet)
+
+			agent := model_builders.NewAgentBuilder().Build()
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(7)).
-				Return(nil, assert.AnError).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(7)).
+				Return(agent, nil).
 				Times(1)
 
-			return event
+			suite.agentCollectionBlockchainRequesterMock.
+				EXPECT().
+				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
+				Return(&abi.AgentInformation{Addresses: []abi.AgentAddress{
+					{AddressType: "evm", Value: "not-an-address"},
+					{AddressType: "btc", Value: "BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4"},
+					{AddressType: "evm", Value: newWallet.Hex()},
+				}}, nil).
+				Times(1)
+
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				GetAllByAgentId(gomock.Any(), agent.ID).
+				Return([]*models.AgentAddress{
+					model_builders.NewAgentAddressBuilder().WithAgentId(agent.ID).WithAddress("0xstalevalue").Build(),
+				}, nil).
+				Times(1)
+
+			suite.agentAddressRepositoryMock.
+				EXPECT().
+				ReplaceAllForAgent(gomock.Any(), agent.ID, map[enums.AddressType]string{
+					enums.AddressTypeEvm: strings.ToLower(newWallet.Hex()),
+					enums.AddressTypeBtc: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+				}).
+				Return(nil).
+				Times(1)
+
+			return event, newWallet
 		}
 
-		t.Run("Should return wrapped error", func(t *testing.T) {
+		t.Run("Should re-sync the valid addresses, lowercasing evm and btc", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingAgentAddressAddedEventBeforeEach(t)
-			event := initSuite(suite)
+			event, _ := initSuite(suite)
 
 			err := suite.sut.Handle(context.Background(), event)
 
-			assert.Error(t, err)
-			assert.ErrorContains(t, err, "failed to get agent by collection")
+			assert.NoError(t, err)
 		})
 	})
 }

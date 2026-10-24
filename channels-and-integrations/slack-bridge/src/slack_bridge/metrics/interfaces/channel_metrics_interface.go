@@ -11,8 +11,9 @@ const (
 )
 
 const (
-	ChannelOutcomeHandled = "handled"
-	ChannelOutcomeFailed  = "failed"
+	ChannelOutcomeHandled  = "handled"
+	ChannelOutcomeFailed   = "failed"
+	ChannelOutcomeRejected = "rejected"
 )
 
 // Separating the two keeps ordinary message traffic out of the command rate.

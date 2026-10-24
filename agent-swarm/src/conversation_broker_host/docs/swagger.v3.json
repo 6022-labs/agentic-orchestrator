@@ -9,7 +9,9 @@
                     "facilitator-default",
                     "facilitator-conclude",
                     "expert-system",
-                    "expert-default"
+                    "expert-default",
+                    "expert-context-found",
+                    "expert-context-not-found"
                 ],
                 "type": "string",
                 "x-enum-varnames": [
@@ -19,7 +21,9 @@
                     "AgentPromptTemplateKeyFacilitatorDefault",
                     "AgentPromptTemplateKeyFacilitatorConclude",
                     "AgentPromptTemplateKeyExpertSystem",
-                    "AgentPromptTemplateKeyExpertDefault"
+                    "AgentPromptTemplateKeyExpertDefault",
+                    "AgentPromptTemplateKeyExpertContextFound",
+                    "AgentPromptTemplateKeyExpertContextNotFound"
                 ]
             },
             "enums.BridgeKind": {
@@ -89,6 +93,7 @@
                         "type": "string"
                     },
                     "collectionTokenId": {
+                        "example": "0",
                         "type": "string"
                     }
                 },

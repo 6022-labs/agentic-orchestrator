@@ -1,7 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
@@ -50,7 +51,7 @@ func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Param        chainId query int true "chain id of the connected wallet"
 // @Success      200 {object} responses.GetAuthChallengeResponse
 // @Failure      400 {object} errors.ValidationError
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Router       /auth/challenge [get]
 func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 	request := new(requests.GetAuthChallengeRequest)
@@ -60,11 +61,7 @@ func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 
 	challenge, err := controller.getAuthChallenge.Execute(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		controller.logger.Error("Failed to generate auth challenge", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 	return c.JSON(challenge)
 }
@@ -79,7 +76,7 @@ func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 // @Success      200 {object} responses.VerifyAuthResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      401 {object} errors.UnauthorizedError "challenge_not_found | signature_mismatch"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Router       /auth/verify [post]
 func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 	request := new(requests.VerifyAuthRequest)
@@ -89,14 +86,7 @@ func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 
 	response, err := controller.verifyAuth.Execute(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		if unauthorizedErr, ok := err.(*errors.UnauthorizedError); ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(unauthorizedErr)
-		}
-		controller.logger.Error("Failed to verify auth", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)

@@ -5,6 +5,7 @@ import (
 
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
@@ -36,7 +37,7 @@ func (handler *TransferEventHandler) Handle(ctx context.Context, event *abi.Agen
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(
 		ctx,
-		event.Raw.Address.Hex(),
+		strings.ToLower(event.Raw.Address.Hex()),
 		event.TokenId.Uint64(),
 	)
 	if err != nil {
@@ -46,7 +47,7 @@ func (handler *TransferEventHandler) Handle(ctx context.Context, event *abi.Agen
 		return errors.New("agent not found for transfer event")
 	}
 
-	ownerHex := event.To.Hex()
+	ownerHex := strings.ToLower(event.To.Hex())
 	agent.Owner = &ownerHex
 
 	_, err = handler.agentRepository.Save(ctx, agent)

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -154,7 +154,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 				Return(wallet, nil).
 				Times(1)
 			suite.mockJwtManager.EXPECT().
-				CreateJwtToken(request.Address).
+				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
 				Return("jwt-token", expiresAt, nil).
 				Times(1)
 		}

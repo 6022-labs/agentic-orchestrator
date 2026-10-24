@@ -2,22 +2,13 @@ package use_cases
 
 import (
 	"context"
-
-	"errors"
 	"fmt"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
 )
-
-// ErrConversationLinkNotFound is returned when no slack conversation link
-// exists for the broker conversation id supplied in the callback.
-var ErrConversationLinkNotFound = errors.New("slack conversation link not found")
-
-// ErrSlackAgentNotFound is returned when no slack agent exists for the
-// (collectionAddress, collectionTokenId) bundle supplied in the callback.
-var ErrSlackAgentNotFound = errors.New("slack agent not found")
 
 type PostBrokerCompletionToSlackInterface interface {
 	Post(ctx context.Context, request *requests.PostBrokerCompletionToSlackRequest) error
@@ -45,7 +36,7 @@ func (uc *PostBrokerCompletionToSlack) Post(
 	ctx context.Context,
 	request *requests.PostBrokerCompletionToSlackRequest,
 ) error {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return err
 	}
 
@@ -54,7 +45,10 @@ func (uc *PostBrokerCompletionToSlack) Post(
 		return fmt.Errorf("failed to lookup slack conversation link: %w", err)
 	}
 	if link == nil {
-		return ErrConversationLinkNotFound
+		return common_errors.NewNotFoundError(
+			"slack_conversation_link_not_found",
+			"no slack conversation is linked to this broker conversation",
+		)
 	}
 
 	slackAgent, err := uc.slackAgentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
@@ -65,7 +59,10 @@ func (uc *PostBrokerCompletionToSlack) Post(
 		return fmt.Errorf("failed to lookup slack agent: %w", err)
 	}
 	if slackAgent == nil {
-		return ErrSlackAgentNotFound
+		return common_errors.NewNotFoundError(
+			"slack_agent_not_found",
+			"no slack agent exists for this collection address and token id",
+		)
 	}
 
 	if err := uc.slackThreadRequester.PushCompletionToThread(ctx,

@@ -2,10 +2,12 @@ package command_handlers_test
 
 import (
 	"context"
-
 	"errors"
+	"strings"
 	"testing"
 
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/traces/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
@@ -26,6 +28,8 @@ import (
 type WhenRemovingAgentFromChannelTestingSuite struct {
 	sut *command_handlers.RemoveAgentFromChannel
 
+	mockChannelMetrics *channel_metrics_mocks.MockChannelMetricsInterface
+
 	mockSlackAgentRepository        *repositories_mocks.MockSlackAgentRepositoryInterface
 	mockSlackChannelSynchronizer    *interfaces_mocks.MockSlackChannelSynchronizerInterface
 	mockSlackChannelRepository      *repositories_mocks.MockSlackChannelRepositoryInterface
@@ -37,9 +41,6 @@ func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFrom
 	mockController := gomock.NewController(t)
 
 	mockChannelMetrics := channel_metrics_mocks.NewMockChannelMetricsInterface(mockController)
-	mockChannelMetrics.EXPECT().
-		RecordCommand(gomock.Any(), "agent.remove", gomock.Any(), gomock.Any(), gomock.Any()).
-		Times(1)
 
 	// Spans are not asserted here.
 	mockChannelTracer := channel_traces_mocks.NewMockChannelTracerInterface(mockController)
@@ -72,6 +73,7 @@ func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFrom
 
 	return &WhenRemovingAgentFromChannelTestingSuite{
 		sut:                             sut,
+		mockChannelMetrics:              mockChannelMetrics,
 		mockSlackAgentRepository:        mockSlackAgentRepository,
 		mockSlackChannelSynchronizer:    mockSlackChannelSynchronizer,
 		mockSlackChannelRepository:      mockSlackChannelRepository,
@@ -83,10 +85,49 @@ func WhenRemovingAgentFromChannelBeforeEach(t *testing.T) *WhenRemovingAgentFrom
 func TestWhenRemovingAgentFromChannel(t *testing.T) {
 	t.Parallel()
 
+	t.Run("Given the request is invalid", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return a validation error and record a rejected outcome", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRemovingAgentFromChannelBeforeEach(t)
+
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeRejected,
+					gomock.Any(),
+				).
+				Times(1)
+
+			err := suite.sut.Remove(context.Background(), &requests.RemoveAgentFromChannelRequest{
+				ChannelID:             "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{},
+			})
+
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
+		})
+	})
+
 	t.Run("Given error occurs while getting the channel from the database", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.mockSlackChannelRepository.
 				EXPECT().
 				GetById(gomock.Any(), request.ChannelID).
@@ -99,9 +140,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -116,6 +159,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackChannel := model_builders.NewSlackChannelBuilder().
 				Build()
 			suite.mockSlackChannelRepository.
@@ -130,9 +183,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -147,6 +202,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
@@ -173,9 +238,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -190,6 +257,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
@@ -221,9 +298,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -238,6 +317,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
@@ -269,9 +358,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -286,6 +377,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			suite.mockSlackChannelRepository.
 				EXPECT().
 				GetById(gomock.Any(), request.ChannelID).
@@ -309,9 +410,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -326,6 +429,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeFailed,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
@@ -362,9 +475,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)
@@ -383,6 +498,16 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 		convId2 := uuid.New()
 
 		initSuite := func(suite *WhenRemovingAgentFromChannelTestingSuite, request *requests.RemoveAgentFromChannelRequest) {
+			suite.mockChannelMetrics.EXPECT().
+				RecordCommand(
+					gomock.Any(),
+					"agent.remove",
+					metrics_interfaces.CommandTriggerUser,
+					metrics_interfaces.ChannelOutcomeHandled,
+					gomock.Any(),
+				).
+				Times(1)
+
 			slackAgent := model_builders.NewSlackAgentBuilder().
 				WithCollectionAddress(request.CollectionAddress).
 				WithCollectionTokenId(request.CollectionTokenId).
@@ -417,9 +542,11 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 			suite := WhenRemovingAgentFromChannelBeforeEach(t)
 
 			request := &requests.RemoveAgentFromChannelRequest{
-				ChannelID:         "chan",
-				CollectionTokenId: 123,
-				CollectionAddress: common_tests.RandomEthAddress().Hex(),
+				ChannelID: "chan",
+				AgentCommandArguments: requests.AgentCommandArguments{
+					CollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
+					CollectionTokenId: 123,
+				},
 			}
 
 			initSuite(suite, request)

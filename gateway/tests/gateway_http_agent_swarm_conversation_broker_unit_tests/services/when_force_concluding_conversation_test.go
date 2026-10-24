@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/services"
 	clients_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_http_agent_swarm_conversation_broker_mocks/clients_mocks"

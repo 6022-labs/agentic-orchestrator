@@ -20,6 +20,10 @@ func AddSlackBridgeInternalMvcConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(mvc_middlewares.NewRequestFailureLogMiddleware); err != nil {
+		panic(err)
+	}
+
 	// Controllers
 	err := container.Provide(
 		slack_bridge_internal_mvc.NewWalletController,

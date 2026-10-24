@@ -29,7 +29,7 @@ func (uc *GetAgentPromptTemplate) Get(
 	ctx context.Context,
 	request *requests.GetAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 

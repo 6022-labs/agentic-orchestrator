@@ -1,10 +1,6 @@
 package requests
 
 import (
-	"errors"
-	"strconv"
-	"strings"
-
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers/requests"
 )
 
@@ -20,36 +16,16 @@ func (r *CommandRequest) ToListAgentInChannelRequest() *requests.ListAgentInChan
 	}
 }
 
-func (r *CommandRequest) ToAddAgentToChannelRequest() (*requests.AddAgentToChannelRequest, error) {
-	// Usage hint: [collection address] [token ID]
-	parameters := strings.Split(r.Text, " ")
-	collectionAddress := parameters[0]
-	collectionTokenId, err := strconv.ParseUint(parameters[1], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	return &requests.AddAgentToChannelRequest{
-		ChannelID:         r.ChannelID,
-		CollectionAddress: collectionAddress,
-		CollectionTokenId: collectionTokenId,
-	}, nil
+func (r *CommandRequest) ToAddAgentToChannelRequest() *requests.AddAgentToChannelRequest {
+	request := &requests.AddAgentToChannelRequest{ChannelID: r.ChannelID}
+	request.TryParse(r.Text)
+	return request
 }
 
-func (r *CommandRequest) ToRemoveAgentFromChannelRequest() (*requests.RemoveAgentFromChannelRequest, error) {
-	// Usage hint: [collection address] [token ID]
-	parameters := strings.Split(r.Text, " ")
-	collectionAddress := parameters[0]
-	collectionTokenId, err := strconv.ParseUint(parameters[1], 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	return &requests.RemoveAgentFromChannelRequest{
-		ChannelID:         r.ChannelID,
-		CollectionAddress: collectionAddress,
-		CollectionTokenId: collectionTokenId,
-	}, nil
+func (r *CommandRequest) ToRemoveAgentFromChannelRequest() *requests.RemoveAgentFromChannelRequest {
+	request := &requests.RemoveAgentFromChannelRequest{ChannelID: r.ChannelID}
+	request.TryParse(r.Text)
+	return request
 }
 
 func (r *CommandRequest) ToVerifyWalletOwnershipRequest() *requests.VerifyWalletOwnershipRequest {
@@ -59,32 +35,8 @@ func (r *CommandRequest) ToVerifyWalletOwnershipRequest() *requests.VerifyWallet
 	}
 }
 
-func (r *CommandRequest) ToPairSlackUserToHumanAgentRequest() (*requests.PairSlackUserToHumanAgentRequest, error) {
-	// Usage hint: [slack user id] [collection address] [token ID]
-	parameters := strings.Split(r.Text, " ")
-	if len(parameters) < 3 {
-		return nil, errors.New("invalid command format")
-	}
-
-	slackUserId := parameters[0]
-	if len(strings.TrimSpace(slackUserId)) == 0 {
-		return nil, errors.New("invalid command format")
-	}
-
-	collectionAddress := parameters[1]
-	if len(strings.TrimSpace(collectionAddress)) == 0 {
-		return nil, errors.New("invalid command format")
-	}
-
-	collectionTokenId, err := strconv.ParseUint(parameters[2], 10, 64)
-	if err != nil {
-		return nil, errors.New("invalid command format")
-	}
-
-	return &requests.PairSlackUserToHumanAgentRequest{
-		RequesterSlackUserId:        r.UserID,
-		SlackUserId:                 slackUserId,
-		HumanAgentCollectionAddress: collectionAddress,
-		HumanAgentCollectionTokenId: collectionTokenId,
-	}, nil
+func (r *CommandRequest) ToPairSlackUserToHumanAgentRequest() *requests.PairSlackUserToHumanAgentRequest {
+	request := &requests.PairSlackUserToHumanAgentRequest{RequesterSlackUserId: r.UserID}
+	request.TryParse(r.Text)
+	return request
 }

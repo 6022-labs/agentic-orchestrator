@@ -10,8 +10,22 @@
                     "BridgePlatformSlack"
                 ]
             },
+            "errors.InternalError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "errors.NotFoundError": {
                 "properties": {
+                    "code": {
+                        "type": "string"
+                    },
                     "message": {
                         "type": "string"
                     }
@@ -19,6 +33,17 @@
                 "type": "object"
             },
             "errors.UnauthorizedError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.UnavailableError": {
                 "properties": {
                     "code": {
                         "type": "string"
@@ -408,7 +433,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -455,11 +480,31 @@
                         },
                         "description": "OK"
                     },
-                    "500": {
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "string"
+                                }
+                            }
+                        },
+                        "description": "agent not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -506,6 +551,16 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
                     "404": {
                         "content": {
                             "application/json": {
@@ -520,7 +575,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.UnavailableError"
                                 }
                             }
                         },
@@ -604,7 +659,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -706,7 +761,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -758,6 +813,16 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
                     "404": {
                         "content": {
                             "application/json": {
@@ -772,7 +837,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.UnavailableError"
                                 }
                             }
                         },
@@ -850,7 +915,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -911,7 +976,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -982,7 +1047,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1013,7 +1078,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1061,7 +1126,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1103,11 +1168,21 @@
                         },
                         "description": "OK"
                     },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1149,11 +1224,21 @@
                         },
                         "description": "No Content"
                     },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1198,11 +1283,21 @@
                         },
                         "description": "OK"
                     },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1247,11 +1342,21 @@
                         },
                         "description": "OK"
                     },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
@@ -1346,7 +1451,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },

@@ -53,7 +53,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Agent added to channel successfully",
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice",
                         "schema": {
                             "type": "string"
                         }
@@ -65,7 +65,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to handle command",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -110,7 +110,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "JSON list of agents",
+                        "description": "JSON list of agents, or failure notice",
                         "schema": {
                             "type": "string"
                         }
@@ -122,7 +122,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to handle command",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -168,19 +168,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Slack user paired to human agent successfully",
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Invalid command format",
+                        "description": "Invalid request body",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Failed to handle command",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -226,7 +226,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Agent removed from channel successfully",
+                        "description": "Ephemeral reply: success, usage hint on malformed text, or failure notice",
                         "schema": {
                             "type": "string"
                         }
@@ -238,7 +238,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to handle command",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -283,19 +283,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Verification response",
+                        "description": "Verification response, or failure notice",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "400": {
-                        "description": "Invalid command format",
+                        "description": "Invalid request body",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Failed to handle command",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }

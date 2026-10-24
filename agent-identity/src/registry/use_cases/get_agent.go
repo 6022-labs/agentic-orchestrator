@@ -31,6 +31,10 @@ func (s *GetAgent) Get(
 	ctx context.Context,
 	request *requests.AgentByCollectionTokenIdRequest,
 ) (*responses.AgentResponse, error) {
+	if err := request.ValidateAndSanitize(); err != nil {
+		return nil, err
+	}
+
 	agent, err := s.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
 		request.AgentCollectionAddress,
 		request.AgentCollectionTokenId,

@@ -11,8 +11,10 @@ import (
 	"strings"
 	"time"
 
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
@@ -48,6 +50,10 @@ func (signer *X402PaymentPayloadSigner) Sign(
 			paymentChallenge.X402Version,
 			models.X402Version,
 		)
+	}
+
+	if err := signer.validateAndSanitizeChallenge(paymentChallenge); err != nil {
+		return nil, err
 	}
 
 	privateKey, err := signer.fetchPrivateKey()
@@ -115,7 +121,7 @@ func (signer *X402PaymentPayloadSigner) isSupported(option *models.X402PaymentOp
 }
 
 func (signer *X402PaymentPayloadSigner) parseCaip2(network string) (int64, error) {
-	chainIdPart, found := strings.CutPrefix(network, "eip155:")
+	chainIdPart, found := strings.CutPrefix(network, models.X402NetworkEvmPrefix)
 	if !found {
 		return 0, fmt.Errorf("unsupported network %q", network)
 	}
@@ -139,7 +145,7 @@ func (signer *X402PaymentPayloadSigner) signEip3009(
 
 	now := time.Now().Unix()
 	authorization := &models.X402Eip3009Authorization{
-		From:        crypto.PubkeyToAddress(privateKey.PublicKey).Hex(),
+		From:        signer.payerAddress(privateKey),
 		To:          option.PayTo,
 		Value:       amount,
 		ValidAfter:  strconv.FormatInt(now-int64(signer.x402PaymentSettings.ClockDriftToleranceSeconds), 10),
@@ -202,7 +208,7 @@ func (signer *X402PaymentPayloadSigner) signPermit2(
 	now := time.Now().Unix()
 	authorization := &models.X402Permit2Authorization{
 		Permitted: models.X402Permit2TokenPermissions{Token: option.Asset, Amount: amount},
-		From:      crypto.PubkeyToAddress(privateKey.PublicKey).Hex(),
+		From:      signer.payerAddress(privateKey),
 		Spender:   models.X402Permit2Spender,
 		Nonce:     new(big.Int).SetBytes(nonce).String(),
 		Deadline:  strconv.FormatInt(now+int64(signer.x402PaymentSettings.SignatureLifetimeSeconds), 10),
@@ -263,6 +269,11 @@ func (signer *X402PaymentPayloadSigner) signPermit2(
 	return &models.X402ExactEvmPayload{Signature: signature, Permit2Authorization: authorization}, nil
 }
 
+// payerAddress is lowercase, the ecosystem's canonical address form; EIP-712 hashing is case-insensitive.
+func (signer *X402PaymentPayloadSigner) payerAddress(privateKey *ecdsa.PrivateKey) string {
+	return strings.ToLower(crypto.PubkeyToAddress(privateKey.PublicKey).Hex())
+}
+
 func (signer *X402PaymentPayloadSigner) randomNonce() ([]byte, error) {
 	nonce := make([]byte, 32)
 	if _, err := rand.Read(nonce); err != nil {
@@ -289,4 +300,37 @@ func (signer *X402PaymentPayloadSigner) signTypedData(
 func (signer *X402PaymentPayloadSigner) extraString(extra map[string]any, key string) string {
 	value, _ := extra[key].(string)
 	return value
+}
+
+// validateAndSanitizeChallenge checks and lowercases the asset and payTo of eip155 entries; other networks are
+// left as-is because their addresses may be case-sensitive.
+func (signer *X402PaymentPayloadSigner) validateAndSanitizeChallenge(
+	paymentChallenge *models.X402PaymentChallenge,
+) error {
+	for index := range paymentChallenge.Accepts {
+		option := &paymentChallenge.Accepts[index]
+		if !strings.HasPrefix(option.Network, models.X402NetworkEvmPrefix) {
+			continue
+		}
+
+		field := fmt.Sprintf("accepts[%d]", index)
+		asset, err := signer.sanitizeEvmAddress(field+".asset", option.Asset)
+		if err != nil {
+			return err
+		}
+		payTo, err := signer.sanitizeEvmAddress(field+".payTo", option.PayTo)
+		if err != nil {
+			return err
+		}
+		option.Asset, option.PayTo = asset, payTo
+	}
+	return nil
+}
+
+func (signer *X402PaymentPayloadSigner) sanitizeEvmAddress(field, address string) (string, error) {
+	address = strings.TrimSpace(address)
+	if !strings.HasPrefix(address, "0x") || !common.IsHexAddress(address) {
+		return "", cb_errors.NewValidationError(field, "must be a 0x-prefixed hex address")
+	}
+	return strings.ToLower(address), nil
 }

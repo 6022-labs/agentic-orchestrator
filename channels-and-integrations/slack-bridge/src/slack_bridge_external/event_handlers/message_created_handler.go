@@ -2,9 +2,8 @@ package event_handlers
 
 import (
 	"context"
-	"time"
-
 	"fmt"
+	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models"
@@ -260,9 +259,11 @@ func (p *MessageCreatedHandler) handleAsSlackUserAgent(
 
 	err = p.addAgentToChannel.Add(metrics_interfaces.WithSystemCommandTrigger(ctx),
 		&command_handlers_requests.AddAgentToChannelRequest{
-			CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
-			CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,
-			ChannelID:         slackChannel.Id,
+			ChannelID: slackChannel.Id,
+			AgentCommandArguments: command_handlers_requests.AgentCommandArguments{
+				CollectionAddress: *slackUser.PairedHumanAgentCollectionAddress,
+				CollectionTokenId: *slackUser.PairedHumanAgentCollectionTokenId,
+			},
 		},
 	)
 	if err != nil {

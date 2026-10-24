@@ -1,6 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 	"github.com/gofiber/fiber/v3"
@@ -40,16 +42,14 @@ func (controller *AgentCollectionController) InitUnauthenticatedRoutes(app fiber
 // @Tags         agent-collections
 // @Produce      json
 // @Success      200 {array} responses.AgentCollectionResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Router       /agent-collections [get]
 func (controller *AgentCollectionController) ListAgentCollections(c fiber.Ctx) error {
 	controller.logger.Info("List agent collections request received")
 
 	collections, err := controller.listAgentCollections.List(c.Context())
 	if err != nil {
-		controller.logger.Error("Failed to list agent collections", zap.Error(err))
-
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	controller.logger.Info(

@@ -2,6 +2,7 @@ package use_cases_test
 
 import (
 	"context"
+	"strings"
 
 	"errors"
 	"testing"
@@ -42,8 +43,8 @@ func WhenRegisteringAgentBeforeEach(t *testing.T) *WhenRegisteringAgentTestingSu
 
 func generateValidRegisterAgentRequest() *requests.RegisterAgentRequest {
 	return &requests.RegisterAgentRequest{
-		CollectionAddress: "0xabc",
-		CollectionTokenId: "1",
+		CollectionAddress: "0xabc00000000000000000000000000000000000de",
+		CollectionTokenId: 1,
 	}
 }
 
@@ -53,43 +54,78 @@ func TestWhenRegisteringAgent(t *testing.T) {
 	t.Run("Given request is invalid", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Because collectionAddress is empty", func(t *testing.T) {
+		t.Run("Because collectionAddress has no 0x prefix", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRegisteringAgentBeforeEach(t)
 			request := generateValidRegisterAgentRequest()
-			request.CollectionAddress = ""
+			request.CollectionAddress = strings.TrimPrefix(request.CollectionAddress, "0x")
 
 			_, _, err := suite.sut.Register(context.Background(), request)
 
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
-			assert.Contains(t, err.Error(), "collectionAddress")
 		})
+	})
 
-		t.Run("Because collectionTokenId is empty", func(t *testing.T) {
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		fromRegistry := model_builders.NewRegistryAgentBuilder().
+			WithCollection(" 0xAbC00000000000000000000000000000000000dE ", 1).
+			Build()
+
+		initSuite := func(suite *WhenRegisteringAgentTestingSuite) {
+			suite.mockParticipantRepository.EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), "0xabc00000000000000000000000000000000000de", uint64(1)).
+				Return(nil, nil).
+				Times(1)
+			suite.mockAgentRegistryRequester.EXPECT().
+				GetAgent(gomock.Any(), "0xabc00000000000000000000000000000000000de", uint64(1)).
+				Return(fromRegistry, nil).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().
+				Save(gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ context.Context, participant *models.Participant) (*models.Participant, error) {
+					return participant, nil
+				}).
+				Times(1)
+		}
+
+		t.Run("Should look up, fetch and persist the lowercased address", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRegisteringAgentBeforeEach(t)
 			request := generateValidRegisterAgentRequest()
-			request.CollectionTokenId = ""
+			request.CollectionAddress = "0xAbC00000000000000000000000000000000000dE"
+			initSuite(suite)
 
-			_, _, err := suite.sut.Register(context.Background(), request)
+			participant, _, err := suite.sut.Register(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.ValidationError{}, err)
-			assert.Contains(t, err.Error(), "collectionTokenId")
+			assert.NoError(t, err)
+			assert.Equal(t, "0xabc00000000000000000000000000000000000de", *participant.CollectionAddress)
 		})
+	})
 
-		t.Run("Because collectionTokenId is not a number", func(t *testing.T) {
+	t.Run("Given the lookup fails with an unexpected error", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
+			suite.mockParticipantRepository.EXPECT().
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
+				Return(nil, errors.New("boom")).
+				Times(1)
+		}
+
+		t.Run("Should propagate the error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRegisteringAgentBeforeEach(t)
 			request := generateValidRegisterAgentRequest()
-			request.CollectionTokenId = "abc"
+			initSuite(suite, request)
 
 			_, _, err := suite.sut.Register(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.ValidationError{}, err)
-			assert.Contains(t, err.Error(), "collectionTokenId")
+			assert.Error(t, err)
 		})
 	})
 
@@ -121,29 +157,6 @@ func TestWhenRegisteringAgent(t *testing.T) {
 				assert.Equal(t, existing.ID, participant.ID)
 			},
 		)
-	})
-
-	t.Run("Given the lookup fails with an unexpected error", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest) {
-			suite.mockParticipantRepository.EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), request.CollectionAddress, uint64(1)).
-				Return(nil, errors.New("boom")).
-				Times(1)
-		}
-
-		t.Run("Should propagate the error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenRegisteringAgentBeforeEach(t)
-			request := generateValidRegisterAgentRequest()
-			initSuite(suite, request)
-
-			_, _, err := suite.sut.Register(context.Background(), request)
-
-			assert.Error(t, err)
-		})
 	})
 
 	t.Run("Given the agent does not exist yet and the registry call fails", func(t *testing.T) {
@@ -207,7 +220,7 @@ func TestWhenRegisteringAgent(t *testing.T) {
 			WithName("Ada").
 			WithRole("expert").
 			WithEnsDomain("ada.experts.80002.6022.eth").
-			WithCollection("0xabc", 1).
+			WithCollection("0xabc00000000000000000000000000000000000de", 1).
 			Build()
 
 		initSuite := func(suite *WhenRegisteringAgentTestingSuite, request *requests.RegisterAgentRequest, registryAgent *models.RegistryAgent) *models.Participant {

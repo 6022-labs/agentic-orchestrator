@@ -1,5 +1,26 @@
 basePath: /
 definitions:
+  errors.InternalError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.NotFoundError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
   requests.PostBrokerCompletionToSlackRequest:
     properties:
       collectionAddress:
@@ -38,7 +59,7 @@ paths:
         schema:
           $ref: '#/definitions/requests.PostBrokerCompletionToSlackRequest'
       produces:
-      - text/plain
+      - application/json
       responses:
         "204":
           description: No Content
@@ -47,15 +68,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ValidationError'
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Conversation broker completion callback
       tags:
       - BrokerCallback
@@ -73,7 +94,7 @@ paths:
         schema:
           $ref: '#/definitions/requests.SetWalletOwnershipToSlackUserRequest'
       produces:
-      - text/plain
+      - application/json
       responses:
         "200":
           description: OK
@@ -82,11 +103,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ValidationError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Set wallet ownership to Slack user
       tags:
       - Wallet

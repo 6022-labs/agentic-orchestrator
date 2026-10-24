@@ -3,6 +3,7 @@ package services_test
 import (
 	"crypto/ecdsa"
 	"crypto/rand"
+	"strings"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/services"
@@ -49,28 +50,6 @@ func TestWhenSigningWithECDSA(t *testing.T) {
 		})
 	})
 
-	t.Run("Given a signature is recovered", func(t *testing.T) {
-		t.Parallel()
-
-		t.Run("Should recover the correct address", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSigningWithECDSABeforeEach(t)
-			privateKey := generateTestPrivateKey(t)
-			expectedAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
-			data := []byte("some-payload-to-sign")
-
-			signature, err := suite.sut.Sign(data, privateKey)
-			assert.NoError(t, err)
-
-			recoveredAddress, err := suite.sut.RecoverPublicKey(data, signature)
-
-			assert.NoError(t, err)
-			assert.NotNil(t, recoveredAddress)
-			assert.Equal(t, expectedAddress, *recoveredAddress)
-		})
-	})
-
 	t.Run("Given an invalid signature length", func(t *testing.T) {
 		t.Parallel()
 
@@ -109,6 +88,28 @@ func TestWhenSigningWithECDSA(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, recoveredAddress)
 			assert.NotEqual(t, expectedAddress, *recoveredAddress)
+		})
+	})
+
+	t.Run("Given a signature is recovered", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should recover the correct address lowercased", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSigningWithECDSABeforeEach(t)
+			privateKey := generateTestPrivateKey(t)
+			expectedAddress := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+			data := []byte("some-payload-to-sign")
+
+			signature, err := suite.sut.Sign(data, privateKey)
+			assert.NoError(t, err)
+
+			recoveredAddress, err := suite.sut.RecoverPublicKey(data, signature)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, recoveredAddress)
+			assert.Equal(t, strings.ToLower(expectedAddress), *recoveredAddress)
 		})
 	})
 }

@@ -3,7 +3,7 @@ package requests
 import (
 	"strings"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -15,7 +15,7 @@ type VerifyWalletForBridgeRequest struct {
 	Signature           string               `                     json:"signature"`
 }
 
-func (r *VerifyWalletForBridgeRequest) Validate() error {
+func (r *VerifyWalletForBridgeRequest) ValidateAndSanitize() error {
 	if !enums.GetAllBridgePlatforms().Contains(r.Platform) {
 		return errors.NewValidationError(
 			"platform",

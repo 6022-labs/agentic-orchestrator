@@ -2,12 +2,12 @@ package model_builders
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
 )
@@ -37,8 +37,7 @@ func NewAgentBuilder() *AgentBuilder {
 	collectionTokenId := uint64(ids[0])
 	proposalId := uint64(ids[1])
 
-	privateKey, _ := crypto.GenerateKey()
-	owner := crypto.PubkeyToAddress(privateKey.PublicKey).String()
+	owner := strings.ToLower(common_tests.RandomEthAddress().Hex())
 	creator := owner
 
 	createdAtStr := faker.Date()
@@ -61,7 +60,7 @@ func NewAgentBuilder() *AgentBuilder {
 		createdAt:         createdAt,
 		proposalId:        &proposalId,
 		collectionTokenId: &collectionTokenId,
-		collectionAddress: common_tests.RandomEthAddress().Hex(),
+		collectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
 		deletedAt:         nil,
 	}
 }

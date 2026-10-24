@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
@@ -38,7 +39,7 @@ func (handler *MintProposalRemovedEventHandler) Handle(
 	)
 
 	agent, err := handler.agentRepository.GetNotYetMintedByCollectionAddressAndProposalId(ctx,
-		event.Raw.Address.Hex(),
+		strings.ToLower(event.Raw.Address.Hex()),
 		event.ProposalId.Uint64(),
 	)
 	if err != nil {

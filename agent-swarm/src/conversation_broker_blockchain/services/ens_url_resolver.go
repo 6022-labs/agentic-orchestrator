@@ -79,7 +79,7 @@ func (r *EnsUrlResolver) ResolveUrl(ctx context.Context, ensDomain string) (stri
 			"agent ens registry holds no url record",
 			zap.String("ensDomain", ensDomain),
 			zap.String("node", fmt.Sprintf("%#x", node)),
-			zap.String("smartContractAddress", r.agentEnsRegistrySettings.SmartContractAddress.Hex()),
+			zap.String("smartContractAddress", strings.ToLower(r.agentEnsRegistrySettings.SmartContractAddress.Hex())),
 		)
 	}
 

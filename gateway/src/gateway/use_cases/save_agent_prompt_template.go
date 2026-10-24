@@ -29,7 +29,7 @@ func (uc *SaveAgentPromptTemplate) Save(
 	ctx context.Context,
 	request *requests.SaveAgentPromptTemplateRequest,
 ) (*responses.AgentPromptTemplateResponse, error) {
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateAndSanitize(); err != nil {
 		return nil, err
 	}
 

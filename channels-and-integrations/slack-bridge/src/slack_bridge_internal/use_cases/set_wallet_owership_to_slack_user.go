@@ -31,7 +31,7 @@ func (uc *SetWalletOwnershipToSlackUser) Set(
 	ctx context.Context,
 	request *requests.SetWalletOwnershipToSlackUserRequest,
 ) error {
-	err := request.Validate()
+	err := request.ValidateAndSanitize()
 	if err != nil {
 		return err
 	}

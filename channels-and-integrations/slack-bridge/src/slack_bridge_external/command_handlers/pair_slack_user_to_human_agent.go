@@ -2,10 +2,11 @@ package command_handlers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
-	"fmt"
-
+	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge/repositories"
@@ -56,7 +57,10 @@ func (p *PairSlackUserToHumanAgent) Pair(
 	start := time.Now()
 	defer func() {
 		outcome := metrics_interfaces.ChannelOutcomeHandled
-		if err != nil {
+		switch {
+		case errors.As(err, new(*common_errors.ValidationError)):
+			outcome = metrics_interfaces.ChannelOutcomeRejected
+		case err != nil:
 			outcome = metrics_interfaces.ChannelOutcomeFailed
 			span.Fail(err)
 		}
@@ -69,6 +73,10 @@ func (p *PairSlackUserToHumanAgent) Pair(
 		)
 		span.End()
 	}()
+
+	if err = request.ValidateAndSanitize(); err != nil {
+		return err
+	}
 
 	requesterUser, err := p.slackUserSynchronizerCached.Sync(ctx, request.RequesterSlackUserId)
 	if err != nil {

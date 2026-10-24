@@ -1,6 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -62,7 +64,7 @@ func (controller *ConversationController) InitUnauthenticatedRoutes(app fiber.Ro
 // @Param        page query int false "Page"
 // @Param        elementsPerPage query int false "Elements per page"
 // @Success      200 {object} responses.ListBrokerConversationsResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /conversations [get]
 func (controller *ConversationController) List(c fiber.Ctx) error {
@@ -76,8 +78,7 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 
 	response, err := controller.listConversations.List(c.Context(), page, elementsPerPage)
 	if err != nil {
-		controller.logger.Error("Failed to list conversations", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -89,7 +90,8 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {object} responses.BrokerConversationResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /conversations/{id} [get]
 func (controller *ConversationController) Get(c fiber.Ctx) error {
@@ -100,8 +102,7 @@ func (controller *ConversationController) Get(c fiber.Ctx) error {
 
 	response, err := controller.getConversation.Get(c.Context(), id)
 	if err != nil {
-		controller.logger.Error("Failed to get conversation", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -113,7 +114,8 @@ func (controller *ConversationController) Get(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerMessageResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/messages [get]
 func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
@@ -124,8 +126,7 @@ func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 
 	response, err := controller.getConversationMessages.Get(c.Context(), id)
 	if err != nil {
-		controller.logger.Error("Failed to get conversation messages", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -137,7 +138,8 @@ func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerParticipantResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/participants [get]
 func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
@@ -148,8 +150,7 @@ func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 
 	response, err := controller.listConversationParticipants.List(c.Context(), id)
 	if err != nil {
-		controller.logger.Error("Failed to list conversation participants", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.JSON(response)
@@ -160,7 +161,8 @@ func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 // @Tags         conversation
 // @Param        id path string true "Conversation ID"
 // @Success      204 {string} string "No Content"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      404 {object} errors.NotFoundError
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/force-conclude [post]
 func (controller *ConversationController) ForceConclude(c fiber.Ctx) error {
@@ -170,8 +172,7 @@ func (controller *ConversationController) ForceConclude(c fiber.Ctx) error {
 	}
 
 	if err := controller.forceConcludeConversation.Conclude(c.Context(), id); err != nil {
-		controller.logger.Error("Failed to force conclude conversation", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)

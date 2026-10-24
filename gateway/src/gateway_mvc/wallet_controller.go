@@ -1,7 +1,8 @@
 package orchestrator_gateway_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/errors"
+	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,7 +47,7 @@ func (controller *WalletController) InitUnauthenticatedRoutes(app fiber.Router) 
 // @Success      200 {string} string "OK"
 // @Failure      400 {object} errors.ValidationError
 // @Failure      401 {string} string "Unauthorized"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /wallet/verify-for-bridge [post]
 func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
@@ -74,13 +75,7 @@ func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
 
 	err := controller.verifyWalletForBridge.Verify(c.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return c.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-
-		controller.logger.Error("Failed to verify wallet for bridge", zap.Error(err))
-
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 
 	controller.logger.Info("Verify wallet for bridge request completed successfully")
