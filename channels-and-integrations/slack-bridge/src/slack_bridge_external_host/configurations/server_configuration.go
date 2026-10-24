@@ -39,6 +39,7 @@ type useRestApiParams struct {
 	App                      *fiber.App
 	Logger                   *zap.Logger
 	RequestMetrics           *mvc_middlewares.ApiRequestMetricsMiddleware
+	RequestFailureLog        *mvc_middlewares.RequestFailureLogMiddleware
 	SlackSignatureMiddleware *middlewares.SlackSignatureMiddleware
 	Controllers              []slack_bridge_external_mvc.ControllerInterface `group:"controllers"`
 }
@@ -56,6 +57,8 @@ func useRestApi(p useRestApiParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
+
+	p.App.Use(p.RequestFailureLog.Handle)
 
 	p.App.Use(p.SlackSignatureMiddleware.Handle)
 

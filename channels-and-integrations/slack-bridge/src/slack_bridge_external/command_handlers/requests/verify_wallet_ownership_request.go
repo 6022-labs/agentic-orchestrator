@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"strings"
 
 	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
@@ -13,7 +12,7 @@ type VerifyWalletOwnershipRequest struct {
 
 func (r *VerifyWalletOwnershipRequest) Validate() error {
 	if len(strings.TrimSpace(r.UserId)) == 0 {
-		return fmt.Errorf("%w: user id cannot be empty", common_errors.ErrValidation)
+		return common_errors.NewValidationError("userId", "cannot be empty")
 	}
 
 	return nil

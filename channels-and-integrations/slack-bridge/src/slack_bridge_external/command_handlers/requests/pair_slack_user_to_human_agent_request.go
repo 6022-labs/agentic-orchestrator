@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -32,17 +31,13 @@ func (r *PairSlackUserToHumanAgentRequest) TryParse(text string) {
 
 func (r *PairSlackUserToHumanAgentRequest) ValidateAndSanitize() error {
 	if len(strings.TrimSpace(r.SlackUserId)) == 0 {
-		return fmt.Errorf("%w: slack user id cannot be empty", common_errors.ErrValidation)
+		return common_errors.NewValidationError("slackUserId", "cannot be empty")
 	}
 	if !strings.HasPrefix(r.HumanAgentCollectionAddress, "0x") || !common.IsHexAddress(r.HumanAgentCollectionAddress) {
-		return fmt.Errorf(
-			"%w: %q is not a collection address",
-			common_errors.ErrValidation,
-			r.HumanAgentCollectionAddress,
-		)
+		return common_errors.NewValidationError("collectionAddress", "must be a 0x-prefixed hex address")
 	}
 	if r.HumanAgentCollectionTokenId == 0 {
-		return fmt.Errorf("%w: token ID must be a positive integer", common_errors.ErrValidation)
+		return common_errors.NewValidationError("collectionTokenId", "must be a positive integer")
 	}
 
 	r.HumanAgentCollectionAddress = strings.ToLower(r.HumanAgentCollectionAddress)

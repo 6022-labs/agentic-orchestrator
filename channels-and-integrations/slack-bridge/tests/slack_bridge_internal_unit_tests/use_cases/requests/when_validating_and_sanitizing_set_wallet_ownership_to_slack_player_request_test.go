@@ -25,7 +25,9 @@ func TestWhenValidatingAndSanitizingSetWalletOwnershipToSlackUserRequest(t *test
 				WalletAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "challenge", validationError.Field)
 		})
 	})
 
@@ -40,7 +42,9 @@ func TestWhenValidatingAndSanitizingSetWalletOwnershipToSlackUserRequest(t *test
 				WalletAddress: "",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "walletAddress", validationError.Field)
 		})
 	})
 
@@ -55,7 +59,9 @@ func TestWhenValidatingAndSanitizingSetWalletOwnershipToSlackUserRequest(t *test
 				WalletAddress: strings.TrimPrefix(strings.ToLower(common_tests.RandomEthAddress().Hex()), "0x"),
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "walletAddress", validationError.Field)
 		})
 	})
 
@@ -70,7 +76,9 @@ func TestWhenValidatingAndSanitizingSetWalletOwnershipToSlackUserRequest(t *test
 				WalletAddress: "0xnot-an-address",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "walletAddress", validationError.Field)
 		})
 	})
 
@@ -85,7 +93,9 @@ func TestWhenValidatingAndSanitizingSetWalletOwnershipToSlackUserRequest(t *test
 				WalletAddress: "0x1234",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "walletAddress", validationError.Field)
 		})
 	})
 

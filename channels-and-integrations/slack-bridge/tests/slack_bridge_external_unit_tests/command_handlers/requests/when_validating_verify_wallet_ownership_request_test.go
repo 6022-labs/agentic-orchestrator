@@ -19,7 +19,9 @@ func TestWhenValidatingVerifyWalletOwnershipRequest(t *testing.T) {
 
 			request := &requests.VerifyWalletOwnershipRequest{UserId: ""}
 
-			assert.ErrorIs(t, request.Validate(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.Validate(), &validationError)
+			assert.Equal(t, "userId", validationError.Field)
 		})
 	})
 
@@ -31,7 +33,9 @@ func TestWhenValidatingVerifyWalletOwnershipRequest(t *testing.T) {
 
 			request := &requests.VerifyWalletOwnershipRequest{UserId: "   "}
 
-			assert.ErrorIs(t, request.Validate(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.Validate(), &validationError)
+			assert.Equal(t, "userId", validationError.Field)
 		})
 	})
 

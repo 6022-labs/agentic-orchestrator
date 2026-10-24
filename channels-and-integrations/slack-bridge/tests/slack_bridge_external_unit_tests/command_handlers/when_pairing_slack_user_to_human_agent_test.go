@@ -106,7 +106,9 @@ func TestWhenPairingSlackUserToHumanAgent(t *testing.T) {
 				RequesterSlackUserId: "U123456",
 			})
 
-			assert.ErrorIs(t, err, common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "slackUserId", validationError.Field)
 		})
 	})
 

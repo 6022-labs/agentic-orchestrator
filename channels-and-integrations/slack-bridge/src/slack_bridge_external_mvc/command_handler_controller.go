@@ -80,19 +80,13 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fib
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
 
 	if err := controller.addAgentToChannel.Add(c.Context(), request.ToAddAgentToChannelRequest()); err != nil {
-		if errors.Is(err, common_errors.ErrValidation) {
-			controller.logger.Info("Invalid add agent command", zap.Error(err))
-			return c.Status(fiber.StatusOK).SendString(INVALID_AGENT_COMMAND_FORMAT_REPLY)
-		}
-		controller.logger.Error("Failed to handle add agent command", zap.Error(err))
-		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
+		return controller.replyCommandError(c, err, INVALID_AGENT_COMMAND_FORMAT_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Agent added to channel successfully")
@@ -116,7 +110,6 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
@@ -124,8 +117,7 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 
 	result, err := controller.listAgentsInChannel.List(c.Context(), request.ToListAgentInChannelRequest())
 	if err != nil {
-		controller.logger.Error("Failed to handle list agents command", zap.Error(err))
-		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
+		return controller.replyCommandError(c, err, FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	controller.logger.Debug("Response", zap.Any("result", result))
@@ -157,7 +149,6 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
@@ -167,12 +158,7 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 		c.Context(),
 		request.ToRemoveAgentFromChannelRequest(),
 	); err != nil {
-		if errors.Is(err, common_errors.ErrValidation) {
-			controller.logger.Info("Invalid remove agent command", zap.Error(err))
-			return c.Status(fiber.StatusOK).SendString(INVALID_AGENT_COMMAND_FORMAT_REPLY)
-		}
-		controller.logger.Error("Failed to handle remove agent command", zap.Error(err))
-		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
+		return controller.replyCommandError(c, err, INVALID_AGENT_COMMAND_FORMAT_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Agent removed from channel successfully")
@@ -196,7 +182,6 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
@@ -204,8 +189,7 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 
 	resp, err := controller.verifyWalletOwnership.Verify(c.Context(), request.ToVerifyWalletOwnershipRequest())
 	if err != nil {
-		controller.logger.Error("Failed to verify wallet ownership", zap.Error(err))
-		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
+		return controller.replyCommandError(c, err, FAILED_TO_HANDLE_COMMAND_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString(*resp)
@@ -229,7 +213,6 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		controller.logger.Error("Failed to parse request body", zap.Error(err))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 
@@ -239,13 +222,24 @@ func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentComma
 		c.Context(),
 		request.ToPairSlackUserToHumanAgentRequest(),
 	); err != nil {
-		if errors.Is(err, common_errors.ErrValidation) {
-			controller.logger.Info("Invalid pair slack user to human agent command", zap.Error(err))
-			return c.Status(fiber.StatusOK).SendString(INVALID_PAIR_COMMAND_FORMAT_REPLY)
-		}
-		controller.logger.Error("Failed to handle pair slack user to human agent command", zap.Error(err))
-		return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
+		return controller.replyCommandError(c, err, INVALID_PAIR_COMMAND_FORMAT_REPLY)
 	}
 
 	return c.Status(fiber.StatusOK).SendString("Slack user paired to human agent successfully")
+}
+
+// replyCommandError keeps HTTP 200 so Slack shows the reply; a validation error gets the usage hint.
+func (controller *CommandHandlerController) replyCommandError(
+	c fiber.Ctx,
+	err error,
+	invalidCommandReply string,
+) error {
+	var validationError *common_errors.ValidationError
+	if errors.As(err, &validationError) {
+		controller.logger.Info("Invalid command", zap.String("path", c.Path()), zap.Error(err))
+		return c.Status(fiber.StatusOK).SendString(invalidCommandReply)
+	}
+
+	controller.logger.Error("Failed to handle command", zap.String("path", c.Path()), zap.Error(err))
+	return c.Status(fiber.StatusOK).SendString(FAILED_TO_HANDLE_COMMAND_REPLY)
 }

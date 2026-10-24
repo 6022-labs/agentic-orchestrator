@@ -27,7 +27,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "hello",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "conversationId", validationError.Field)
 		})
 	})
 
@@ -44,7 +46,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "hello",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -61,7 +65,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "hello",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -78,7 +84,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "hello",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -95,7 +103,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "hello",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -112,7 +122,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "content", validationError.Field)
 		})
 	})
 
@@ -129,7 +141,9 @@ func TestWhenValidatingAndSanitizingPostBrokerCompletionToSlackRequest(t *testin
 				Content:           "   ",
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "content", validationError.Field)
 		})
 	})
 

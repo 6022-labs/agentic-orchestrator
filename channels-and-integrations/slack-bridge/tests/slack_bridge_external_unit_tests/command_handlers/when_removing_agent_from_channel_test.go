@@ -108,7 +108,9 @@ func TestWhenRemovingAgentFromChannel(t *testing.T) {
 				AgentCommandArguments: requests.AgentCommandArguments{},
 			})
 
-			assert.ErrorIs(t, err, common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 

@@ -24,7 +24,9 @@ func TestWhenValidatingAndSanitizingPairSlackUserToHumanAgentRequest(t *testing.
 				HumanAgentCollectionTokenId: 1,
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "slackUserId", validationError.Field)
 		})
 	})
 
@@ -43,7 +45,9 @@ func TestWhenValidatingAndSanitizingPairSlackUserToHumanAgentRequest(t *testing.
 				HumanAgentCollectionTokenId: 1,
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -59,7 +63,9 @@ func TestWhenValidatingAndSanitizingPairSlackUserToHumanAgentRequest(t *testing.
 				HumanAgentCollectionTokenId: 1,
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -74,7 +80,9 @@ func TestWhenValidatingAndSanitizingPairSlackUserToHumanAgentRequest(t *testing.
 				HumanAgentCollectionAddress: strings.ToLower(common_tests.RandomEthAddress().Hex()),
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionTokenId", validationError.Field)
 		})
 	})
 

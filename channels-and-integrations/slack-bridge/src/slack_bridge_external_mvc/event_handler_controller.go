@@ -75,7 +75,6 @@ func (controller *EventHandlerController) HandleEventRequest(c fiber.Ctx) error 
 
 	requestTypeStr, ok := bodyMap["type"].(string)
 	if !ok {
-		controller.logger.Error("Missing or invalid type field in request")
 		return c.Status(fiber.StatusBadRequest).SendString("Missing or invalid type field")
 	}
 
@@ -86,13 +85,11 @@ func (controller *EventHandlerController) HandleEventRequest(c fiber.Ctx) error 
 	if requestTypeStr == "event_callback" {
 		eventBody, ok := bodyMap["event"].(map[string]interface{})
 		if !ok {
-			controller.logger.Error("Missing or invalid event payload in request")
 			return c.Status(fiber.StatusBadRequest).SendString("Missing or invalid event payload")
 		}
 
 		eventType, ok := eventBody["type"].(string)
 		if !ok {
-			controller.logger.Error("Missing or invalid event type field in request")
 			return c.Status(fiber.StatusBadRequest).SendString("Missing or invalid event type field")
 		}
 
@@ -120,11 +117,9 @@ func (controller *EventHandlerController) HandleEventRequest(c fiber.Ctx) error 
 			return controller.handleChannelIdChangedEvent(c)
 		}
 
-		controller.logger.Error("Unsupported event type", zap.Any("body", bodyMap))
 		return c.Status(fiber.StatusBadRequest).SendString("Unsupported event type")
 	}
 
-	controller.logger.Error("Unsupported request type", zap.Any("body", bodyMap))
 	return c.Status(fiber.StatusBadRequest).SendString("Unsupported request type")
 }
 

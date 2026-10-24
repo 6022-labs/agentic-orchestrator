@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"strings"
 
 	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
@@ -19,13 +18,13 @@ type PostBrokerCompletionToSlackRequest struct {
 // ValidateAndSanitize lowercases the collection address so it matches the stored rows.
 func (r *PostBrokerCompletionToSlackRequest) ValidateAndSanitize() error {
 	if r.ConversationId == uuid.Nil {
-		return fmt.Errorf("%w: conversationId is required", common_errors.ErrValidation)
+		return common_errors.NewValidationError("conversationId", "is required")
 	}
 	if !strings.HasPrefix(r.CollectionAddress, "0x") || !common.IsHexAddress(r.CollectionAddress) {
-		return fmt.Errorf("%w: collectionAddress must be a 0x-prefixed hex address", common_errors.ErrValidation)
+		return common_errors.NewValidationError("collectionAddress", "must be a 0x-prefixed hex address")
 	}
 	if strings.TrimSpace(r.Content) == "" {
-		return fmt.Errorf("%w: content is required", common_errors.ErrValidation)
+		return common_errors.NewValidationError("content", "is required")
 	}
 
 	r.CollectionAddress = strings.ToLower(r.CollectionAddress)

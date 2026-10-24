@@ -23,7 +23,9 @@ func TestWhenValidatingAndSanitizingRemoveAgentFromChannelRequest(t *testing.T) 
 				AgentCommandArguments: requests.AgentCommandArguments{CollectionAddress: "", CollectionTokenId: 1},
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -40,7 +42,9 @@ func TestWhenValidatingAndSanitizingRemoveAgentFromChannelRequest(t *testing.T) 
 				},
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -57,7 +61,9 @@ func TestWhenValidatingAndSanitizingRemoveAgentFromChannelRequest(t *testing.T) 
 				},
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -74,7 +80,9 @@ func TestWhenValidatingAndSanitizingRemoveAgentFromChannelRequest(t *testing.T) 
 				},
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -90,7 +98,9 @@ func TestWhenValidatingAndSanitizingRemoveAgentFromChannelRequest(t *testing.T) 
 				},
 			}
 
-			assert.ErrorIs(t, request.ValidateAndSanitize(), common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, request.ValidateAndSanitize(), &validationError)
+			assert.Equal(t, "collectionTokenId", validationError.Field)
 		})
 	})
 

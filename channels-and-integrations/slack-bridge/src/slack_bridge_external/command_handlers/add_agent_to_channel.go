@@ -59,7 +59,7 @@ func (h *AddAgentToChannel) Add(ctx context.Context, request *requests.AddAgentT
 	defer func() {
 		outcome := metrics_interfaces.ChannelOutcomeHandled
 		switch {
-		case errors.Is(err, common_errors.ErrValidation):
+		case errors.As(err, new(*common_errors.ValidationError)):
 			outcome = metrics_interfaces.ChannelOutcomeRejected
 		case err != nil:
 			outcome = metrics_interfaces.ChannelOutcomeFailed

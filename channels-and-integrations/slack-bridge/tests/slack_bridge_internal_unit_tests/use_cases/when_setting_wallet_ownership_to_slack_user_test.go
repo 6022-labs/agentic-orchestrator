@@ -67,7 +67,9 @@ func TestWhenSettingWalletOwnershipToSlackUser(t *testing.T) {
 
 			err := suite.sut.Set(context.Background(), request)
 
-			assert.ErrorIs(t, err, common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "walletAddress", validationError.Field)
 		})
 	})
 

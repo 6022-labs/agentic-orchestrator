@@ -105,7 +105,9 @@ func TestWhenVerifyingWalletOwnership(t *testing.T) {
 
 			_, err := suite.sut.Verify(context.Background(), &requests.VerifyWalletOwnershipRequest{})
 
-			assert.ErrorIs(t, err, common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "userId", validationError.Field)
 		})
 	})
 

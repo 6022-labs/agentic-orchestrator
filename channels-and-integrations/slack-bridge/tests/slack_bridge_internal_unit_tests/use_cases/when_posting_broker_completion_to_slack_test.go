@@ -70,7 +70,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			req.CollectionAddress = strings.TrimPrefix(req.CollectionAddress, "0x")
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, common_errors.ErrValidation)
+			var validationError *common_errors.ValidationError
+			assert.ErrorAs(t, err, &validationError)
+			assert.Equal(t, "collectionAddress", validationError.Field)
 		})
 	})
 
@@ -101,7 +103,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, use_cases.ErrSlackAgentNotFound)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_agent_not_found", notFoundError.Code)
 		})
 	})
 
@@ -114,7 +118,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				Return(nil, nil)
 		}
 
-		t.Run("Should return ErrConversationLinkNotFound", func(t *testing.T) {
+		t.Run("Should return a slack conversation link not found error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
@@ -122,7 +126,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, use_cases.ErrConversationLinkNotFound)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_conversation_link_not_found", notFoundError.Code)
 		})
 	})
 
@@ -142,7 +148,7 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 				Return(nil, nil)
 		}
 
-		t.Run("Should return ErrSlackAgentNotFound", func(t *testing.T) {
+		t.Run("Should return a slack agent not found error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenPostingBrokerCompletionToSlackBeforeEach(t)
@@ -150,7 +156,9 @@ func TestWhenPostingBrokerCompletionToSlack(t *testing.T) {
 			initSuite(suite, req)
 
 			err := suite.sut.Post(context.Background(), req)
-			assert.ErrorIs(t, err, use_cases.ErrSlackAgentNotFound)
+			var notFoundError *common_errors.NotFoundError
+			assert.ErrorAs(t, err, &notFoundError)
+			assert.Equal(t, "slack_agent_not_found", notFoundError.Code)
 		})
 	})
 

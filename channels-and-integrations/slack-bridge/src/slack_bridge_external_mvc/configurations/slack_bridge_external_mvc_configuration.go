@@ -21,6 +21,10 @@ func AddSlackBridgeExternalMvcConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(mvc_middlewares.NewRequestFailureLogMiddleware); err != nil {
+		panic(err)
+	}
+
 	// Controllers
 	err := container.Provide(
 		orchestrator_slack_bridge_external_mvc.NewEventHandlerController,

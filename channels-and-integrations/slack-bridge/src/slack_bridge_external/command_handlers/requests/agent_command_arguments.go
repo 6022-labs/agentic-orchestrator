@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -31,11 +30,11 @@ func (a *AgentCommandArguments) TryParse(text string) {
 func (a *AgentCommandArguments) ValidateAndSanitize() error {
 	// IsHexAddress alone also accepts an unprefixed address, which would never match the 0x-prefixed rows.
 	if !strings.HasPrefix(a.CollectionAddress, "0x") || !common.IsHexAddress(a.CollectionAddress) {
-		return fmt.Errorf("%w: %q is not a collection address", common_errors.ErrValidation, a.CollectionAddress)
+		return common_errors.NewValidationError("collectionAddress", "must be a 0x-prefixed hex address")
 	}
 	// Token IDs start at 1 on-chain, so 0 means TryParse could not read one.
 	if a.CollectionTokenId == 0 {
-		return fmt.Errorf("%w: token ID must be a positive integer", common_errors.ErrValidation)
+		return common_errors.NewValidationError("collectionTokenId", "must be a positive integer")
 	}
 
 	a.CollectionAddress = strings.ToLower(a.CollectionAddress)

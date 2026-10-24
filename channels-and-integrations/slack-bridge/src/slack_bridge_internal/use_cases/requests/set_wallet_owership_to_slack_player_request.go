@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"fmt"
 	"strings"
 
 	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
@@ -17,11 +16,11 @@ type SetWalletOwnershipToSlackUserRequest struct {
 // ValidateAndSanitize lowercases the wallet address so wallet comparisons are case-insensitive.
 func (r *SetWalletOwnershipToSlackUserRequest) ValidateAndSanitize() error {
 	if r.Challenge == uuid.Nil {
-		return fmt.Errorf("%w: challenge is required", common_errors.ErrValidation)
+		return common_errors.NewValidationError("challenge", "is required")
 	}
 
 	if !strings.HasPrefix(r.WalletAddress, "0x") || !common.IsHexAddress(r.WalletAddress) {
-		return fmt.Errorf("%w: walletAddress must be a 0x-prefixed hex address", common_errors.ErrValidation)
+		return common_errors.NewValidationError("walletAddress", "must be a 0x-prefixed hex address")
 	}
 
 	r.WalletAddress = strings.ToLower(r.WalletAddress)
