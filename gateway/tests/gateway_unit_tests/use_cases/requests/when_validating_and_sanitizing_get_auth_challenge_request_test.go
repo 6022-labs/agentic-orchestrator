@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +27,9 @@ func TestWhenValidatingAndSanitizingGetAuthChallengeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "address")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "address", validationErr.Field)
 		})
 	})
 
@@ -39,7 +43,9 @@ func TestWhenValidatingAndSanitizingGetAuthChallengeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "address")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "address", validationErr.Field)
 		})
 	})
 

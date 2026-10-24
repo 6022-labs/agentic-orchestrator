@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
@@ -25,8 +26,7 @@ func NewAuthenticationMandatoryMiddleware(
 }
 
 func (m *AuthenticationMandatoryMiddleware) Handle(c fiber.Ctx) error {
-	alreadyInjectedAuthenticatedWallet := c.Locals("authenticated-wallet")
-	if alreadyInjectedAuthenticatedWallet == nil {
+	if _, ok := helpers.CallerIdFromContext(c.Context()); !ok {
 		m.gatewayMetrics.RecordAuth(c.Context(), metrics_interfaces.AuthMethodNone, false)
 		return c.SendStatus(401)
 	}

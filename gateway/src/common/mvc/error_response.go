@@ -12,6 +12,8 @@ func WriteError(ctx fiber.Ctx, err error) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(e)
 	case *errors.UnauthorizedError:
 		return ctx.Status(fiber.StatusUnauthorized).JSON(e)
+	case *errors.ForbiddenError:
+		return ctx.Status(fiber.StatusForbidden).JSON(e)
 	case *errors.NotFoundError:
 		return ctx.Status(fiber.StatusNotFound).JSON(e)
 	case *errors.ConflictError:

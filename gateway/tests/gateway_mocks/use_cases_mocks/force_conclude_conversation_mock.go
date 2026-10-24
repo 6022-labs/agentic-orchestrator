@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	uuid "github.com/google/uuid"
+	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,15 +42,15 @@ func (m *MockForceConcludeConversationInterface) EXPECT() *MockForceConcludeConv
 }
 
 // Conclude mocks base method.
-func (m *MockForceConcludeConversationInterface) Conclude(ctx context.Context, conversationId uuid.UUID) error {
+func (m *MockForceConcludeConversationInterface) Conclude(ctx context.Context, request *requests.ConversationByIdRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Conclude", ctx, conversationId)
+	ret := m.ctrl.Call(m, "Conclude", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Conclude indicates an expected call of Conclude.
-func (mr *MockForceConcludeConversationInterfaceMockRecorder) Conclude(ctx, conversationId any) *gomock.Call {
+func (mr *MockForceConcludeConversationInterfaceMockRecorder) Conclude(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conclude", reflect.TypeOf((*MockForceConcludeConversationInterface)(nil).Conclude), ctx, conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Conclude", reflect.TypeOf((*MockForceConcludeConversationInterface)(nil).Conclude), ctx, request)
 }

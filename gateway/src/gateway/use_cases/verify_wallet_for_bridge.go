@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -42,16 +43,20 @@ func (uc *VerifyWalletForBridge) Verify(
 	if err := request.ValidateAndSanitize(); err != nil {
 		return err
 	}
+	callerId, err := helpers.RequireCallerId(ctx)
+	if err != nil {
+		return err
+	}
 
 	recovered, err := uc.signatureVerifier.Recover(request.Challenge, request.Signature)
-	if err != nil || recovered != request.AuthenticatedWallet {
+	if err != nil || strings.ToLower(recovered.Hex()) != callerId {
 		return errors.NewValidationError("signature", "invalid signature")
 	}
 
 	err = uc.platformBridgeRequester.SetWalletOwnershipToUser(ctx,
 		request.Platform,
 		request.Challenge,
-		strings.ToLower(request.AuthenticatedWallet.Hex()),
+		callerId,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to set wallet ownership to user: %w", err)

@@ -30,7 +30,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "platform")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "platform", validationErr.Field)
 		})
 	})
 
@@ -44,8 +46,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "platform")
-			validationErr, _ := err.(*errors.ValidationError)
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "platform", validationErr.Field)
 			assert.Contains(t, validationErr.Message, enums.GetAllBridgePlatforms().String())
 		})
 	})
@@ -59,7 +62,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "platform")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "platform", validationErr.Field)
 		})
 	})
 
@@ -73,7 +78,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "challenge")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "challenge", validationErr.Field)
 		})
 	})
 
@@ -87,7 +94,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "challenge")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "challenge", validationErr.Field)
 		})
 	})
 
@@ -101,7 +110,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "signature")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "signature", validationErr.Field)
 		})
 	})
 
@@ -115,7 +126,9 @@ func TestWhenValidatingAndSanitizingVerifyWalletForBridgeRequest(t *testing.T) {
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "signature")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "signature", validationErr.Field)
 		})
 	})
 

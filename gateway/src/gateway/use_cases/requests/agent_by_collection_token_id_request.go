@@ -5,13 +5,11 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type AgentByCollectionTokenIdRequest struct {
-	AuthenticatedWallet    *common.Address `swaggerignore:"true"`
-	AgentCollectionAddress string          `swaggerignore:"true" param:"agentCollectionAddress"`
-	AgentCollectionTokenId uint64          `swaggerignore:"true" param:"agentCollectionTokenId"`
+	AgentCollectionAddress string `swaggerignore:"true" param:"agentCollectionAddress"`
+	AgentCollectionTokenId uint64 `swaggerignore:"true" param:"agentCollectionTokenId"`
 }
 
 func (request *AgentByCollectionTokenIdRequest) ValidateAndSanitize() error {
@@ -24,17 +22,5 @@ func (request *AgentByCollectionTokenIdRequest) ValidateAndSanitize() error {
 		return errors.NewValidationError("agentCollectionTokenId", "must be a positive integer")
 	}
 	request.AgentCollectionAddress = strings.ToLower(request.AgentCollectionAddress)
-	return nil
-}
-
-func (request *AgentByCollectionTokenIdRequest) EnsureAuthenticatedWallet() error {
-	if request.AuthenticatedWallet == nil {
-		return errors.NewValidationError("auth", "is required")
-	}
-
-	if *request.AuthenticatedWallet == common.HexToAddress("0x0000000000000000000000000000000000000000") {
-		return errors.NewValidationError("auth", "is invalid")
-	}
-
 	return nil
 }

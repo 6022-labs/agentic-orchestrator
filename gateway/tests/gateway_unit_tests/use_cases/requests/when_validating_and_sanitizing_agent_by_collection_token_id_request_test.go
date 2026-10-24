@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,7 +30,9 @@ func TestWhenValidatingAndSanitizingAgentByCollectionTokenIdRequest(t *testing.T
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "agentCollectionAddress")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "agentCollectionAddress", validationErr.Field)
 		})
 	})
 
@@ -42,7 +46,9 @@ func TestWhenValidatingAndSanitizingAgentByCollectionTokenIdRequest(t *testing.T
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "agentCollectionAddress")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "agentCollectionAddress", validationErr.Field)
 		})
 	})
 
@@ -57,7 +63,9 @@ func TestWhenValidatingAndSanitizingAgentByCollectionTokenIdRequest(t *testing.T
 
 			err := request.ValidateAndSanitize()
 
-			assertAddressValidationError(t, err, "agentCollectionTokenId")
+			var validationErr *errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "agentCollectionTokenId", validationErr.Field)
 		})
 	})
 

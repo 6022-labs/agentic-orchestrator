@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
-	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,16 +43,16 @@ func (m *MockGetConversationInterface) EXPECT() *MockGetConversationInterfaceMoc
 }
 
 // Get mocks base method.
-func (m *MockGetConversationInterface) Get(ctx context.Context, conversationId uuid.UUID) (*responses.BrokerConversationResponse, error) {
+func (m *MockGetConversationInterface) Get(ctx context.Context, request *requests.ConversationByIdRequest) (*responses.BrokerConversationResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, conversationId)
+	ret := m.ctrl.Call(m, "Get", ctx, request)
 	ret0, _ := ret[0].(*responses.BrokerConversationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockGetConversationInterfaceMockRecorder) Get(ctx, conversationId any) *gomock.Call {
+func (mr *MockGetConversationInterfaceMockRecorder) Get(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetConversationInterface)(nil).Get), ctx, conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGetConversationInterface)(nil).Get), ctx, request)
 }

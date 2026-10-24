@@ -49,7 +49,15 @@ A tier-service import found outside its owner package is a boundary leak — fix
 
 ## 3. Tests — mandatory, not an afterthought
 - **Every new behavior ships with its test in the same change.** Don't hand work back without tests.
-- Naming/structure: `when_<behavior>_test.go`; nested `Given.../Should...` `t.Run` blocks; suite `BeforeEach` setup; `go.uber.org/mock` (gomock) + `testify`; reuse `model_builders`.
+- **Structure**: `when_<behavior>_test.go`; nested `Given…` (conditions) / `Should…` (one outcome, no condition in the title) `t.Run` blocks; Given order follows the code: validation first, dependencies in call order, success last. Suite `BeforeEach`, per-Given `initSuite` closure, request built at Given level; gomock + `testify`; reuse `model_builders`.
+- Apply these rules to every test file you touch, without asking.
+- **Test behavior where it lives, once.** No transport (controller, body binding) or `configurations/` tests; one file and one suite per SUT method; validation rules only in the request test, with the use case keeping a single invalid-request Given.
+- **Assert the outcome the title names** (error type and code, or the field), never a bare `assert.Error`.
+- **One wording per situation, repo-wide.** Before writing a title, reuse the wording existing tests already use for the same situation; similar flows (a use case and the client it forwards to, sibling operations) use the same Givens in the same order.
+- **No duplicate Givens.** No data-migration tests for now.
+- **One `t.Run` per case**: no table-driven cases, loops or concatenated titles.
+- **`BeforeEach` only builds the suite** (sut and mocks): it never captures values (no `Do`/`DoAndReturn` writing into suite fields); a case that checks a call asserts it with its own gomock expectation.
+- **Valid Ethereum addresses are random**: build them with `common_tests.RandomEthAddress()`; only invalid addresses stay literal.
 - Unit tests in `tests/<package>_unit_tests/`. Integration tests in `tests/<package>_integration_tests/` spin real infra (Postgres/Vault/Redis) via the shared `container_builders` helper, need Docker, and stay **out** of the unit-test sweep.
 
 ## 4. Mocks — generated, never hand-written
@@ -64,7 +72,7 @@ otel is touched in exactly one place per module: a dedicated `metrics/` (and, wh
 - **DI**: `go.uber.org/dig`. Each module exposes `Add<Module>Configuration(container)`; wire it in the host's `configurations/di_configuration.go`.
 - **Config**: `koanf`. Every setting configurable from **both** `appsettings*.json` **and** env/`.env` (double-underscore lowercased → dotted, e.g. `JWT__SIGNING_KEY` → `jwt.signing_key`). Settings structs in each module's `settings/` with `koanf:"..."` tags + defaults in their `New...` constructor. New setting = tag + default + verified env override.
 - **Logging**: `go.uber.org/zap`.
-- **Errors → HTTP** (services with controllers): use cases fail with concrete types from `common/errors`, mapped centrally (e.g. `common/mvc.WriteError`): Validation→400, Unauthorized→401, NotFound→404, Conflict→409, Unavailable→502, Internal→500. Controllers pick the success status. Slack slash commands always reply 200 (Slack only shows a body on 200), with an ephemeral message for errors.
+- **Errors → HTTP** (services with controllers): use cases fail with concrete types from `common/errors`, mapped centrally (e.g. `common/mvc.WriteError`): Validation→400, Unauthorized→401, Forbidden→403, NotFound→404, Conflict→409, Unavailable→502, Internal→500. Controllers pick the success status. Slack slash commands always reply 200 (Slack only shows a body on 200), with an ephemeral message for errors.
 - **Requests**: plain typed fields, no accessor methods. A request decoded from raw text has `TryParse(text)`, which never fails and leaves unreadable fields empty; the use case then calls `Validate()` first, which rejects empty or invalid values. Use `ValidateAndSanitize()` when validation also normalizes fields in place (e.g. lowercasing addresses).
 - **Addresses**: every collection or wallet address is `0x`-prefixed hex, validated with `strings.HasPrefix(a, "0x") && common.IsHexAddress(a)`, and lowercased in the domain on every write and every lookup. Repository queries stay exact-match.
 - (Secrets, persistence, and transport are tier-services — see §2.)

@@ -4,8 +4,8 @@ import (
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -86,21 +86,26 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 
 // Get godoc
 // @Summary      Get conversation
+// @Description  Caller must control (own or be the evm address of) at least one participating agent
 // @Tags         conversation
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {object} responses.BrokerConversationResponse
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /conversations/{id} [get]
 func (controller *ConversationController) Get(c fiber.Ctx) error {
-	id, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	request := new(requests.ConversationByIdRequest)
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversation.Get(c.Context(), id)
+	response, err := controller.getConversation.Get(c.Context(), request)
 	if err != nil {
 		return mvc.WriteError(c, err)
 	}
@@ -110,21 +115,26 @@ func (controller *ConversationController) Get(c fiber.Ctx) error {
 
 // GetMessages godoc
 // @Summary      Get conversation messages
+// @Description  Caller must control (own or be the evm address of) at least one participating agent
 // @Tags         conversation
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerMessageResponse
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/messages [get]
 func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
-	id, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	request := new(requests.ConversationByIdRequest)
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.getConversationMessages.Get(c.Context(), id)
+	response, err := controller.getConversationMessages.Get(c.Context(), request)
 	if err != nil {
 		return mvc.WriteError(c, err)
 	}
@@ -134,21 +144,26 @@ func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 
 // ListParticipants godoc
 // @Summary      List conversation participants
+// @Description  Caller must control (own or be the evm address of) at least one participating agent
 // @Tags         conversation
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerParticipantResponse
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/participants [get]
 func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
-	id, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	request := new(requests.ConversationByIdRequest)
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	response, err := controller.listConversationParticipants.List(c.Context(), id)
+	response, err := controller.listConversationParticipants.List(c.Context(), request)
 	if err != nil {
 		return mvc.WriteError(c, err)
 	}
@@ -158,20 +173,25 @@ func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 
 // ForceConclude godoc
 // @Summary      Force conclude a conversation
+// @Description  Caller must control (own or be the evm address of) at least one participating agent
 // @Tags         conversation
 // @Param        id path string true "Conversation ID"
 // @Success      204 {string} string "No Content"
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /conversations/{id}/force-conclude [post]
 func (controller *ConversationController) ForceConclude(c fiber.Ctx) error {
-	id, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	request := new(requests.ConversationByIdRequest)
+	if err := c.Bind().URI(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
 	}
 
-	if err := controller.forceConcludeConversation.Conclude(c.Context(), id); err != nil {
+	if err := controller.forceConcludeConversation.Conclude(c.Context(), request); err != nil {
 		return mvc.WriteError(c, err)
 	}
 
