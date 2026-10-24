@@ -9,7 +9,8 @@ export const PROMPT_TEMPLATE_KEYS = [
   "clone-system",
   "clone-default",
   "expert-system",
-  "expert-default",
+  "expert-context-not-found",
+  "expert-context-found",
   "facilitator-system",
   "facilitator-default",
   "facilitator-conclude",
@@ -22,9 +23,11 @@ export const CLONE_PROMPT_TEMPLATE_KEYS: PromptTemplateKey[] = [
   "clone-default",
 ]
 
+// The broker picks expert-context-not-found or expert-context-found per turn; expert-default is no longer used.
 export const EXPERT_PROMPT_TEMPLATE_KEYS: PromptTemplateKey[] = [
   "expert-system",
-  "expert-default",
+  "expert-context-not-found",
+  "expert-context-found",
 ]
 
 export const FACILITATOR_PROMPT_TEMPLATE_KEYS: PromptTemplateKey[] = [
