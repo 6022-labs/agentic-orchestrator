@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	cb_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -48,123 +50,177 @@ func WhenVerifyingWalletForBridgeBeforeEach(t *testing.T) *WhenVerifyingWalletFo
 }
 
 func generateValidVerifyWalletForBridgeRequest() *requests.VerifyWalletForBridgeRequest {
-	authenticatedWallet := common_tests.RandomEthAddress()
-	challenge := uuid.NewString()
-	signature := uuid.NewString()
-
 	return &requests.VerifyWalletForBridgeRequest{
-		AuthenticatedWallet: authenticatedWallet,
-		Platform:            enums.BridgePlatformSlack,
-		Challenge:           challenge,
-		Signature:           signature,
+		Platform:  enums.BridgePlatformSlack,
+		Challenge: uuid.NewString(),
+		Signature: uuid.NewString(),
 	}
 }
 
 func TestWhenVerifyingWalletForBridge(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Given request is invalid", func(t *testing.T) {
+	t.Run("Given request is invalid because platform is not part of the enum", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Because platform is not part of the enum, should return error", func(t *testing.T) {
+		t.Run("Should return a validation error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
+			request := generateValidVerifyWalletForBridgeRequest()
+			request.Platform = enums.BridgePlatform("none")
+
+			err := suite.sut.Verify(context.Background(), request)
+
+			var validationErr *cb_errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "platform", validationErr.Field)
+		})
+	})
+
+	t.Run("Given no caller id", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return an unauthorized error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
 			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 
-			request := generateValidVerifyWalletForBridgeRequest()
-			request.Platform = enums.BridgePlatform("none")
+			err := suite.sut.Verify(context.Background(), generateValidVerifyWalletForBridgeRequest())
 
-			err := suite.sut.Verify(context.Background(), request)
-			assert.NotNil(t, err)
+			var unauthorizedErr *cb_errors.UnauthorizedError
+			assert.ErrorAs(t, err, &unauthorizedErr)
+			assert.Equal(t, "missing_caller_id", unauthorizedErr.Code)
 		})
 	})
 
-	t.Run("Given signature does not match the authenticated wallet, should return error", func(t *testing.T) {
+	t.Run("Given the signature cannot be recovered", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
+			suite.mockSignatureVerifier.
+				EXPECT().
+				Recover(request.Challenge, request.Signature).
+				Return(common.Address{}, assert.AnError)
+		}
+
+		t.Run("Should return a validation error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			ctx := helpers.ContextWithCallerId(
+				context.Background(),
+				strings.ToLower(common_tests.RandomEthAddress().Hex()),
+			)
+			request := generateValidVerifyWalletForBridgeRequest()
+			initSuite(suite, request)
+
+			err := suite.sut.Verify(ctx, request)
+
+			var validationErr *cb_errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "signature", validationErr.Field)
+		})
+	})
+
+	t.Run("Given the signature does not match the caller", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 			suite.mockSignatureVerifier.
 				EXPECT().
 				Recover(request.Challenge, request.Signature).
 				Return(common.HexToAddress("0x1111111111111111111111111111111111111111"), nil)
 		}
 
-		t.Run("Should return error", func(t *testing.T) {
+		t.Run("Should return a validation error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
+			ctx := helpers.ContextWithCallerId(
+				context.Background(),
+				strings.ToLower(common_tests.RandomEthAddress().Hex()),
+			)
 			request := generateValidVerifyWalletForBridgeRequest()
 			initSuite(suite, request)
 
-			err := suite.sut.Verify(context.Background(), request)
-			assert.NotNil(t, err)
+			err := suite.sut.Verify(ctx, request)
+
+			var validationErr *cb_errors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "signature", validationErr.Field)
 		})
 	})
 
-	t.Run(
-		"Given error occurs while setting user wallet ownership on platform bridge, should return error",
-		func(t *testing.T) {
-			t.Parallel()
-
-			initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
-				suite.mockSignatureVerifier.
-					EXPECT().
-					Recover(request.Challenge, request.Signature).
-					Return(request.AuthenticatedWallet, nil)
-
-				suite.mockPlatformBridgeRequester.
-					EXPECT().
-					SetWalletOwnershipToUser(
-						gomock.Any(),
-						request.Platform, request.Challenge, strings.ToLower(request.AuthenticatedWallet.Hex()),
-					).
-					Return(assert.AnError)
-			}
-
-			t.Run("Should return error", func(t *testing.T) {
-				t.Parallel()
-
-				suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-				suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
-				request := generateValidVerifyWalletForBridgeRequest()
-				initSuite(suite, request)
-
-				err := suite.sut.Verify(context.Background(), request)
-				assert.NotNil(t, err)
-			})
-		},
-	)
-
-	t.Run("Given wallet is successfully setup to user", func(t *testing.T) {
+	t.Run("Given the platform bridge fails to set the wallet ownership", func(t *testing.T) {
 		t.Parallel()
 
-		initSuite := func(suite *WhenVerifyingWalletForBridgeTestingSuite, request *requests.VerifyWalletForBridgeRequest) {
+		initSuite := func(
+			suite *WhenVerifyingWalletForBridgeTestingSuite,
+			request *requests.VerifyWalletForBridgeRequest,
+			callerId string,
+		) {
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Not(gomock.Nil()))
 			suite.mockSignatureVerifier.
 				EXPECT().
 				Recover(request.Challenge, request.Signature).
-				Return(request.AuthenticatedWallet, nil)
-
+				Return(common.HexToAddress(callerId), nil)
 			suite.mockPlatformBridgeRequester.
 				EXPECT().
-				SetWalletOwnershipToUser(
-					gomock.Any(),
-					request.Platform, request.Challenge, strings.ToLower(request.AuthenticatedWallet.Hex()),
-				).
-				Return(nil)
+				SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, callerId).
+				Return(assert.AnError)
 		}
 
-		t.Run("Should not return error", func(t *testing.T) {
+		t.Run("Should return the error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
-			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Nil())
+			callerId := strings.ToLower(common_tests.RandomEthAddress().Hex())
+			ctx := helpers.ContextWithCallerId(context.Background(), callerId)
 			request := generateValidVerifyWalletForBridgeRequest()
-			initSuite(suite, request)
+			initSuite(suite, request, callerId)
 
-			err := suite.sut.Verify(context.Background(), request)
-			assert.Nil(t, err)
+			err := suite.sut.Verify(ctx, request)
+
+			assert.ErrorIs(t, err, assert.AnError)
+		})
+	})
+
+	t.Run("Given the signature matches the caller", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(
+			suite *WhenVerifyingWalletForBridgeTestingSuite,
+			request *requests.VerifyWalletForBridgeRequest,
+			callerId string,
+		) {
+			suite.gatewayMetricsMock.EXPECT().RecordWalletVerification(gomock.Any(), gomock.Nil())
+			suite.mockSignatureVerifier.
+				EXPECT().
+				Recover(request.Challenge, request.Signature).
+				Return(common.HexToAddress(callerId), nil)
+			suite.mockPlatformBridgeRequester.
+				EXPECT().
+				SetWalletOwnershipToUser(gomock.Any(), request.Platform, request.Challenge, callerId).
+				Return(nil)
+		}
+
+		t.Run("Should set the caller as the wallet owner", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingWalletForBridgeBeforeEach(t)
+			callerId := strings.ToLower(common_tests.RandomEthAddress().Hex())
+			ctx := helpers.ContextWithCallerId(context.Background(), callerId)
+			request := generateValidVerifyWalletForBridgeRequest()
+			initSuite(suite, request, callerId)
+
+			err := suite.sut.Verify(ctx, request)
+
+			assert.NoError(t, err)
 		})
 	})
 }

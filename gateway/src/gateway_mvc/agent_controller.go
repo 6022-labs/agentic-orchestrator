@@ -181,6 +181,7 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 
 // GetAgentPromptTemplate godoc
 // @Summary      Get agent prompt template
+// @Description  The caller's wallet must hold the agent NFT or be the agent's own evm address
 // @Tags         agent
 // @Produce      json
 // @Param        agentCollectionAddress path string true "collection address"
@@ -188,8 +189,11 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 // @Param        key path string true "template key"
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [get]
 func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
@@ -208,6 +212,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 
 // SaveAgentPromptTemplate godoc
 // @Summary      Save agent prompt template
+// @Description  The caller's wallet must hold the agent NFT or be the agent's own evm address
 // @Tags         agent
 // @Accept       json
 // @Produce      json
@@ -217,8 +222,11 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 // @Param        request body requests.SaveAgentPromptTemplateRequest true "template content"
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      401 {object} errors.UnauthorizedError
+// @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
+// @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId}/prompt-template/{key} [post]
 func (controller *AgentController) SaveAgentPromptTemplate(c fiber.Ctx) error {

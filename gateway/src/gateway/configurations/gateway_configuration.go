@@ -87,6 +87,22 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewAgentAccessVerifier,
+		dig.As(new(interfaces.AgentAccessVerifierInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		services.NewConversationAccessVerifier,
+		dig.As(new(interfaces.ConversationAccessVerifierInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		auth.NewNonceStore,
 		dig.As(new(interfaces.NonceStoreInterface)),
 	)

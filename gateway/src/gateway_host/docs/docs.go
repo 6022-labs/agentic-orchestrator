@@ -164,6 +164,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "The caller's wallet must hold the agent NFT or be the agent's own evm address",
                 "produces": [
                     "application/json"
                 ],
@@ -207,6 +208,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -218,6 +231,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
                         }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
+                        }
                     }
                 }
             },
@@ -227,6 +246,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "The caller's wallet must hold the agent NFT or be the agent's own evm address",
                 "consumes": [
                     "application/json"
                 ],
@@ -282,6 +302,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -292,6 +324,12 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -591,6 +629,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Caller must control (own or be the evm address of) at least one participating agent",
                 "produces": [
                     "application/json"
                 ],
@@ -614,6 +653,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.BrokerConversationResponse"
                         }
                     },
+                    "400": {
+                        "description": "zero uuid; a malformed id returns plain text",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -624,6 +681,12 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -636,6 +699,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Caller must control (own or be the evm address of) at least one participating agent",
                 "tags": [
                     "conversation"
                 ],
@@ -656,6 +720,24 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "400": {
+                        "description": "zero uuid; a malformed id returns plain text",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -666,6 +748,12 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -678,6 +766,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Caller must control (own or be the evm address of) at least one participating agent",
                 "produces": [
                     "application/json"
                 ],
@@ -704,6 +793,24 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "400": {
+                        "description": "zero uuid; a malformed id returns plain text",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -714,6 +821,12 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -726,6 +839,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Caller must control (own or be the evm address of) at least one participating agent",
                 "produces": [
                     "application/json"
                 ],
@@ -752,6 +866,24 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "400": {
+                        "description": "zero uuid; a malformed id returns plain text",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ForbiddenError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -762,6 +894,12 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -854,6 +992,17 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "BridgePlatformSlack"
             ]
+        },
+        "errors.ForbiddenError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         },
         "errors.InternalError": {
             "type": "object",

@@ -43,34 +43,12 @@ func TestWhenGettingAgent(t *testing.T) {
 			t.Parallel()
 			suite := WhenGettingAgentBeforeEach(t)
 
-			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
+			req := generateValidAgentByCollectionTokenIdRequest()
 			req.AgentCollectionAddress = "not-an-address"
 			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
 			assert.IsType(t, &cb_errors.ValidationError{}, err)
-		})
-	})
-
-	t.Run("Given a checksummed collection address", func(t *testing.T) {
-		t.Parallel()
-
-		agent := model_builders.NewAgentBuilder().Build()
-
-		t.Run("Should query the registry with the lowercased address", func(t *testing.T) {
-			t.Parallel()
-			suite := WhenGettingAgentBeforeEach(t)
-
-			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
-			req.AgentCollectionAddress = "0x39DD75a025145770a8b8278Cc8BA705116443Ea7"
-			suite.agentRegistryRequesterMock.EXPECT().
-				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
-				Return(agent, nil)
-
-			resp, err := suite.sut.Get(context.Background(), req)
-
-			assert.Nil(t, err)
-			assert.Equal(t, agent.ID, resp.ID)
 		})
 	})
 
@@ -88,7 +66,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
+			req := generateValidAgentByCollectionTokenIdRequest()
 			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
@@ -110,7 +88,7 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
+			req := generateValidAgentByCollectionTokenIdRequest()
 			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, resp)
@@ -134,13 +112,35 @@ func TestWhenGettingAgent(t *testing.T) {
 			suite := WhenGettingAgentBeforeEach(t)
 			initSuite(suite)
 
-			req := generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest()
+			req := generateValidAgentByCollectionTokenIdRequest()
 			resp, err := suite.sut.Get(context.Background(), req)
 
 			assert.Nil(t, err)
 			assert.NotNil(t, resp)
 			assert.Equal(t, agent.ID, resp.ID)
 			assert.Equal(t, agent.Name, resp.Name)
+		})
+	})
+
+	t.Run("Given a checksummed collection address", func(t *testing.T) {
+		t.Parallel()
+
+		agent := model_builders.NewAgentBuilder().Build()
+
+		t.Run("Should query the registry with the lowercased address", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingAgentBeforeEach(t)
+
+			req := generateValidAgentByCollectionTokenIdRequest()
+			req.AgentCollectionAddress = "0x39DD75a025145770a8b8278Cc8BA705116443Ea7"
+			suite.agentRegistryRequesterMock.EXPECT().
+				GetAgent(gomock.Any(), "0x39dd75a025145770a8b8278cc8ba705116443ea7", uint64(1)).
+				Return(agent, nil)
+
+			resp, err := suite.sut.Get(context.Background(), req)
+
+			assert.Nil(t, err)
+			assert.Equal(t, agent.ID, resp.ID)
 		})
 	})
 }

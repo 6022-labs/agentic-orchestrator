@@ -5,7 +5,6 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
@@ -63,13 +62,6 @@ func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
 		controller.logger.Error("Failed to parse request", zap.Error(err))
 		return err
 	}
-
-	authenticatedWallet, ok := c.Locals("authenticated-wallet").(common.Address)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-	}
-
-	request.AuthenticatedWallet = authenticatedWallet
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 

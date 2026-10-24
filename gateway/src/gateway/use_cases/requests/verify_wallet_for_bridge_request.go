@@ -5,14 +5,12 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type VerifyWalletForBridgeRequest struct {
-	AuthenticatedWallet common.Address       `swaggerignore:"true"`
-	Platform            enums.BridgePlatform `                     json:"platform"`
-	Challenge           string               `                     json:"challenge"`
-	Signature           string               `                     json:"signature"`
+	Platform  enums.BridgePlatform `json:"platform"`
+	Challenge string               `json:"challenge"`
+	Signature string               `json:"signature"`
 }
 
 func (r *VerifyWalletForBridgeRequest) ValidateAndSanitize() error {

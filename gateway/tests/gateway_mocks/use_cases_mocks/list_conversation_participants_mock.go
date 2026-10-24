@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	requests "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	responses "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
-	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,16 +43,16 @@ func (m *MockListConversationParticipantsInterface) EXPECT() *MockListConversati
 }
 
 // List mocks base method.
-func (m *MockListConversationParticipantsInterface) List(ctx context.Context, conversationId uuid.UUID) ([]*responses.BrokerParticipantResponse, error) {
+func (m *MockListConversationParticipantsInterface) List(ctx context.Context, request *requests.ConversationByIdRequest) ([]*responses.BrokerParticipantResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, conversationId)
+	ret := m.ctrl.Call(m, "List", ctx, request)
 	ret0, _ := ret[0].([]*responses.BrokerParticipantResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockListConversationParticipantsInterfaceMockRecorder) List(ctx, conversationId any) *gomock.Call {
+func (mr *MockListConversationParticipantsInterfaceMockRecorder) List(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationParticipantsInterface)(nil).List), ctx, conversationId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockListConversationParticipantsInterface)(nil).List), ctx, request)
 }

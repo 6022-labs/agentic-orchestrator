@@ -3,6 +3,7 @@ package middlewares
 import (
 	"strings"
 
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
@@ -31,8 +32,7 @@ func NewJWTAuthenticationInjectionMiddleware(
 }
 
 func (m *JWTAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
-	alreadyInjectedAuthenticatedWallet := c.Locals("authenticated-wallet")
-	if alreadyInjectedAuthenticatedWallet != nil {
+	if _, ok := helpers.CallerIdFromContext(c.Context()); ok {
 		return c.Next()
 	}
 
@@ -84,7 +84,7 @@ func (m *JWTAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 
 	authenticatedWallet := common.HexToAddress(*authenticatedWalletStr)
 
-	c.Locals("authenticated-wallet", authenticatedWallet)
+	c.SetContext(helpers.ContextWithCallerId(c.Context(), authenticatedWallet.Hex()))
 	c.Locals(AuthMethodLocal, metrics_interfaces.AuthMethodJwt)
 
 	return c.Next()

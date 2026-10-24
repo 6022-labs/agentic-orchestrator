@@ -5,13 +5,9 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 )
 
-func generateValidAgentByCollectionTokenIdWithAuthenticatedWalletRequest() *requests.AgentByCollectionTokenIdRequest {
-	authenticatedWallet := common_tests.RandomEthAddress()
-	collectionAddress := common_tests.RandomEthAddress()
-
+func generateValidAgentByCollectionTokenIdRequest() *requests.AgentByCollectionTokenIdRequest {
 	return &requests.AgentByCollectionTokenIdRequest{
 		AgentCollectionTokenId: 1,
-		AgentCollectionAddress: collectionAddress.Hex(),
-		AuthenticatedWallet:    &authenticatedWallet,
+		AgentCollectionAddress: common_tests.RandomEthAddress().Hex(),
 	}
 }
