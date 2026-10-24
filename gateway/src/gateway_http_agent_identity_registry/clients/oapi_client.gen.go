@@ -15,6 +15,12 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// ErrorsValidationError defines model for errors.ValidationError.
+type ErrorsValidationError struct {
+	Field   *string `json:"field,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
 // ResponsesAgentCollectionResponse defines model for responses.AgentCollectionResponse.
 type ResponsesAgentCollectionResponse struct {
 	Address *string `json:"address,omitempty"`
@@ -520,6 +526,7 @@ type GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentResponse
+	JSON400      *ErrorsValidationError
 	JSON404      *string
 	JSON500      *string
 }
@@ -692,6 +699,13 @@ func ParseGetAgentAgentCollectionAddressAgentCollectionTokenIdResponse(rsp *http
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsValidationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest string
