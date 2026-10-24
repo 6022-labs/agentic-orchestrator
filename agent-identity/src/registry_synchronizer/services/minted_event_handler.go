@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -74,7 +75,10 @@ func (handler *MintedEventHandler) Handle(ctx context.Context, event *abi.AgentC
 		return fmt.Errorf("failed to get agent owner: %w", err)
 	}
 
-	agentCollection, err := handler.agentCollectionRepository.GetByAddress(ctx, event.Raw.Address.Hex())
+	agentCollection, err := handler.agentCollectionRepository.GetByAddress(
+		ctx,
+		strings.ToLower(event.Raw.Address.Hex()),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get agent collection by address: %w", err)
 	}
@@ -82,9 +86,9 @@ func (handler *MintedEventHandler) Handle(ctx context.Context, event *abi.AgentC
 		return fmt.Errorf("agent collection with address %s not found", event.Raw.Address.Hex())
 	}
 
-	ownerHex := owner.Hex()
+	ownerHex := strings.ToLower(owner.Hex())
 
-	agent.Creator = agentInformation.Creator.Hex()
+	agent.Creator = strings.ToLower(agentInformation.Creator.Hex())
 	agent.Owner = &ownerHex
 	agent.Name = agentInformation.Name
 	agent.EnsDomain = handler.decentralizedDomainNameBuilder.BuildDomainName(
@@ -98,7 +102,7 @@ func (handler *MintedEventHandler) Handle(ctx context.Context, event *abi.AgentC
 		agent.CloneOf = &cloneOf
 	}
 
-	agent.CollectionAddress = event.Raw.Address.Hex()
+	agent.CollectionAddress = strings.ToLower(event.Raw.Address.Hex())
 
 	collectionTokenIdUint64 := event.TokenId.Uint64()
 	agent.CollectionTokenId = &collectionTokenIdUint64

@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"strings"
 
 	"math/big"
 	"testing"
@@ -64,7 +65,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 1, common_tests.RandomEthAddress())
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(1)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(1)).
 				Return(nil, nil)
 
 			return event
@@ -91,7 +92,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 2, common_tests.RandomEthAddress())
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(2)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(2)).
 				Return(nil, nil)
 
 			return event
@@ -120,7 +121,7 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			agent := model_builders.NewAgentBuilder().Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(3)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(3)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
@@ -152,14 +153,14 @@ func TestWhenHandlingTransferEvent(t *testing.T) {
 			agent := model_builders.NewAgentBuilder().Build()
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), collectionAddress.Hex(), uint64(4)).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(4)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
 				Save(gomock.Any(), agent).
 				DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
 					if assert.NotNil(t, saved.Owner) {
-						assert.Equal(t, newOwner.Hex(), *saved.Owner)
+						assert.Equal(t, strings.ToLower(newOwner.Hex()), *saved.Owner)
 					}
 					return saved, nil
 				})

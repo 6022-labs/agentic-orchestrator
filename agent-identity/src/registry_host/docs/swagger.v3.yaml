@@ -1,5 +1,12 @@
 components:
   schemas:
+    errors.ValidationError:
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+      type: object
     responses.AgentCollectionResponse:
       properties:
         address:
@@ -115,6 +122,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/responses.AgentResponse'
           description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.ValidationError'
+          description: Bad Request
         "404":
           content:
             application/json:

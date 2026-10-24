@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"fmt"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
@@ -53,7 +54,7 @@ func (handler *CollectionCreatedEventHandler) Handle(
 	)
 
 	collection := &models.AgentCollection{
-		Address: event.CollectionAddress.Hex(),
+		Address: strings.ToLower(event.CollectionAddress.Hex()),
 		Name:    event.Name,
 		Symbol:  event.Symbol,
 	}

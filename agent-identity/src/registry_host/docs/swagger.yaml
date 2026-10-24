@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
   responses.AgentCollectionResponse:
     properties:
       address:
@@ -102,6 +109,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.AgentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.ValidationError'
         "404":
           description: Agent not found
           schema:

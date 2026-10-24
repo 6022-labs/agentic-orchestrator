@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"strings"
 
 	"math/big"
 	"testing"
@@ -66,7 +67,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 1)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(1)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(1)).
 				Return(nil, assert.AnError)
 			return event
 		}
@@ -91,7 +92,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 			event := newEvent(collectionAddress, 2)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(2)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(2)).
 				Return(nil, nil)
 			return event
 		}
@@ -118,7 +119,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(3)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(3)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
@@ -151,7 +152,7 @@ func TestWhenHandlingMintProposalRemovedEvent(t *testing.T) {
 
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), collectionAddress.Hex(), uint64(4)).
+				GetNotYetMintedByCollectionAddressAndProposalId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(4)).
 				Return(agent, nil)
 			suite.agentRepositoryMock.
 				EXPECT().

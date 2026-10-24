@@ -118,6 +118,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ValidationError"
+                        }
+                    },
                     "404": {
                         "description": "Agent not found",
                         "schema": {
@@ -193,6 +199,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "errors.ValidationError": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.AgentCollectionResponse": {
             "type": "object",
             "properties": {

@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"maps"
+	"strings"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
@@ -37,6 +38,12 @@ func (handler *AgentAddressAddedEventHandler) Handle(
 	ctx context.Context,
 	event *abi.AgentCollectionV1AgentAddressAdded,
 ) error {
+	// Skipped rather than failed: a failing handler retries the block and stalls the whole sync.
+	if err := event.ValidateAndSanitize(); err != nil {
+		handler.logger.Warn("Skipping invalid AgentAddressAdded event", zap.Error(err))
+		return nil
+	}
+
 	handler.logger.Info("Handling AgentAddressAdded event",
 		zap.String("collectionAddress", event.Raw.Address.Hex()),
 		zap.Uint64("tokenId", event.TokenId.Uint64()),
@@ -45,7 +52,7 @@ func (handler *AgentAddressAddedEventHandler) Handle(
 	)
 
 	agent, err := handler.agentRepository.GetByCollectionAddressAndCollectionTokenId(ctx,
-		event.Raw.Address.Hex(),
+		strings.ToLower(event.Raw.Address.Hex()),
 		event.TokenId.Uint64(),
 	)
 	if err != nil {

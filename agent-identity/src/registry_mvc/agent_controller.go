@@ -1,6 +1,7 @@
 package registry_mvc
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
@@ -48,6 +49,7 @@ func (controller *AgentController) RegisterRoutes(app fiber.Router) {
 // @Param        agentCollectionAddress path string true "Agent collection address"
 // @Param        agentCollectionTokenId path int true "Agent collection token ID"
 // @Success      200 {object} responses.AgentResponse
+// @Failure      400 {object} errors.ValidationError
 // @Failure      404 {string} string "Agent not found"
 // @Failure      500 {string} string "Internal Server Error"
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
@@ -61,7 +63,7 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
 		controller.logger.Error("Failed to get agent", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return mvc.WriteError(c, err)
 	}
 	if response == nil {
 		return c.Status(fiber.StatusNotFound).SendString("Agent not found")

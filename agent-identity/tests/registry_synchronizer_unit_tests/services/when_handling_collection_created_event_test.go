@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"strings"
 
 	"math/big"
 	"testing"
@@ -93,7 +94,7 @@ func TestWhenHandlingCollectionCreatedEvent(t *testing.T) {
 				EXPECT().
 				Save(gomock.Any(), gomock.Any()).
 				DoAndReturn(func(_ context.Context, collection *models.AgentCollection) (*models.AgentCollection, error) {
-					assert.Equal(t, event.CollectionAddress.Hex(), collection.Address)
+					assert.Equal(t, strings.ToLower(event.CollectionAddress.Hex()), collection.Address)
 					assert.Equal(t, event.Name, collection.Name)
 					assert.Equal(t, event.Symbol, collection.Symbol)
 					return collection, nil
