@@ -16,11 +16,14 @@ services:
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
       - REDIS__PASSWORD=
-      - JWT__HASH=dev-secret
+      - JWT__HASH=f216880824c7da1a6f03058452cbef6d22be6a4efb5758fe726f709df572b03e
       - JWT__LIVING_TIME=86400
+      - SIWE__URI=http://localhost:3000
+      # Same key as the broker.
+      - WALLET__PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
       - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
-      # Selects Amoy; its contract addresses come from the built-in evm_chains.json.
+      # Amoy only; addresses from evm_chains.json.
       - BLOCKCHAIN__EVM_CHAINS__80002__SCANNER_BASE_URL=https://amoy.polygonscan.com
       - PLATFORM_BRIDGES__SLACK_BRIDGE__BASE_URL=http://slack-bridge-internal-host:3000
     networks:
@@ -46,7 +49,7 @@ services:
       - TELEMETRY__INSECURE=true
       - TELEMETRY__INSTANCE_ID=registry-synchronizer-1
       - TELEMETRY__ENVIRONMENT=local
-      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=agent_identity sslmode=disable
       - BLOCKCHAIN__CHAIN_ID=80002
       - DECENTRALIZED_DOMAIN_NAME_PROVIDER__DOMAIN_EXTENSION=eth
       - RPC_NODE__WS_URL=wss://polygon-amoy-bor-rpc.publicnode.com
@@ -73,7 +76,7 @@ services:
       - TELEMETRY__INSTANCE_ID=registry-1
       - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=5000
-      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=agent_identity sslmode=disable
     networks:
       orchestrator-network:
     depends_on:
@@ -94,7 +97,7 @@ services:
       - TELEMETRY__INSTANCE_ID=conversation-broker-1
       - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
-      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=agent_swarm sslmode=disable
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
       - BLOCKCHAIN__CHAIN_ID=80002
       - RPC_NODE__HTTP_URL=https://polygon-amoy-bor-rpc.publicnode.com
@@ -130,7 +133,7 @@ services:
       - TELEMETRY__INSTANCE_ID=slack-bridge-internal-1
       - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
-      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=slack_bridge sslmode=disable
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
       - REDIS__PASSWORD=
@@ -165,7 +168,7 @@ services:
       - TELEMETRY__INSTANCE_ID=slack-bridge-external-1
       - TELEMETRY__ENVIRONMENT=local
       - HOST__API_PORT=3000
-      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
+      - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=slack_bridge sslmode=disable
       - REDIS__HOST=redis:6379
       - REDIS__DB=0
       - REDIS__PASSWORD=
@@ -184,6 +187,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_started
+      conversation-broker-host:
         condition: service_started
 
   web-ui:
@@ -208,7 +213,6 @@ services:
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "root"
-      POSTGRES_DB: "orchestrator"
     ports:
       - "5432:5432"
     healthcheck:
@@ -220,6 +224,10 @@ services:
       orchestrator-network:
     volumes:
       - db-data:/var/lib/postgresql
+    # One database per domain, so migrations don't clash.
+    configs:
+      - source: postgres-init
+        target: /docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
     image: "dpage/pgadmin4:9.18"
@@ -236,8 +244,9 @@ services:
       - "5050:80"
     networks:
       orchestrator-network:
-    volumes:
-      - ./pgadmin-servers.json:/pgadmin4/servers.json
+    configs:
+      - source: pgadmin-servers
+        target: /pgadmin4/servers.json
 
   redis:
     image: "redis:8.10-alpine"
@@ -329,6 +338,28 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       orchestrator-network:
+
+configs:
+  postgres-init:
+    content: |
+      CREATE DATABASE agent_identity;
+      CREATE DATABASE agent_swarm;
+      CREATE DATABASE slack_bridge;
+  pgadmin-servers:
+    content: |
+      {
+        "Servers": {
+          "postgres": {
+            "Name": "[LOCAL] : agentic-orchestrator",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "postgres",
+            "Host": "db",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres"
+          }
+        }
+      }
 
 networks:
   orchestrator-network:

@@ -1,8 +1,7 @@
-# Runs the orchestrator on a local Anvil chain (id 31337) with the 6022 contracts deployed on it:
+# Local Anvil chain (31337) with the 6022 contracts:
 #   docker compose -f docker-compose.yml -f docker-compose.local-chain.yml up
-# Names on it don't resolve through public ENS. Reset the chain and the database together with `down -v`.
 services:
-  # The gateway's built-in evm_chains.json has no 31337 entry: with no chain configured it serves every entry.
+  # Not in evm_chains.json: the gateway would serve it everywhere.
   gateway-host:
     environment:
       - BLOCKCHAIN__EVM_CHAINS__31337__COLLECTIONS_MANAGER_ADDRESS=0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
@@ -30,7 +29,6 @@ services:
     container_name: orchestrator-evm-node
     user: root # the state volume is root-owned
     entrypoint: ["anvil"]
-    # The state file keeps the chain across restarts, in step with the database.
     command: ["--host", "0.0.0.0", "--chain-id", "31337", "--state", "/data/anvil-state.json", "--state-interval", "5"]
     ports:
       - "8545:8545" # JSON-RPC, for the browser wallet
@@ -49,7 +47,7 @@ services:
     container_name: orchestrator-contracts-deployer
     environment:
       - ANVIL_RPC_URL=http://evm-node:8545
-      # Must match the 31337 entries in the built-in settings JSON and the gateway env above; the deployer fails otherwise.
+      # Must match the 31337 addresses in the settings JSON and the gateway env.
       - EXPECTED_CONTRACTS=AgentCollectionsManager=0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0,AgentCollectionCreatorV1=0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9,AgentEnsRegistry=0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
     depends_on:
       evm-node:
