@@ -48,6 +48,18 @@ func (rs *RedisStorage) ReadAndDelete(ctx context.Context, key string) (*string,
 	return &val, nil
 }
 
+func (rs *RedisStorage) StoreIfAbsent(
+	ctx context.Context,
+	key string,
+	value string,
+	expiration time.Duration,
+) (bool, error) {
+	start := time.Now()
+	stored, err := rs.redisClient.SetNX(ctx, key, value, expiration).Result()
+	rs.redisMetrics.RecordOperation(ctx, "SETNX", time.Since(start), err)
+	return stored, err
+}
+
 // operationError treats a missing key as a miss rather than an operational failure.
 func (rs *RedisStorage) operationError(err error) error {
 	if err == nil || errors.Is(err, redis.Nil) {

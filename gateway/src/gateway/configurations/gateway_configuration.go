@@ -79,6 +79,14 @@ func AddGatewayConfiguration(container *dig.Container) {
 	}
 
 	err = container.Provide(
+		services.NewSignedRequestMessageBuilder,
+		dig.As(new(interfaces.SignedRequestMessageBuilderInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
 		services.NewSiweMessageBuilder,
 		dig.As(new(interfaces.SiweMessageBuilderInterface)),
 	)
@@ -114,6 +122,14 @@ func AddGatewayConfiguration(container *dig.Container) {
 	err = container.Provide(
 		use_cases.NewGetAuthChallenge,
 		dig.As(new(use_cases.GetAuthChallengeInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewAuthenticateSignedRequest,
+		dig.As(new(use_cases.AuthenticateSignedRequestInterface)),
 	)
 	if err != nil {
 		panic(err)

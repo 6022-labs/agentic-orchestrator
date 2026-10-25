@@ -1,28 +1,29 @@
 package middlewares
 
 import (
-	"encoding/base64"
-
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
+const signatureHeader = "X-Agentic-Orchestrator-Signature"
+
 type SignatureAuthenticationInjectionMiddleware struct {
-	logger         *zap.Logger
-	ecdsaSignature interfaces.ECDSASignerInterface
+	logger                    *zap.Logger
+	authenticateSignedRequest use_cases.AuthenticateSignedRequestInterface
 }
 
 func NewSignatureAuthenticationInjectionMiddleware(
 	logger *zap.Logger,
-	ecdsaSignature interfaces.ECDSASignerInterface,
+	authenticateSignedRequest use_cases.AuthenticateSignedRequestInterface,
 ) *SignatureAuthenticationInjectionMiddleware {
 	return &SignatureAuthenticationInjectionMiddleware{
-		logger:         logger,
-		ecdsaSignature: ecdsaSignature,
+		logger:                    logger,
+		authenticateSignedRequest: authenticateSignedRequest,
 	}
 }
 
@@ -31,31 +32,27 @@ func (m *SignatureAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 		return c.Next()
 	}
 
-	requestQuery := c.RequestCtx().QueryArgs().QueryString()
-	requestBody := c.Body()
-
-	payload := append(requestQuery, requestBody...)
-
-	signatureHeaders := c.GetReqHeaders()["X-Agentic-Orchestrator-Signature"]
-	// Check if there is a item in the array
-	if len(signatureHeaders) == 0 {
-		m.logger.Warn("No signature found in headers")
+	if c.Get(signatureHeader) == "" {
 		return c.Next()
 	}
 
-	signature, err := base64.StdEncoding.DecodeString(signatureHeaders[0])
+	request := new(requests.AuthenticateSignedRequestRequest)
+	if err := c.Bind().Header(request); err != nil {
+		m.logger.Info("Cannot read signed request headers", zap.Error(err))
+		return c.Next()
+	}
+	request.Method = c.Method()
+	request.Path = c.Path()
+	request.Query = string(c.RequestCtx().URI().QueryString())
+	request.Body = c.Body()
+
+	response, err := m.authenticateSignedRequest.Execute(c.Context(), request)
 	if err != nil {
-		m.logger.Error("Cannot decode signature", zap.Error(err))
+		m.logger.Info("Rejected signed request", zap.Error(err))
 		return c.Next()
 	}
 
-	authenticatedWalletStr, err := m.ecdsaSignature.RecoverPublicKey(payload, signature)
-	if err != nil {
-		m.logger.Error("Cannot recover public key from signature", zap.Error(err))
-		return c.Next()
-	}
-
-	authenticatedWallet := common.HexToAddress(*authenticatedWalletStr)
+	authenticatedWallet := common.HexToAddress(response.Wallet)
 
 	c.SetContext(helpers.ContextWithCallerId(c.Context(), authenticatedWallet.Hex()))
 	c.Locals(AuthMethodLocal, metrics_interfaces.AuthMethodSignature)
