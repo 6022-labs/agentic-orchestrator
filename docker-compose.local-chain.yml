@@ -26,7 +26,7 @@ services:
         condition: service_completed_successfully
 
   evm-node:
-    image: "ghcr.io/foundry-rs/foundry:v1.7.1"
+    image: "ghcr.io/foundry-rs/foundry:v1.8.6"
     container_name: orchestrator-evm-node
     user: root # the state volume is root-owned
     entrypoint: ["anvil"]

@@ -222,7 +222,7 @@ services:
       - db-data:/var/lib/postgresql
 
   pgadmin:
-    image: "dpage/pgadmin4:9.17"
+    image: "dpage/pgadmin4:9.18"
     container_name: pgadmin
     user: "root"
     depends_on:
@@ -240,7 +240,7 @@ services:
       - ./pgadmin-servers.json:/pgadmin4/servers.json
 
   redis:
-    image: "redis:8-alpine"
+    image: "redis:8.10-alpine"
     container_name: redis
     ports:
       - "6379:6379"
@@ -269,7 +269,7 @@ services:
       orchestrator-network:
 
   orchestrator-mimir:
-    image: "grafana/mimir:3.2.0"
+    image: "grafana/mimir:3.2.3"
     container_name: orchestrator-mimir
     command: ["--config.file=/etc/mimir/mimir.yml", "--target=all"]
     volumes:
@@ -281,7 +281,7 @@ services:
       orchestrator-network:
 
   orchestrator-loki:
-    image: "grafana/loki:3.7.6"
+    image: "grafana/loki:3.7.9"
     container_name: orchestrator-loki
     command: ["-config.file=/etc/loki/loki.yaml"]
     volumes:
@@ -293,7 +293,7 @@ services:
       orchestrator-network:
 
   orchestrator-tempo:
-    image: "grafana/tempo:3.0.3"
+    image: "grafana/tempo:3.1.1"
     container_name: orchestrator-tempo
     depends_on:
       - orchestrator-mimir
@@ -307,7 +307,7 @@ services:
       orchestrator-network:
 
   orchestrator-grafana:
-    image: "grafana/grafana:13.2.0"
+    image: "grafana/grafana:13.2.4"
     container_name: orchestrator-grafana
     depends_on:
       - orchestrator-mimir
