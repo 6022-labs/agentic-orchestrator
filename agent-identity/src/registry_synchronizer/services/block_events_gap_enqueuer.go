@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
 	common_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/metrics/interfaces"
 	synchronizer_repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
@@ -84,105 +83,137 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		minimumBlockToStartFrom = syncCheckpoint.Block + 1
 	}
 
+	if *toBlock < minimumBlockToStartFrom {
+		b.syncMetrics.RecordBackfilledBlocks(ctx, 0)
+		return nil
+	}
+
 	b.logger.Info("Enqueuing block events gap",
 		zap.Uint64("fromBlock", minimumBlockToStartFrom),
 		zap.Uint64("toBlock", *toBlock),
 	)
 
-	agentCollectionManagerCollectionCreatedEvents, err := b.getAgentCollectionManagerCollectionCreated(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
-	)
+	// Not persisted until dequeued, so carried across windows.
+	knownCollections, err := b.loadKnownCollections(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collections manager collection created events: %w", err)
+		return err
 	}
 
-	agentCollectionRelatedAddresses, err := b.buildAgentCollectionRelatedAddresses(ctx,
-		agentCollectionManagerCollectionCreatedEvents,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to build agent collection related addresses: %w", err)
+	windowBlocks := b.syncSettings.GapWindowBlocks
+	for windowStart := minimumBlockToStartFrom; ; windowStart += windowBlocks {
+		windowEnd := *toBlock
+		if *toBlock-windowStart >= windowBlocks {
+			windowEnd = windowStart + windowBlocks - 1
+		}
+
+		windowEnqueuedBlocks, err := b.enqueueGapWindow(ctx, windowStart, windowEnd, knownCollections)
+		if err != nil {
+			return fmt.Errorf("failed to enqueue gap window %d-%d: %w", windowStart, windowEnd, err)
+		}
+		b.syncMetrics.RecordBackfilledBlocks(ctx, windowEnqueuedBlocks)
+
+		if windowEnd == *toBlock {
+			break
+		}
 	}
+
+	return nil
+}
+
+func (b *BlockEventsGapEnqueuer) enqueueGapWindow(
+	ctx context.Context,
+	from, to uint64,
+	knownCollections map[common.Address]struct{},
+) (int64, error) {
+	agentCollectionManagerCollectionCreatedEvents, err := b.getAgentCollectionManagerCollectionCreated(ctx, from, to)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get agent collections manager collection created events: %w", err)
+	}
+
+	for _, event := range agentCollectionManagerCollectionCreatedEvents {
+		knownCollections[event.CollectionAddress] = struct{}{}
+	}
+	agentCollectionRelatedAddresses := lo.Keys(knownCollections)
 
 	mintedEvents, err := b.getAgentCollectionV1Minted(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 minted events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 minted events: %w", err)
 	}
 
 	transferEvents, err := b.getAgentCollectionV1Transfer(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 transfer events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 transfer events: %w", err)
 	}
 
 	imageUpdatedEvents, err := b.getAgentCollectionV1AgentImageUpdated(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 agent image updated events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 agent image updated events: %w", err)
 	}
 
 	imageRemovedEvents, err := b.getAgentCollectionV1AgentImageRemoved(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 agent image removed events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 agent image removed events: %w", err)
 	}
 
 	attributeUpdatedEvents, err := b.getAgentCollectionV1AgentAttributeUpdated(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 agent attribute updated events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 agent attribute updated events: %w", err)
 	}
 
 	walletAddedEvents, err := b.getAgentCollectionV1AgentAddressAdded(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 agent wallet added events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 agent wallet added events: %w", err)
 	}
 
 	walletRemovedEvents, err := b.getAgentCollectionV1AgentAddressRemoved(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 agent wallet removed events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 agent wallet removed events: %w", err)
 	}
 
 	mintProposalCreatedEvents, err := b.getAgentCollectionV1MintProposalCreated(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 mint proposal created events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 mint proposal created events: %w", err)
 	}
 
 	mintProposalRemovedEvents, err := b.getAgentCollectionV1MintProposalRemoved(ctx,
-		minimumBlockToStartFrom,
-		*toBlock,
+		from,
+		to,
 		agentCollectionRelatedAddresses,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get agent collection v1 mint proposal removed events: %w", err)
+		return 0, fmt.Errorf("failed to get agent collection v1 mint proposal removed events: %w", err)
 	}
 
 	collectionCreatedEventsByBlock := lo.GroupBy(
@@ -251,7 +282,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 
 	enqueuedBlocks := int64(0)
 
-	for blockNumber := minimumBlockToStartFrom; blockNumber <= *toBlock; blockNumber++ {
+	for blockNumber := from; blockNumber <= to; blockNumber++ {
 		collectionCreatedEventsForBlock := collectionCreatedEventsByBlock[blockNumber]
 
 		mintedEventsForBlock := mintedEventsByBlock[blockNumber]
@@ -284,7 +315,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			collectionCreatedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collections manager collection created events for block %d: %w",
 				blockNumber,
 				err,
@@ -296,7 +327,11 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			mintedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf("failed to enqueue agent collection v1 minted events for block %d: %w", blockNumber, err)
+			return 0, fmt.Errorf(
+				"failed to enqueue agent collection v1 minted events for block %d: %w",
+				blockNumber,
+				err,
+			)
 		}
 
 		if err = b.blockEventsQueue.AddAgentCollectionV1TransferEvents(
@@ -304,7 +339,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			transferEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 transfer events for block %d: %w",
 				blockNumber,
 				err,
@@ -316,7 +351,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			imageUpdatedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 agent image updated events for block %d: %w",
 				blockNumber,
 				err,
@@ -328,7 +363,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			imageRemovedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 agent image removed events for block %d: %w",
 				blockNumber,
 				err,
@@ -340,7 +375,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			attributeUpdatedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 agent attribute updated events for block %d: %w",
 				blockNumber,
 				err,
@@ -352,7 +387,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			walletAddedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 agent wallet added events for block %d: %w",
 				blockNumber,
 				err,
@@ -364,7 +399,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			walletRemovedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 agent wallet removed events for block %d: %w",
 				blockNumber,
 				err,
@@ -376,7 +411,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			mintProposalCreatedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 mint proposal created events for block %d: %w",
 				blockNumber,
 				err,
@@ -388,7 +423,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 			blockNumber,
 			mintProposalRemovedEventsForBlock,
 		); err != nil {
-			return fmt.Errorf(
+			return 0, fmt.Errorf(
 				"failed to enqueue agent collection v1 mint proposal removed events for block %d: %w",
 				blockNumber,
 				err,
@@ -396,37 +431,21 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		}
 	}
 
-	b.syncMetrics.RecordBackfilledBlocks(ctx, enqueuedBlocks)
-
-	return nil
+	return enqueuedBlocks, nil
 }
 
-func (s *BlockEventsGapEnqueuer) buildAgentCollectionRelatedAddresses(
-	ctx context.Context,
-	agentCollectionManagerCollectionCreatedEvents []*abi.AgentCollectionsManagerCollectionCreated,
-) ([]common.Address, error) {
-	agentCollectionAddresses := lo.Map(
-		agentCollectionManagerCollectionCreatedEvents,
-		func(item *abi.AgentCollectionsManagerCollectionCreated, _ int) common.Address {
-			return item.CollectionAddress
-		},
-	)
-
+func (s *BlockEventsGapEnqueuer) loadKnownCollections(ctx context.Context) (map[common.Address]struct{}, error) {
 	inDatabaseCollections, err := s.agentCollectionRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent collections from database: %w", err)
 	}
 
-	agentCollectionAddressesFromDatabase := lo.Map(
-		inDatabaseCollections,
-		func(item *models.AgentCollection, _ int) common.Address {
-			return common.HexToAddress(item.Address)
-		},
-	)
+	knownCollections := make(map[common.Address]struct{}, len(inDatabaseCollections))
+	for _, collection := range inDatabaseCollections {
+		knownCollections[common.HexToAddress(collection.Address)] = struct{}{}
+	}
 
-	agentCollectionAddresses = lo.Uniq(append(agentCollectionAddresses, agentCollectionAddressesFromDatabase...))
-
-	return agentCollectionAddresses, nil
+	return knownCollections, nil
 }
 
 func (s *BlockEventsGapEnqueuer) getAgentCollectionV1Minted(

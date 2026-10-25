@@ -166,6 +166,37 @@ func TestWhenQueuingBlockEvents(t *testing.T) {
 		})
 	})
 
+	t.Run("Given an earlier block is added after a later block was finalized", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should dequeue blocks in ascending order", func(t *testing.T) {
+			t.Parallel()
+			basics := WhenQueuingBlockEventsBeforeEach(t)
+
+			err := basics.sut.AddAgentCollectionV1MintedEvents(
+				context.Background(),
+				20,
+				[]*abi.AgentCollectionV1Minted{{}},
+			)
+			assert.Nil(t, err)
+
+			waitForFinalization()
+
+			err = basics.sut.AddAgentCollectionV1TransferEvents(
+				context.Background(),
+				10,
+				[]*abi.AgentCollectionV1Transfer{{}},
+			)
+			assert.Nil(t, err)
+
+			blockNumber1, _ := basics.sut.Dequeue(context.Background())
+			assert.Equal(t, uint64(10), blockNumber1)
+
+			blockNumber2, _ := basics.sut.Dequeue(context.Background())
+			assert.Equal(t, uint64(20), blockNumber2)
+		})
+	})
+
 	t.Run("Given multiple event types are added to the same block", func(t *testing.T) {
 		t.Parallel()
 

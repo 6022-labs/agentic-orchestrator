@@ -35,7 +35,7 @@ func TestWhenLoadingRpcNodeSettings(t *testing.T) {
 		})
 	})
 
-	t.Run("Given no configured timeout", func(t *testing.T) {
+	t.Run("Given only the urls are configured", func(t *testing.T) {
 		t.Parallel()
 
 		k := koanf.New(".")
@@ -50,6 +50,33 @@ func TestWhenLoadingRpcNodeSettings(t *testing.T) {
 			settings := rpc_node_settings.NewRpcNodeSettings(zap.NewNop(), k)
 
 			assert.Equal(t, uint64(10), settings.RequestTimeoutSeconds)
+		})
+
+		t.Run("Should fall back to 10 addresses per log query", func(t *testing.T) {
+			t.Parallel()
+
+			settings := rpc_node_settings.NewRpcNodeSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 10, settings.MaxAddressesPerLogQuery)
+		})
+	})
+
+	t.Run("Given a configured address limit per log query", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"rpc_node.ws_url":                      "wss://example.com/ws",
+			"rpc_node.http_url":                    "https://example.com/rpc",
+			"rpc_node.max_addresses_per_log_query": 500,
+		}, "."), nil)
+
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
+
+			settings := rpc_node_settings.NewRpcNodeSettings(zap.NewNop(), k)
+
+			assert.Equal(t, 500, settings.MaxAddressesPerLogQuery)
 		})
 	})
 

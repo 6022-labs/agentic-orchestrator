@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"net/http"
 
 	"math/big"
 	"testing"
@@ -41,6 +42,29 @@ func TestWhenGettingAgentOwner(t *testing.T) {
 			if assert.NotNil(t, owner) {
 				assert.Equal(t, suite.fixture.anvilAccountSettings.Address, *owner)
 			}
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the owner", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingAgentOwnerBeforeEach(t)
+			suite.fixture.mintAgent("rate-limited-owner-agent")
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+
+			owner, err := suite.fixture.agentCollectionRequesterThrough(client).
+				GetAgentOwner(context.Background(), suite.fixture.stack.Collection, *big.NewInt(1))
+
+			assert.NoError(t, err)
+			if assert.NotNil(t, owner) {
+				assert.Equal(t, suite.fixture.anvilAccountSettings.Address, *owner)
+			}
+			assert.Equal(t, int32(2), requests.Load())
 		})
 	})
 

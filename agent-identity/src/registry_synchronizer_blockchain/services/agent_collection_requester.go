@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
 	"math/big"
 	"strings"
 
@@ -18,21 +19,37 @@ import (
 )
 
 type AgentCollectionRequester struct {
-	client *ethclient.Client
+	AbstractRpcRequester
+
+	contractAbi *abi.ABI
+	filterer    *registry_abi.AgentCollectionV1Filterer
 }
 
 type NewAgentCollectionRequesterParams struct {
 	dig.In
 
-	Client *ethclient.Client `name:"http"`
+	RpcNodeSettings *settings.RpcNodeSettings
+	Client          *ethclient.Client `name:"http"`
 }
 
 func NewAgentCollectionRequester(
 	params NewAgentCollectionRequesterParams,
-) *AgentCollectionRequester {
-	return &AgentCollectionRequester{
-		client: params.Client,
+) (*AgentCollectionRequester, error) {
+	contractAbi, err := registry_abi.AgentCollectionV1MetaData.GetAbi()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
 	}
+
+	filterer, err := registry_abi.NewAgentCollectionV1Filterer(common.Address{}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create agent collection filterer: %w", err)
+	}
+
+	return &AgentCollectionRequester{
+		AbstractRpcRequester: AbstractRpcRequester{client: params.Client, rpcNodeSettings: params.RpcNodeSettings},
+		contractAbi:          contractAbi,
+		filterer:             filterer,
+	}, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentOwner(
@@ -45,7 +62,11 @@ func (a *AgentCollectionRequester) GetAgentOwner(
 		return nil, err
 	}
 
-	owner, err := agentCollection.OwnerOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+	var owner common.Address
+	err = a.retryRpc(ctx, func() error {
+		owner, err = agentCollection.OwnerOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +84,11 @@ func (a *AgentCollectionRequester) GetAgentInformation(
 		return nil, err
 	}
 
-	info, err := agentCollection.InformationOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+	var info registry_abi.AgentInformation
+	err = a.retryRpc(ctx, func() error {
+		info, err = agentCollection.InformationOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -106,19 +131,19 @@ func (a *AgentCollectionRequester) getMintProposals(
 	blockBigInt := new(big.Int).SetUint64(atBlock)
 	blockHex := fmt.Sprintf("0x%x", atBlock)
 
-	mintProposalLength, err := agentCollection.MintProposalsLength(
-		&bind.CallOpts{Context: ctx, BlockNumber: blockBigInt},
-	)
+	var mintProposalLength *big.Int
+	err := a.retryRpc(ctx, func() error {
+		var err error
+		mintProposalLength, err = agentCollection.MintProposalsLength(
+			&bind.CallOpts{Context: ctx, BlockNumber: blockBigInt},
+		)
+		return err
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
 
-	agentCollectionABI, err := abi.JSON(
-		strings.NewReader(registry_abi.AgentCollectionV1ABI),
-	) // You must expose raw ABI string
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
-	}
+	agentCollectionABI := a.contractAbi
 
 	batch := make([]rpc.BatchElem, 0, mintProposalLength.Int64())
 	results := make([]hexutil.Bytes, mintProposalLength.Int64())
@@ -141,7 +166,18 @@ func (a *AgentCollectionRequester) getMintProposals(
 		})
 	}
 
-	if err := a.client.Client().BatchCallContext(ctx, batch); err != nil {
+	err = a.retryRpc(ctx, func() error {
+		if err := a.client.Client().BatchCallContext(ctx, batch); err != nil {
+			return err
+		}
+		for _, elem := range batch {
+			if elem.Error != nil {
+				return elem.Error
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
@@ -168,29 +204,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Minted, error) {
-	var allEvents []*registry_abi.AgentCollectionV1Minted
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterMinted(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "Minted")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1Minted, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseMinted(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Minted log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
@@ -198,29 +226,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Transfer, error) {
-	var allEvents []*registry_abi.AgentCollectionV1Transfer
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterTransfer(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "Transfer")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1Transfer, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseTransfer(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Transfer log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
@@ -228,29 +248,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentImageUpdated
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentImageUpdated(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentImageUpdated")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1AgentImageUpdated, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseAgentImageUpdated(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AgentImageUpdated log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
@@ -258,29 +270,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentImageRemoved
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentImageRemoved(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentImageRemoved")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1AgentImageRemoved, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseAgentImageRemoved(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AgentImageRemoved log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEvent(
@@ -288,29 +292,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEven
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentAttributeUpdated
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentAttributeUpdated(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAttributeUpdated")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseAgentAttributeUpdated(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AgentAttributeUpdated log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
@@ -318,29 +314,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
-	var allEvents []*registry_abi.AgentCollectionV1MintProposalCreated
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterMintProposalCreated(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "MintProposalCreated")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1MintProposalCreated, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseMintProposalCreated(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse MintProposalCreated log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
@@ -348,29 +336,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
-	var allEvents []*registry_abi.AgentCollectionV1MintProposalRemoved
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterMintProposalRemoved(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "MintProposalRemoved")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1MintProposalRemoved, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseMintProposalRemoved(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse MintProposalRemoved log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
@@ -378,29 +358,21 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentAddressAdded
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentAddressAdded(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAddressAdded")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1AgentAddressAdded, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseAgentAddressAdded(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AgentAddressAdded log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }
 
 func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
@@ -408,27 +380,19 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
-	var allEvents []*registry_abi.AgentCollectionV1AgentAddressRemoved
-
-	for _, address := range fromAddresses {
-		agentCollection, err := registry_abi.NewAgentCollectionV1(address, a.client)
-		if err != nil {
-			return nil, err
-		}
-
-		iter, err := agentCollection.FilterAgentAddressRemoved(&bind.FilterOpts{
-			Start:   from,
-			End:     &to,
-			Context: ctx,
-		}, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for iter.Next() {
-			allEvents = append(allEvents, iter.Event)
-		}
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAddressRemoved")
+	if err != nil {
+		return nil, err
 	}
 
-	return allEvents, nil
+	events := make([]*registry_abi.AgentCollectionV1AgentAddressRemoved, 0, len(logs))
+	for _, log := range logs {
+		event, err := a.filterer.ParseAgentAddressRemoved(log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AgentAddressRemoved log: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	return events, nil
 }

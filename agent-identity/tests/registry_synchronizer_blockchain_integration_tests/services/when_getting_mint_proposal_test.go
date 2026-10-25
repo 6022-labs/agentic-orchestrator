@@ -3,6 +3,7 @@ package services_test
 import (
 	"context"
 	"math/big"
+	"net/http"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
@@ -84,6 +85,32 @@ func TestWhenGettingMintProposal(t *testing.T) {
 				blockWithOneProposal,
 			)
 			assert.Error(t, err)
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request of each read", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the proposal", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintProposalBeforeEach(t)
+			suite.createProposal("rate-limited-proposed-agent")
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1, 3},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+
+			proposal, err := suite.fixture.agentCollectionRequesterThrough(client).GetMintProposal(context.Background(),
+				suite.fixture.stack.Collection,
+				big.NewInt(1),
+				suite.fixture.currentBlock(),
+			)
+
+			assert.NoError(t, err)
+			if assert.NotNil(t, proposal) {
+				assert.Equal(t, "rate-limited-proposed-agent", proposal.Name)
+			}
+			assert.Equal(t, int32(4), requests.Load())
 		})
 	})
 

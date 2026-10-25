@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"net/http"
 
 	"testing"
 
@@ -26,6 +27,25 @@ func WhenGettingMintedEventsBeforeEach(t *testing.T) *WhenGettingMintedEventsTes
 
 func TestWhenGettingMintedEvents(t *testing.T) {
 	t.Parallel()
+
+	t.Run("Given no collection address", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return nothing", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintedEventsBeforeEach(t)
+			suite.fixture.mintAgent("unscanned-agent")
+
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
+				0,
+				suite.fixture.currentBlock(),
+				nil,
+			)
+
+			assert.NoError(t, err)
+			assert.Empty(t, events)
+		})
+	})
 
 	t.Run("Given agents minted inside the scanned block range", func(t *testing.T) {
 		t.Parallel()
@@ -66,6 +86,84 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Empty(t, events)
+		})
+	})
+
+	t.Run("Given agents minted in two collections", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return the mints of both", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintedEventsBeforeEach(t)
+			secondCollection := suite.fixture.createCollection("second-collection")
+			from := suite.fixture.currentBlock() + 1
+			suite.fixture.mintAgent("first-collection-agent")
+			suite.fixture.mintAgentIn(secondCollection, "second-collection-agent")
+
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
+				from,
+				suite.fixture.currentBlock(),
+				[]common.Address{suite.fixture.stack.Collection, secondCollection},
+			)
+
+			assert.NoError(t, err)
+			if assert.Len(t, events, 2) {
+				assert.Equal(t, suite.fixture.stack.Collection, events[0].Raw.Address)
+				assert.Equal(t, secondCollection, events[1].Raw.Address)
+			}
+		})
+	})
+
+	t.Run("Given more collection addresses than one log query accepts", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return the mints of the collection in the last batch", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintedEventsBeforeEach(t)
+			from := suite.fixture.currentBlock() + 1
+			suite.fixture.mintAgent("last-batch-agent")
+			addresses := make([]common.Address, 0, 21)
+			for range 20 {
+				addresses = append(addresses, common_tests.RandomEthAddress())
+			}
+			addresses = append(addresses, suite.fixture.stack.Collection)
+
+			events, err := suite.sut.GetAgentCollectionV1MintedEvent(context.Background(),
+				from,
+				suite.fixture.currentBlock(),
+				addresses,
+			)
+
+			assert.NoError(t, err)
+			if assert.Len(t, events, 1) {
+				assert.Equal(t, suite.fixture.stack.Collection, events[0].Raw.Address)
+			}
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the mint", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintedEventsBeforeEach(t)
+			from := suite.fixture.currentBlock() + 1
+			suite.fixture.mintAgent("rate-limited-agent")
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+			sut := suite.fixture.agentCollectionRequesterThrough(client)
+
+			events, err := sut.GetAgentCollectionV1MintedEvent(context.Background(),
+				from,
+				suite.fixture.currentBlock(),
+				[]common.Address{suite.fixture.stack.Collection},
+			)
+
+			assert.NoError(t, err)
+			assert.Len(t, events, 1)
+			assert.Equal(t, int32(2), requests.Load())
 		})
 	})
 

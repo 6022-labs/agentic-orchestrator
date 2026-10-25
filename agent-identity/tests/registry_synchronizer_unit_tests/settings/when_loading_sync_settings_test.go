@@ -10,6 +10,7 @@ import (
 	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func TestWhenLoadingSyncSettings(t *testing.T) {
@@ -53,6 +54,59 @@ func TestWhenLoadingSyncSettings(t *testing.T) {
 			assert.NotNil(t, settings)
 			assert.Equal(t, uint64(12345678), settings.StartBlock)
 			assert.Equal(t, 2*time.Second, settings.BlockFinalizationDelay)
+		})
+	})
+
+	t.Run("Given a configured gap window", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"sync.start_block":       "12345678",
+			"sync.gap_window_blocks": "2000",
+		}, "."), nil)
+
+		t.Run("Should load it", func(t *testing.T) {
+			t.Parallel()
+
+			settings := sync_settings.NewSyncSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.Equal(t, uint64(2000), settings.GapWindowBlocks)
+		})
+	})
+
+	t.Run("Given a non-positive gap window", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"sync.start_block":       "12345678",
+			"sync.gap_window_blocks": "0",
+		}, "."), nil)
+
+		t.Run("Should exit", func(t *testing.T) {
+			t.Parallel()
+
+			logger := zap.NewNop().WithOptions(zap.WithFatalHook(zapcore.WriteThenPanic))
+
+			assert.Panics(t, func() { sync_settings.NewSyncSettings(logger, k, blockchainSettings) })
+		})
+	})
+
+	t.Run("Given no gap window", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"sync.start_block": "12345678",
+		}, "."), nil)
+
+		t.Run("Should fall back to the default window", func(t *testing.T) {
+			t.Parallel()
+
+			settings := sync_settings.NewSyncSettings(zap.NewNop(), k, blockchainSettings)
+
+			assert.Equal(t, uint64(10_000), settings.GapWindowBlocks)
 		})
 	})
 

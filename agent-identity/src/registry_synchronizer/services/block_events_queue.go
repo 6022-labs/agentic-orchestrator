@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"slices"
 	"sort"
 	"sync"
 	"time"
@@ -268,7 +269,9 @@ func (s *BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *queueEntry)
 		return
 	}
 
-	s.readyList = append(s.readyList, blockNumber)
+	// Gap blocks can become ready after higher live blocks.
+	index := sort.Search(len(s.readyList), func(i int) bool { return s.readyList[i] > blockNumber })
+	s.readyList = slices.Insert(s.readyList, index, blockNumber)
 	entry.enqueued = true
 	delete(s.pendingBlocks, blockNumber)
 }
