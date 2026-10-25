@@ -54,7 +54,7 @@ func TestWhenSettingWalletOwnershipToUser(t *testing.T) {
 					assert.Equal(t, "0xwallet", *request.WalletAddress)
 
 					return &clients.PostWalletSetOwnershipToSlackUserResponse{
-						HTTPResponse: &http.Response{StatusCode: http.StatusOK},
+						HTTPResponse: &http.Response{StatusCode: http.StatusNoContent},
 					}, nil
 				}).
 				Times(1)

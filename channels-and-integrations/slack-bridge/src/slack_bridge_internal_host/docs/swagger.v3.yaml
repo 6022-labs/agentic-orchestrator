@@ -107,12 +107,8 @@ paths:
         description: Wallet ownership verification
         required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: string
-          description: OK
+        "204":
+          description: No Content
         "400":
           content:
             application/json:

@@ -39,7 +39,7 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 // @Accept       json
 // @Produce      json
 // @Param        request body requests.SetWalletOwnershipToSlackUserRequest true "Wallet ownership verification"
-// @Success      200 {string} string "OK"
+// @Success      204 "No Content"
 // @Failure      400 {object} errors.ValidationError
 // @Failure      500 {object} errors.InternalError
 // @Router       /wallet/set-ownership-to-slack-user [post]
@@ -66,5 +66,5 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) e
 
 	controller.logger.Info("Set wallet ownership to Slack user request processed successfully")
 
-	return c.SendStatus(fiber.StatusOK)
+	return c.SendStatus(fiber.StatusNoContent)
 }
