@@ -269,7 +269,7 @@ func (s *BlockEventsQueue) enqueueIfReady(blockNumber uint64, entry *queueEntry)
 		return
 	}
 
-	// Sorted insert: gap blocks become ready after live blocks above them.
+	// Gap blocks can become ready after higher live blocks.
 	index := sort.Search(len(s.readyList), func(i int) bool { return s.readyList[i] > blockNumber })
 	s.readyList = slices.Insert(s.readyList, index, blockNumber)
 	entry.enqueued = true

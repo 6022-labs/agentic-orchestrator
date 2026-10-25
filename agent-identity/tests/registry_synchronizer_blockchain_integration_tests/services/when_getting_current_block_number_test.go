@@ -2,10 +2,12 @@ package services_test
 
 import (
 	"context"
+	"net/http"
 
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,6 +26,64 @@ func WhenGettingCurrentBlockNumberBeforeEach(t *testing.T) *WhenGettingCurrentBl
 
 func TestWhenGettingCurrentBlockNumber(t *testing.T) {
 	t.Parallel()
+
+	t.Run("Given the node rejects every request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should fail after a single request", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingCurrentBlockNumberBeforeEach(t)
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1, 2, 3, 4, 5, 6, 7, 8},
+				suite.fixture.replyStatus(http.StatusBadRequest),
+			)
+
+			_, err := suite.fixture.blockchainRequesterThrough(client).GetCurrentBlockNumber(context.Background())
+
+			var httpErr rpc.HTTPError
+			if assert.ErrorAs(t, err, &httpErr) {
+				assert.Equal(t, http.StatusBadRequest, httpErr.StatusCode)
+			}
+			assert.Equal(t, int32(1), requests.Load())
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the head block", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingCurrentBlockNumberBeforeEach(t)
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+
+			blockNumber, err := suite.fixture.blockchainRequesterThrough(client).
+				GetCurrentBlockNumber(context.Background())
+
+			assert.NoError(t, err)
+			assert.NotNil(t, blockNumber)
+			assert.Equal(t, int32(2), requests.Load())
+		})
+	})
+
+	t.Run("Given the node answers the first request with a JSON-RPC limit exceeded error", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the head block", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingCurrentBlockNumberBeforeEach(t)
+			client, requests := suite.fixture.flakyHttpClient([]int32{1}, suite.fixture.replyJsonRpcError(-32005))
+
+			blockNumber, err := suite.fixture.blockchainRequesterThrough(client).
+				GetCurrentBlockNumber(context.Background())
+
+			assert.NoError(t, err)
+			assert.NotNil(t, blockNumber)
+			assert.Equal(t, int32(2), requests.Load())
+		})
+	})
 
 	t.Run("Given a chain that has mined the stack deployment", func(t *testing.T) {
 		t.Parallel()

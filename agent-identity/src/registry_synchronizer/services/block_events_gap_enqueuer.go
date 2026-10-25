@@ -93,7 +93,7 @@ func (b *BlockEventsGapEnqueuer) EnqueueGap(ctx context.Context) error {
 		zap.Uint64("toBlock", *toBlock),
 	)
 
-	// Kept across windows: earlier windows' collections aren't persisted yet.
+	// Not persisted until dequeued, so carried across windows.
 	knownCollections, err := b.loadKnownCollections(ctx)
 	if err != nil {
 		return err

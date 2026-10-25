@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"net/http"
 
 	"testing"
 
@@ -121,8 +122,8 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 			suite := WhenGettingMintedEventsBeforeEach(t)
 			from := suite.fixture.currentBlock() + 1
 			suite.fixture.mintAgent("last-batch-agent")
-			addresses := make([]common.Address, 0, 601)
-			for range 600 {
+			addresses := make([]common.Address, 0, 21)
+			for range 20 {
 				addresses = append(addresses, common_tests.RandomEthAddress())
 			}
 			addresses = append(addresses, suite.fixture.stack.Collection)
@@ -137,6 +138,32 @@ func TestWhenGettingMintedEvents(t *testing.T) {
 			if assert.Len(t, events, 1) {
 				assert.Equal(t, suite.fixture.stack.Collection, events[0].Raw.Address)
 			}
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the mint", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingMintedEventsBeforeEach(t)
+			from := suite.fixture.currentBlock() + 1
+			suite.fixture.mintAgent("rate-limited-agent")
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+			sut := suite.fixture.agentCollectionRequesterThrough(client)
+
+			events, err := sut.GetAgentCollectionV1MintedEvent(context.Background(),
+				from,
+				suite.fixture.currentBlock(),
+				[]common.Address{suite.fixture.stack.Collection},
+			)
+
+			assert.NoError(t, err)
+			assert.Len(t, events, 1)
+			assert.Equal(t, int32(2), requests.Load())
 		})
 	})
 

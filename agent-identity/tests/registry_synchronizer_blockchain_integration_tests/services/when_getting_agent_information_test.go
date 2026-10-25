@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"net/http"
 
 	"math/big"
 	"testing"
@@ -56,6 +57,29 @@ func TestWhenGettingAgentInformation(t *testing.T) {
 					assert.Equal(t, "evm", information.Addresses[0].AddressType)
 				}
 			}
+		})
+	})
+
+	t.Run("Given the node rate-limits the first request", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should retry and return the information", func(t *testing.T) {
+			t.Parallel()
+			suite := WhenGettingAgentInformationBeforeEach(t)
+			suite.fixture.mintAgent("rate-limited-information-agent")
+			client, requests := suite.fixture.flakyHttpClient(
+				[]int32{1},
+				suite.fixture.replyStatus(http.StatusTooManyRequests),
+			)
+
+			information, err := suite.fixture.agentCollectionRequesterThrough(client).
+				GetAgentInformation(context.Background(), suite.fixture.stack.Collection, *big.NewInt(1))
+
+			assert.NoError(t, err)
+			if assert.NotNil(t, information) {
+				assert.Equal(t, "rate-limited-information-agent", information.Name)
+			}
+			assert.Equal(t, int32(2), requests.Load())
 		})
 	})
 

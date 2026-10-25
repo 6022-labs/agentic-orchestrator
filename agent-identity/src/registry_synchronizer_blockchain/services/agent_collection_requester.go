@@ -3,27 +3,24 @@ package services
 import (
 	"context"
 	"fmt"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
 	"math/big"
 	"strings"
 
 	registry_abi "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/abi"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/samber/lo"
 	"go.uber.org/dig"
 )
 
-// maxAddressesPerLogQuery stays under geth's default 1000-address eth_getLogs cap.
-const maxAddressesPerLogQuery = 500
-
 type AgentCollectionRequester struct {
-	client      *ethclient.Client
+	AbstractRpcRequester
+
 	contractAbi *abi.ABI
 	filterer    *registry_abi.AgentCollectionV1Filterer
 }
@@ -31,7 +28,8 @@ type AgentCollectionRequester struct {
 type NewAgentCollectionRequesterParams struct {
 	dig.In
 
-	Client *ethclient.Client `name:"http"`
+	RpcNodeSettings *settings.RpcNodeSettings
+	Client          *ethclient.Client `name:"http"`
 }
 
 func NewAgentCollectionRequester(
@@ -48,9 +46,9 @@ func NewAgentCollectionRequester(
 	}
 
 	return &AgentCollectionRequester{
-		client:      params.Client,
-		contractAbi: contractAbi,
-		filterer:    filterer,
+		AbstractRpcRequester: AbstractRpcRequester{client: params.Client, rpcNodeSettings: params.RpcNodeSettings},
+		contractAbi:          contractAbi,
+		filterer:             filterer,
 	}, nil
 }
 
@@ -64,7 +62,11 @@ func (a *AgentCollectionRequester) GetAgentOwner(
 		return nil, err
 	}
 
-	owner, err := agentCollection.OwnerOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+	var owner common.Address
+	err = a.retryRpc(ctx, func() error {
+		owner, err = agentCollection.OwnerOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +84,11 @@ func (a *AgentCollectionRequester) GetAgentInformation(
 		return nil, err
 	}
 
-	info, err := agentCollection.InformationOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+	var info registry_abi.AgentInformation
+	err = a.retryRpc(ctx, func() error {
+		info, err = agentCollection.InformationOf(&bind.CallOpts{Context: ctx}, &collectionTokenId)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -125,19 +131,19 @@ func (a *AgentCollectionRequester) getMintProposals(
 	blockBigInt := new(big.Int).SetUint64(atBlock)
 	blockHex := fmt.Sprintf("0x%x", atBlock)
 
-	mintProposalLength, err := agentCollection.MintProposalsLength(
-		&bind.CallOpts{Context: ctx, BlockNumber: blockBigInt},
-	)
+	var mintProposalLength *big.Int
+	err := a.retryRpc(ctx, func() error {
+		var err error
+		mintProposalLength, err = agentCollection.MintProposalsLength(
+			&bind.CallOpts{Context: ctx, BlockNumber: blockBigInt},
+		)
+		return err
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mint proposal length: %w", err)
 	}
 
-	agentCollectionABI, err := abi.JSON(
-		strings.NewReader(registry_abi.AgentCollectionV1ABI),
-	) // You must expose raw ABI string
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse agent collection ABI: %w", err)
-	}
+	agentCollectionABI := a.contractAbi
 
 	batch := make([]rpc.BatchElem, 0, mintProposalLength.Int64())
 	results := make([]hexutil.Bytes, mintProposalLength.Int64())
@@ -160,7 +166,18 @@ func (a *AgentCollectionRequester) getMintProposals(
 		})
 	}
 
-	if err := a.client.Client().BatchCallContext(ctx, batch); err != nil {
+	err = a.retryRpc(ctx, func() error {
+		if err := a.client.Client().BatchCallContext(ctx, batch); err != nil {
+			return err
+		}
+		for _, elem := range batch {
+			if elem.Error != nil {
+				return elem.Error
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, fmt.Errorf("failed to batch call mint proposals: %w", err)
 	}
 
@@ -187,7 +204,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Minted, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "Minted")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "Minted")
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +226,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1TransferEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1Transfer, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "Transfer")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "Transfer")
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +248,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageUpdatedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageUpdated, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "AgentImageUpdated")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentImageUpdated")
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +270,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentImageRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentImageRemoved, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "AgentImageRemoved")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentImageRemoved")
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +292,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAttributeUpdatedEven
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAttributeUpdated, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "AgentAttributeUpdated")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAttributeUpdated")
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +314,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalCreatedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalCreated, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "MintProposalCreated")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "MintProposalCreated")
 	if err != nil {
 		return nil, err
 	}
@@ -319,7 +336,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1MintProposalRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1MintProposalRemoved, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "MintProposalRemoved")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "MintProposalRemoved")
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +358,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressAddedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressAdded, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "AgentAddressAdded")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAddressAdded")
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +380,7 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
 	from, to uint64,
 	fromAddresses []common.Address,
 ) ([]*registry_abi.AgentCollectionV1AgentAddressRemoved, error) {
-	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, "AgentAddressRemoved")
+	logs, err := a.filterEventLogs(ctx, from, to, fromAddresses, a.contractAbi, "AgentAddressRemoved")
 	if err != nil {
 		return nil, err
 	}
@@ -378,37 +395,4 @@ func (a *AgentCollectionRequester) GetAgentCollectionV1AgentAddressRemovedEvent(
 	}
 
 	return events, nil
-}
-
-func (a *AgentCollectionRequester) filterEventLogs(
-	ctx context.Context,
-	from, to uint64,
-	addresses []common.Address,
-	eventName string,
-) ([]types.Log, error) {
-	// An empty address list would match every contract on the chain.
-	if len(addresses) == 0 {
-		return nil, nil
-	}
-
-	event, ok := a.contractAbi.Events[eventName]
-	if !ok {
-		return nil, fmt.Errorf("agent collection ABI has no %s event", eventName)
-	}
-
-	var logs []types.Log
-	for _, batch := range lo.Chunk(addresses, maxAddressesPerLogQuery) {
-		batchLogs, err := a.client.FilterLogs(ctx, ethereum.FilterQuery{
-			FromBlock: new(big.Int).SetUint64(from),
-			ToBlock:   new(big.Int).SetUint64(to),
-			Addresses: batch,
-			Topics:    [][]common.Hash{{event.ID}},
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to filter %s logs: %w", eventName, err)
-		}
-		logs = append(logs, batchLogs...)
-	}
-
-	return logs, nil
 }
