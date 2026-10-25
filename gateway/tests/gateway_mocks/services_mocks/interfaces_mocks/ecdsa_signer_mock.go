@@ -10,7 +10,6 @@
 package interfaces_mocks
 
 import (
-	ecdsa "crypto/ecdsa"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -53,34 +52,4 @@ func (m *MockECDSASignerInterface) RecoverAddress(hash, signature []byte) (strin
 func (mr *MockECDSASignerInterfaceMockRecorder) RecoverAddress(hash, signature any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoverAddress", reflect.TypeOf((*MockECDSASignerInterface)(nil).RecoverAddress), hash, signature)
-}
-
-// RecoverPublicKey mocks base method.
-func (m *MockECDSASignerInterface) RecoverPublicKey(data, signature []byte) (*string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecoverPublicKey", data, signature)
-	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RecoverPublicKey indicates an expected call of RecoverPublicKey.
-func (mr *MockECDSASignerInterfaceMockRecorder) RecoverPublicKey(data, signature any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoverPublicKey", reflect.TypeOf((*MockECDSASignerInterface)(nil).RecoverPublicKey), data, signature)
-}
-
-// Sign mocks base method.
-func (m *MockECDSASignerInterface) Sign(data []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Sign", data, privateKey)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Sign indicates an expected call of Sign.
-func (mr *MockECDSASignerInterfaceMockRecorder) Sign(data, privateKey any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sign", reflect.TypeOf((*MockECDSASignerInterface)(nil).Sign), data, privateKey)
 }

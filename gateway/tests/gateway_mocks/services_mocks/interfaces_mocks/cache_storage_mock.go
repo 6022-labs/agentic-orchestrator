@@ -69,3 +69,18 @@ func (mr *MockCacheStorageInterfaceMockRecorder) Store(ctx, key, value, expirati
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCacheStorageInterface)(nil).Store), ctx, key, value, expiration)
 }
+
+// StoreIfAbsent mocks base method.
+func (m *MockCacheStorageInterface) StoreIfAbsent(ctx context.Context, key, value string, expiration time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StoreIfAbsent", ctx, key, value, expiration)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StoreIfAbsent indicates an expected call of StoreIfAbsent.
+func (mr *MockCacheStorageInterfaceMockRecorder) StoreIfAbsent(ctx, key, value, expiration any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreIfAbsent", reflect.TypeOf((*MockCacheStorageInterface)(nil).StoreIfAbsent), ctx, key, value, expiration)
+}
