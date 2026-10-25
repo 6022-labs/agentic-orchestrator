@@ -11,10 +11,10 @@ const RpcNodeSettingsKey = "rpc_node"
 
 // RpcNodeSettings holds the read timeout for http only; ws carries long-lived subscriptions.
 type RpcNodeSettings struct {
-	WsUrl                 string `koanf:"ws_url"`
-	HttpUrl               string `koanf:"http_url"`
-	RequestTimeoutSeconds uint64 `koanf:"request_timeout_seconds"`
-	MaxAddressesPerLogQuery int `koanf:"max_addresses_per_log_query"`
+	WsUrl                   string `koanf:"ws_url"`
+	HttpUrl                 string `koanf:"http_url"`
+	RequestTimeoutSeconds   uint64 `koanf:"request_timeout_seconds"`
+	MaxAddressesPerLogQuery int    `koanf:"max_addresses_per_log_query"`
 }
 
 func NewRpcNodeSettings(logger *zap.Logger, k *koanf.Koanf) *RpcNodeSettings {
