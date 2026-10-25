@@ -43,7 +43,7 @@ func (controller *WalletController) InitUnauthenticatedRoutes(app fiber.Router) 
 // @Accept       multipart/form-data
 // @Produce      json
 // @Param        request body requests.VerifyWalletForBridgeRequest true "wallet verification request"
-// @Success      200 {string} string "OK"
+// @Success      204 "No Content"
 // @Failure      400 {object} errors.ValidationError
 // @Failure      401 {string} string "Unauthorized"
 // @Failure      500 {object} errors.InternalError
@@ -72,5 +72,5 @@ func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
 
 	controller.logger.Info("Verify wallet for bridge request completed successfully")
 
-	return c.SendStatus(fiber.StatusOK)
+	return c.SendStatus(fiber.StatusNoContent)
 }
