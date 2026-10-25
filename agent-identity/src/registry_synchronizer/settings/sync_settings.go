@@ -14,6 +14,9 @@ const SyncSettingsKey = "sync"
 
 const defaultBlockFinalizationDelay = 2 * time.Second
 
+// Public RPCs cap eth_getLogs at 10k blocks.
+const defaultGapWindowBlocks = 10_000
+
 //go:embed sync_start_blocks.json
 var syncStartBlocksJson []byte
 
@@ -30,6 +33,7 @@ type syncStartBlocksFile struct {
 type SyncSettings struct {
 	StartBlock             uint64
 	BlockFinalizationDelay time.Duration
+	GapWindowBlocks        uint64
 }
 
 func NewSyncSettings(
@@ -64,8 +68,20 @@ func NewSyncSettings(
 		blockFinalizationDelay = defaultBlockFinalizationDelay
 	}
 
+	gapWindowBlocks := uint64(defaultGapWindowBlocks)
+	if k.Exists(SyncSettingsKey + ".gap_window_blocks") {
+		windowBlocks := k.Int64(SyncSettingsKey + ".gap_window_blocks")
+		if windowBlocks <= 0 {
+			logger.Fatal("sync.gap_window_blocks must be a positive block count",
+				zap.String("value", k.String(SyncSettingsKey+".gap_window_blocks")),
+			)
+		}
+		gapWindowBlocks = uint64(windowBlocks)
+	}
+
 	return &SyncSettings{
 		StartBlock:             uint64(startBlockInt),
 		BlockFinalizationDelay: blockFinalizationDelay,
+		GapWindowBlocks:        gapWindowBlocks,
 	}
 }
