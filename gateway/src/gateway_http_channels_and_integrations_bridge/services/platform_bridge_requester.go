@@ -51,7 +51,7 @@ func (r *PlatformBridgeRequester) SetWalletOwnershipToUser(
 	if err != nil {
 		return err
 	}
-	if rsp.StatusCode() != http.StatusOK {
+	if rsp.StatusCode() != http.StatusNoContent {
 		return fmt.Errorf("unexpected status code: %d, response: %s", rsp.StatusCode(), string(rsp.Body))
 	}
 

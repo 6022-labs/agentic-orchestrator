@@ -362,7 +362,6 @@ func (r PostBrokerCallbackResponse) StatusCode() int {
 type PostWalletSetOwnershipToSlackUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *string
 	JSON400      *ErrorsValidationError
 	JSON500      *ErrorsInternalError
 }
@@ -478,13 +477,6 @@ func ParsePostWalletSetOwnershipToSlackUserResponse(rsp *http.Response) (*PostWa
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorsValidationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
