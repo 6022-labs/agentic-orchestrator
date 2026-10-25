@@ -4,21 +4,30 @@ This repository owns the code for the AgenticAI Orchestrator. The orchestrator m
 
 ## How to run the orchestrator
 
-You will need to have `docker` and `docker-compose` installed in your machine. Then, you can run the following command:
+You need Docker with Compose. Then run:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 ⚠ One of the containers can fail the first time you run it due to concurrent access to the database to create migrations. If this happens, just run the command again.
 
-This command will mount a database, a pgadmin (to visualize the database), a hashicorp vault, a local blockchain and the APIs.
+This runs the APIs on Polygon Amoy (public RPC), with Postgres, pgAdmin, Redis and a Grafana observability stack.
 
-- You can access the web console at `http://localhost:3000/`
-- You can access the gateway API at `http://localhost:5000/`
-- You can access the blockchain at `http://localhost:8545/`
-- You can access the vault at `http://localhost:8200/` (use `wBGKZCJjfIGqIKB3HMmvcQVt` as passwords)
-- You can access the pgadmin at `http://localhost:5050/` (use `root` as passwords)
+- Web console: `http://localhost:3000/`
+- Gateway API: `http://localhost:5000/`
+- pgAdmin: `http://localhost:5050/` (password `root`)
+- Grafana: `http://localhost:3001/`
+
+### On a local chain
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local-chain.yml up
+```
+
+Adds an Anvil chain (id `31337`, RPC `http://localhost:8545`) with the 6022 contracts deployed from
+[agentic-smart-contracts](https://github.com/6022-labs/agentic-smart-contracts); the synchronizer and broker switch to it.
+Names on it don't resolve through public ENS. Reset the chain and the database together with `down -v` on the same two files.
 
 ## One-off cleanup after the agent-node revamp
 

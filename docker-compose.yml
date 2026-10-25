@@ -20,8 +20,8 @@ services:
       - JWT__LIVING_TIME=86400
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
       - CONVERSATION_BROKER__BASE_URL=http://conversation-broker-host:3000
-      - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTIONS_MANAGER_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
-      - BLOCKCHAIN__EVM_CHAINS__80002__COLLECTION_CREATOR_ADDRESS=0x99065eCD99aE9fBA4dC467C1588b9205Aa71Aa16
+      # Selects Amoy; its contract addresses come from the built-in evm_chains.json.
+      - BLOCKCHAIN__EVM_CHAINS__80002__SCANNER_BASE_URL=https://amoy.polygonscan.com
       - PLATFORM_BRIDGES__SLACK_BRIDGE__BASE_URL=http://slack-bridge-internal-host:3000
     networks:
       orchestrator-network:
@@ -48,20 +48,16 @@ services:
       - TELEMETRY__ENVIRONMENT=local
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - BLOCKCHAIN__CHAIN_ID=80002
-      - AGENT_COLLECTIONS_MANAGER__SMART_CONTRACT_ADDRESS=0x39DD75a025145770a8b8278Cc8BA705116443Ea7
       - DECENTRALIZED_DOMAIN_NAME_PROVIDER__DOMAIN_EXTENSION=eth
-      - RPC_NODE__WS_URL=ws://evm-node:8545
-      - RPC_NODE__HTTP_URL=http://evm-node:8545
+      - RPC_NODE__WS_URL=wss://polygon-amoy-bor-rpc.publicnode.com
+      - RPC_NODE__HTTP_URL=https://polygon-amoy-bor-rpc.publicnode.com
       - RPC_NODE__REQUEST_TIMEOUT_SECONDS=10
-      - SYNC__START_BLOCK=1
       - SYNC__BLOCK_FINALIZATION_DELAY=2s
     networks:
       orchestrator-network:
     depends_on:
       db:
         condition: service_healthy
-      evm-node:
-        condition: service_started
 
   registry-host:
     build:
@@ -101,9 +97,8 @@ services:
       - DATABASE__URL=host=db port=5432 user=postgres password=root dbname=orchestrator sslmode=disable
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
       - BLOCKCHAIN__CHAIN_ID=80002
-      - RPC_NODE__HTTP_URL=http://evm-node:8545
+      - RPC_NODE__HTTP_URL=https://polygon-amoy-bor-rpc.publicnode.com
       - RPC_NODE__REQUEST_TIMEOUT_SECONDS=10
-      # - AGENT_ENS_REGISTRY__SMART_CONTRACT_ADDRESS=
       - REMOTE_AGENT__REQUEST_TIMEOUT_SECONDS=120
       - REMOTE_AGENT_RESOLUTION__CACHE_TTL_SECONDS=300
       - REGISTRY_AGENT_RESOLUTION__CACHE_TTL_SECONDS=120
@@ -119,8 +114,6 @@ services:
       redis:
         condition: service_started
       registry-host:
-        condition: service_started
-      evm-node:
         condition: service_started
 
   slack-bridge-internal-host:
@@ -254,20 +247,6 @@ services:
     networks:
       orchestrator-network:
 
-  evm-node:
-    image: ghcr.io/foundry-rs/foundry:v1.7.1
-    container_name: evm-node
-    ports:
-      - "8545:8545"
-    environment:
-      - ANVIL_IP_ADDR=0.0.0.0
-    volumes:
-      - evm-node-data:/data
-    user: "root"
-    entrypoint: sh -c "anvil --state-interval 5 --dump-state /data/state.json $( [ -f /data/state.json ] && echo '--load-state /data/state.json' )"
-    networks:
-      orchestrator-network:
-
   # Observability stack: Alloy (OTLP) -> Mimir + Loki + Tempo, shown in Grafana.
   orchestrator-alloy:
     build: ./grafana/alloy
@@ -357,7 +336,6 @@ networks:
 
 volumes:
   db-data:
-  evm-node-data:
   orchestrator-mimir-data:
   orchestrator-loki-data:
   orchestrator-tempo-data:

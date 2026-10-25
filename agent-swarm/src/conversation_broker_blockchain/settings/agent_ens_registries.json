@@ -10,6 +10,11 @@
       "chainId": 80002,
       "name": "polygon-amoy",
       "address": "0x37c5879529e5b0241663ed40feeebb2326bbee0d"
+    },
+    {
+      "chainId": 31337,
+      "name": "anvil-local",
+      "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707"
     }
   ]
 }
