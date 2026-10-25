@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/services"
@@ -63,9 +64,13 @@ func (f *chainFixture) blockchainRequester() *services.BlockchainRequester {
 }
 
 func (f *chainFixture) agentCollectionRequester() *services.AgentCollectionRequester {
-	return services.NewAgentCollectionRequester(services.NewAgentCollectionRequesterParams{
+	requester, err := services.NewAgentCollectionRequester(services.NewAgentCollectionRequesterParams{
 		Client: f.httpClient,
 	})
+	if err != nil {
+		f.t.Fatalf("failed to build the agent collection requester: %v", err)
+	}
+	return requester
 }
 
 func (f *chainFixture) agentCollectionsManagerRequester() *services.AgentCollectionsManagerRequester {
@@ -105,14 +110,33 @@ func (f *chainFixture) currentBlock() uint64 {
 // mintAgent gives every agent its own evm address; the collection rejects a
 // second agent claiming an address it already knows.
 func (f *chainFixture) mintAgent(agentName string) {
+	f.mintAgentIn(f.stack.Collection, agentName)
+}
+
+func (f *chainFixture) mintAgentIn(collection common.Address, agentName string) {
 	if err := fixtures.MintAgent(
 		context.Background(),
 		f.httpClient,
 		f.anvilAccountSettings,
-		f.stack.Collection,
+		collection,
 		agentName,
 		common_tests.RandomEthAddress(),
 	); err != nil {
 		f.t.Fatalf("failed to mint %s: %v", agentName, err)
 	}
+}
+
+func (f *chainFixture) createCollection(name string) common.Address {
+	collection, err := fixtures.CreateCollection(
+		context.Background(),
+		f.httpClient,
+		f.anvilAccountSettings,
+		f.stack.Manager,
+		f.stack.Creator,
+		name,
+	)
+	if err != nil {
+		f.t.Fatalf("failed to create the collection: %v", err)
+	}
+	return collection
 }
