@@ -1,10 +1,10 @@
 package jwt
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -34,22 +34,23 @@ func (j *JwtManager) CreateJwtToken(address string) (string, time.Time, error) {
 func (j *JwtManager) VerifyJwtToken(token string) (string, error) {
 	claims := jwt.MapClaims{}
 
-	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(j.jwtSettings.Hash), nil
-	})
+	_, err := jwt.ParseWithClaims(
+		token,
+		claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(j.jwtSettings.Hash), nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+		jwt.WithExpirationRequired(),
+	)
 	if err != nil {
 		return "", err
 	}
 
-	return claims["sub"].(string), nil
-}
-
-func (j *JwtManager) ExtractSubFromToken(token *jwt.Token, hash string) (*string, error) {
-	claims := token.Claims.(jwt.MapClaims)
-	sub, ok := claims["sub"].(string)
-	if !ok {
-		return nil, fmt.Errorf("error while parsing sub from token")
+	sub, err := claims.GetSubject()
+	if err != nil || !common.IsHexAddress(sub) {
+		return "", jwt.ErrTokenInvalidSubject
 	}
 
-	return &sub, nil
+	return sub, nil
 }
