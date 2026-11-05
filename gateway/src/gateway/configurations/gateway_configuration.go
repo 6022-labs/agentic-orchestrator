@@ -48,6 +48,16 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewConsoleSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewCorsSettings)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(settings.NewSiweSettings)
 	if err != nil {
 		panic(err)

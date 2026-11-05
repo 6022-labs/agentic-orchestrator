@@ -43,6 +43,7 @@ type registerRoutesParams struct {
 	App                               *fiber.App
 	Logger                            *zap.Logger
 	RateLimitSettings                 *gateway_settings.RateLimitSettings
+	CorsSettings                      *gateway_settings.CorsSettings
 	AuthenticationMandatoryMiddleware *middlewares.AuthenticationMandatoryMiddleware
 	RequestMetrics                    *mvc_middlewares.ApiRequestMetricsMiddleware
 	RequestFailureLog                 *mvc_middlewares.RequestFailureLogMiddleware
@@ -53,7 +54,7 @@ type registerRoutesParams struct {
 // RegisterRoutes hooks up the routes and uses Fx to create new controller instances per request
 func registerRoutes(p registerRoutesParams) {
 	p.App.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
+		AllowOrigins: p.CorsSettings.AllowOrigins,
 		AllowHeaders: []string{"*"},
 	}))
 
