@@ -20,7 +20,7 @@ services:
       - JWT__LIVING_TIME=86400
       - JWT__REFRESH_TTL=604800
       - JWT__REFRESH_IDLE_TTL=172800
-      - SIWE__URI=http://localhost:3000
+      - CONSOLE__URL=http://localhost:3000
       # Same key as the broker.
       - WALLET__PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
       - AGENT_IDENTITY_REGISTRY__BASE_URL=http://registry-host:5000
