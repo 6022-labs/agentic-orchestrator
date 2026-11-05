@@ -2,6 +2,7 @@ package use_cases_test
 
 import (
 	"context"
+	"errors"
 
 	"testing"
 	"time"
@@ -19,10 +20,11 @@ import (
 type WhenVerifyingAuthTestingSuite struct {
 	sut *use_cases.VerifyAuth
 
-	mockNonceStore         *interfaces_mocks.MockNonceStoreInterface
-	mockSiweMessageBuilder *interfaces_mocks.MockSiweMessageBuilderInterface
-	mockSignatureVerifier  *interfaces_mocks.MockSignatureVerifierInterface
-	mockJwtManager         *interfaces_mocks.MockJwtManagerInterface
+	mockNonceStore          *interfaces_mocks.MockNonceStoreInterface
+	mockSiweMessageBuilder  *interfaces_mocks.MockSiweMessageBuilderInterface
+	mockSignatureVerifier   *interfaces_mocks.MockSignatureVerifierInterface
+	mockJwtManager          *interfaces_mocks.MockJwtManagerInterface
+	mockRefreshTokenManager *interfaces_mocks.MockRefreshTokenManagerInterface
 }
 
 func WhenVerifyingAuthBeforeEach(t *testing.T) *WhenVerifyingAuthTestingSuite {
@@ -32,16 +34,24 @@ func WhenVerifyingAuthBeforeEach(t *testing.T) *WhenVerifyingAuthTestingSuite {
 	mockSiweMessageBuilder := interfaces_mocks.NewMockSiweMessageBuilderInterface(mockController)
 	mockSignatureVerifier := interfaces_mocks.NewMockSignatureVerifierInterface(mockController)
 	mockJwtManager := interfaces_mocks.NewMockJwtManagerInterface(mockController)
+	mockRefreshTokenManager := interfaces_mocks.NewMockRefreshTokenManagerInterface(mockController)
 
-	sut := use_cases.NewVerifyAuth(mockNonceStore, mockSiweMessageBuilder, mockSignatureVerifier, mockJwtManager)
+	sut := use_cases.NewVerifyAuth(
+		mockNonceStore,
+		mockSiweMessageBuilder,
+		mockSignatureVerifier,
+		mockJwtManager,
+		mockRefreshTokenManager,
+	)
 
 	return &WhenVerifyingAuthTestingSuite{
 		sut: sut,
 
-		mockNonceStore:         mockNonceStore,
-		mockSiweMessageBuilder: mockSiweMessageBuilder,
-		mockSignatureVerifier:  mockSignatureVerifier,
-		mockJwtManager:         mockJwtManager,
+		mockNonceStore:          mockNonceStore,
+		mockSiweMessageBuilder:  mockSiweMessageBuilder,
+		mockSignatureVerifier:   mockSignatureVerifier,
+		mockJwtManager:          mockJwtManager,
+		mockRefreshTokenManager: mockRefreshTokenManager,
 	}
 }
 
@@ -141,10 +151,51 @@ func TestWhenVerifyingAuth(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the refresh token issue fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
+			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
+			expectSiweMessage(suite)
+			suite.mockSignatureVerifier.EXPECT().
+				Recover(siweMessage, request.Signature).
+				Return(wallet, nil).
+				Times(1)
+			suite.mockJwtManager.EXPECT().
+				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
+				Return("jwt-token", time.Now().Add(time.Hour), nil).
+				Times(1)
+			suite.mockRefreshTokenManager.EXPECT().
+				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
+				Return("", nil, errors.New("entropy exhausted")).
+				Times(1)
+		}
+
+		t.Run("Should return an internal error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAuthBeforeEach(t)
+			request := generateValidVerifyAuthRequest()
+			initSuite(suite, request)
+
+			_, err := suite.sut.Execute(context.Background(), request)
+
+			var internalErr *cb_errors.InternalError
+			assert.ErrorAs(t, err, &internalErr)
+			assert.Equal(t, "refresh_token_issue_failed", internalErr.Code)
+		})
+	})
+
 	t.Run("Given the signed nonce is valid", func(t *testing.T) {
 		t.Parallel()
 
 		expiresAt := time.Now().Add(time.Hour)
+		refreshClaims := &interfaces.RefreshClaims{
+			Address:   "0x4bca9e17a8326d283d1fc68a725b46b42c2d9146",
+			SessionId: "session-1",
+			TokenId:   "token-1",
+			ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		}
 
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
 			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
@@ -156,6 +207,10 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			suite.mockJwtManager.EXPECT().
 				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
 				Return("jwt-token", expiresAt, nil).
+				Times(1)
+			suite.mockRefreshTokenManager.EXPECT().
+				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
+				Return("refresh-token", refreshClaims, nil).
 				Times(1)
 		}
 
@@ -171,6 +226,20 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, "jwt-token", response.Token)
 			assert.Equal(t, expiresAt, response.ExpiresAt)
+		})
+
+		t.Run("Should start a refresh session", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAuthBeforeEach(t)
+			request := generateValidVerifyAuthRequest()
+			initSuite(suite, request)
+
+			response, err := suite.sut.Execute(context.Background(), request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, "refresh-token", response.RefreshToken)
+			assert.Equal(t, refreshClaims.ExpiresAt, response.RefreshExpiresAt)
 		})
 	})
 }

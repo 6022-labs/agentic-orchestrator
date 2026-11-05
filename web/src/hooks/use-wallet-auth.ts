@@ -38,7 +38,7 @@ export const useWalletAuth = () => {
       const signature = await signer.signMessage(challenge.message)
 
       const { data } = await verifyAuth(address, signature)
-      signIn(data.token)
+      signIn(data.token, data.refreshToken)
       toast.success("Signed in")
     } catch (error) {
       toast.error(extractErrorMessage(error, "Sign-in failed"))

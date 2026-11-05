@@ -6,6 +6,8 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/auth/jwt"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
+	gojwt "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,6 +86,24 @@ func TestWhenVerifyingJwt(t *testing.T) {
 			result, err := suite.sut.VerifyJwtToken(token + "wrong")
 
 			assert.NotNil(t, err)
+			assert.Empty(t, result)
+		})
+	})
+
+	t.Run("Given a refresh token signed from the same hash", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should return an error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingJwtBeforeEach()
+			suite.jwtSettings.RefreshTtl = 3600
+			suite.jwtSettings.RefreshIdleTtl = 600
+			token, _, _ := jwt.NewRefreshTokenManager(suite.jwtSettings).Issue(common_tests.RandomEthAddress().Hex())
+
+			result, err := suite.sut.VerifyJwtToken(token)
+
+			assert.ErrorIs(t, err, gojwt.ErrTokenSignatureInvalid)
 			assert.Empty(t, result)
 		})
 	})

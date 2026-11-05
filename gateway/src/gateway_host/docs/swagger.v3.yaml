@@ -48,6 +48,11 @@ components:
         message:
           type: string
       type: object
+    requests.RefreshTokenRequest:
+      properties:
+        refreshToken:
+          type: string
+      type: object
     requests.SaveAgentPromptTemplateRequest:
       properties:
         content:
@@ -255,9 +260,24 @@ components:
         totalElements:
           type: integer
       type: object
+    responses.RefreshAuthResponse:
+      properties:
+        expiresAt:
+          type: string
+        refreshExpiresAt:
+          type: string
+        refreshToken:
+          type: string
+        token:
+          type: string
+      type: object
     responses.VerifyAuthResponse:
       properties:
         expiresAt:
+          type: string
+        refreshExpiresAt:
+          type: string
+        refreshToken:
           type: string
         token:
           type: string
@@ -669,10 +689,87 @@ paths:
       summary: Get authentication challenge
       tags:
       - authentication
+  /auth/logout:
+    post:
+      description: Revokes the refresh token's session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/requests.RefreshTokenRequest'
+                description: logout request
+                summary: request
+        description: logout request
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: unreadable body
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.InternalError'
+          description: Internal Server Error
+      summary: Sign out
+      tags:
+      - authentication
+  /auth/refresh:
+    post:
+      description: |-
+        Spends the refresh token, returns a fresh JWT and the next refresh token
+        A replayed refresh token revokes the session
+        401 codes: refresh_token_missing | refresh_token_invalid | session_revoked | refresh_token_reused
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/requests.RefreshTokenRequest'
+                description: refresh request
+                summary: request
+        description: refresh request
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.RefreshAuthResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: unreadable body
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.UnauthorizedError'
+          description: codes listed in the description
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors.InternalError'
+          description: Internal Server Error
+      summary: Refresh the session
+      tags:
+      - authentication
   /auth/verify:
     post:
       description: Verifies the signed EIP-4361 message for the nonce and returns
-        a JWT token
+        a JWT token + refresh token
       requestBody:
         content:
           application/json:

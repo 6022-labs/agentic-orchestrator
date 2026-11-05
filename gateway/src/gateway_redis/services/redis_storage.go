@@ -33,6 +33,20 @@ func (rs *RedisStorage) Store(ctx context.Context, key string, value string, exp
 	return err
 }
 
+func (rs *RedisStorage) Read(ctx context.Context, key string) (*string, error) {
+	start := time.Now()
+	val, err := rs.redisClient.Get(ctx, key).Result()
+	rs.redisMetrics.RecordOperation(ctx, "GET", time.Since(start), rs.operationError(err))
+	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &val, nil
+}
+
 func (rs *RedisStorage) ReadAndDelete(ctx context.Context, key string) (*string, error) {
 	start := time.Now()
 	val, err := rs.redisClient.GetDel(ctx, key).Result()

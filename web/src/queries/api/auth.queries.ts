@@ -11,10 +11,29 @@ export const getAuthChallenge = async (address: string, chainId: number) => {
   )
 }
 
+type AuthTokens = {
+  token: string
+  expiresAt: string
+  refreshToken: string
+  refreshExpiresAt: string
+}
+
 export const verifyAuth = async (address: string, signature: string) => {
-  return await axios.post<{ token: string; expiresAt: string }>(
+  return await axios.post<AuthTokens>(
     `/auth/verify`,
     { address, signature },
     { headers: { "Content-Type": "application/json" } }
   )
+}
+
+export const refreshAuth = async (refreshToken: string) => {
+  return await axios.post<AuthTokens>(
+    `/auth/refresh`,
+    { refreshToken },
+    { timeout: 5_000 }
+  )
+}
+
+export const logoutAuth = async (refreshToken: string) => {
+  return await axios.post(`/auth/logout`, { refreshToken })
 }

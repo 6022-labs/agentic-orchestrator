@@ -8,6 +8,8 @@ import (
 
 type CacheStorageInterface interface {
 	Store(ctx context.Context, key string, value string, expiration *time.Duration) error
+	// Read returns a nil value with a nil error on a miss.
+	Read(ctx context.Context, key string) (*string, error)
 	// ReadAndDelete atomically reads and drops a key; a nil value with a nil error is a miss.
 	ReadAndDelete(ctx context.Context, key string) (*string, error)
 	// StoreIfAbsent stores a key only if it doesn't exist yet, and reports whether it stored it.

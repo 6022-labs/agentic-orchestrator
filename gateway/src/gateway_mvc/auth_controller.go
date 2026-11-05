@@ -13,23 +13,31 @@ import (
 const (
 	AUTH_CHALLENGE_ENDPOINT = "/auth/challenge"
 	AUTH_VERIFY_ENDPOINT    = "/auth/verify"
+	AUTH_REFRESH_ENDPOINT   = "/auth/refresh"
+	AUTH_LOGOUT_ENDPOINT    = "/auth/logout"
 )
 
 type AuthController struct {
 	logger           *zap.Logger
 	getAuthChallenge use_cases.GetAuthChallengeInterface
 	verifyAuth       use_cases.VerifyAuthInterface
+	refreshAuth      use_cases.RefreshAuthInterface
+	revokeAuth       use_cases.RevokeAuthInterface
 }
 
 func NewAuthController(
 	logger *zap.Logger,
 	getAuthChallenge use_cases.GetAuthChallengeInterface,
 	verifyAuth use_cases.VerifyAuthInterface,
+	refreshAuth use_cases.RefreshAuthInterface,
+	revokeAuth use_cases.RevokeAuthInterface,
 ) *AuthController {
 	return &AuthController{
 		logger:           logger,
 		getAuthChallenge: getAuthChallenge,
 		verifyAuth:       verifyAuth,
+		refreshAuth:      refreshAuth,
+		revokeAuth:       revokeAuth,
 	}
 }
 
@@ -40,6 +48,8 @@ func (controller *AuthController) InitAuthenticatedRoutes(app fiber.Router) {
 func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 	app.Get(AUTH_CHALLENGE_ENDPOINT, controller.GetAuthChallenge)
 	app.Post(AUTH_VERIFY_ENDPOINT, controller.VerifyAuth)
+	app.Post(AUTH_REFRESH_ENDPOINT, controller.RefreshAuth) // unauthenticated: the access token has usually expired
+	app.Post(AUTH_LOGOUT_ENDPOINT, controller.Logout)
 }
 
 // GetAuthChallenge godoc
@@ -68,7 +78,7 @@ func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 
 // VerifyAuth godoc
 // @Summary      Verify signed challenge
-// @Description  Verifies the signed EIP-4361 message for the nonce and returns a JWT token
+// @Description  Verifies the signed EIP-4361 message for the nonce and returns a JWT token + refresh token
 // @Tags         authentication
 // @Accept       json
 // @Produce      json
@@ -90,4 +100,54 @@ func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 	}
 
 	return c.JSON(response)
+}
+
+// RefreshAuth godoc
+// @Summary      Refresh the session
+// @Description  Spends the refresh token, returns a fresh JWT and the next refresh token
+// @Description  A replayed refresh token revokes the session
+// @Description  401 codes: refresh_token_missing | refresh_token_invalid | session_revoked | refresh_token_reused
+// @Tags         authentication
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.RefreshTokenRequest true "refresh request"
+// @Success      200 {object} responses.RefreshAuthResponse
+// @Failure      400 {string} string "unreadable body"
+// @Failure      401 {object} errors.UnauthorizedError "codes listed in the description"
+// @Failure      500 {object} errors.InternalError
+// @Router       /auth/refresh [post]
+func (controller *AuthController) RefreshAuth(c fiber.Ctx) error {
+	request := new(requests.RefreshTokenRequest)
+	if err := c.Bind().Body(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	response, err := controller.refreshAuth.Execute(c.Context(), request)
+	if err != nil {
+		return mvc.WriteError(c, err)
+	}
+
+	return c.JSON(response)
+}
+
+// Logout godoc
+// @Summary      Sign out
+// @Description  Revokes the refresh token's session
+// @Tags         authentication
+// @Accept       json
+// @Param        request body requests.RefreshTokenRequest true "logout request"
+// @Success      204
+// @Failure      400 {string} string "unreadable body"
+// @Failure      500 {object} errors.InternalError
+// @Router       /auth/logout [post]
+func (controller *AuthController) Logout(c fiber.Ctx) error {
+	request := new(requests.RefreshTokenRequest)
+	if err := c.Bind().Body(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+
+	if err := controller.revokeAuth.Execute(c.Context(), request); err != nil {
+		return mvc.WriteError(c, err)
+	}
+	return c.SendStatus(fiber.StatusNoContent)
 }
