@@ -13,7 +13,6 @@ import (
 	reflect "reflect"
 	time "time"
 
-	jwt "github.com/golang-jwt/jwt/v5"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -55,21 +54,6 @@ func (m *MockJwtManagerInterface) CreateJwtToken(address string) (string, time.T
 func (mr *MockJwtManagerInterfaceMockRecorder) CreateJwtToken(address any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).CreateJwtToken), address)
-}
-
-// ExtractSubFromToken mocks base method.
-func (m *MockJwtManagerInterface) ExtractSubFromToken(token *jwt.Token, hash string) (*string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtractSubFromToken", token, hash)
-	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ExtractSubFromToken indicates an expected call of ExtractSubFromToken.
-func (mr *MockJwtManagerInterfaceMockRecorder) ExtractSubFromToken(token, hash any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtractSubFromToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).ExtractSubFromToken), token, hash)
 }
 
 // VerifyJwtToken mocks base method.

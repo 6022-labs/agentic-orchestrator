@@ -6,28 +6,23 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/helpers"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gofiber/fiber/v3"
-	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
 type JWTAuthenticationInjectionMiddleware struct {
-	logger      *zap.Logger
-	jwtSettings *settings.JwtSettings
-	jwtManager  interfaces.JwtManagerInterface
+	logger     *zap.Logger
+	jwtManager interfaces.JwtManagerInterface
 }
 
 func NewJWTAuthenticationInjectionMiddleware(
 	logger *zap.Logger,
-	jwtSettings *settings.JwtSettings,
 	jwtManager interfaces.JwtManagerInterface,
 ) *JWTAuthenticationInjectionMiddleware {
 	return &JWTAuthenticationInjectionMiddleware{
-		logger:      logger,
-		jwtManager:  jwtManager,
-		jwtSettings: jwtSettings,
+		logger:     logger,
+		jwtManager: jwtManager,
 	}
 }
 
@@ -64,25 +59,13 @@ func (m *JWTAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 		return c.Next()
 	}
 
-	jwtVal, err := jwt.Parse(jwtStr, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			m.logger.Info("Invalid JWT signing method")
-			return nil, nil
-		}
-		return []byte(m.jwtSettings.Hash), nil
-	})
+	authenticatedWalletStr, err := m.jwtManager.VerifyJwtToken(jwtStr)
 	if err != nil {
 		m.logger.Error("Invalid JWT", zap.Error(err))
 		return c.Next()
 	}
 
-	authenticatedWalletStr, err := m.jwtManager.ExtractSubFromToken(jwtVal, m.jwtSettings.Hash)
-	if err != nil {
-		m.logger.Error("Cannot extract user id from JWT", zap.Error(err))
-		return c.Next()
-	}
-
-	authenticatedWallet := common.HexToAddress(*authenticatedWalletStr)
+	authenticatedWallet := common.HexToAddress(authenticatedWalletStr)
 
 	c.SetContext(helpers.ContextWithCallerId(c.Context(), authenticatedWallet.Hex()))
 	c.Locals(AuthMethodLocal, metrics_interfaces.AuthMethodJwt)
