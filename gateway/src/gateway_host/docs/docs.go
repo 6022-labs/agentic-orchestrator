@@ -500,9 +500,101 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Revokes the refresh token's session",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Sign out",
+                "parameters": [
+                    {
+                        "description": "logout request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "unreadable body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "revoke_failed",
+                        "schema": {
+                            "$ref": "#/definitions/errors.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Spends the refresh token, returns a fresh JWT and the next refresh token\nA replayed refresh token revokes the session\n401 codes: refresh_token_missing | refresh_token_invalid | session_revoked | refresh_token_reused",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Refresh the session",
+                "parameters": [
+                    {
+                        "description": "refresh request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RefreshAuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "unreadable body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "codes listed in the description",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedError"
+                        }
+                    },
+                    "500": {
+                        "description": "refresh_failed",
+                        "schema": {
+                            "$ref": "#/definitions/errors.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/verify": {
             "post": {
-                "description": "Verifies the signed EIP-4361 message for the nonce and returns a JWT token",
+                "description": "Verifies the signed EIP-4361 message for the nonce and returns a JWT token + refresh token",
                 "consumes": [
                     "application/json"
                 ],
@@ -1056,6 +1148,14 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.RefreshTokenRequest": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.SaveAgentPromptTemplateRequest": {
             "type": "object",
             "properties": {
@@ -1378,10 +1478,33 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.RefreshAuthResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "refreshExpiresAt": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.VerifyAuthResponse": {
             "type": "object",
             "properties": {
                 "expiresAt": {
+                    "type": "string"
+                },
+                "refreshExpiresAt": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 },
                 "token": {

@@ -41,6 +41,21 @@ func (m *MockCacheStorageInterface) EXPECT() *MockCacheStorageInterfaceMockRecor
 	return m.recorder
 }
 
+// Read mocks base method.
+func (m *MockCacheStorageInterface) Read(ctx context.Context, key string) (*string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Read", ctx, key)
+	ret0, _ := ret[0].(*string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Read indicates an expected call of Read.
+func (mr *MockCacheStorageInterfaceMockRecorder) Read(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockCacheStorageInterface)(nil).Read), ctx, key)
+}
+
 // ReadAndDelete mocks base method.
 func (m *MockCacheStorageInterface) ReadAndDelete(ctx context.Context, key string) (*string, error) {
 	m.ctrl.T.Helper()

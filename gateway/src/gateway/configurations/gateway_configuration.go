@@ -123,6 +123,22 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(
+		jwt.NewRefreshTokenManager,
+		dig.As(new(interfaces.RefreshTokenManagerInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		auth.NewRefreshSessionStore,
+		dig.As(new(interfaces.RefreshSessionStoreInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// Use cases
 	err = container.Provide(
 		use_cases.NewGetAuthChallenge,
@@ -143,6 +159,22 @@ func AddGatewayConfiguration(container *dig.Container) {
 	err = container.Provide(
 		use_cases.NewVerifyAuth,
 		dig.As(new(use_cases.VerifyAuthInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewRefreshAuth,
+		dig.As(new(use_cases.RefreshAuthInterface)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(
+		use_cases.NewRevokeAuth,
+		dig.As(new(use_cases.RevokeAuthInterface)),
 	)
 	if err != nil {
 		panic(err)

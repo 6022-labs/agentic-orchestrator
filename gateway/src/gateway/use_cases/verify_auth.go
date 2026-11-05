@@ -15,10 +15,11 @@ type VerifyAuthInterface interface {
 }
 
 type VerifyAuth struct {
-	nonceStore         interfaces.NonceStoreInterface
-	siweMessageBuilder interfaces.SiweMessageBuilderInterface
-	signatureVerifier  interfaces.SignatureVerifierInterface
-	jwtManager         interfaces.JwtManagerInterface
+	nonceStore          interfaces.NonceStoreInterface
+	siweMessageBuilder  interfaces.SiweMessageBuilderInterface
+	signatureVerifier   interfaces.SignatureVerifierInterface
+	jwtManager          interfaces.JwtManagerInterface
+	refreshTokenManager interfaces.RefreshTokenManagerInterface
 }
 
 func NewVerifyAuth(
@@ -26,12 +27,14 @@ func NewVerifyAuth(
 	siweMessageBuilder interfaces.SiweMessageBuilderInterface,
 	signatureVerifier interfaces.SignatureVerifierInterface,
 	jwtManager interfaces.JwtManagerInterface,
+	refreshTokenManager interfaces.RefreshTokenManagerInterface,
 ) *VerifyAuth {
 	return &VerifyAuth{
-		nonceStore:         nonceStore,
-		siweMessageBuilder: siweMessageBuilder,
-		signatureVerifier:  signatureVerifier,
-		jwtManager:         jwtManager,
+		nonceStore:          nonceStore,
+		siweMessageBuilder:  siweMessageBuilder,
+		signatureVerifier:   signatureVerifier,
+		jwtManager:          jwtManager,
+		refreshTokenManager: refreshTokenManager,
 	}
 }
 
@@ -60,5 +63,15 @@ func (uc *VerifyAuth) Execute(
 		return nil, err
 	}
 
-	return &responses.VerifyAuthResponse{Token: token, ExpiresAt: expiresAt}, nil
+	refreshToken, refreshClaims, err := uc.refreshTokenManager.Issue(request.Address)
+	if err != nil {
+		return nil, errors.NewInternalError("refresh_token_issue_failed", err.Error())
+	}
+
+	return &responses.VerifyAuthResponse{
+		Token:            token,
+		ExpiresAt:        expiresAt,
+		RefreshToken:     refreshToken,
+		RefreshExpiresAt: refreshClaims.ExpiresAt,
+	}, nil
 }

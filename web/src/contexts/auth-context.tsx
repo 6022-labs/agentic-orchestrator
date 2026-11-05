@@ -1,18 +1,30 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
+import axios from "axios"
 import { useLocation, useNavigate } from "react-router-dom"
+
+import { logoutAuth, refreshAuth } from "@/queries/api/auth.queries"
+
+const REFRESH_LEAD_MS = 60_000
+// With the 10s request timeout, the first 3 attempts start within the gateway's 30s reuse grace.
+const REFRESH_RETRY_MS = 2_000
+const REFRESH_FAST_ATTEMPTS = 3
+// Past the grace a retry either succeeds or gets a 401, so failing offline never signs out.
+const REFRESH_BACKOFF_MS = 60_000
+const REFRESH_TOKEN_KEY = "refresh_token"
 
 // The gateway JWT carries { sub, iat, nbf, exp }. There is no chain claim — the
 // chain is fixed per deployment (see config.chainId).
 type UserData = {
   address: string
+  iat?: number
   exp?: number
 }
 
 type AuthContextType = {
   user: UserData | null
   jwt: string | null
-  signIn: (token: string) => void
+  signIn: (token: string, refreshToken: string) => void
   signOut: () => void
 }
 
@@ -29,7 +41,7 @@ const extractUserData = (token: string): UserData | null => {
   try {
     const [, body] = token.split(".")
     const payload = JSON.parse(atob(body))
-    return { address: payload.sub, exp: payload.exp }
+    return { address: payload.sub, iat: payload.iat, exp: payload.exp }
   } catch {
     return null
   }
@@ -47,29 +59,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [jwt, setJwt] = React.useState<string | null>(() =>
     localStorage.getItem("jwt")
   )
-  const expirationTimeout = React.useRef<number | null>(null)
+  const refreshTimeout = React.useRef<number | null>(null)
+  // Client minus gateway clock, measured on fresh tokens, so a skewed clock can't loop refreshes.
+  const clockSkewMs = React.useRef(0)
 
-  const clearExpirationTimeout = () => {
-    if (expirationTimeout.current != null) {
-      window.clearTimeout(expirationTimeout.current)
-      expirationTimeout.current = null
+  const clearRefreshTimeout = () => {
+    if (refreshTimeout.current != null) {
+      window.clearTimeout(refreshTimeout.current)
+      refreshTimeout.current = null
     }
   }
 
-  const signIn = React.useCallback((token: string) => {
+  const signIn = React.useCallback((token: string, refreshToken: string) => {
+    const issuedAt = extractUserData(token)?.iat
+    clockSkewMs.current = issuedAt ? Date.now() - issuedAt * 1000 : 0
     localStorage.setItem("jwt", token)
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
     setJwt(token)
   }, [])
 
-  const signOut = React.useCallback(() => {
-    clearExpirationTimeout()
+  const clearSession = React.useCallback(() => {
+    clearRefreshTimeout()
     localStorage.removeItem("jwt")
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
     setJwt(null)
     setUser(null)
   }, [])
 
+  const signOut = React.useCallback(() => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+    clearSession()
+    if (refreshToken) logoutAuth(refreshToken).catch(() => undefined)
+  }, [clearSession])
+
   React.useEffect(() => {
-    clearExpirationTimeout()
+    clearRefreshTimeout()
 
     if (!jwt) {
       setUser(null)
@@ -83,17 +107,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return undefined
     }
 
-    const now = Date.now()
     const expiresAtMs = decoded.exp * 1000
+    const lifetimeMs = decoded.iat ? expiresAtMs - decoded.iat * 1000 : 0
+    const leadMs =
+      lifetimeMs > 0
+        ? Math.min(REFRESH_LEAD_MS, lifetimeMs / 2)
+        : REFRESH_LEAD_MS
+    const gatewayNow = () => Date.now() - clockSkewMs.current
+    // Set on cleanup so a refresh still in flight can't revive a signed-out session.
+    let cancelled = false
+    let attempts = 0
 
-    if (expiresAtMs <= now) {
-      signOut()
-      return undefined
+    const refresh = async () => {
+      attempts += 1
+      // Read at call time: another tab may have rotated it.
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+      if (!refreshToken) {
+        clearSession()
+        return
+      }
+      try {
+        const { data } = await refreshAuth(refreshToken)
+        if (cancelled) return
+        // A sign-out in any tab clears storage while the call is in flight.
+        if (localStorage.getItem(REFRESH_TOKEN_KEY))
+          signIn(data.token, data.refreshToken)
+        else clearSession()
+      } catch (error) {
+        if (cancelled) return
+        const isUnauthorized =
+          axios.isAxiosError(error) && error.response?.status === 401
+        if (isUnauthorized) {
+          clearSession()
+          return
+        }
+        refreshTimeout.current = window.setTimeout(
+          refresh,
+          attempts < REFRESH_FAST_ATTEMPTS
+            ? REFRESH_RETRY_MS
+            : REFRESH_BACKOFF_MS
+        )
+      }
     }
 
-    expirationTimeout.current = window.setTimeout(signOut, expiresAtMs - now)
-    return () => clearExpirationTimeout()
-  }, [jwt, signOut])
+    refreshTimeout.current = window.setTimeout(
+      refresh,
+      Math.max(expiresAtMs - leadMs - gatewayNow(), 0)
+    )
+    return () => {
+      cancelled = true
+      clearRefreshTimeout()
+    }
+  }, [jwt, signIn, clearSession])
 
   React.useEffect(() => {
     const isLoginRoute = location.pathname === "/login"

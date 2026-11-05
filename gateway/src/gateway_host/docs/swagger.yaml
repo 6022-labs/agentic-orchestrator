@@ -48,6 +48,11 @@ definitions:
       message:
         type: string
     type: object
+  requests.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
   requests.SaveAgentPromptTemplateRequest:
     properties:
       agentCollectionAddress:
@@ -257,9 +262,24 @@ definitions:
       totalElements:
         type: integer
     type: object
+  responses.RefreshAuthResponse:
+    properties:
+      expiresAt:
+        type: string
+      refreshExpiresAt:
+        type: string
+      refreshToken:
+        type: string
+      token:
+        type: string
+    type: object
   responses.VerifyAuthResponse:
     properties:
       expiresAt:
+        type: string
+      refreshExpiresAt:
+        type: string
+      refreshToken:
         type: string
       token:
         type: string
@@ -591,12 +611,75 @@ paths:
       summary: Get authentication challenge
       tags:
       - authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revokes the refresh token's session
+      parameters:
+      - description: logout request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RefreshTokenRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: unreadable body
+          schema:
+            type: string
+        "500":
+          description: revoke_failed
+          schema:
+            $ref: '#/definitions/errors.InternalError'
+      summary: Sign out
+      tags:
+      - authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Spends the refresh token, returns a fresh JWT and the next refresh token
+        A replayed refresh token revokes the session
+        401 codes: refresh_token_missing | refresh_token_invalid | session_revoked | refresh_token_reused
+      parameters:
+      - description: refresh request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RefreshAuthResponse'
+        "400":
+          description: unreadable body
+          schema:
+            type: string
+        "401":
+          description: codes listed in the description
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedError'
+        "500":
+          description: refresh_failed
+          schema:
+            $ref: '#/definitions/errors.InternalError'
+      summary: Refresh the session
+      tags:
+      - authentication
   /auth/verify:
     post:
       consumes:
       - application/json
       description: Verifies the signed EIP-4361 message for the nonce and returns
-        a JWT token
+        a JWT token + refresh token
       parameters:
       - description: verify request
         in: body
