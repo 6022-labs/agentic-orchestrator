@@ -25,18 +25,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Lists the modules whose files changed, so the matrix skips the others.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      modules: ${{ steps.filter.outputs.changes }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Detect changed modules
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            agent-identity:
+              - "agent-identity/**"
+              - &golangci ".golangci.yml"
+              - &workflow ".github/workflows/go-build.yml"
+            agent-swarm:
+              - "agent-swarm/**"
+              - *golangci
+              - *workflow
+            channels-and-integrations/slack-bridge:
+              - "channels-and-integrations/slack-bridge/**"
+              - *golangci
+              - *workflow
+            gateway:
+              - "gateway/**"
+              - *golangci
+              - *workflow
+
   build:
+    needs: changes
+    if: needs.changes.outputs.modules != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - agent-identity
-          - agent-swarm
-          - channels-and-integrations/slack-bridge
-          - gateway
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
 
     steps:
       - name: Check out code
