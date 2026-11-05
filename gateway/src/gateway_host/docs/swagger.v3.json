@@ -1138,7 +1138,7 @@
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "revoke_failed"
                     }
                 },
                 "summary": "Sign out",
@@ -1209,7 +1209,7 @@
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "refresh_failed"
                     }
                 },
                 "summary": "Refresh the session",

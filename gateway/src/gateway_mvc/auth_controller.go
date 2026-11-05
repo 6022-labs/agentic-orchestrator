@@ -114,7 +114,7 @@ func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 // @Success      200 {object} responses.RefreshAuthResponse
 // @Failure      400 {string} string "unreadable body"
 // @Failure      401 {object} errors.UnauthorizedError "codes listed in the description"
-// @Failure      500 {object} errors.InternalError
+// @Failure      500 {object} errors.InternalError "refresh_failed"
 // @Router       /auth/refresh [post]
 func (controller *AuthController) RefreshAuth(c fiber.Ctx) error {
 	request := new(requests.RefreshTokenRequest)
@@ -138,7 +138,7 @@ func (controller *AuthController) RefreshAuth(c fiber.Ctx) error {
 // @Param        request body requests.RefreshTokenRequest true "logout request"
 // @Success      204
 // @Failure      400 {string} string "unreadable body"
-// @Failure      500 {object} errors.InternalError
+// @Failure      500 {object} errors.InternalError "revoke_failed"
 // @Router       /auth/logout [post]
 func (controller *AuthController) Logout(c fiber.Ctx) error {
 	request := new(requests.RefreshTokenRequest)

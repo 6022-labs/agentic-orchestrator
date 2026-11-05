@@ -717,7 +717,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors.InternalError'
-          description: Internal Server Error
+          description: revoke_failed
       summary: Sign out
       tags:
       - authentication
@@ -762,7 +762,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors.InternalError'
-          description: Internal Server Error
+          description: refresh_failed
       summary: Refresh the session
       tags:
       - authentication

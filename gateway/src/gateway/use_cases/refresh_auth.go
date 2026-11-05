@@ -11,7 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
 )
 
-// refreshReuseGrace lets tabs racing on the same cookie share one successor instead of tripping reuse detection.
+// refreshReuseGrace lets tabs racing on the same refresh token share one successor instead of tripping reuse detection.
 const refreshReuseGrace = 30 * time.Second
 
 type RefreshAuthInterface interface {
@@ -66,7 +66,13 @@ func (uc *RefreshAuth) Execute(
 
 	now := uc.now()
 	spent := interfaces.SpentRefreshToken{SuccessorId: successorId, SpentAt: now}
-	prior, spentNow, err := uc.refreshSessionStore.Spend(ctx, claims.SessionId, claims.TokenId, spent, claims.ExpiresAt)
+	prior, spentNow, err := uc.refreshSessionStore.Spend(
+		ctx,
+		claims.SessionId,
+		claims.TokenId,
+		spent,
+		claims.SessionExpiresAt,
+	)
 	if err != nil {
 		return nil, errors.NewInternalError("refresh_failed", err.Error())
 	}

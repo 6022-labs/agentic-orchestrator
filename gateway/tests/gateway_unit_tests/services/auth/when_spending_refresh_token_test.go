@@ -65,30 +65,6 @@ func TestWhenSpendingRefreshToken(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the token was never spent", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenSpendingRefreshTokenTestingSuite) {
-			suite.cacheStorageMock.EXPECT().
-				StoreIfAbsent(gomock.Any(), cachePath, string(payload), ttlUntilExpiry).
-				Return(true, nil).
-				Times(1)
-		}
-
-		t.Run("Should spend it until the session expires", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenSpendingRefreshTokenBeforeEach(t)
-			initSuite(suite)
-
-			prior, spentNow, err := suite.sut.Spend(context.Background(), "session-1", "token-1", spent, expiresAt)
-
-			assert.Nil(t, err)
-			assert.True(t, spentNow)
-			assert.Equal(t, &spent, prior)
-		})
-	})
-
 	t.Run("Given reading the spend record fails", func(t *testing.T) {
 		t.Parallel()
 
@@ -151,6 +127,30 @@ func TestWhenSpendingRefreshToken(t *testing.T) {
 
 			assert.ErrorContains(t, err, "failed to decode spent refresh token")
 			assert.False(t, spentNow)
+		})
+	})
+
+	t.Run("Given the token was never spent", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenSpendingRefreshTokenTestingSuite) {
+			suite.cacheStorageMock.EXPECT().
+				StoreIfAbsent(gomock.Any(), cachePath, string(payload), ttlUntilExpiry).
+				Return(true, nil).
+				Times(1)
+		}
+
+		t.Run("Should spend it until the session expires", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSpendingRefreshTokenBeforeEach(t)
+			initSuite(suite)
+
+			prior, spentNow, err := suite.sut.Spend(context.Background(), "session-1", "token-1", spent, expiresAt)
+
+			assert.Nil(t, err)
+			assert.True(t, spentNow)
+			assert.Equal(t, &spent, prior)
 		})
 	})
 

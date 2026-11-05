@@ -532,7 +532,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "revoke_failed",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
                         }
@@ -584,7 +584,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "refresh_failed",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
                         }

@@ -21,16 +21,29 @@ func WhenGeneratingRefreshTokenIdBeforeEach() *WhenGeneratingRefreshTokenIdTesti
 func TestWhenGeneratingRefreshTokenId(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Should return a unique 32-byte hex id", func(t *testing.T) {
+	t.Run("Given a working entropy source", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenGeneratingRefreshTokenIdBeforeEach()
+		t.Run("Should return a 32-byte hex id", func(t *testing.T) {
+			t.Parallel()
 
-		first, err := suite.sut.NewTokenId()
-		second, _ := suite.sut.NewTokenId()
+			suite := WhenGeneratingRefreshTokenIdBeforeEach()
 
-		assert.Nil(t, err)
-		assert.Len(t, first, 64)
-		assert.NotEqual(t, first, second)
+			id, err := suite.sut.NewTokenId()
+
+			assert.Nil(t, err)
+			assert.Len(t, id, 64)
+		})
+
+		t.Run("Should return a different id on every call", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenGeneratingRefreshTokenIdBeforeEach()
+
+			first, _ := suite.sut.NewTokenId()
+			second, _ := suite.sut.NewTokenId()
+
+			assert.NotEqual(t, first, second)
+		})
 	})
 }

@@ -51,25 +51,20 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 		}
 	}
 
-	t.Run("Given a refresh token it issued", func(t *testing.T) {
+	t.Run("Given a malformed token", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return its claims", func(t *testing.T) {
+		t.Run("Should reject it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenParsingRefreshTokenBeforeEach()
-			token, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
 
-			claims, err := suite.sut.Parse(token)
+			claims, err := suite.sut.Parse("not-a-jwt")
 
-			assert.Nil(t, err)
-			assert.Equal(t, issued.Address, claims.Address)
-			assert.Equal(t, issued.SessionId, claims.SessionId)
-			assert.Equal(t, issued.TokenId, claims.TokenId)
-			assert.Equal(t, issued.SessionExpiresAt.Unix(), claims.SessionExpiresAt.Unix())
+			assert.ErrorIs(t, err, gojwt.ErrTokenMalformed)
+			assert.Nil(t, claims)
 		})
 	})
-
 	t.Run("Given an access token signed with the same hash", func(t *testing.T) {
 		t.Parallel()
 
@@ -108,6 +103,23 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a refresh token signed with another algorithm", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenParsingRefreshTokenBeforeEach()
+			key := sha256.Sum256([]byte(suite.jwtSettings.Hash + ":refresh"))
+			token, _ := gojwt.NewWithClaims(gojwt.SigningMethodHS512, validClaims()).SignedString(key[:])
+
+			claims, err := suite.sut.Parse(token)
+
+			assert.ErrorIs(t, err, gojwt.ErrTokenSignatureInvalid)
+			assert.Nil(t, claims)
+		})
+	})
+
 	t.Run("Given an expired session", func(t *testing.T) {
 		t.Parallel()
 
@@ -128,6 +140,23 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a refresh-key token without an expiry", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenParsingRefreshTokenBeforeEach()
+			claims := validClaims()
+			delete(claims, "exp")
+
+			parsed, err := suite.sut.Parse(signWithRefreshKey(suite.jwtSettings.Hash, claims))
+
+			assert.ErrorIs(t, err, gojwt.ErrTokenRequiredClaimMissing)
+			assert.Nil(t, parsed)
+		})
+	})
+
 	t.Run("Given a refresh-key token with another type", func(t *testing.T) {
 		t.Parallel()
 
@@ -137,6 +166,23 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 			suite := WhenParsingRefreshTokenBeforeEach()
 			claims := validClaims()
 			claims["typ"] = "access"
+
+			parsed, err := suite.sut.Parse(signWithRefreshKey(suite.jwtSettings.Hash, claims))
+
+			assert.ErrorIs(t, err, jwt.ErrRefreshTokenMalformed)
+			assert.Nil(t, parsed)
+		})
+	})
+
+	t.Run("Given a refresh-key token without a subject", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it as malformed", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenParsingRefreshTokenBeforeEach()
+			claims := validClaims()
+			delete(claims, "sub")
 
 			parsed, err := suite.sut.Parse(signWithRefreshKey(suite.jwtSettings.Hash, claims))
 
@@ -196,18 +242,22 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 		})
 	})
 
-	t.Run("Given a malformed token", func(t *testing.T) {
+	t.Run("Given a refresh token it issued", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should reject it", func(t *testing.T) {
+		t.Run("Should return its claims", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenParsingRefreshTokenBeforeEach()
+			token, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
 
-			claims, err := suite.sut.Parse("not-a-jwt")
+			claims, err := suite.sut.Parse(token)
 
-			assert.ErrorIs(t, err, gojwt.ErrTokenMalformed)
-			assert.Nil(t, claims)
+			assert.Nil(t, err)
+			assert.Equal(t, issued.Address, claims.Address)
+			assert.Equal(t, issued.SessionId, claims.SessionId)
+			assert.Equal(t, issued.TokenId, claims.TokenId)
+			assert.Equal(t, issued.SessionExpiresAt.Unix(), claims.SessionExpiresAt.Unix())
 		})
 	})
 }

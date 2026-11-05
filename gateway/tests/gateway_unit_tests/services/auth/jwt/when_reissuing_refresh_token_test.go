@@ -28,49 +28,57 @@ func WhenReissuingRefreshTokenBeforeEach() *WhenReissuingRefreshTokenTestingSuit
 func TestWhenReissuingRefreshToken(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Should keep the session and its expiry under the new token id", func(t *testing.T) {
+	t.Run("Given a session ending before the idle expiry", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenReissuingRefreshTokenBeforeEach()
-		_, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
+		t.Run("Should not expire the token after the session", func(t *testing.T) {
+			t.Parallel()
 
-		token, claims, err := suite.sut.Reissue(*issued, "next-token-id")
+			suite := WhenReissuingRefreshTokenBeforeEach()
+			sessionExpiresAt := time.Unix(time.Now().Add(time.Minute).Unix(), 0)
 
-		assert.Nil(t, err)
-		parsed, err := suite.sut.Parse(token)
-		assert.Nil(t, err)
-		assert.Equal(t, "next-token-id", claims.TokenId)
-		assert.Equal(t, "next-token-id", parsed.TokenId)
-		assert.Equal(t, issued.SessionId, parsed.SessionId)
-		assert.Equal(t, issued.Address, parsed.Address)
-		assert.Equal(t, issued.SessionExpiresAt.Unix(), parsed.SessionExpiresAt.Unix())
+			_, claims, err := suite.sut.Reissue(interfaces.RefreshClaims{
+				Address:          common_tests.RandomEthAddress().Hex(),
+				SessionId:        "session",
+				SessionExpiresAt: sessionExpiresAt,
+			}, "next-token-id")
+
+			assert.Nil(t, err)
+			assert.Equal(t, sessionExpiresAt, claims.ExpiresAt)
+		})
 	})
 
-	t.Run("Should expire the token after the refresh idle ttl", func(t *testing.T) {
+	t.Run("Given the claims of an issued token and a new token id", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenReissuingRefreshTokenBeforeEach()
-		_, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
+		t.Run("Should keep the session under the new token id", func(t *testing.T) {
+			t.Parallel()
 
-		_, claims, err := suite.sut.Reissue(*issued, "next-token-id")
+			suite := WhenReissuingRefreshTokenBeforeEach()
+			_, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
 
-		assert.Nil(t, err)
-		assert.WithinDuration(t, time.Now().Add(10*time.Minute), claims.ExpiresAt, 5*time.Second)
-	})
+			token, claims, err := suite.sut.Reissue(*issued, "next-token-id")
 
-	t.Run("Should not expire the token after the session", func(t *testing.T) {
-		t.Parallel()
+			assert.Nil(t, err)
+			parsed, err := suite.sut.Parse(token)
+			assert.Nil(t, err)
+			assert.Equal(t, "next-token-id", claims.TokenId)
+			assert.Equal(t, "next-token-id", parsed.TokenId)
+			assert.Equal(t, issued.SessionId, parsed.SessionId)
+			assert.Equal(t, issued.Address, parsed.Address)
+			assert.Equal(t, issued.SessionExpiresAt.Unix(), parsed.SessionExpiresAt.Unix())
+		})
 
-		suite := WhenReissuingRefreshTokenBeforeEach()
-		sessionExpiresAt := time.Unix(time.Now().Add(time.Minute).Unix(), 0)
+		t.Run("Should expire the token after the refresh idle ttl", func(t *testing.T) {
+			t.Parallel()
 
-		_, claims, err := suite.sut.Reissue(interfaces.RefreshClaims{
-			Address:          common_tests.RandomEthAddress().Hex(),
-			SessionId:        "session",
-			SessionExpiresAt: sessionExpiresAt,
-		}, "next-token-id")
+			suite := WhenReissuingRefreshTokenBeforeEach()
+			_, issued, _ := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
 
-		assert.Nil(t, err)
-		assert.Equal(t, sessionExpiresAt, claims.ExpiresAt)
+			_, claims, err := suite.sut.Reissue(*issued, "next-token-id")
+
+			assert.Nil(t, err)
+			assert.WithinDuration(t, time.Now().Add(10*time.Minute), claims.ExpiresAt, 5*time.Second)
+		})
 	})
 }

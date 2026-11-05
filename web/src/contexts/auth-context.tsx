@@ -6,9 +6,11 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { logoutAuth, refreshAuth } from "@/queries/api/auth.queries"
 
 const REFRESH_LEAD_MS = 60_000
-// With the 5s request timeout, all 3 attempts start within the gateway's 30s reuse grace.
-const REFRESH_RETRY_MS = 8_000
-const REFRESH_MAX_ATTEMPTS = 3
+// With the 10s request timeout, the first 3 attempts start within the gateway's 30s reuse grace.
+const REFRESH_RETRY_MS = 2_000
+const REFRESH_FAST_ATTEMPTS = 3
+// Past the grace a retry either succeeds or gets a 401, so failing offline never signs out.
+const REFRESH_BACKOFF_MS = 60_000
 const REFRESH_TOKEN_KEY = "refresh_token"
 
 // The gateway JWT carries { sub, iat, nbf, exp }. There is no chain claim — the
@@ -126,16 +128,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       try {
         const { data } = await refreshAuth(refreshToken)
-        if (!cancelled) signIn(data.token, data.refreshToken)
+        if (cancelled) return
+        // A sign-out in any tab clears storage while the call is in flight.
+        if (localStorage.getItem(REFRESH_TOKEN_KEY))
+          signIn(data.token, data.refreshToken)
+        else clearSession()
       } catch (error) {
         if (cancelled) return
         const isUnauthorized =
           axios.isAxiosError(error) && error.response?.status === 401
-        if (isUnauthorized || attempts >= REFRESH_MAX_ATTEMPTS) {
+        if (isUnauthorized) {
           clearSession()
           return
         }
-        refreshTimeout.current = window.setTimeout(refresh, REFRESH_RETRY_MS)
+        refreshTimeout.current = window.setTimeout(
+          refresh,
+          attempts < REFRESH_FAST_ATTEMPTS
+            ? REFRESH_RETRY_MS
+            : REFRESH_BACKOFF_MS
+        )
       }
     }
 

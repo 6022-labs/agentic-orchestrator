@@ -56,19 +56,19 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		suite.mockRefreshTokenManager.EXPECT().Parse("refresh-token").Return(claims, nil).Times(1)
 		suite.mockRefreshSessionStore.EXPECT().IsRevoked(gomock.Any(), "session-1").Return(false, nil).Times(1)
 	}
-	expectParsed := func(suite *WhenRefreshingAuthTestingSuite) {
+	expectSuccessorId := func(suite *WhenRefreshingAuthTestingSuite) {
 		expectLiveSession(suite)
 		suite.mockRefreshTokenManager.EXPECT().NewTokenId().Return("token-2", nil).Times(1)
 	}
 	expectSpent := func(suite *WhenRefreshingAuthTestingSuite) {
 		suite.mockRefreshSessionStore.EXPECT().
-			Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.ExpiresAt).
+			Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
 			Return(nil, true, nil).
 			Times(1)
 	}
 	expectSpentOutsideGrace := func(suite *WhenRefreshingAuthTestingSuite) {
 		suite.mockRefreshSessionStore.EXPECT().
-			Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.ExpiresAt).
+			Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
 			Return(&interfaces.SpentRefreshToken{SuccessorId: "token-old", SpentAt: time.Now().Add(-time.Minute)}, false, nil).
 			Times(1)
 	}
@@ -188,9 +188,9 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			suite.mockRefreshSessionStore.EXPECT().
-				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.ExpiresAt).
+				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
 				Return(nil, false, errors.New("redis down")).
 				Times(1)
 		}
@@ -213,7 +213,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			expectSpentOutsideGrace(suite)
 			suite.mockRefreshSessionStore.EXPECT().
 				Revoke(gomock.Any(), "session-1", claims.SessionExpiresAt).
@@ -239,7 +239,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			expectSpentOutsideGrace(suite)
 		}
 
@@ -278,9 +278,9 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			suite.mockRefreshSessionStore.EXPECT().
-				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.ExpiresAt).
+				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
 				Return(nil, false, nil).
 				Times(1)
 		}
@@ -320,9 +320,9 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			suite.mockRefreshSessionStore.EXPECT().
-				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.ExpiresAt).
+				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
 				Return(&interfaces.SpentRefreshToken{SuccessorId: "token-shared", SpentAt: time.Now()}, false, nil).
 				Times(1)
 			expectIssued(suite, "token-shared")
@@ -345,7 +345,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			expectSpent(suite)
 			suite.mockJwtManager.EXPECT().
 				CreateJwtToken(claims.Address).
@@ -371,7 +371,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			expectSpent(suite)
 			suite.mockJwtManager.EXPECT().
 				CreateJwtToken(claims.Address).
@@ -401,11 +401,11 @@ func TestWhenRefreshingAuth(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
-			expectParsed(suite)
+			expectSuccessorId(suite)
 			suite.mockRefreshSessionStore.EXPECT().
 				Spend(gomock.Any(), "session-1", "token-1", gomock.Cond(func(x any) bool {
 					return x.(interfaces.SpentRefreshToken).SuccessorId == "token-2"
-				}), claims.ExpiresAt).
+				}), claims.SessionExpiresAt).
 				Return(nil, true, nil).
 				Times(1)
 			expectIssued(suite, "token-2")
@@ -424,7 +424,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			assert.Equal(t, accessExpiresAt, response.ExpiresAt)
 		})
 
-		t.Run("Should rotate the refresh token without extending the session", func(t *testing.T) {
+		t.Run("Should return the rotated refresh token", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenRefreshingAuthBeforeEach(t)

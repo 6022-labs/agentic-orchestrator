@@ -31,6 +31,25 @@ func TestWhenRevokingRefreshSession(t *testing.T) {
 
 	cachePath := "auth/refresh/session-1/revoked"
 
+	t.Run("Given the cache storage fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenRevokingRefreshSessionTestingSuite) {
+			suite.cacheStorageMock.EXPECT().Store(gomock.Any(), cachePath, "1", gomock.Any()).
+				Return(errors.New("redis down")).Times(1)
+		}
+
+		t.Run("Should return the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRevokingRefreshSessionBeforeEach(t)
+			initSuite(suite)
+
+			err := suite.sut.Revoke(context.Background(), "session-1", time.Now().Add(time.Hour))
+
+			assert.ErrorContains(t, err, "redis down")
+		})
+	})
 	t.Run("Given the session is still running", func(t *testing.T) {
 		t.Parallel()
 
@@ -77,26 +96,6 @@ func TestWhenRevokingRefreshSession(t *testing.T) {
 			err := suite.sut.Revoke(context.Background(), "session-1", time.Now().Add(-time.Hour))
 
 			assert.Nil(t, err)
-		})
-	})
-
-	t.Run("Given the cache storage fails", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenRevokingRefreshSessionTestingSuite) {
-			suite.cacheStorageMock.EXPECT().Store(gomock.Any(), cachePath, "1", gomock.Any()).
-				Return(errors.New("redis down")).Times(1)
-		}
-
-		t.Run("Should return the error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenRevokingRefreshSessionBeforeEach(t)
-			initSuite(suite)
-
-			err := suite.sut.Revoke(context.Background(), "session-1", time.Now().Add(time.Hour))
-
-			assert.ErrorContains(t, err, "redis down")
 		})
 	})
 }

@@ -30,6 +30,24 @@ func TestWhenCheckingRefreshSessionRevocation(t *testing.T) {
 
 	cachePath := "auth/refresh/session-1/revoked"
 
+	t.Run("Given the cache storage fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenCheckingRefreshSessionRevocationTestingSuite) {
+			suite.cacheStorageMock.EXPECT().Read(gomock.Any(), cachePath).Return(nil, errors.New("redis down")).Times(1)
+		}
+
+		t.Run("Should return the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenCheckingRefreshSessionRevocationBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.IsRevoked(context.Background(), "session-1")
+
+			assert.ErrorContains(t, err, "redis down")
+		})
+	})
 	t.Run("Given the session was revoked", func(t *testing.T) {
 		t.Parallel()
 
@@ -68,25 +86,6 @@ func TestWhenCheckingRefreshSessionRevocation(t *testing.T) {
 
 			assert.Nil(t, err)
 			assert.False(t, revoked)
-		})
-	})
-
-	t.Run("Given the cache storage fails", func(t *testing.T) {
-		t.Parallel()
-
-		initSuite := func(suite *WhenCheckingRefreshSessionRevocationTestingSuite) {
-			suite.cacheStorageMock.EXPECT().Read(gomock.Any(), cachePath).Return(nil, errors.New("redis down")).Times(1)
-		}
-
-		t.Run("Should return the error", func(t *testing.T) {
-			t.Parallel()
-
-			suite := WhenCheckingRefreshSessionRevocationBeforeEach(t)
-			initSuite(suite)
-
-			_, err := suite.sut.IsRevoked(context.Background(), "session-1")
-
-			assert.ErrorContains(t, err, "redis down")
 		})
 	})
 }

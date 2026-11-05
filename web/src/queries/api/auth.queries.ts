@@ -30,7 +30,7 @@ export const refreshAuth = async (refreshToken: string) => {
   return await axios.post<AuthTokens>(
     `/auth/refresh`,
     { refreshToken },
-    { timeout: 5_000 }
+    { timeout: 10_000 }
   )
 }
 

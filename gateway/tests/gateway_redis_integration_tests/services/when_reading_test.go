@@ -2,7 +2,6 @@ package services_test
 
 import (
 	"context"
-
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_redis/services"

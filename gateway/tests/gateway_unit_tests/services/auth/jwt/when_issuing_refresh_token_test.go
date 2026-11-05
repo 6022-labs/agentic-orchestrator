@@ -27,42 +27,46 @@ func WhenIssuingRefreshTokenBeforeEach() *WhenIssuingRefreshTokenTestingSuite {
 func TestWhenIssuingRefreshToken(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Should start a session capped at the refresh ttl", func(t *testing.T) {
+	t.Run("Given valid JWT settings and an address", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenIssuingRefreshTokenBeforeEach()
-		address := common_tests.RandomEthAddress().Hex()
+		t.Run("Should start a session capped at the refresh ttl", func(t *testing.T) {
+			t.Parallel()
 
-		token, claims, err := suite.sut.Issue(address)
+			suite := WhenIssuingRefreshTokenBeforeEach()
+			address := common_tests.RandomEthAddress().Hex()
 
-		assert.Nil(t, err)
-		assert.NotEmpty(t, token)
-		assert.Equal(t, address, claims.Address)
-		assert.NotEmpty(t, claims.SessionId)
-		assert.NotEmpty(t, claims.TokenId)
-		assert.WithinDuration(t, time.Now().Add(time.Hour), claims.SessionExpiresAt, 5*time.Second)
-	})
+			token, claims, err := suite.sut.Issue(address)
 
-	t.Run("Should expire the token after the refresh idle ttl", func(t *testing.T) {
-		t.Parallel()
+			assert.Nil(t, err)
+			assert.NotEmpty(t, token)
+			assert.Equal(t, address, claims.Address)
+			assert.NotEmpty(t, claims.SessionId)
+			assert.NotEmpty(t, claims.TokenId)
+			assert.WithinDuration(t, time.Now().Add(time.Hour), claims.SessionExpiresAt, 5*time.Second)
+		})
 
-		suite := WhenIssuingRefreshTokenBeforeEach()
+		t.Run("Should expire the token after the refresh idle ttl", func(t *testing.T) {
+			t.Parallel()
 
-		_, claims, err := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
+			suite := WhenIssuingRefreshTokenBeforeEach()
 
-		assert.Nil(t, err)
-		assert.WithinDuration(t, time.Now().Add(10*time.Minute), claims.ExpiresAt, 5*time.Second)
-	})
+			_, claims, err := suite.sut.Issue(common_tests.RandomEthAddress().Hex())
 
-	t.Run("Should start a different session each time", func(t *testing.T) {
-		t.Parallel()
+			assert.Nil(t, err)
+			assert.WithinDuration(t, time.Now().Add(10*time.Minute), claims.ExpiresAt, 5*time.Second)
+		})
 
-		suite := WhenIssuingRefreshTokenBeforeEach()
-		address := common_tests.RandomEthAddress().Hex()
+		t.Run("Should start a different session each time", func(t *testing.T) {
+			t.Parallel()
 
-		_, first, _ := suite.sut.Issue(address)
-		_, second, _ := suite.sut.Issue(address)
+			suite := WhenIssuingRefreshTokenBeforeEach()
+			address := common_tests.RandomEthAddress().Hex()
 
-		assert.NotEqual(t, first.SessionId, second.SessionId)
+			_, first, _ := suite.sut.Issue(address)
+			_, second, _ := suite.sut.Issue(address)
+
+			assert.NotEqual(t, first.SessionId, second.SessionId)
+		})
 	})
 }

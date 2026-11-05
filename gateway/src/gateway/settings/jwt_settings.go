@@ -63,5 +63,10 @@ func NewJwtSettings(
 		settings.RefreshIdleTtl = defaultRefreshIdleTtl
 	}
 
+	if settings.RefreshIdleTtl < 2*settings.LivingTime {
+		logger.Warn("jwt.refresh_idle_ttl is under twice jwt.living_time, raising it")
+		settings.RefreshIdleTtl = 2 * settings.LivingTime
+	}
+
 	return &settings
 }

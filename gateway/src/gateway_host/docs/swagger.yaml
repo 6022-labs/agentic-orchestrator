@@ -631,7 +631,7 @@ paths:
           schema:
             type: string
         "500":
-          description: Internal Server Error
+          description: revoke_failed
           schema:
             $ref: '#/definitions/errors.InternalError'
       summary: Sign out
@@ -668,7 +668,7 @@ paths:
           schema:
             $ref: '#/definitions/errors.UnauthorizedError'
         "500":
-          description: Internal Server Error
+          description: refresh_failed
           schema:
             $ref: '#/definitions/errors.InternalError'
       summary: Refresh the session

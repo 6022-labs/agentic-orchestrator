@@ -90,7 +90,7 @@ func TestWhenVerifyingJwt(t *testing.T) {
 		})
 	})
 
-	t.Run("Given a refresh token signed from the same hash", func(t *testing.T) {
+	t.Run("Given a refresh token signed with the same hash", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should return an error", func(t *testing.T) {
