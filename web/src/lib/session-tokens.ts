@@ -1,6 +1,4 @@
 const SESSION_KEY = "session"
-// Older builds stored the two tokens under separate keys.
-const LEGACY_KEYS = ["jwt", "refresh_token"] as const
 
 // The gateway JWT carries { sub, iat, nbf, exp }. There is no chain claim — the chain is fixed per deployment (see config.chainId).
 export type UserData = {
@@ -32,20 +30,6 @@ export const saveTokens = (jwt: string, refreshToken: string) => {
 
 export const clearTokens = () => {
   localStorage.removeItem(SESSION_KEY)
-}
-
-// migrateLegacyTokens moves a session saved by an older build so the upgrade signs nobody out.
-export const migrateLegacyTokens = () => {
-  try {
-    const [jwt, refreshToken] = LEGACY_KEYS.map((key) =>
-      localStorage.getItem(key)
-    )
-    // Removed first so a failing save can't crash every later boot.
-    LEGACY_KEYS.forEach((key) => localStorage.removeItem(key))
-    if (jwt && refreshToken && !getSession()) saveTokens(jwt, refreshToken)
-  } catch {
-    // Blocked or full storage: start signed out rather than blank.
-  }
 }
 
 // A null key means another tab cleared the whole storage.
