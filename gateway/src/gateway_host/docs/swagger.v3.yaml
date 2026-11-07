@@ -708,7 +708,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors.InternalError'
-          description: Internal Server Error
+          description: internal_error
       summary: Get authentication challenge
       tags:
       - authentication
@@ -830,7 +830,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/errors.InternalError'
-          description: Internal Server Error
+          description: internal_error | refresh_token_issue_failed
       summary: Verify signed challenge
       tags:
       - authentication

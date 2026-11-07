@@ -65,7 +65,7 @@ func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Success      200 {object} responses.GetAuthChallengeResponse
 // @Failure      400 {object} errors.ValidationError
 // @Failure      400 {object} errors.BadRequestError "invalid_query"
-// @Failure      500 {object} errors.InternalError
+// @Failure      500 {object} errors.InternalError "internal_error"
 // @Router       /auth/challenge [get]
 func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 	request := new(requests.GetAuthChallengeRequest)
@@ -91,7 +91,7 @@ func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 // @Failure      400 {object} errors.ValidationError
 // @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      401 {object} errors.UnauthorizedError "challenge_not_found | signature_mismatch"
-// @Failure      500 {object} errors.InternalError
+// @Failure      500 {object} errors.InternalError "internal_error | refresh_token_issue_failed"
 // @Router       /auth/verify [post]
 func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 	request := new(requests.VerifyAuthRequest)

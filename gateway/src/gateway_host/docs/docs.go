@@ -498,7 +498,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
                         }
@@ -642,7 +642,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error | refresh_token_issue_failed",
                         "schema": {
                             "$ref": "#/definitions/errors.InternalError"
                         }
