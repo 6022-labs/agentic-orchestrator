@@ -13,35 +13,45 @@ const REFRESH_BACKOFF_MS = 60_000
 
 type SessionRefreshOptions = {
   jwt: string | null
+  // address owns the session this tab holds or is restoring.
+  address: string | undefined
+  // restoring has no access token yet, so it refreshes right away.
+  restoring: boolean
   // Client minus gateway clock, measured on fresh tokens, so a skewed clock can't loop refreshes.
   clockSkewMs: React.RefObject<number>
   onRefreshed: (token: string, refreshToken: string) => void
+  // onAccessToken keeps a fresh access token in memory when another tab already stored the rotated refresh token.
+  onAccessToken: (token: string) => void
   // onEndedElsewhere ends this tab's session only: storage is empty or holds another wallet's session.
   onEndedElsewhere: () => void
   onExpired: () => void
   onSettled: () => void
 }
 
-// useSessionRefresh rotates the session shortly before the access token expires.
+// useSessionRefresh trades the stored refresh token for a new access token shortly before the current one expires.
 export const useSessionRefresh = ({
   jwt,
+  address,
+  restoring,
   clockSkewMs,
   onRefreshed,
+  onAccessToken,
   onEndedElsewhere,
   onExpired,
   onSettled,
 }: SessionRefreshOptions) => {
   React.useEffect(() => {
-    const decoded = decodeJwt(jwt)
-    if (!decoded?.exp) return undefined
+    const exp = decodeJwt(jwt)?.exp
+    if (!address || (!exp && !restoring)) return undefined
 
-    const expiresAtMs = decoded.exp * 1000
-    const lifetimeMs = decoded.iat ? expiresAtMs - decoded.iat * 1000 : 0
+    const iat = decodeJwt(jwt)?.iat
+    const expiresAtMs = exp ? exp * 1000 : 0
+    const lifetimeMs = exp && iat ? expiresAtMs - iat * 1000 : 0
     const leadMs =
       lifetimeMs > 0
         ? Math.min(REFRESH_LEAD_MS, lifetimeMs / 2)
         : REFRESH_LEAD_MS
-    const dueAtMs = expiresAtMs - leadMs
+    const dueAtMs = exp ? expiresAtMs - leadMs : 0
     const gatewayNow = () => Date.now() - clockSkewMs.current
     // Set on cleanup so a refresh still in flight can't revive a signed-out session.
     let cancelled = false
@@ -52,10 +62,11 @@ export const useSessionRefresh = ({
     const refresh = async () => {
       attempts += 1
       inFlight = true
+      let settled = true
       // Read at call time: another tab may have rotated it; never spend a token stored for another address.
       const session = getSession()
       try {
-        if (!session || decodeJwt(session.jwt)?.address !== decoded.address) {
+        if (!session || session.address !== address) {
           onEndedElsewhere()
           return
         }
@@ -64,7 +75,10 @@ export const useSessionRefresh = ({
         // Keep the successor while the spent token is still stored, even if cancelled: dropping it would leave a spent token behind.
         if (storedRefreshToken === session.refreshToken)
           onRefreshed(data.token, data.refreshToken)
-        else if (!storedRefreshToken && !cancelled) onEndedElsewhere()
+        else if (!storedRefreshToken) {
+          if (!cancelled) onEndedElsewhere()
+        } else if (getSession()?.address === address && !cancelled)
+          onAccessToken(data.token)
       } catch (error) {
         if (cancelled) return
         if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -73,6 +87,8 @@ export const useSessionRefresh = ({
           else onEndedElsewhere()
           return
         }
+        // Without an access token there is nothing to show yet: keep restoring while retrying.
+        if (!jwt) settled = false
         timeout = window.setTimeout(
           refresh,
           attempts < REFRESH_FAST_ATTEMPTS
@@ -81,7 +97,7 @@ export const useSessionRefresh = ({
         )
       } finally {
         inFlight = false
-        if (!cancelled) onSettled()
+        if (settled && !cancelled) onSettled()
       }
     }
 
@@ -100,5 +116,15 @@ export const useSessionRefresh = ({
       window.clearTimeout(timeout)
       document.removeEventListener("visibilitychange", onVisibilityChange)
     }
-  }, [jwt, clockSkewMs, onRefreshed, onEndedElsewhere, onExpired, onSettled])
+  }, [
+    jwt,
+    address,
+    restoring,
+    clockSkewMs,
+    onRefreshed,
+    onAccessToken,
+    onEndedElsewhere,
+    onExpired,
+    onSettled,
+  ])
 }
