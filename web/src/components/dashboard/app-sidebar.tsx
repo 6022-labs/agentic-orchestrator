@@ -5,6 +5,7 @@ import { useAppKit } from "@reown/appkit/react"
 
 import { truncateEthAddress } from "@/lib/utils"
 import { useAuth } from "@/contexts/auth-context"
+import { useSignOut } from "@/hooks/use-sign-out"
 import {
   Sidebar,
   SidebarContent,
@@ -66,7 +67,8 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
 
 export function AppSidebar() {
   const { open } = useAppKit()
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
+  const signOut = useSignOut()
   const { setOpenMobile } = useSidebar()
 
   // Close the mobile sheet first so the AppKit modal doesn't stack under it.
