@@ -614,7 +614,7 @@ paths:
           schema:
             $ref: '#/definitions/errors.BadRequestError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
             $ref: '#/definitions/errors.InternalError'
       summary: Get authentication challenge
@@ -712,7 +712,7 @@ paths:
           schema:
             $ref: '#/definitions/errors.UnauthorizedError'
         "500":
-          description: Internal Server Error
+          description: internal_error | refresh_token_issue_failed
           schema:
             $ref: '#/definitions/errors.InternalError'
       summary: Verify signed challenge
