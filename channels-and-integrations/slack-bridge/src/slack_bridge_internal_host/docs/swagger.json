@@ -40,9 +40,9 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -89,9 +89,9 @@
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
@@ -105,6 +105,17 @@
         }
     },
     "definitions": {
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.InternalError": {
             "type": "object",
             "properties": {

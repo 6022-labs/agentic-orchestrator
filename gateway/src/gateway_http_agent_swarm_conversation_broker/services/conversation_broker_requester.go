@@ -180,11 +180,19 @@ func (r *ConversationBrokerRequester) SaveAgentPromptTemplate(
 		return nil, err
 	}
 	if rsp.StatusCode() == http.StatusBadRequest {
-		var validationErr errors.ValidationError
-		if json.Unmarshal(rsp.Body, &validationErr) == nil && validationErr.Message != "" {
-			return nil, &validationErr
+		// A 400 is either a ValidationError {field,message} or a BadRequestError {code,message}.
+		var body struct {
+			Field   string `json:"field"`
+			Code    string `json:"code"`
+			Message string `json:"message"`
 		}
-		return nil, errors.NewValidationError("request", string(rsp.Body))
+		if json.Unmarshal(rsp.Body, &body) != nil || body.Message == "" {
+			return nil, errors.NewValidationError("request", string(rsp.Body))
+		}
+		if body.Field == "" || body.Code != "" {
+			return nil, errors.NewValidationError("request", body.Message)
+		}
+		return nil, errors.NewValidationError(body.Field, body.Message)
 	}
 	if rsp.StatusCode() == http.StatusNotFound {
 		return nil, errors.NewNotFoundError("agent_not_found", "agent not found")

@@ -1,11 +1,11 @@
 package conversation_broker_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -14,18 +14,18 @@ const (
 )
 
 type RemoteAgentsController struct {
-	logger             *zap.Logger
+	errorWriter        *mvc.ErrorWriter
 	getRemoteAgentCard use_cases.GetRemoteAgentCardInterface
 	resolveAgentUrl    use_cases.ResolveAgentUrlInterface
 }
 
 func NewRemoteAgentsController(
-	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getRemoteAgentCard use_cases.GetRemoteAgentCardInterface,
 	resolveAgentUrl use_cases.ResolveAgentUrlInterface,
 ) *RemoteAgentsController {
 	return &RemoteAgentsController{
-		logger:             logger,
+		errorWriter:        errorWriter,
 		getRemoteAgentCard: getRemoteAgentCard,
 		resolveAgentUrl:    resolveAgentUrl,
 	}
@@ -43,16 +43,12 @@ func (c *RemoteAgentsController) InitRoutes(app fiber.Router) {
 // @Param ensDomain path string true "Agent ENS domain"
 // @Success 200 {object} responses.RemoteAgentCardResponse
 // @Failure 400 {object} errors.ValidationError
-// @Failure 502 {string} string "Bad Gateway"
+// @Failure 502 {object} errors.UnavailableError "agent_node_unreachable"
 // @Router /remote-agents/{ensDomain}/card [get]
 func (c *RemoteAgentsController) GetCard(ctx fiber.Ctx) error {
 	card, err := c.getRemoteAgentCard.Get(ctx.Context(), ctx.Params("ensDomain"))
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		c.logger.Warn("failed to fetch agent node card", zap.Error(err))
-		return ctx.Status(fiber.StatusBadGateway).SendString("failed to reach agent node")
+		return c.errorWriter.Write(ctx, err)
 	}
 	return ctx.JSON(card)
 }
@@ -64,21 +60,18 @@ func (c *RemoteAgentsController) GetCard(ctx fiber.Ctx) error {
 // @Param ensDomain path string true "Agent ENS domain"
 // @Success 200 {object} responses.AgentUrlResponse
 // @Failure 400 {object} errors.ValidationError
-// @Failure 502 {string} string "Bad Gateway"
+// @Failure 400 {object} errors.BadRequestError "invalid_params"
+// @Failure 502 {object} errors.UnavailableError "agent_url_unresolved"
 // @Router /remote-agents/{ensDomain}/url [get]
 func (c *RemoteAgentsController) GetUrl(ctx fiber.Ctx) error {
 	request := new(requests.ResolveAgentUrlRequest)
 	if err := ctx.Bind().URI(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	url, err := c.resolveAgentUrl.Resolve(ctx.Context(), request)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		c.logger.Warn("failed to resolve agent url", zap.Error(err))
-		return ctx.Status(fiber.StatusBadGateway).SendString("failed to resolve agent url")
+		return c.errorWriter.Write(ctx, err)
 	}
 	return ctx.JSON(url)
 }

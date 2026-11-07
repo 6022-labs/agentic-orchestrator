@@ -84,10 +84,12 @@ func TestWhenRevokingAuth(t *testing.T) {
 	t.Run("Given the session store fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("redis down")
+
 		initSuite := func(suite *WhenRevokingAuthTestingSuite) {
 			suite.mockRefreshTokenManager.EXPECT().Parse("refresh-token").Return(claims, nil).Times(1)
 			suite.mockRefreshSessionStore.EXPECT().Revoke(gomock.Any(), "session-1", claims.SessionExpiresAt).
-				Return(errors.New("redis down")).Times(1)
+				Return(depErr).Times(1)
 		}
 
 		t.Run("Should return an internal error", func(t *testing.T) {
@@ -101,6 +103,8 @@ func TestWhenRevokingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "revoke_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 

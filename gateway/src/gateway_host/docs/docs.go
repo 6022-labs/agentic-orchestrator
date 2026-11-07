@@ -78,15 +78,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
-                        "description": "agent not found",
+                        "description": "agent_not_found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
                     "500": {
@@ -137,9 +137,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -203,9 +203,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -297,9 +297,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body or invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -374,9 +374,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -443,6 +443,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.ListAgentsResponse"
                         }
                     },
+                    "400": {
+                        "description": "invalid_query",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequestError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -486,9 +492,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_query",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
@@ -526,9 +532,9 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "unreadable body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
@@ -572,9 +578,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "unreadable body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -624,9 +630,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -746,9 +752,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "zero uuid; a malformed id returns plain text",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -813,9 +819,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "zero uuid; a malformed id returns plain text",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -886,9 +892,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "zero uuid; a malformed id returns plain text",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -959,9 +965,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "zero uuid; a malformed id returns plain text",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
@@ -1051,15 +1057,15 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.UnauthorizedError"
                         }
                     },
                     "500": {
@@ -1081,6 +1087,17 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "BridgePlatformSlack"
             ]
+        },
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         },
         "errors.ForbiddenError": {
             "type": "object",

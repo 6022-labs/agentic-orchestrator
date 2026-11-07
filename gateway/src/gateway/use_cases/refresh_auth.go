@@ -53,7 +53,7 @@ func (uc *RefreshAuth) Execute(
 
 	revoked, err := uc.refreshSessionStore.IsRevoked(ctx, claims.SessionId)
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_failed", err)
 	}
 	if revoked {
 		return nil, errors.NewUnauthorizedError("session_revoked", "session was revoked")
@@ -61,7 +61,7 @@ func (uc *RefreshAuth) Execute(
 
 	successorId, err := uc.refreshTokenManager.NewTokenId()
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_failed", err)
 	}
 
 	now := uc.now()
@@ -74,12 +74,12 @@ func (uc *RefreshAuth) Execute(
 		claims.SessionExpiresAt,
 	)
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_failed", err)
 	}
 	if !spentNow {
 		if prior == nil || now.Sub(prior.SpentAt) > refreshReuseGrace {
 			if err := uc.refreshSessionStore.Revoke(ctx, claims.SessionId, claims.SessionExpiresAt); err != nil {
-				return nil, errors.NewInternalError("refresh_failed", err.Error())
+				return nil, errors.NewInternalError("refresh_failed", err)
 			}
 			return nil, errors.NewUnauthorizedError("refresh_token_reused", "refresh token was already used")
 		}
@@ -88,12 +88,12 @@ func (uc *RefreshAuth) Execute(
 
 	token, expiresAt, err := uc.jwtManager.CreateJwtToken(claims.Address)
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_failed", err)
 	}
 
 	refreshToken, refreshClaims, err := uc.refreshTokenManager.Reissue(*claims, successorId)
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_failed", err)
 	}
 
 	return &responses.RefreshAuthResponse{

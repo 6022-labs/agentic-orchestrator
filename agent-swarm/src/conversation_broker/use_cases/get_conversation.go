@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/responses"
@@ -36,7 +36,10 @@ func (uc *GetConversation) Get(
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
-		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
+		return nil, cb_errors.NewNotFoundError(
+			"conversation_not_found",
+			"conversation not found: "+request.ConversationID.String(),
+		)
 	}
 
 	return responses.ConversationResponseFromModel(conversation), nil

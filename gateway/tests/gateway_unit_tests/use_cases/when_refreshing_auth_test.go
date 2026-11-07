@@ -120,10 +120,12 @@ func TestWhenRefreshingAuth(t *testing.T) {
 	t.Run("Given the revocation check fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("redis down")
+
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			suite.mockRefreshTokenManager.EXPECT().Parse("refresh-token").Return(claims, nil).Times(1)
 			suite.mockRefreshSessionStore.EXPECT().IsRevoked(gomock.Any(), "session-1").
-				Return(false, errors.New("redis down")).Times(1)
+				Return(false, depErr).Times(1)
 		}
 
 		t.Run("Should return an internal error", func(t *testing.T) {
@@ -137,6 +139,8 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 
@@ -165,9 +169,11 @@ func TestWhenRefreshingAuth(t *testing.T) {
 	t.Run("Given the token id generation fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("entropy exhausted")
+
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			expectLiveSession(suite)
-			suite.mockRefreshTokenManager.EXPECT().NewTokenId().Return("", errors.New("entropy exhausted")).Times(1)
+			suite.mockRefreshTokenManager.EXPECT().NewTokenId().Return("", depErr).Times(1)
 		}
 
 		t.Run("Should return an internal error", func(t *testing.T) {
@@ -181,17 +187,21 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 
 	t.Run("Given spending the refresh token fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("redis down")
+
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			expectSuccessorId(suite)
 			suite.mockRefreshSessionStore.EXPECT().
 				Spend(gomock.Any(), "session-1", "token-1", gomock.Any(), claims.SessionExpiresAt).
-				Return(nil, false, errors.New("redis down")).
+				Return(nil, false, depErr).
 				Times(1)
 		}
 
@@ -206,18 +216,22 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 
 	t.Run("Given the session revocation fails after a reuse", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("redis down")
+
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			expectSuccessorId(suite)
 			expectSpentOutsideGrace(suite)
 			suite.mockRefreshSessionStore.EXPECT().
 				Revoke(gomock.Any(), "session-1", claims.SessionExpiresAt).
-				Return(errors.New("redis down")).
+				Return(depErr).
 				Times(1)
 		}
 
@@ -232,6 +246,8 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 
@@ -344,12 +360,14 @@ func TestWhenRefreshingAuth(t *testing.T) {
 	t.Run("Given the access token creation fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("sign failed")
+
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			expectSuccessorId(suite)
 			expectSpent(suite)
 			suite.mockJwtManager.EXPECT().
 				CreateJwtToken(claims.Address).
-				Return("", time.Time{}, errors.New("sign failed")).
+				Return("", time.Time{}, depErr).
 				Times(1)
 		}
 
@@ -364,11 +382,15 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 
 	t.Run("Given the refresh token reissue fails", func(t *testing.T) {
 		t.Parallel()
+
+		depErr := errors.New("sign failed")
 
 		initSuite := func(suite *WhenRefreshingAuthTestingSuite) {
 			expectSuccessorId(suite)
@@ -379,7 +401,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 				Times(1)
 			suite.mockRefreshTokenManager.EXPECT().
 				Reissue(*claims, "token-2").
-				Return("", nil, errors.New("sign failed")).
+				Return("", nil, depErr).
 				Times(1)
 		}
 
@@ -394,6 +416,8 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 

@@ -65,7 +65,7 @@ func (uc *VerifyAuth) Execute(
 
 	refreshToken, refreshClaims, err := uc.refreshTokenManager.Issue(request.Address)
 	if err != nil {
-		return nil, errors.NewInternalError("refresh_token_issue_failed", err.Error())
+		return nil, errors.NewInternalError("refresh_token_issue_failed", err)
 	}
 
 	return &responses.VerifyAuthResponse{

@@ -15,6 +15,24 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// ErrorsBadRequestError defines model for errors.BadRequestError.
+type ErrorsBadRequestError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
+// ErrorsInternalError defines model for errors.InternalError.
+type ErrorsInternalError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
+// ErrorsNotFoundError defines model for errors.NotFoundError.
+type ErrorsNotFoundError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
 // ErrorsValidationError defines model for errors.ValidationError.
 type ErrorsValidationError struct {
 	Field   *string `json:"field,omitempty"`
@@ -479,7 +497,7 @@ type GetAgentCollectionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]ResponsesAgentCollectionResponse
-	JSON500      *string
+	JSON500      *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -502,8 +520,9 @@ type GetAgentEnsEnsDomainResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentResponse
-	JSON404      *string
-	JSON500      *string
+	JSON400      *ErrorsBadRequestError
+	JSON404      *ErrorsNotFoundError
+	JSON500      *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -526,9 +545,11 @@ type GetAgentAgentCollectionAddressAgentCollectionTokenIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentResponse
-	JSON400      *ErrorsValidationError
-	JSON404      *string
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -551,7 +572,8 @@ type GetAgentsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesListAgentsResponse
-	JSON500      *string
+	JSON400      *ErrorsBadRequestError
+	JSON500      *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -628,7 +650,7 @@ func ParseGetAgentCollectionsResponse(rsp *http.Response) (*GetAgentCollectionsR
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -660,15 +682,22 @@ func ParseGetAgentEnsEnsDomainResponse(rsp *http.Response) (*GetAgentEnsEnsDomai
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsBadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest string
+		var dest ErrorsNotFoundError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -701,21 +730,23 @@ func ParseGetAgentAgentCollectionAddressAgentCollectionTokenIdResponse(rsp *http
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest string
+		var dest ErrorsNotFoundError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -747,8 +778,15 @@ func ParseGetAgentsResponse(rsp *http.Response) (*GetAgentsResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsBadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

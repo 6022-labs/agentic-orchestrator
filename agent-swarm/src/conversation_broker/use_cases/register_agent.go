@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -60,7 +60,7 @@ func (uc *RegisterAgent) Register(
 	}
 	if registryAgent == nil {
 		agentKey := fmt.Sprintf("%s/%d", request.CollectionAddress, request.CollectionTokenId)
-		return nil, false, cb_errors.NewNotFoundError("agent", agentKey)
+		return nil, false, cb_errors.NewNotFoundError("agent_not_found", "agent not found: "+agentKey)
 	}
 
 	participant := registryAgent.ToParticipant()

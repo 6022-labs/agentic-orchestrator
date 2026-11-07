@@ -1,5 +1,26 @@
 basePath: /
 definitions:
+  errors.BadRequestError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.InternalError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.NotFoundError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   errors.ValidationError:
     properties:
       field:
@@ -81,9 +102,9 @@ paths:
               $ref: '#/definitions/responses.AgentCollectionResponse'
             type: array
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: List agent collections
       tags:
       - AgentCollection
@@ -110,17 +131,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
-          description: Agent not found
+          description: agent_not_found
           schema:
-            type: string
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get agent
       tags:
       - Agent
@@ -140,14 +161,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.AgentResponse'
+        "400":
+          description: invalid_params
+          schema:
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
-          description: Agent not found
+          description: agent_not_found
           schema:
-            type: string
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get agent by ENS domain
       tags:
       - Agent
@@ -182,10 +207,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ListAgentsResponse'
-        "500":
-          description: Internal Server Error
+        "400":
+          description: invalid_query
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
+        "500":
+          description: internal_error
+          schema:
+            $ref: '#/definitions/errors.InternalError'
       summary: List agents
       tags:
       - Agent

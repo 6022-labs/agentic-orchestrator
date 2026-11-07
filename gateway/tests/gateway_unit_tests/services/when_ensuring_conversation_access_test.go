@@ -14,7 +14,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 type WhenEnsuringConversationAccessTestingSuite struct {
@@ -34,7 +33,6 @@ func WhenEnsuringConversationAccessBeforeEach(
 
 	return &WhenEnsuringConversationAccessTestingSuite{
 		sut: services.NewConversationAccessVerifier(
-			zap.NewNop(),
 			mockAgentAccessVerifier,
 			mockConversationBrokerRequester,
 		),
@@ -94,7 +92,7 @@ func TestWhenEnsuringConversationAccess(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should return an unavailable error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenEnsuringConversationAccessBeforeEach(t)
@@ -110,7 +108,8 @@ func TestWhenEnsuringConversationAccess(t *testing.T) {
 			var unavailable *gateway_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailable)
 			assert.Equal(t, "conversation_broker_unavailable", unavailable.Code)
-			assert.NotContains(t, err.Error(), assert.AnError.Error())
+			assert.Equal(t, "conversation broker is unavailable", unavailable.Message)
+			assert.ErrorIs(t, err, assert.AnError)
 		})
 	})
 
@@ -167,7 +166,7 @@ func TestWhenEnsuringConversationAccess(t *testing.T) {
 				Times(1)
 			suite.mockAgentAccessVerifier.EXPECT().
 				EnsureAccess(gomock.Any(), gomock.Any(), collectionAddress, uint64(1)).
-				Return(gateway_errors.NewUnavailableError("agent_registry_unavailable", "registry down")).
+				Return(gateway_errors.NewUnavailableError("agent_registry_unavailable", "agent registry is unavailable", nil)).
 				Times(1)
 		}
 

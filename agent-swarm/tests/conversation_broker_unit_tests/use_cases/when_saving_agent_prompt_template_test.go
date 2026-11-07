@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -155,7 +155,9 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 
 			_, err := suite.sut.Save(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.NotFoundError{}, err)
+			var notFoundErr *cb_errors.NotFoundError
+			require.ErrorAs(t, err, &notFoundErr)
+			assert.Equal(t, "agent_not_found", notFoundErr.Code)
 		})
 	})
 

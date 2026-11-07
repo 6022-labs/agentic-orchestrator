@@ -1,7 +1,7 @@
 package slack_bridge_internal_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
@@ -15,15 +15,18 @@ const (
 
 type WalletController struct {
 	logger                          *zap.Logger
+	errorWriter                     *mvc.ErrorWriter
 	setWalletOwnershipToSlackPlayer use_cases.SetWalletOwnershipToSlackUserInterface
 }
 
 func NewWalletController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	setWalletOwnershipToSlackPlayer use_cases.SetWalletOwnershipToSlackUserInterface,
 ) *WalletController {
 	return &WalletController{
 		logger:                          logger,
+		errorWriter:                     errorWriter,
 		setWalletOwnershipToSlackPlayer: setWalletOwnershipToSlackPlayer,
 	}
 }
@@ -41,6 +44,7 @@ func (controller *WalletController) InitRoutes(app fiber.Router) {
 // @Param        request body requests.SetWalletOwnershipToSlackUserRequest true "Wallet ownership verification"
 // @Success      204 "No Content"
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      500 {object} errors.InternalError
 // @Router       /wallet/set-ownership-to-slack-user [post]
 func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) error {
@@ -53,15 +57,14 @@ func (controller *WalletController) SetWalletOwnershipToSlackUser(c fiber.Ctx) e
 
 	request := new(requests.SetWalletOwnershipToSlackUserRequest)
 	if err := c.Bind().Body(request); err != nil {
-		controller.logger.Error("Failed to parse request", zap.Error(err))
-		return err
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
 	err := controller.setWalletOwnershipToSlackPlayer.Set(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	controller.logger.Info("Set wallet ownership to Slack user request processed successfully")

@@ -42,7 +42,7 @@ func (uc *GetAgentUrl) Get(
 		request.AgentCollectionTokenId,
 	)
 	if err != nil {
-		return nil, errors.NewUnavailableError("agent_registry_unavailable", "failed to load agent: "+err.Error())
+		return nil, errors.NewUnavailableError("agent_registry_unavailable", "agent registry is unavailable", err)
 	}
 	if agent == nil {
 		return nil, errors.NewNotFoundError("agent_not_found", "agent not found: "+request.AgentCollectionAddress)
@@ -56,7 +56,7 @@ func (uc *GetAgentUrl) Get(
 
 	response, err := uc.conversationBrokerRequester.GetAgentUrl(ctx, agent.EnsDomain)
 	if err != nil {
-		return nil, errors.NewUnavailableError("agent_url_unresolved", "failed to resolve agent url: "+err.Error())
+		return nil, errors.NewUnavailableError("agent_url_unresolved", "agent url could not be resolved", err)
 	}
 
 	return response, nil

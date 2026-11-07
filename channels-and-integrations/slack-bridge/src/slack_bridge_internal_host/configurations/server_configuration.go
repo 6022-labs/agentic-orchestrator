@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc/middlewares"
 	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/settings"
@@ -25,21 +26,21 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: hostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    hostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 
 type useRestApiParams struct {
 	dig.In
 
-	App               *fiber.App
-	Logger            *zap.Logger
-	RequestMetrics    *mvc_middlewares.ApiRequestMetricsMiddleware
-	RequestFailureLog *mvc_middlewares.RequestFailureLogMiddleware
-	Controllers       []slack_bridge_internal_mvc.ControllerInterface `group:"controllers"`
+	App            *fiber.App
+	Logger         *zap.Logger
+	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
+	Controllers    []slack_bridge_internal_mvc.ControllerInterface `group:"controllers"`
 }
 
 func useRestApi(p useRestApiParams) {
@@ -55,8 +56,6 @@ func useRestApi(p useRestApiParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
-
-	p.App.Use(p.RequestFailureLog.Handle)
 
 	p.App.Get("/swagger/*", swaggo.New())
 

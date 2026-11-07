@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/mvc/middlewares"
 	_ "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_host/settings"
@@ -25,10 +26,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: hostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    hostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 

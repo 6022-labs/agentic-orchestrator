@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
@@ -57,7 +57,7 @@ func (uc *RegisterConversation) Register(
 		return nil, fmt.Errorf("failed to load bridge: %w", err)
 	}
 	if bridge == nil {
-		return nil, cb_errors.NewNotFoundError("bridge", request.BridgeID.String())
+		return nil, cb_errors.NewNotFoundError("bridge_not_found", "bridge not found: "+request.BridgeID.String())
 	}
 
 	for _, pid := range request.ParticipantIDs {
@@ -66,7 +66,7 @@ func (uc *RegisterConversation) Register(
 			return nil, fmt.Errorf("failed to load participant %s: %w", pid, err)
 		}
 		if participant == nil {
-			return nil, cb_errors.NewNotFoundError("participant", pid.String())
+			return nil, cb_errors.NewNotFoundError("participant_not_found", "participant not found: "+pid.String())
 		}
 	}
 

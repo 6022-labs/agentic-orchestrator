@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	common_errors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external/command_handlers"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_mvc/requests"
 	"github.com/gofiber/fiber/v3"
@@ -29,6 +30,7 @@ const (
 
 type CommandHandlerController struct {
 	logger                    *zap.Logger
+	errorWriter               *mvc.ErrorWriter
 	addAgentToChannel         command_handlers.AddAgentToChannelInterface
 	listAgentsInChannel       command_handlers.ListAgentInChannelInterface
 	verifyWalletOwnership     command_handlers.VerifyWalletOwnershipInterface
@@ -38,6 +40,7 @@ type CommandHandlerController struct {
 
 func NewCommandHandlerController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	addAgentToChannel command_handlers.AddAgentToChannelInterface,
 	listAgentsInChannel command_handlers.ListAgentInChannelInterface,
 	verifyWalletOwnership command_handlers.VerifyWalletOwnershipInterface,
@@ -46,6 +49,7 @@ func NewCommandHandlerController(
 ) *CommandHandlerController {
 	return &CommandHandlerController{
 		logger:                    logger,
+		errorWriter:               errorWriter,
 		addAgentToChannel:         addAgentToChannel,
 		listAgentsInChannel:       listAgentsInChannel,
 		verifyWalletOwnership:     verifyWalletOwnership,
@@ -72,15 +76,14 @@ func (controller *CommandHandlerController) InitRoutes(app fiber.Router) {
 // @Param        text formData string true "Command text: [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
 // @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
-// @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Router       /command-handler/add-agent-to-channel [post]
 func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received add agent command request")
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
@@ -102,15 +105,14 @@ func (controller *CommandHandlerController) HandleAddAgentToChannelCommand(c fib
 // @Param        text formData string false "Command text"
 // @Param        user_id formData string true "Slack user ID"
 // @Success      200 {string} string "JSON list of agents, or failure notice"
-// @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Router       /command-handler/list-agents-in-channel [post]
 func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received list agents command request")
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
@@ -141,15 +143,14 @@ func (controller *CommandHandlerController) HandleListAgentsInChannelCommand(c f
 // @Param        text formData string true "Command text: [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
 // @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
-// @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Router       /command-handler/remove-agent-from-channel [post]
 func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received remove agent command request")
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
@@ -174,15 +175,14 @@ func (controller *CommandHandlerController) HandleRemoveAgentFromChannelCommand(
 // @Param        text formData string false "Command text"
 // @Param        user_id formData string true "Slack user ID"
 // @Success      200 {string} string "Verification response, or failure notice"
-// @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Router       /command-handler/verify-wallet-ownership [post]
 func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received verify wallet ownership command request")
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
@@ -205,15 +205,14 @@ func (controller *CommandHandlerController) HandleVerifyWalletOwnershipCommand(c
 // @Param        text formData string true "Command text: [slack user ID] [collection address] [token ID]"
 // @Param        user_id formData string true "Slack user ID"
 // @Success      200 {string} string "Ephemeral reply: success, usage hint on malformed text, or failure notice"
-// @Failure      400 {string} string "Invalid request body"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Router       /command-handler/pair-slack-user-to-human-agent [post]
 func (controller *CommandHandlerController) HandlePairSlackUserToHumanAgentCommand(c fiber.Ctx) error {
 	controller.logger.Info("Received pair slack user to human agent command request")
 
 	var request requests.CommandRequest
 	if err := c.Bind().Body(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Request", zap.Any("request", request))
@@ -234,7 +233,7 @@ func (controller *CommandHandlerController) replyCommandError(
 	err error,
 	invalidCommandReply string,
 ) error {
-	var validationError *common_errors.ValidationError
+	var validationError *apperrors.ValidationError
 	if errors.As(err, &validationError) {
 		controller.logger.Info("Invalid command", zap.String("path", c.Path()), zap.Error(err))
 		return c.Status(fiber.StatusOK).SendString(invalidCommandReply)

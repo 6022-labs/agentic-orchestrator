@@ -3,7 +3,7 @@ package requests
 import (
 	"strconv"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/google/uuid"
 )
 

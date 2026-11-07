@@ -42,7 +42,7 @@ func (uc *GetAgentCard) Get(
 		request.AgentCollectionTokenId,
 	)
 	if err != nil {
-		return nil, errors.NewUnavailableError("agent_registry_unavailable", "failed to load agent: "+err.Error())
+		return nil, errors.NewUnavailableError("agent_registry_unavailable", "agent registry is unavailable", err)
 	}
 	if agent == nil {
 		return nil, errors.NewNotFoundError("agent_not_found", "agent not found: "+request.AgentCollectionAddress)
@@ -56,7 +56,7 @@ func (uc *GetAgentCard) Get(
 
 	response, err := uc.conversationBrokerRequester.GetAgentCard(ctx, agent.EnsDomain)
 	if err != nil {
-		return nil, errors.NewUnavailableError("agent_node_unreachable", "failed to reach agent node: "+err.Error())
+		return nil, errors.NewUnavailableError("agent_node_unreachable", "agent node is unreachable", err)
 	}
 
 	return response, nil

@@ -18,13 +18,15 @@ import (
 
 // Defines values for EnumsAgentPromptTemplateKey.
 const (
-	AgentPromptTemplateKeyCloneDefault        EnumsAgentPromptTemplateKey = "clone-default"
-	AgentPromptTemplateKeyCloneSystem         EnumsAgentPromptTemplateKey = "clone-system"
-	AgentPromptTemplateKeyExpertDefault       EnumsAgentPromptTemplateKey = "expert-default"
-	AgentPromptTemplateKeyExpertSystem        EnumsAgentPromptTemplateKey = "expert-system"
-	AgentPromptTemplateKeyFacilitatorConclude EnumsAgentPromptTemplateKey = "facilitator-conclude"
-	AgentPromptTemplateKeyFacilitatorDefault  EnumsAgentPromptTemplateKey = "facilitator-default"
-	AgentPromptTemplateKeyFacilitatorSystem   EnumsAgentPromptTemplateKey = "facilitator-system"
+	AgentPromptTemplateKeyCloneDefault          EnumsAgentPromptTemplateKey = "clone-default"
+	AgentPromptTemplateKeyCloneSystem           EnumsAgentPromptTemplateKey = "clone-system"
+	AgentPromptTemplateKeyExpertContextFound    EnumsAgentPromptTemplateKey = "expert-context-found"
+	AgentPromptTemplateKeyExpertContextNotFound EnumsAgentPromptTemplateKey = "expert-context-not-found"
+	AgentPromptTemplateKeyExpertDefault         EnumsAgentPromptTemplateKey = "expert-default"
+	AgentPromptTemplateKeyExpertSystem          EnumsAgentPromptTemplateKey = "expert-system"
+	AgentPromptTemplateKeyFacilitatorConclude   EnumsAgentPromptTemplateKey = "facilitator-conclude"
+	AgentPromptTemplateKeyFacilitatorDefault    EnumsAgentPromptTemplateKey = "facilitator-default"
+	AgentPromptTemplateKeyFacilitatorSystem     EnumsAgentPromptTemplateKey = "facilitator-system"
 )
 
 // Defines values for EnumsBridgeKind.
@@ -38,14 +40,6 @@ const (
 	ConversationStatusConcluded EnumsConversationStatus = "concluded"
 )
 
-// Defines values for EnumsParticipantRole.
-const (
-	ParticipantRoleClone       EnumsParticipantRole = "clone"
-	ParticipantRoleExpert      EnumsParticipantRole = "expert"
-	ParticipantRoleFacilitator EnumsParticipantRole = "facilitator"
-	ParticipantRoleHuman       EnumsParticipantRole = "human"
-)
-
 // EnumsAgentPromptTemplateKey defines model for enums.AgentPromptTemplateKey.
 type EnumsAgentPromptTemplateKey string
 
@@ -55,13 +49,28 @@ type EnumsBridgeKind string
 // EnumsConversationStatus defines model for enums.ConversationStatus.
 type EnumsConversationStatus string
 
-// EnumsParticipantRole defines model for enums.ParticipantRole.
-type EnumsParticipantRole string
+// ErrorsBadRequestError defines model for errors.BadRequestError.
+type ErrorsBadRequestError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
+// ErrorsInternalError defines model for errors.InternalError.
+type ErrorsInternalError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
 
 // ErrorsNotFoundError defines model for errors.NotFoundError.
 type ErrorsNotFoundError struct {
-	Id       *string `json:"id,omitempty"`
-	Resource *string `json:"resource,omitempty"`
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
+// ErrorsUnavailableError defines model for errors.UnavailableError.
+type ErrorsUnavailableError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // ErrorsValidationError defines model for errors.ValidationError.
@@ -172,16 +181,15 @@ type ResponsesListConversationsResponse struct {
 
 // ResponsesParticipantResponse defines model for responses.ParticipantResponse.
 type ResponsesParticipantResponse struct {
-	CollectionAddress *string               `json:"collectionAddress,omitempty"`
-	CollectionTokenId *int                  `json:"collectionTokenId,omitempty"`
-	CreatedAt         *string               `json:"createdAt,omitempty"`
-	DisplayName       *string               `json:"displayName,omitempty"`
-	EnsDomain         *string               `json:"ensDomain,omitempty"`
-	Id                *string               `json:"id,omitempty"`
-	IsProcessing      *bool                 `json:"isProcessing,omitempty"`
-	LastProcessedAt   *string               `json:"lastProcessedAt,omitempty"`
-	Role              *EnumsParticipantRole `json:"role,omitempty"`
-	UpdatedAt         *string               `json:"updatedAt,omitempty"`
+	CollectionAddress *string `json:"collectionAddress,omitempty"`
+	CollectionTokenId *int    `json:"collectionTokenId,omitempty"`
+	CreatedAt         *string `json:"createdAt,omitempty"`
+	DisplayName       *string `json:"displayName,omitempty"`
+	EnsDomain         *string `json:"ensDomain,omitempty"`
+	Id                *string `json:"id,omitempty"`
+	IsProcessing      *bool   `json:"isProcessing,omitempty"`
+	LastProcessedAt   *string `json:"lastProcessedAt,omitempty"`
+	UpdatedAt         *string `json:"updatedAt,omitempty"`
 }
 
 // ResponsesRemoteAgentCardEndpointsResponse defines model for responses.RemoteAgentCardEndpointsResponse.
@@ -1573,9 +1581,11 @@ type GetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse struc
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentPromptTemplateResponse
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1598,8 +1608,11 @@ type PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse stru
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentPromptTemplateResponse
-	JSON400      *ErrorsValidationError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1623,8 +1636,10 @@ type PostBridgesResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ResponsesBridgeResponse
 	JSON201      *ResponsesBridgeResponse
-	JSON400      *ErrorsValidationError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1647,7 +1662,8 @@ type GetConversationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesListConversationsResponse
-	JSON500      *string
+	JSON400      *ErrorsBadRequestError
+	JSON500      *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1670,9 +1686,11 @@ type PostConversationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *ResponsesConversationResponse
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1695,9 +1713,11 @@ type GetConversationsIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesConversationResponse
-	JSON400      *string
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1720,9 +1740,11 @@ type PatchConversationsIdDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON204      *string
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1745,9 +1767,11 @@ type PostConversationsIdForceConcludeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON204      *string
-	JSON400      *string
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1770,9 +1794,11 @@ type GetConversationsIdMessagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]ResponsesConversationMessageResponse
-	JSON400      *string
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1795,9 +1821,11 @@ type PostConversationsIdMessagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *ResponsesConversationMessageResponse
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1820,9 +1848,11 @@ type GetConversationsIdParticipantsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]ResponsesParticipantResponse
-	JSON400      *string
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1845,9 +1875,11 @@ type PostConversationsIdParticipantsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *string
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1870,8 +1902,10 @@ type DeleteConversationsIdParticipantsParticipantIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON204      *string
-	JSON400      *string
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1895,9 +1929,11 @@ type PostParticipantsAgentsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ResponsesParticipantResponse
 	JSON201      *ResponsesParticipantResponse
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1920,8 +1956,10 @@ type PostParticipantsUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *ResponsesParticipantResponse
-	JSON400      *ErrorsValidationError
-	JSON500      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -1945,7 +1983,7 @@ type GetRemoteAgentsEnsDomainCardResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ResponsesRemoteAgentCardResponse
 	JSON400      *ErrorsValidationError
-	JSON502      *string
+	JSON502      *ErrorsUnavailableError
 }
 
 // Status returns HTTPResponse.Status
@@ -1968,8 +2006,10 @@ type GetRemoteAgentsEnsDomainUrlResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ResponsesAgentUrlResponse
-	JSON400      *ErrorsValidationError
-	JSON502      *string
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON502 *ErrorsUnavailableError
 }
 
 // Status returns HTTPResponse.Status
@@ -2227,7 +2267,9 @@ func ParseGetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse(
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2241,7 +2283,7 @@ func ParseGetAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse(
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2274,14 +2316,23 @@ func ParsePostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorsNotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2321,14 +2372,16 @@ func ParsePostBridgesResponse(rsp *http.Response) (*PostBridgesResponse, error) 
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2360,8 +2413,15 @@ func ParseGetConversationsResponse(rsp *http.Response) (*GetConversationsRespons
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorsBadRequestError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2394,7 +2454,9 @@ func ParsePostConversationsResponse(rsp *http.Response) (*PostConversationsRespo
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2408,7 +2470,7 @@ func ParsePostConversationsResponse(rsp *http.Response) (*PostConversationsRespo
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2441,7 +2503,9 @@ func ParseGetConversationsIdResponse(rsp *http.Response) (*GetConversationsIdRes
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest string
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2455,7 +2519,7 @@ func ParseGetConversationsIdResponse(rsp *http.Response) (*GetConversationsIdRes
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2488,7 +2552,9 @@ func ParsePatchConversationsIdDescriptionResponse(rsp *http.Response) (*PatchCon
 		response.JSON204 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2502,7 +2568,7 @@ func ParsePatchConversationsIdDescriptionResponse(rsp *http.Response) (*PatchCon
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2535,7 +2601,9 @@ func ParsePostConversationsIdForceConcludeResponse(rsp *http.Response) (*PostCon
 		response.JSON204 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest string
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2549,7 +2617,7 @@ func ParsePostConversationsIdForceConcludeResponse(rsp *http.Response) (*PostCon
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2582,7 +2650,9 @@ func ParseGetConversationsIdMessagesResponse(rsp *http.Response) (*GetConversati
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest string
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2596,7 +2666,7 @@ func ParseGetConversationsIdMessagesResponse(rsp *http.Response) (*GetConversati
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2629,7 +2699,9 @@ func ParsePostConversationsIdMessagesResponse(rsp *http.Response) (*PostConversa
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2643,7 +2715,7 @@ func ParsePostConversationsIdMessagesResponse(rsp *http.Response) (*PostConversa
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2676,7 +2748,9 @@ func ParseGetConversationsIdParticipantsResponse(rsp *http.Response) (*GetConver
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest string
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2690,7 +2764,7 @@ func ParseGetConversationsIdParticipantsResponse(rsp *http.Response) (*GetConver
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2723,7 +2797,9 @@ func ParsePostConversationsIdParticipantsResponse(rsp *http.Response) (*PostConv
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2737,7 +2813,7 @@ func ParsePostConversationsIdParticipantsResponse(rsp *http.Response) (*PostConv
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2770,14 +2846,16 @@ func ParseDeleteConversationsIdParticipantsParticipantIdResponse(rsp *http.Respo
 		response.JSON204 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest string
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2817,7 +2895,9 @@ func ParsePostParticipantsAgentsResponse(rsp *http.Response) (*PostParticipantsA
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2831,7 +2911,7 @@ func ParsePostParticipantsAgentsResponse(rsp *http.Response) (*PostParticipantsA
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2864,14 +2944,16 @@ func ParsePostParticipantsUsersResponse(rsp *http.Response) (*PostParticipantsUs
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest string
+		var dest ErrorsInternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2911,7 +2993,7 @@ func ParseGetRemoteAgentsEnsDomainCardResponse(rsp *http.Response) (*GetRemoteAg
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
-		var dest string
+		var dest ErrorsUnavailableError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -2944,14 +3026,16 @@ func ParseGetRemoteAgentsEnsDomainUrlResponse(rsp *http.Response) (*GetRemoteAge
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
-		var dest string
+		var dest ErrorsUnavailableError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

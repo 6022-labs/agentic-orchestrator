@@ -59,15 +59,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     }
                 }
@@ -116,15 +110,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     }
                 }
@@ -174,15 +162,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     }
                 }
@@ -232,15 +214,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     }
                 }
@@ -289,15 +265,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request body",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     }
                 }
@@ -336,17 +306,41 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         }

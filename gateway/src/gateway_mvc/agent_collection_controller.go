@@ -15,15 +15,18 @@ const (
 
 type AgentCollectionController struct {
 	logger               *zap.Logger
+	errorWriter          *mvc.ErrorWriter
 	listAgentCollections use_cases.ListAgentCollectionsInterface
 }
 
 func NewAgentCollectionController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	listAgentCollections use_cases.ListAgentCollectionsInterface,
 ) *AgentCollectionController {
 	return &AgentCollectionController{
 		logger:               logger,
+		errorWriter:          errorWriter,
 		listAgentCollections: listAgentCollections,
 	}
 }
@@ -49,7 +52,7 @@ func (controller *AgentCollectionController) ListAgentCollections(c fiber.Ctx) e
 
 	collections, err := controller.listAgentCollections.List(c.Context())
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	controller.logger.Info(

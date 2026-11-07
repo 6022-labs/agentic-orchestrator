@@ -5,7 +5,7 @@ import (
 
 	"testing"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
@@ -13,6 +13,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/repositories_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -107,7 +108,9 @@ func TestWhenAttachingParticipant(t *testing.T) {
 
 			err := suite.sut.Attach(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.NotFoundError{}, err)
+			var notFoundErr *cb_errors.NotFoundError
+			require.ErrorAs(t, err, &notFoundErr)
+			assert.Equal(t, "conversation_not_found", notFoundErr.Code)
 		})
 	})
 
@@ -139,7 +142,9 @@ func TestWhenAttachingParticipant(t *testing.T) {
 
 			err := suite.sut.Attach(context.Background(), request)
 
-			assert.IsType(t, &cb_errors.NotFoundError{}, err)
+			var notFoundErr *cb_errors.NotFoundError
+			require.ErrorAs(t, err, &notFoundErr)
+			assert.Equal(t, "participant_not_found", notFoundErr.Code)
 		})
 	})
 

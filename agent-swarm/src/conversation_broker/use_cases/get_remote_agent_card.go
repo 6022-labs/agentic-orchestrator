@@ -5,7 +5,7 @@ import (
 
 	"strings"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/responses"
 )
@@ -30,7 +30,7 @@ func (uc *GetRemoteAgentCard) Get(ctx context.Context, ensDomain string) (*respo
 
 	card, err := uc.remoteAgentCardResolver.ResolveCard(ctx, ensDomain)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewUnavailableError("agent_node_unreachable", "failed to reach agent node", err)
 	}
 	return responses.RemoteAgentCardResponseFromModel(card), nil
 }

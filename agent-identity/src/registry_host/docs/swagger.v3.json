@@ -1,6 +1,39 @@
 {
     "components": {
         "schemas": {
+            "errors.BadRequestError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.InternalError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.NotFoundError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "errors.ValidationError": {
                 "properties": {
                     "field": {
@@ -137,11 +170,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "List agent collections",
@@ -175,25 +208,35 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
+                                }
+                            }
+                        },
+                        "description": "invalid_params"
+                    },
                     "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
                                 }
                             }
                         },
-                        "description": "Agent not found"
+                        "description": "agent_not_found"
                     },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Get agent by ENS domain",
@@ -240,31 +283,38 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
                                 }
                             }
                         },
-                        "description": "Agent not found"
+                        "description": "agent_not_found"
                     },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Get agent",
@@ -329,15 +379,25 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
+                                }
+                            }
+                        },
+                        "description": "invalid_query"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "List agents",

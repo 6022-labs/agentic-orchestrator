@@ -1,9 +1,10 @@
 package registry_mvc
 
 import (
+	_ "github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -11,16 +12,16 @@ const (
 )
 
 type AgentCollectionController struct {
-	logger               *zap.Logger
+	errorWriter          *mvc.ErrorWriter
 	listAgentCollections use_cases.ListAgentCollectionsInterface
 }
 
 func NewAgentCollectionController(
-	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	listAgentCollections use_cases.ListAgentCollectionsInterface,
 ) *AgentCollectionController {
 	return &AgentCollectionController{
-		logger:               logger,
+		errorWriter:          errorWriter,
 		listAgentCollections: listAgentCollections,
 	}
 }
@@ -35,13 +36,12 @@ func (controller *AgentCollectionController) RegisterRoutes(app fiber.Router) {
 // @Tags         AgentCollection
 // @Produce      json
 // @Success      200 {array} responses.AgentCollectionResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      500 {object} errors.InternalError "internal_error"
 // @Router       /agent-collections [get]
 func (controller *AgentCollectionController) ListAgentCollections(c fiber.Ctx) error {
 	collections, err := controller.listAgentCollections.List(c.Context())
 	if err != nil {
-		controller.logger.Error("Failed to list agent collections", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(collections)

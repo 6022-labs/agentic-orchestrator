@@ -1,22 +1,25 @@
 package conversation_broker_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const REGISTER_BRIDGE_ENDPOINT = "/bridges"
 
 type BridgesController struct {
-	logger         *zap.Logger
+	errorWriter    *mvc.ErrorWriter
 	registerBridge use_cases.RegisterBridgeInterface
 }
 
-func NewBridgesController(logger *zap.Logger, registerBridge use_cases.RegisterBridgeInterface) *BridgesController {
-	return &BridgesController{logger: logger, registerBridge: registerBridge}
+func NewBridgesController(
+	errorWriter *mvc.ErrorWriter,
+	registerBridge use_cases.RegisterBridgeInterface,
+) *BridgesController {
+	return &BridgesController{errorWriter: errorWriter, registerBridge: registerBridge}
 }
 
 func (c *BridgesController) InitRoutes(app fiber.Router) {
@@ -32,20 +35,17 @@ func (c *BridgesController) InitRoutes(app fiber.Router) {
 // @Success 200 {object} responses.BridgeResponse
 // @Success 201 {object} responses.BridgeResponse
 // @Failure 400 {object} errors.ValidationError
-// @Failure 500 {string} string "Internal Server Error"
+// @Failure 400 {object} errors.BadRequestError "invalid_body"
+// @Failure 500 {object} errors.InternalError "internal_error"
 // @Router /bridges [post]
 func (c *BridgesController) RegisterBridge(ctx fiber.Ctx) error {
 	req := new(requests.RegisterBridgeRequest)
 	if err := ctx.Bind().Body(req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 	bridge, existed, err := c.registerBridge.Register(ctx.Context(), req)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		c.logger.Error("internal error", zap.Error(err))
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return c.errorWriter.Write(ctx, err)
 	}
 	status := fiber.StatusCreated
 	if existed {
