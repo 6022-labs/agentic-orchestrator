@@ -9,7 +9,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { jwt, endedElsewhere, storedAddress, adoptStoredSession } = useAuth()
+  const { jwt, skipAutoSign, storedAddress, adoptStoredSession } = useAuth()
   const { wallet, address, isConnected } = useWallet()
   const { authenticate, isAuthenticating } = useWalletAuth()
   const autoSigned = useRef(false)
@@ -32,7 +32,7 @@ export function LoginForm({
     )
       return
     if (autoSigned.current) return
-    if (endedElsewhere && !loginRequested.current) return
+    if (skipAutoSign && !loginRequested.current) return
     autoSigned.current = true
     authenticate()
   }, [
@@ -42,7 +42,7 @@ export function LoginForm({
     jwt,
     isAuthenticating,
     authenticate,
-    endedElsewhere,
+    skipAutoSign,
     storedAddress,
     adoptStoredSession,
   ])
