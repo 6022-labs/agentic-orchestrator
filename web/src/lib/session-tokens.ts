@@ -1,5 +1,4 @@
-const JWT_KEY = "jwt"
-const REFRESH_TOKEN_KEY = "refresh_token"
+const SESSION_KEY = "session"
 
 // The gateway JWT carries { sub, iat, nbf, exp }. There is no chain claim — the chain is fixed per deployment (see config.chainId).
 export type UserData = {
@@ -8,25 +7,38 @@ export type UserData = {
   exp?: number
 }
 
-export const getJwt = () => localStorage.getItem(JWT_KEY)
+type StoredSession = {
+  jwt: string
+  refreshToken: string
+}
 
-export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY)
+// getSession reads both tokens at once: one key means no tab ever sees half a sign-in.
+export const getSession = (): StoredSession | null => {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    return raw ? (JSON.parse(raw) as StoredSession) : null
+  } catch {
+    return null
+  }
+}
+
+export const getJwt = () => getSession()?.jwt ?? null
 
 export const saveTokens = (jwt: string, refreshToken: string) => {
-  localStorage.setItem(JWT_KEY, jwt)
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ jwt, refreshToken }))
 }
 
 export const clearTokens = () => {
-  localStorage.removeItem(JWT_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  localStorage.removeItem(SESSION_KEY)
 }
 
 // A null key means another tab cleared the whole storage.
-export const isJwtStorageEvent = (event: StorageEvent) =>
-  event.key === JWT_KEY || event.key === null
+export const isSessionStorageEvent = (event: StorageEvent) =>
+  event.key === SESSION_KEY || event.key === null
 
-export const decodeJwt = (token: string | null): UserData | null => {
+export const decodeJwt = (
+  token: string | null | undefined
+): UserData | null => {
   if (!token) return null
 
   try {
