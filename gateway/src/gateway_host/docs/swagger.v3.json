@@ -10,6 +10,17 @@
                     "BridgePlatformSlack"
                 ]
             },
+            "errors.BadRequestError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "errors.ForbiddenError": {
                 "properties": {
                     "code": {
@@ -526,21 +537,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.NotFoundError"
                                 }
                             }
                         },
-                        "description": "agent not found"
+                        "description": "agent_not_found"
                     },
                     "500": {
                         "content": {
@@ -597,11 +615,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -682,11 +707,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "401": {
                         "content": {
@@ -815,11 +847,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body or invalid_params"
                     },
                     "401": {
                         "content": {
@@ -921,11 +960,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -1015,6 +1061,16 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
+                                }
+                            }
+                        },
+                        "description": "invalid_query"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
@@ -1070,11 +1126,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_query"
                     },
                     "500": {
                         "content": {
@@ -1124,11 +1187,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
                                 }
                             }
                         },
-                        "description": "unreadable body"
+                        "description": "invalid_body"
                     },
                     "500": {
                         "content": {
@@ -1185,11 +1248,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
                                 }
                             }
                         },
-                        "description": "unreadable body"
+                        "description": "invalid_body"
                     },
                     "401": {
                         "content": {
@@ -1256,11 +1319,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "401": {
                         "content": {
@@ -1402,11 +1472,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "zero uuid; a malformed id returns plain text"
+                        "description": "invalid_params"
                     },
                     "401": {
                         "content": {
@@ -1499,11 +1576,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "zero uuid; a malformed id returns plain text"
+                        "description": "invalid_params"
                     },
                     "401": {
                         "content": {
@@ -1599,11 +1683,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "zero uuid; a malformed id returns plain text"
+                        "description": "invalid_params"
                     },
                     "401": {
                         "content": {
@@ -1699,11 +1790,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "zero uuid; a malformed id returns plain text"
+                        "description": "invalid_params"
                     },
                     "401": {
                         "content": {
@@ -1817,21 +1915,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "401": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.UnauthorizedError"
                                 }
                             }
                         },
-                        "description": "Unauthorized"
+                        "description": "unauthorized"
                     },
                     "500": {
                         "content": {

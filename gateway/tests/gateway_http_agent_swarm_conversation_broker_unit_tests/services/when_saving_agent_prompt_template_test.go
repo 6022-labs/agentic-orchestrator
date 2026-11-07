@@ -11,6 +11,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/services"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
 	clients_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_http_agent_swarm_conversation_broker_mocks/clients_mocks"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
@@ -138,6 +139,51 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 		})
 	})
 
+	t.Run("Given the broker cannot decode the request", func(t *testing.T) {
+		t.Parallel()
+
+		collectionAddress := common_tests.RandomEthAddress().Hex()
+
+		initSuite := func(suite *WhenSavingAgentPromptTemplateTestingSuite) {
+			suite.mockClient.EXPECT().
+				PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyWithBodyWithResponse(
+					gomock.Any(),
+					collectionAddress,
+					"7",
+					"clone-system",
+					"application/json",
+					gomock.Any(),
+				).
+				Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
+					HTTPResponse: &http.Response{StatusCode: http.StatusBadRequest},
+					Body:         []byte(`{"code":"invalid_body","message":"unexpected end of JSON input"}`),
+				}, nil).
+				Times(1)
+		}
+
+		t.Run("Should return a validation error on the request field", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenSavingAgentPromptTemplateBeforeEach(t)
+			initSuite(suite)
+
+			result, err := suite.sut.SaveAgentPromptTemplate(
+				context.Background(),
+				collectionAddress,
+				7,
+				"clone-system",
+				"You are {{name}}",
+			)
+
+			assert.Nil(t, result)
+			validationErr := &errors.ValidationError{}
+			if assert.ErrorAs(t, err, &validationErr) {
+				assert.Equal(t, "request", validationErr.Field)
+				assert.Equal(t, "unexpected end of JSON input", validationErr.Message)
+			}
+		})
+	})
+
 	t.Run("Given the broker does not know the agent", func(t *testing.T) {
 		t.Parallel()
 
@@ -153,7 +199,7 @@ func TestWhenSavingAgentPromptTemplate(t *testing.T) {
 				).
 				Return(&clients.PostAgentsCollectionAddressCollectionTokenIdPromptTemplatesKeyResponse{
 					HTTPResponse: &http.Response{StatusCode: http.StatusNotFound},
-					Body:         []byte(`{"resource":"agent","id":"0xabc/7"}`),
+					Body:         []byte(`{"code":"agent_not_found","message":"agent not found: 0xabc/7"}`),
 				}, nil).
 				Times(1)
 		}

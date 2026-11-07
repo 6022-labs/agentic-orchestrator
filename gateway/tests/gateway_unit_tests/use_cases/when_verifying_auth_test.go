@@ -154,6 +154,8 @@ func TestWhenVerifyingAuth(t *testing.T) {
 	t.Run("Given the refresh token issue fails", func(t *testing.T) {
 		t.Parallel()
 
+		depErr := errors.New("entropy exhausted")
+
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
 			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
 			expectSiweMessage(suite)
@@ -167,7 +169,7 @@ func TestWhenVerifyingAuth(t *testing.T) {
 				Times(1)
 			suite.mockRefreshTokenManager.EXPECT().
 				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
-				Return("", nil, errors.New("entropy exhausted")).
+				Return("", nil, depErr).
 				Times(1)
 		}
 
@@ -183,6 +185,8 @@ func TestWhenVerifyingAuth(t *testing.T) {
 			var internalErr *cb_errors.InternalError
 			assert.ErrorAs(t, err, &internalErr)
 			assert.Equal(t, "refresh_token_issue_failed", internalErr.Code)
+			assert.Equal(t, cb_errors.InternalErrorMessage, internalErr.Message)
+			assert.ErrorIs(t, internalErr, depErr)
 		})
 	})
 

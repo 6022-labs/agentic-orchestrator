@@ -1,7 +1,7 @@
 package orchestrator_gateway_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -22,6 +22,7 @@ const (
 
 type AgentController struct {
 	logger                  *zap.Logger
+	errorWriter             *mvc.ErrorWriter
 	getAgent                use_cases.GetAgentInterface
 	listAgents              use_cases.ListAgentsInterface
 	getAgentCard            use_cases.GetAgentCardInterface
@@ -32,6 +33,7 @@ type AgentController struct {
 
 func NewAgentController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getAgent use_cases.GetAgentInterface,
 	listAgents use_cases.ListAgentsInterface,
 	getAgentCard use_cases.GetAgentCardInterface,
@@ -41,6 +43,7 @@ func NewAgentController(
 ) *AgentController {
 	return &AgentController{
 		logger:                  logger,
+		errorWriter:             errorWriter,
 		getAgent:                getAgent,
 		listAgents:              listAgents,
 		getAgentCard:            getAgentCard,
@@ -71,21 +74,22 @@ func (controller *AgentController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentResponse
 // @Failure      400 {object} errors.ValidationError
-// @Failure      404 {string} string "agent not found"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
+// @Failure      404 {object} errors.NotFoundError "agent_not_found"
 // @Failure      500 {object} errors.InternalError
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 	if response == nil {
-		return c.Status(fiber.StatusNotFound).SendString("agent not found")
+		return controller.errorWriter.Write(c, apperrors.NewNotFoundError("agent_not_found", "agent not found"))
 	}
 
 	return c.JSON(response)
@@ -102,17 +106,18 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 // @Param        sortBy query string false "Sort by field"
 // @Param        isMinted query bool false "Filter on mint state (true = minted only, false = proposals only)"
 // @Success      200 {object} responses.ListAgentsResponse
+// @Failure      400 {object} errors.BadRequestError "invalid_query"
 // @Failure      500 {object} errors.InternalError
 // @Router       /agents [get]
 func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 	request := new(requests.ListAgentsRequest)
 	if err := c.Bind().Query(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_query", err.Error()))
 	}
 
 	resp, err := controller.listAgents.List(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	controller.logger.Debug(
@@ -134,6 +139,7 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentCardResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
@@ -141,12 +147,12 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getAgentCard.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -161,6 +167,7 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 // @Param        agentCollectionTokenId path string true "token id"
 // @Success      200 {object} responses.AgentUrlResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      502 {object} errors.UnavailableError
 // @Security     BearerAuth
@@ -168,12 +175,12 @@ func (controller *AgentController) GetAgentCard(c fiber.Ctx) error {
 func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getAgentUrl.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -189,6 +196,7 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 // @Param        key path string true "template key"
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -199,12 +207,12 @@ func (controller *AgentController) GetAgentUrl(c fiber.Ctx) error {
 func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 	request := new(requests.GetAgentPromptTemplateRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getAgentPromptTemplate.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -222,6 +230,7 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 // @Param        request body requests.SaveAgentPromptTemplateRequest true "template content"
 // @Success      200 {object} responses.AgentPromptTemplateResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_body or invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -232,15 +241,15 @@ func (controller *AgentController) GetAgentPromptTemplate(c fiber.Ctx) error {
 func (controller *AgentController) SaveAgentPromptTemplate(c fiber.Ctx) error {
 	request := new(requests.SaveAgentPromptTemplateRequest)
 	if err := c.Bind().Body(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 	if err := c.Bind().URI(&request.GetAgentPromptTemplateRequest); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.saveAgentPromptTemplate.Save(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)

@@ -110,7 +110,8 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			var unavailableErr *gw_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableErr)
 			assert.Equal(t, "agent_registry_unavailable", unavailableErr.Code)
-			assert.Contains(t, unavailableErr.Message, "boom")
+			assert.Equal(t, "agent registry is unavailable", unavailableErr.Message)
+			assert.EqualError(t, unavailableErr.Cause, "boom")
 		})
 	})
 
@@ -142,7 +143,8 @@ func TestWhenGettingAgentUrl(t *testing.T) {
 			var unavailableErr *gw_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableErr)
 			assert.Equal(t, "agent_url_unresolved", unavailableErr.Code)
-			assert.Contains(t, unavailableErr.Message, brokerErr.Error())
+			assert.Equal(t, "agent url could not be resolved", unavailableErr.Message)
+			assert.Equal(t, brokerErr, unavailableErr.Cause)
 		})
 	})
 

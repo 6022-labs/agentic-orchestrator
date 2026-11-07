@@ -47,9 +47,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -96,9 +96,9 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
@@ -112,6 +112,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.InternalError": {
             "type": "object",
             "properties": {

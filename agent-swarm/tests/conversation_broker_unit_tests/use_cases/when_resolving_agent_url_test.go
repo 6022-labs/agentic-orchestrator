@@ -6,11 +6,12 @@ import (
 	"errors"
 	"testing"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/conversation_broker_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -54,14 +55,16 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 	t.Run("Given resolver fails", func(t *testing.T) {
 		t.Parallel()
 
+		cause := errors.New("boom")
+
 		initSuite := func(suite *WhenResolvingAgentUrlTestingSuite) {
 			suite.mockAgentUrlResolver.EXPECT().
 				ResolveUrl(gomock.Any(), "agent.6022.eth").
-				Return("", errors.New("boom")).
+				Return("", cause).
 				Times(1)
 		}
 
-		t.Run("Should propagate the error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingAgentUrlBeforeEach(t)
@@ -72,7 +75,11 @@ func TestWhenResolvingAgentUrl(t *testing.T) {
 				&requests.ResolveAgentUrlRequest{EnsDomain: "agent.6022.eth"},
 			)
 
-			assert.Error(t, err)
+			var unavailableErr *cb_errors.UnavailableError
+			require.ErrorAs(t, err, &unavailableErr)
+			assert.Equal(t, "agent_url_unresolved", unavailableErr.Code)
+			assert.Equal(t, "failed to resolve agent url", unavailableErr.Message)
+			assert.ErrorIs(t, err, cause)
 		})
 	})
 

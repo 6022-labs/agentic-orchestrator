@@ -12,7 +12,6 @@ import (
 	interfaces_mocks "github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 type WhenEnsuringAgentAccessTestingSuite struct {
@@ -27,7 +26,7 @@ func WhenEnsuringAgentAccessBeforeEach(t *testing.T) *WhenEnsuringAgentAccessTes
 	mockAgentRegistryRequester := interfaces_mocks.NewMockAgentRegistryRequesterInterface(mockController)
 
 	return &WhenEnsuringAgentAccessTestingSuite{
-		sut:                        services.NewAgentAccessVerifier(zap.NewNop(), mockAgentRegistryRequester),
+		sut:                        services.NewAgentAccessVerifier(mockAgentRegistryRequester),
 		mockAgentRegistryRequester: mockAgentRegistryRequester,
 	}
 }
@@ -45,7 +44,7 @@ func TestWhenEnsuringAgentAccess(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should return an unavailable error", func(t *testing.T) {
+		t.Run("Should return an unavailable error carrying the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenEnsuringAgentAccessBeforeEach(t)
@@ -62,7 +61,8 @@ func TestWhenEnsuringAgentAccess(t *testing.T) {
 			var unavailable *gateway_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailable)
 			assert.Equal(t, "agent_registry_unavailable", unavailable.Code)
-			assert.NotContains(t, err.Error(), assert.AnError.Error())
+			assert.Equal(t, "agent registry is unavailable", unavailable.Message)
+			assert.ErrorIs(t, err, assert.AnError)
 		})
 	})
 

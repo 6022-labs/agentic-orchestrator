@@ -3,6 +3,7 @@ package configurations
 import (
 	"time"
 
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc/middlewares"
 	gateway_settings "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_host/docs"
@@ -30,10 +31,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: hostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    hostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 
@@ -46,7 +48,6 @@ type registerRoutesParams struct {
 	CorsSettings                      *gateway_settings.CorsSettings
 	AuthenticationMandatoryMiddleware *middlewares.AuthenticationMandatoryMiddleware
 	RequestMetrics                    *mvc_middlewares.ApiRequestMetricsMiddleware
-	RequestFailureLog                 *mvc_middlewares.RequestFailureLogMiddleware
 	Controllers                       []orchestrator_mvc.ControllerInterface         `group:"controllers"`
 	AuthInjectionMiddlewares          []middlewares.AuthInjectionMiddlewareInterface `group:"auth-injection-middlewares"`
 }
@@ -66,11 +67,12 @@ func registerRoutes(p registerRoutesParams) {
 		Logger: p.Logger,
 	}))
 
-	p.App.Use(p.RequestFailureLog.Handle)
-
 	p.App.Use(limiter.New(limiter.Config{
 		Max:        p.RateLimitSettings.RequestsPerSecond,
 		Expiration: 1 * time.Second,
+		LimitReached: func(fiber.Ctx) error {
+			return fiber.ErrTooManyRequests
+		},
 	}))
 
 	p.App.Get("/swagger/*", swaggo.New())

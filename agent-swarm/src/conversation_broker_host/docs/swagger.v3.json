@@ -46,12 +46,45 @@
                     "ConversationStatusConcluded"
                 ]
             },
-            "errors.NotFoundError": {
+            "errors.BadRequestError": {
                 "properties": {
-                    "id": {
+                    "code": {
                         "type": "string"
                     },
-                    "resource": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.InternalError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.NotFoundError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "errors.UnavailableError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
                         "type": "string"
                     }
                 },
@@ -408,11 +441,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -428,11 +468,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Get Agent Prompt Template",
@@ -506,11 +546,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body or invalid_params"
                     },
                     "404": {
                         "content": {
@@ -526,11 +573,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Save Agent Prompt Template",
@@ -587,21 +634,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Register Bridge",
@@ -642,15 +696,25 @@
                         },
                         "description": "OK"
                     },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/errors.BadRequestError"
+                                }
+                            }
+                        },
+                        "description": "invalid_query"
+                    },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "List Conversations",
@@ -695,11 +759,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "404": {
                         "content": {
@@ -715,11 +786,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Register Conversation",
@@ -757,11 +828,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -777,11 +855,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Get Conversation",
@@ -839,11 +917,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params or invalid_body"
                     },
                     "404": {
                         "content": {
@@ -859,11 +944,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Update Conversation Description",
@@ -901,11 +986,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -921,11 +1013,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Force Conclude Conversation",
@@ -966,11 +1058,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -986,11 +1085,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Get Conversation Messages",
@@ -1046,11 +1145,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params or invalid_body"
                     },
                     "404": {
                         "content": {
@@ -1066,11 +1172,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Ingest Message",
@@ -1111,11 +1217,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "404": {
                         "content": {
@@ -1131,11 +1244,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "List Conversation Participants",
@@ -1191,11 +1304,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params or invalid_body"
                     },
                     "404": {
                         "content": {
@@ -1211,11 +1331,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Attach Participant to Conversation",
@@ -1262,21 +1382,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Detach Participant from Conversation",
@@ -1333,11 +1460,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "404": {
                         "content": {
@@ -1353,11 +1487,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Register Agent Participant",
@@ -1404,21 +1538,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_body"
                     },
                     "500": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.InternalError"
                                 }
                             }
                         },
-                        "description": "Internal Server Error"
+                        "description": "internal_error"
                     }
                 },
                 "summary": "Register User Participant",
@@ -1466,11 +1607,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.UnavailableError"
                                 }
                             }
                         },
-                        "description": "Bad Gateway"
+                        "description": "agent_node_unreachable"
                     }
                 },
                 "summary": "Get Agent Node Card",
@@ -1508,21 +1649,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/errors.ValidationError"
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/errors.ValidationError"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/errors.BadRequestError"
+                                        }
+                                    ]
                                 }
                             }
                         },
-                        "description": "Bad Request"
+                        "description": "invalid_params"
                     },
                     "502": {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/errors.UnavailableError"
                                 }
                             }
                         },
-                        "description": "Bad Gateway"
+                        "description": "agent_url_unresolved"
                     }
                 },
                 "summary": "Get Agent Node URL",

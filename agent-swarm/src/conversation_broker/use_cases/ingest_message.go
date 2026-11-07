@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
@@ -57,7 +57,10 @@ func (uc *IngestMessage) Ingest(
 		return nil, fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
-		return nil, cb_errors.NewNotFoundError("conversation", request.ConversationID.String())
+		return nil, cb_errors.NewNotFoundError(
+			"conversation_not_found",
+			"conversation not found: "+request.ConversationID.String(),
+		)
 	}
 
 	participant, err := uc.participantRepository.GetById(ctx, request.ParticipantID)
@@ -65,7 +68,10 @@ func (uc *IngestMessage) Ingest(
 		return nil, fmt.Errorf("failed to load participant: %w", err)
 	}
 	if participant == nil {
-		return nil, cb_errors.NewNotFoundError("participant", request.ParticipantID.String())
+		return nil, cb_errors.NewNotFoundError(
+			"participant_not_found",
+			"participant not found: "+request.ParticipantID.String(),
+		)
 	}
 
 	role, err := uc.participantRoleResolver.Resolve(ctx, participant)

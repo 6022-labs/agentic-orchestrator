@@ -3,6 +3,7 @@ package configurations
 import (
 	common_metrics "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/metrics"
 	common_metrics_interfaces "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/metrics/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal_mvc"
 	"go.uber.org/dig"
@@ -20,7 +21,7 @@ func AddSlackBridgeInternalMvcConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	if err := container.Provide(mvc_middlewares.NewRequestFailureLogMiddleware); err != nil {
+	if err := container.Provide(mvc.NewErrorWriter); err != nil {
 		panic(err)
 	}
 

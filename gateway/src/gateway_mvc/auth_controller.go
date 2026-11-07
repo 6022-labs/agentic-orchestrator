@@ -1,7 +1,7 @@
 package orchestrator_gateway_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -19,6 +19,7 @@ const (
 
 type AuthController struct {
 	logger           *zap.Logger
+	errorWriter      *mvc.ErrorWriter
 	getAuthChallenge use_cases.GetAuthChallengeInterface
 	verifyAuth       use_cases.VerifyAuthInterface
 	refreshAuth      use_cases.RefreshAuthInterface
@@ -27,6 +28,7 @@ type AuthController struct {
 
 func NewAuthController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getAuthChallenge use_cases.GetAuthChallengeInterface,
 	verifyAuth use_cases.VerifyAuthInterface,
 	refreshAuth use_cases.RefreshAuthInterface,
@@ -34,6 +36,7 @@ func NewAuthController(
 ) *AuthController {
 	return &AuthController{
 		logger:           logger,
+		errorWriter:      errorWriter,
 		getAuthChallenge: getAuthChallenge,
 		verifyAuth:       verifyAuth,
 		refreshAuth:      refreshAuth,
@@ -61,17 +64,18 @@ func (controller *AuthController) InitUnauthenticatedRoutes(app fiber.Router) {
 // @Param        chainId query int true "chain id of the connected wallet"
 // @Success      200 {object} responses.GetAuthChallengeResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_query"
 // @Failure      500 {object} errors.InternalError
 // @Router       /auth/challenge [get]
 func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 	request := new(requests.GetAuthChallengeRequest)
 	if err := c.Bind().Query(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_query", err.Error()))
 	}
 
 	challenge, err := controller.getAuthChallenge.Execute(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 	return c.JSON(challenge)
 }
@@ -85,18 +89,19 @@ func (controller *AuthController) GetAuthChallenge(c fiber.Ctx) error {
 // @Param        request body requests.VerifyAuthRequest true "verify request"
 // @Success      200 {object} responses.VerifyAuthResponse
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      401 {object} errors.UnauthorizedError "challenge_not_found | signature_mismatch"
 // @Failure      500 {object} errors.InternalError
 // @Router       /auth/verify [post]
 func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 	request := new(requests.VerifyAuthRequest)
 	if err := c.Bind().Body(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	response, err := controller.verifyAuth.Execute(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -112,19 +117,19 @@ func (controller *AuthController) VerifyAuth(c fiber.Ctx) error {
 // @Produce      json
 // @Param        request body requests.RefreshTokenRequest true "refresh request"
 // @Success      200 {object} responses.RefreshAuthResponse
-// @Failure      400 {string} string "unreadable body"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      401 {object} errors.UnauthorizedError "codes listed in the description"
 // @Failure      500 {object} errors.InternalError "refresh_failed"
 // @Router       /auth/refresh [post]
 func (controller *AuthController) RefreshAuth(c fiber.Ctx) error {
 	request := new(requests.RefreshTokenRequest)
 	if err := c.Bind().Body(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	response, err := controller.refreshAuth.Execute(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -137,17 +142,17 @@ func (controller *AuthController) RefreshAuth(c fiber.Ctx) error {
 // @Accept       json
 // @Param        request body requests.RefreshTokenRequest true "logout request"
 // @Success      204
-// @Failure      400 {string} string "unreadable body"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      500 {object} errors.InternalError "revoke_failed"
 // @Router       /auth/logout [post]
 func (controller *AuthController) Logout(c fiber.Ctx) error {
 	request := new(requests.RefreshTokenRequest)
 	if err := c.Bind().Body(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	if err := controller.revokeAuth.Execute(c.Context(), request); err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }

@@ -3,6 +3,7 @@ package configurations
 import (
 	common_metrics "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/gateway/src/common/metrics/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc/middlewares"
 	orchestrator_gateway_mvc "github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_mvc/middlewares"
@@ -21,7 +22,7 @@ func AddGatewayMvcConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	if err := container.Provide(mvc_middlewares.NewRequestFailureLogMiddleware); err != nil {
+	if err := container.Provide(mvc.NewErrorWriter); err != nil {
 		panic(err)
 	}
 

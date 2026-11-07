@@ -1,11 +1,11 @@
 package registry_mvc
 
 import (
+	apperrors "github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -15,20 +15,20 @@ const (
 )
 
 type AgentController struct {
-	logger                    *zap.Logger
+	errorWriter               *mvc.ErrorWriter
 	getAgent                  use_cases.GetAgentInterface
 	getMintedAgentByEnsDomain use_cases.GetMintedAgentByEnsDomainInterface
 	listAgents                use_cases.ListAgentsInterface
 }
 
 func NewAgentController(
-	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getAgent use_cases.GetAgentInterface,
 	getMintedAgentByEnsDomain use_cases.GetMintedAgentByEnsDomainInterface,
 	listAgents use_cases.ListAgentsInterface,
 ) *AgentController {
 	return &AgentController{
-		logger:                    logger,
+		errorWriter:               errorWriter,
 		getAgent:                  getAgent,
 		getMintedAgentByEnsDomain: getMintedAgentByEnsDomain,
 		listAgents:                listAgents,
@@ -50,23 +50,22 @@ func (controller *AgentController) RegisterRoutes(app fiber.Router) {
 // @Param        agentCollectionTokenId path int true "Agent collection token ID"
 // @Success      200 {object} responses.AgentResponse
 // @Failure      400 {object} errors.ValidationError
-// @Failure      404 {string} string "Agent not found"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
+// @Failure      404 {object} errors.NotFoundError "agent_not_found"
+// @Failure      500 {object} errors.InternalError "internal_error"
 // @Router       /agent/{agentCollectionAddress}/{agentCollectionTokenId} [get]
 func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 	request := new(requests.AgentByCollectionTokenIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		controller.logger.Error("Failed to parse request", zap.Error(err))
-		return err
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getAgent.Get(c.Context(), request)
 	if err != nil {
-		controller.logger.Error("Failed to get agent", zap.Error(err))
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 	if response == nil {
-		return c.Status(fiber.StatusNotFound).SendString("Agent not found")
+		return controller.errorWriter.Write(c, apperrors.NewNotFoundError("agent_not_found", "Agent not found"))
 	}
 
 	return c.JSON(response)
@@ -83,19 +82,18 @@ func (controller *AgentController) GetAgent(c fiber.Ctx) error {
 // @Param        sortBy query string false "Sort by field"
 // @Param        isMinted query bool false "Filter on mint state (true = minted only, false = proposals only)"
 // @Success      200 {object} responses.ListAgentsResponse
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_query"
+// @Failure      500 {object} errors.InternalError "internal_error"
 // @Router       /agents [get]
 func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 	request := new(requests.ListAgentsRequest)
 	if err := c.Bind().Query(request); err != nil {
-		controller.logger.Error("Failed to parse request", zap.Error(err))
-		return err
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_query", err.Error()))
 	}
 
 	resp, err := controller.listAgents.List(c.Context(), request)
 	if err != nil {
-		controller.logger.Error("Failed to list agents", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(resp)
@@ -108,23 +106,22 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 // @Produce      json
 // @Param        ensDomain path string true "ENS domain name"
 // @Success      200 {object} responses.AgentResponse
-// @Failure      404 {string} string "Agent not found"
-// @Failure      500 {string} string "Internal Server Error"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
+// @Failure      404 {object} errors.NotFoundError "agent_not_found"
+// @Failure      500 {object} errors.InternalError "internal_error"
 // @Router       /agent/ens/{ensDomain} [get]
 func (controller *AgentController) GetMintedAgentByEnsDomain(c fiber.Ctx) error {
 	request := new(requests.GetAgentByEnsDomainRequest)
 	if err := c.Bind().URI(request); err != nil {
-		controller.logger.Error("Failed to parse request params", zap.Error(err))
-		return err
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	response, err := controller.getMintedAgentByEnsDomain.Get(c.Context(), request)
 	if err != nil {
-		controller.logger.Error("Failed to get agent by ENS domain", zap.Error(err))
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return controller.errorWriter.Write(c, err)
 	}
 	if response == nil {
-		return c.Status(fiber.StatusNotFound).SendString("Agent not found")
+		return controller.errorWriter.Write(c, apperrors.NewNotFoundError("agent_not_found", "Agent not found"))
 	}
 
 	return c.JSON(response)

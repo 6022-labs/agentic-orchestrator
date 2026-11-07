@@ -7,25 +7,21 @@ import (
 	gateway_errors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 const ConversationAccessForbiddenCode = "conversation_access_forbidden"
 
 // ConversationAccessVerifier admits a caller who controls at least one of the conversation's participating agents.
 type ConversationAccessVerifier struct {
-	logger                      *zap.Logger
 	agentAccessVerifier         interfaces.AgentAccessVerifierInterface
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface
 }
 
 func NewConversationAccessVerifier(
-	logger *zap.Logger,
 	agentAccessVerifier interfaces.AgentAccessVerifierInterface,
 	conversationBrokerRequester interfaces.ConversationBrokerRequesterInterface,
 ) *ConversationAccessVerifier {
 	return &ConversationAccessVerifier{
-		logger:                      logger,
 		agentAccessVerifier:         agentAccessVerifier,
 		conversationBrokerRequester: conversationBrokerRequester,
 	}
@@ -41,13 +37,10 @@ func (v *ConversationAccessVerifier) EnsureAccess(
 		if v.isTypedError(err) {
 			return err
 		}
-		v.logger.Error("Failed to list conversation participants",
-			zap.String("conversationId", conversationId.String()),
-			zap.Error(err),
-		)
 		return gateway_errors.NewUnavailableError(
 			"conversation_broker_unavailable",
 			"conversation broker is unavailable",
+			err,
 		)
 	}
 
@@ -81,12 +74,10 @@ func (v *ConversationAccessVerifier) isTypedError(err error) bool {
 	var unauthorizedErr *gateway_errors.UnauthorizedError
 	var forbiddenErr *gateway_errors.ForbiddenError
 	var notFoundErr *gateway_errors.NotFoundError
-	var conflictErr *gateway_errors.ConflictError
 	var unavailableErr *gateway_errors.UnavailableError
 	var internalErr *gateway_errors.InternalError
 	return errors.As(err, &validationErr) || errors.As(err, &unauthorizedErr) || errors.As(err, &forbiddenErr) ||
-		errors.As(err, &notFoundErr) || errors.As(err, &conflictErr) || errors.As(err, &unavailableErr) ||
-		errors.As(err, &internalErr)
+		errors.As(err, &notFoundErr) || errors.As(err, &unavailableErr) || errors.As(err, &internalErr)
 }
 
 // isAccessDeniedError tells "this participant is not yours" apart from infrastructure failures.

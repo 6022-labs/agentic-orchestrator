@@ -15,11 +15,6 @@ func (participant *ExternalParticipantResponse) ToUseCaseResponse() *responses.B
 		return nil
 	}
 
-	var role *string
-	if participant.Role != nil {
-		role = lo.ToPtr(string(*participant.Role))
-	}
-
 	var collectionTokenId *uint64
 	if participant.CollectionTokenId != nil {
 		collectionTokenId = lo.ToPtr(uint64(*participant.CollectionTokenId))
@@ -30,7 +25,6 @@ func (participant *ExternalParticipantResponse) ToUseCaseResponse() *responses.B
 		CollectionAddress: participant.CollectionAddress,
 		CollectionTokenId: collectionTokenId,
 		EnsDomain:         participant.EnsDomain,
-		Role:              role,
 		DisplayName:       participant.DisplayName,
 	}
 }

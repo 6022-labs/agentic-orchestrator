@@ -1,7 +1,7 @@
 package orchestrator_gateway_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -20,6 +20,7 @@ const (
 
 type ConversationController struct {
 	logger                       *zap.Logger
+	errorWriter                  *mvc.ErrorWriter
 	listConversations            use_cases.ListConversationsInterface
 	getConversation              use_cases.GetConversationInterface
 	getConversationMessages      use_cases.GetConversationMessagesInterface
@@ -29,6 +30,7 @@ type ConversationController struct {
 
 func NewConversationController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	listConversations use_cases.ListConversationsInterface,
 	getConversation use_cases.GetConversationInterface,
 	getConversationMessages use_cases.GetConversationMessagesInterface,
@@ -37,6 +39,7 @@ func NewConversationController(
 ) *ConversationController {
 	return &ConversationController{
 		logger:                       logger,
+		errorWriter:                  errorWriter,
 		listConversations:            listConversations,
 		getConversation:              getConversation,
 		getConversationMessages:      getConversationMessages,
@@ -78,7 +81,7 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 
 	response, err := controller.listConversations.List(c.Context(), page, elementsPerPage)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -91,7 +94,8 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {object} responses.BrokerConversationResponse
-// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id answers BadRequestError invalid_params"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -102,12 +106,15 @@ func (controller *ConversationController) List(c fiber.Ctx) error {
 func (controller *ConversationController) Get(c fiber.Ctx) error {
 	request := new(requests.ConversationByIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+		return controller.errorWriter.Write(
+			c,
+			apperrors.NewBadRequestError("invalid_params", "invalid conversation id"),
+		)
 	}
 
 	response, err := controller.getConversation.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -120,7 +127,8 @@ func (controller *ConversationController) Get(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerMessageResponse
-// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id answers BadRequestError invalid_params"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -131,12 +139,15 @@ func (controller *ConversationController) Get(c fiber.Ctx) error {
 func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 	request := new(requests.ConversationByIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+		return controller.errorWriter.Write(
+			c,
+			apperrors.NewBadRequestError("invalid_params", "invalid conversation id"),
+		)
 	}
 
 	response, err := controller.getConversationMessages.Get(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -149,7 +160,8 @@ func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 // @Produce      json
 // @Param        id path string true "Conversation ID"
 // @Success      200 {array} responses.BrokerParticipantResponse
-// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id answers BadRequestError invalid_params"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -160,12 +172,15 @@ func (controller *ConversationController) GetMessages(c fiber.Ctx) error {
 func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 	request := new(requests.ConversationByIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+		return controller.errorWriter.Write(
+			c,
+			apperrors.NewBadRequestError("invalid_params", "invalid conversation id"),
+		)
 	}
 
 	response, err := controller.listConversationParticipants.List(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.JSON(response)
@@ -177,7 +192,8 @@ func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 // @Tags         conversation
 // @Param        id path string true "Conversation ID"
 // @Success      204 {string} string "No Content"
-// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id returns plain text"
+// @Failure      400 {object} errors.ValidationError "zero uuid; a malformed id answers BadRequestError invalid_params"
+// @Failure      400 {object} errors.BadRequestError "invalid_params"
 // @Failure      401 {object} errors.UnauthorizedError
 // @Failure      403 {object} errors.ForbiddenError
 // @Failure      404 {object} errors.NotFoundError
@@ -188,11 +204,14 @@ func (controller *ConversationController) ListParticipants(c fiber.Ctx) error {
 func (controller *ConversationController) ForceConclude(c fiber.Ctx) error {
 	request := new(requests.ConversationByIdRequest)
 	if err := c.Bind().URI(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("invalid conversation id")
+		return controller.errorWriter.Write(
+			c,
+			apperrors.NewBadRequestError("invalid_params", "invalid conversation id"),
+		)
 	}
 
 	if err := controller.forceConcludeConversation.Conclude(c.Context(), request); err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)

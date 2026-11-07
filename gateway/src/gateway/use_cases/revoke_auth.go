@@ -40,7 +40,7 @@ func (uc *RevokeAuth) Execute(ctx context.Context, request *requests.RefreshToke
 	}
 
 	if err := uc.refreshSessionStore.Revoke(ctx, claims.SessionId, claims.SessionExpiresAt); err != nil {
-		return errors.NewInternalError("revoke_failed", err.Error())
+		return errors.NewInternalError("revoke_failed", err)
 	}
 	return nil
 }

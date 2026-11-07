@@ -47,16 +47,16 @@ func (m *SlackSignatureMiddleware) Handle(c fiber.Ctx) error {
 	// Prevent replay attacks (allow max 5 min skew)
 	ts, err := strconv.ParseInt(timestamp, 10, 64)
 	if err != nil {
-		m.logger.Warn("Invalid timestamp format", zap.String("timestamp", timestamp), zap.Error(err))
+		m.logger.Debug("Invalid timestamp format", zap.String("timestamp", timestamp), zap.Error(err))
 		verificationErr = err
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return fiber.ErrUnauthorized
 	}
 
 	skew := m.abs(time.Now().Unix() - ts)
 	if skew > 60*5 {
-		m.logger.Warn("Timestamp skew too large", zap.Int64("skew", skew), zap.Int64("timestamp", ts))
+		m.logger.Debug("Timestamp skew too large", zap.Int64("skew", skew), zap.Int64("timestamp", ts))
 		verificationErr = fmt.Errorf("timestamp skew of %d seconds is too large", skew)
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return fiber.ErrUnauthorized
 	}
 
 	body := c.Body()
@@ -69,9 +69,13 @@ func (m *SlackSignatureMiddleware) Handle(c fiber.Ctx) error {
 	m.logger.Debug("Computed Slack signature", zap.String("expected_signature", expectedSig))
 
 	if !hmac.Equal([]byte(expectedSig), []byte(slackSig)) {
-		m.logger.Warn("Slack signature mismatch", zap.String("expected", expectedSig), zap.String("received", slackSig))
+		m.logger.Debug(
+			"Slack signature mismatch",
+			zap.String("expected", expectedSig),
+			zap.String("received", slackSig),
+		)
 		verificationErr = fmt.Errorf("signature mismatch")
-		return c.SendStatus(fiber.StatusUnauthorized)
+		return fiber.ErrUnauthorized
 	}
 
 	m.logger.Debug("Slack signature verified successfully")

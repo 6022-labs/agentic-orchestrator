@@ -10,22 +10,17 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/responses"
-	"go.uber.org/zap"
 )
 
 const AgentAccessForbiddenCode = "agent_access_forbidden"
 
 // AgentAccessVerifier mirrors the on-chain AgentCollectionV1 access rule against the Transfer-synced registry.
 type AgentAccessVerifier struct {
-	logger                 *zap.Logger
 	agentRegistryRequester interfaces.AgentRegistryRequesterInterface
 }
 
-func NewAgentAccessVerifier(
-	logger *zap.Logger,
-	agentRegistryRequester interfaces.AgentRegistryRequesterInterface,
-) *AgentAccessVerifier {
-	return &AgentAccessVerifier{logger: logger, agentRegistryRequester: agentRegistryRequester}
+func NewAgentAccessVerifier(agentRegistryRequester interfaces.AgentRegistryRequesterInterface) *AgentAccessVerifier {
+	return &AgentAccessVerifier{agentRegistryRequester: agentRegistryRequester}
 }
 
 func (v *AgentAccessVerifier) EnsureAccess(
@@ -37,12 +32,7 @@ func (v *AgentAccessVerifier) EnsureAccess(
 	agentCollectionAddress = strings.ToLower(agentCollectionAddress)
 	agent, err := v.agentRegistryRequester.GetAgent(ctx, agentCollectionAddress, agentCollectionTokenId)
 	if err != nil {
-		v.logger.Error("Failed to load agent from registry",
-			zap.String("agentCollectionAddress", agentCollectionAddress),
-			zap.Uint64("agentCollectionTokenId", agentCollectionTokenId),
-			zap.Error(err),
-		)
-		return errors.NewUnavailableError("agent_registry_unavailable", "agent registry is unavailable")
+		return errors.NewUnavailableError("agent_registry_unavailable", "agent registry is unavailable", err)
 	}
 	if agent == nil {
 		return errors.NewNotFoundError(

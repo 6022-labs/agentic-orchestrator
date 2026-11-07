@@ -6,6 +6,13 @@ definitions:
     type: string
     x-enum-varnames:
     - BridgePlatformSlack
+  errors.BadRequestError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   errors.ForbiddenError:
     properties:
       code:
@@ -331,13 +338,13 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
-          description: agent not found
+          description: agent_not_found
           schema:
-            type: string
+            $ref: '#/definitions/errors.NotFoundError'
         "500":
           description: Internal Server Error
           schema:
@@ -367,9 +374,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentCardResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
@@ -411,9 +418,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentPromptTemplateResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -474,9 +481,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentPromptTemplateResponse'
         "400":
-          description: Bad Request
+          description: invalid_body or invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -524,9 +531,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentUrlResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
@@ -571,6 +578,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ListAgentsResponse'
+        "400":
+          description: invalid_query
+          schema:
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
           description: Internal Server Error
           schema:
@@ -601,9 +612,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.GetAuthChallengeResponse'
         "400":
-          description: Bad Request
+          description: invalid_query
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
           description: Internal Server Error
           schema:
@@ -627,9 +638,9 @@ paths:
         "204":
           description: No Content
         "400":
-          description: unreadable body
+          description: invalid_body
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
           description: revoke_failed
           schema:
@@ -660,9 +671,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.RefreshAuthResponse'
         "400":
-          description: unreadable body
+          description: invalid_body
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: codes listed in the description
           schema:
@@ -695,9 +706,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.VerifyAuthResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: challenge_not_found | signature_mismatch
           schema:
@@ -772,9 +783,9 @@ paths:
           schema:
             $ref: '#/definitions/responses.BrokerConversationResponse'
         "400":
-          description: zero uuid; a malformed id returns plain text
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -816,9 +827,9 @@ paths:
           schema:
             type: string
         "400":
-          description: zero uuid; a malformed id returns plain text
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -864,9 +875,9 @@ paths:
               $ref: '#/definitions/responses.BrokerMessageResponse'
             type: array
         "400":
-          description: zero uuid; a malformed id returns plain text
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -912,9 +923,9 @@ paths:
               $ref: '#/definitions/responses.BrokerParticipantResponse'
             type: array
         "400":
-          description: zero uuid; a malformed id returns plain text
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
           description: Unauthorized
           schema:
@@ -971,13 +982,13 @@ paths:
         "204":
           description: No Content
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "401":
-          description: Unauthorized
+          description: unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/errors.UnauthorizedError'
         "500":
           description: Internal Server Error
           schema:

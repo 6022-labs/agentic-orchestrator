@@ -14,6 +14,12 @@ import (
 	"strings"
 )
 
+// ErrorsBadRequestError defines model for errors.BadRequestError.
+type ErrorsBadRequestError struct {
+	Code    *string `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
 // ErrorsInternalError defines model for errors.InternalError.
 type ErrorsInternalError struct {
 	Code    *string `json:"code,omitempty"`
@@ -338,9 +344,11 @@ type PostBrokerCallbackResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON204      *string
-	JSON400      *ErrorsValidationError
-	JSON404      *ErrorsNotFoundError
-	JSON500      *ErrorsInternalError
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON404 *ErrorsNotFoundError
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -362,8 +370,10 @@ func (r PostBrokerCallbackResponse) StatusCode() int {
 type PostWalletSetOwnershipToSlackUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *ErrorsValidationError
-	JSON500      *ErrorsInternalError
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON500 *ErrorsInternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -438,7 +448,9 @@ func ParsePostBrokerCallbackResponse(rsp *http.Response) (*PostBrokerCallbackRes
 		response.JSON204 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -478,7 +490,9 @@ func ParsePostWalletSetOwnershipToSlackUserResponse(rsp *http.Response) (*PostWa
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorsValidationError
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

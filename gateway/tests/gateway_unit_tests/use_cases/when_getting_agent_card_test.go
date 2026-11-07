@@ -89,7 +89,8 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			var unavailableErr *gw_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableErr)
 			assert.Equal(t, "agent_registry_unavailable", unavailableErr.Code)
-			assert.Contains(t, unavailableErr.Message, registryErr.Error())
+			assert.Equal(t, "agent registry is unavailable", unavailableErr.Message)
+			assert.Equal(t, registryErr, unavailableErr.Cause)
 		})
 	})
 
@@ -165,7 +166,8 @@ func TestWhenGettingAgentCard(t *testing.T) {
 			var unavailableErr *gw_errors.UnavailableError
 			assert.ErrorAs(t, err, &unavailableErr)
 			assert.Equal(t, "agent_node_unreachable", unavailableErr.Code)
-			assert.Contains(t, unavailableErr.Message, brokerErr.Error())
+			assert.Equal(t, "agent node is unreachable", unavailableErr.Message)
+			assert.Equal(t, brokerErr, unavailableErr.Cause)
 		})
 	})
 

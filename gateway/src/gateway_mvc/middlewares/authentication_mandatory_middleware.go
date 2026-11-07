@@ -28,7 +28,7 @@ func NewAuthenticationMandatoryMiddleware(
 func (m *AuthenticationMandatoryMiddleware) Handle(c fiber.Ctx) error {
 	if _, ok := helpers.CallerIdFromContext(c.Context()); !ok {
 		m.gatewayMetrics.RecordAuth(c.Context(), metrics_interfaces.AuthMethodNone, false)
-		return c.SendStatus(401)
+		return fiber.ErrUnauthorized
 	}
 
 	method, ok := c.Locals(AuthMethodLocal).(string)

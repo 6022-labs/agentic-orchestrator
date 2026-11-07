@@ -5,7 +5,7 @@ import (
 
 	"fmt"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/responses"
@@ -45,7 +45,10 @@ func (uc *GetAgentPromptTemplate) Get(
 		return nil, fmt.Errorf("failed to load agent prompt template: %w", err)
 	}
 	if template == nil {
-		return nil, cb_errors.NewNotFoundError("agent prompt template", request.Key.String())
+		return nil, cb_errors.NewNotFoundError(
+			"prompt_template_not_found",
+			"agent prompt template not found: "+request.Key.String(),
+		)
 	}
 
 	return responses.AgentPromptTemplateResponseFromModel(template), nil

@@ -1,7 +1,7 @@
 package orchestrator_gateway_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/gateway/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
@@ -15,15 +15,18 @@ const (
 
 type WalletController struct {
 	logger                *zap.Logger
+	errorWriter           *mvc.ErrorWriter
 	verifyWalletForBridge use_cases.VerifyWalletForBridgeInterface
 }
 
 func NewWalletController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	verifyWalletForBridge use_cases.VerifyWalletForBridgeInterface,
 ) *WalletController {
 	return &WalletController{
 		logger:                logger,
+		errorWriter:           errorWriter,
 		verifyWalletForBridge: verifyWalletForBridge,
 	}
 }
@@ -45,7 +48,8 @@ func (controller *WalletController) InitUnauthenticatedRoutes(app fiber.Router) 
 // @Param        request body requests.VerifyWalletForBridgeRequest true "wallet verification request"
 // @Success      204 "No Content"
 // @Failure      400 {object} errors.ValidationError
-// @Failure      401 {string} string "Unauthorized"
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
+// @Failure      401 {object} errors.UnauthorizedError "unauthorized"
 // @Failure      500 {object} errors.InternalError
 // @Security     BearerAuth
 // @Router       /wallet/verify-for-bridge [post]
@@ -59,15 +63,14 @@ func (controller *WalletController) VerifyWalletForBridge(c fiber.Ctx) error {
 
 	request := new(requests.VerifyWalletForBridgeRequest)
 	if err := c.Bind().Body(request); err != nil {
-		controller.logger.Error("Failed to parse request", zap.Error(err))
-		return err
+		return controller.errorWriter.Write(c, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	controller.logger.Debug("Parsed request", zap.Any("request", request))
 
 	err := controller.verifyWalletForBridge.Verify(c.Context(), request)
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 
 	controller.logger.Info("Verify wallet for bridge request completed successfully")

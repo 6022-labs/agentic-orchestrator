@@ -7,7 +7,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
@@ -51,7 +51,7 @@ func (uc *SaveAgentPromptTemplate) Save(
 	}
 	if agent == nil {
 		agentKey := fmt.Sprintf("%s/%d", request.CollectionAddress, request.CollectionTokenId)
-		return nil, cb_errors.NewNotFoundError("agent", agentKey)
+		return nil, cb_errors.NewNotFoundError("agent_not_found", "agent not found: "+agentKey)
 	}
 
 	allowed := enums.ParticipantRoleFromAttributes(agent.Attributes).AllowedPromptTemplateKeys()

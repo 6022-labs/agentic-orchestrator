@@ -1,7 +1,7 @@
 package slack_bridge_internal_mvc
 
 import (
-	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_internal/use_cases/requests"
@@ -15,15 +15,18 @@ const (
 
 type BrokerCallbackController struct {
 	logger                      *zap.Logger
+	errorWriter                 *mvc.ErrorWriter
 	postBrokerCompletionToSlack use_cases.PostBrokerCompletionToSlackInterface
 }
 
 func NewBrokerCallbackController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	postBrokerCompletionToSlack use_cases.PostBrokerCompletionToSlackInterface,
 ) *BrokerCallbackController {
 	return &BrokerCallbackController{
 		logger:                      logger,
+		errorWriter:                 errorWriter,
 		postBrokerCompletionToSlack: postBrokerCompletionToSlack,
 	}
 }
@@ -41,17 +44,18 @@ func (c *BrokerCallbackController) InitRoutes(app fiber.Router) {
 // @Param        request body requests.PostBrokerCompletionToSlackRequest true "Broker callback payload"
 // @Success      204 {string} string ""
 // @Failure      400 {object} errors.ValidationError
+// @Failure      400 {object} errors.BadRequestError "invalid_body"
 // @Failure      404 {object} errors.NotFoundError
 // @Failure      500 {object} errors.InternalError
 // @Router       /broker/callback [post]
 func (c *BrokerCallbackController) Handle(ctx fiber.Ctx) error {
 	request := new(requests.PostBrokerCompletionToSlackRequest)
 	if err := ctx.Bind().Body(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 
 	if err := c.postBrokerCompletionToSlack.Post(ctx.Context(), request); err != nil {
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)

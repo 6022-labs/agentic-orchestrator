@@ -49,7 +49,6 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 					HTTPResponse: &http.Response{StatusCode: http.StatusOK},
 					JSON200: &[]clients.ResponsesParticipantResponse{{
 						Id:                lo.ToPtr(participantId.String()),
-						Role:              lo.ToPtr(clients.EnumsParticipantRole("expert")),
 						CollectionAddress: lo.ToPtr("0xabc"),
 						CollectionTokenId: lo.ToPtr(7),
 						EnsDomain:         lo.ToPtr("ada.experts.80002.6022.eth"),
@@ -73,9 +72,6 @@ func TestWhenListingConversationParticipants(t *testing.T) {
 			if assert.Len(t, result, 1) {
 				participant := result[0]
 				assert.Equal(t, participantId, participant.ID)
-				if assert.NotNil(t, participant.Role) {
-					assert.Equal(t, "expert", *participant.Role)
-				}
 				if assert.NotNil(t, participant.CollectionTokenId) {
 					assert.Equal(t, uint64(7), *participant.CollectionTokenId)
 				}

@@ -11,15 +11,17 @@ import (
 const GET_CONFIG_ENDPOINT = "/config"
 
 type ConfigController struct {
-	logger    *zap.Logger
-	getConfig use_cases.GetConfigInterface
+	logger      *zap.Logger
+	errorWriter *mvc.ErrorWriter
+	getConfig   use_cases.GetConfigInterface
 }
 
 func NewConfigController(
 	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getConfig use_cases.GetConfigInterface,
 ) *ConfigController {
-	return &ConfigController{logger: logger, getConfig: getConfig}
+	return &ConfigController{logger: logger, errorWriter: errorWriter, getConfig: getConfig}
 }
 
 func (controller *ConfigController) InitAuthenticatedRoutes(app fiber.Router) {
@@ -41,7 +43,7 @@ func (controller *ConfigController) InitUnauthenticatedRoutes(app fiber.Router) 
 func (controller *ConfigController) Get(c fiber.Ctx) error {
 	response, err := controller.getConfig.Get()
 	if err != nil {
-		return mvc.WriteError(c, err)
+		return controller.errorWriter.Write(c, err)
 	}
 	return c.JSON(response)
 }

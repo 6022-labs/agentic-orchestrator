@@ -1,11 +1,11 @@
 package conversation_broker_mvc
 
 import (
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	apperrors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -14,18 +14,18 @@ const (
 )
 
 type PromptTemplatesController struct {
-	logger                  *zap.Logger
+	errorWriter             *mvc.ErrorWriter
 	getAgentPromptTemplate  use_cases.GetAgentPromptTemplateInterface
 	saveAgentPromptTemplate use_cases.SaveAgentPromptTemplateInterface
 }
 
 func NewPromptTemplatesController(
-	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	getAgentPromptTemplate use_cases.GetAgentPromptTemplateInterface,
 	saveAgentPromptTemplate use_cases.SaveAgentPromptTemplateInterface,
 ) *PromptTemplatesController {
 	return &PromptTemplatesController{
-		logger:                  logger,
+		errorWriter:             errorWriter,
 		getAgentPromptTemplate:  getAgentPromptTemplate,
 		saveAgentPromptTemplate: saveAgentPromptTemplate,
 	}
@@ -45,24 +45,18 @@ func (c *PromptTemplatesController) InitRoutes(app fiber.Router) {
 // @Param key path string true "Prompt template key"
 // @Success 200 {object} responses.AgentPromptTemplateResponse
 // @Failure 400 {object} errors.ValidationError
+// @Failure 400 {object} errors.BadRequestError "invalid_params"
 // @Failure 404 {object} errors.NotFoundError
-// @Failure 500 {string} string "Internal Server Error"
+// @Failure 500 {object} errors.InternalError "internal_error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [get]
 func (c *PromptTemplatesController) Get(ctx fiber.Ctx) error {
 	req := new(requests.GetAgentPromptTemplateRequest)
 	if err := ctx.Bind().URI(req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 	template, err := c.getAgentPromptTemplate.Get(ctx.Context(), req)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
-		}
-		c.logger.Error("internal error", zap.Error(err))
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return c.errorWriter.Write(ctx, err)
 	}
 	return ctx.JSON(template)
 }
@@ -78,28 +72,22 @@ func (c *PromptTemplatesController) Get(ctx fiber.Ctx) error {
 // @Param request body requests.SaveAgentPromptTemplateRequest true "Save Agent Prompt Template Request"
 // @Success 200 {object} responses.AgentPromptTemplateResponse
 // @Failure 400 {object} errors.ValidationError
+// @Failure 400 {object} errors.BadRequestError "invalid_body or invalid_params"
 // @Failure 404 {object} errors.NotFoundError
-// @Failure 500 {string} string "Internal Server Error"
+// @Failure 500 {object} errors.InternalError "internal_error"
 // @Router /agents/{collectionAddress}/{collectionTokenId}/prompt-templates/{key} [post]
 func (c *PromptTemplatesController) Save(ctx fiber.Ctx) error {
 	req := new(requests.SaveAgentPromptTemplateRequest)
 	if err := ctx.Bind().Body(req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_body", err.Error()))
 	}
 	if err := ctx.Bind().URI(req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).SendString(err.Error())
+		return c.errorWriter.Write(ctx, apperrors.NewBadRequestError("invalid_params", err.Error()))
 	}
 
 	template, err := c.saveAgentPromptTemplate.Save(ctx.Context(), req)
 	if err != nil {
-		if validationErr, ok := err.(*errors.ValidationError); ok {
-			return ctx.Status(fiber.StatusBadRequest).JSON(validationErr)
-		}
-		if notFoundErr, ok := err.(*errors.NotFoundError); ok {
-			return ctx.Status(fiber.StatusNotFound).JSON(notFoundErr)
-		}
-		c.logger.Error("internal error", zap.Error(err))
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return c.errorWriter.Write(ctx, err)
 	}
 	return ctx.JSON(template)
 }

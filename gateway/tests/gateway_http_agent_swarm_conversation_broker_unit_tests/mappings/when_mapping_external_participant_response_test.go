@@ -3,7 +3,6 @@ package mappings_test
 import (
 	"testing"
 
-	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/clients"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway_http_agent_swarm_conversation_broker/mappings"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
@@ -25,7 +24,6 @@ func TestWhenMappingExternalParticipantResponse(t *testing.T) {
 			CollectionAddress: &collectionAddress,
 			CollectionTokenId: lo.ToPtr(7),
 			EnsDomain:         &ensDomain,
-			Role:              lo.ToPtr(clients.EnumsParticipantRole("expert")),
 			DisplayName:       &displayName,
 		}
 
@@ -38,7 +36,6 @@ func TestWhenMappingExternalParticipantResponse(t *testing.T) {
 			assert.Equal(t, &collectionAddress, result.CollectionAddress)
 			assert.Equal(t, uint64(7), *result.CollectionTokenId)
 			assert.Equal(t, &ensDomain, result.EnsDomain)
-			assert.Equal(t, "expert", *result.Role)
 			assert.Equal(t, &displayName, result.DisplayName)
 		})
 	})
@@ -67,7 +64,6 @@ func TestWhenMappingExternalParticipantResponse(t *testing.T) {
 			assert.Nil(t, result.CollectionAddress)
 			assert.Nil(t, result.CollectionTokenId)
 			assert.Nil(t, result.EnsDomain)
-			assert.Nil(t, result.Role)
 			assert.Nil(t, result.DisplayName)
 		})
 	})

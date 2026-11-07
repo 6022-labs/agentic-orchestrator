@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc"
 	mvc_middlewares "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/common/mvc/middlewares"
 	_ "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_host/docs"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_external_host/settings"
@@ -26,10 +27,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: hostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    hostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 
@@ -39,7 +41,6 @@ type useRestApiParams struct {
 	App                      *fiber.App
 	Logger                   *zap.Logger
 	RequestMetrics           *mvc_middlewares.ApiRequestMetricsMiddleware
-	RequestFailureLog        *mvc_middlewares.RequestFailureLogMiddleware
 	SlackSignatureMiddleware *middlewares.SlackSignatureMiddleware
 	Controllers              []slack_bridge_external_mvc.ControllerInterface `group:"controllers"`
 }
@@ -57,8 +58,6 @@ func useRestApi(p useRestApiParams) {
 	p.App.Use(fiberzap.New(fiberzap.Config{
 		Logger: p.Logger,
 	}))
-
-	p.App.Use(p.RequestFailureLog.Handle)
 
 	p.App.Use(p.SlackSignatureMiddleware.Handle)
 

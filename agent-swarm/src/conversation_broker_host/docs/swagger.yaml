@@ -36,11 +36,32 @@ definitions:
     x-enum-varnames:
     - ConversationStatusActive
     - ConversationStatusConcluded
+  errors.BadRequestError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.InternalError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   errors.NotFoundError:
     properties:
-      id:
+      code:
         type: string
-      resource:
+      message:
+        type: string
+    type: object
+  errors.UnavailableError:
+    properties:
+      code:
+        type: string
+      message:
         type: string
     type: object
   errors.ValidationError:
@@ -263,17 +284,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentPromptTemplateResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get Agent Prompt Template
       tags:
       - Prompt Templates
@@ -312,17 +333,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentPromptTemplateResponse'
         "400":
-          description: Bad Request
+          description: invalid_body or invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Save Agent Prompt Template
       tags:
       - Prompt Templates
@@ -351,13 +372,13 @@ paths:
           schema:
             $ref: '#/definitions/responses.BridgeResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Register Bridge
       tags:
       - Bridges
@@ -380,10 +401,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ListConversationsResponse'
-        "500":
-          description: Internal Server Error
+        "400":
+          description: invalid_query
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
+        "500":
+          description: internal_error
+          schema:
+            $ref: '#/definitions/errors.InternalError'
       summary: List Conversations
       tags:
       - Conversations
@@ -407,17 +432,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.ConversationResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Register Conversation
       tags:
       - Conversations
@@ -438,17 +463,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.ConversationResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get Conversation
       tags:
       - Conversations
@@ -478,17 +503,17 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_params or invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Update Conversation Description
       tags:
       - Conversations
@@ -508,17 +533,17 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Force Conclude Conversation
       tags:
       - Conversations
@@ -541,17 +566,17 @@ paths:
               $ref: '#/definitions/responses.ConversationMessageResponse'
             type: array
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Get Conversation Messages
       tags:
       - Conversations
@@ -580,17 +605,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.ConversationMessageResponse'
         "400":
-          description: Bad Request
+          description: invalid_params or invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Ingest Message
       tags:
       - Conversations
@@ -613,17 +638,17 @@ paths:
               $ref: '#/definitions/responses.ParticipantResponse'
             type: array
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: List Conversation Participants
       tags:
       - Conversations
@@ -651,17 +676,17 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_params or invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Attach Participant to Conversation
       tags:
       - Conversations
@@ -685,13 +710,13 @@ paths:
           schema:
             type: string
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            type: string
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Detach Participant from Conversation
       tags:
       - Conversations
@@ -720,17 +745,17 @@ paths:
           schema:
             $ref: '#/definitions/responses.ParticipantResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/errors.NotFoundError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Register Agent Participant
       tags:
       - Participants
@@ -755,13 +780,13 @@ paths:
           schema:
             $ref: '#/definitions/responses.ParticipantResponse'
         "400":
-          description: Bad Request
+          description: invalid_body
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "500":
-          description: Internal Server Error
+          description: internal_error
           schema:
-            type: string
+            $ref: '#/definitions/errors.InternalError'
       summary: Register User Participant
       tags:
       - Participants
@@ -787,9 +812,9 @@ paths:
           schema:
             $ref: '#/definitions/errors.ValidationError'
         "502":
-          description: Bad Gateway
+          description: agent_node_unreachable
           schema:
-            type: string
+            $ref: '#/definitions/errors.UnavailableError'
       summary: Get Agent Node Card
       tags:
       - Agent Cards
@@ -811,13 +836,13 @@ paths:
           schema:
             $ref: '#/definitions/responses.AgentUrlResponse'
         "400":
-          description: Bad Request
+          description: invalid_params
           schema:
-            $ref: '#/definitions/errors.ValidationError'
+            $ref: '#/definitions/errors.BadRequestError'
         "502":
-          description: Bad Gateway
+          description: agent_url_unresolved
           schema:
-            type: string
+            $ref: '#/definitions/errors.UnavailableError'
       summary: Get Agent Node URL
       tags:
       - Agent Urls

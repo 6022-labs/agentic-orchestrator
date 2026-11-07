@@ -3,7 +3,7 @@ package requests
 import (
 	"strings"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/ethereum/go-ethereum/common"
 )
 

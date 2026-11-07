@@ -56,9 +56,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -68,9 +68,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -127,9 +127,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body or invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -139,9 +139,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -185,15 +185,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -230,10 +230,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.ListConversationsResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "invalid_query",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -269,9 +275,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -281,9 +287,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -316,9 +322,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -328,9 +334,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -375,9 +381,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params or invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -387,9 +393,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -419,9 +425,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -431,9 +437,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -469,9 +475,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -481,9 +487,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -526,9 +532,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params or invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -538,9 +544,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -576,9 +582,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -588,9 +594,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -633,9 +639,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params or invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -645,9 +651,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -684,15 +690,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -736,9 +742,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
@@ -748,9 +754,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -788,15 +794,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_body",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -835,9 +841,9 @@ const docTemplate = `{
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "agent_node_unreachable",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -870,15 +876,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "502": {
-                        "description": "Bad Gateway",
+                        "description": "agent_url_unresolved",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.UnavailableError"
                         }
                     }
                 }
@@ -931,13 +937,46 @@ const docTemplate = `{
                 "ConversationStatusConcluded"
             ]
         },
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.NotFoundError": {
             "type": "object",
             "properties": {
-                "id": {
+                "code": {
                     "type": "string"
                 },
-                "resource": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.UnavailableError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
                     "type": "string"
                 }
             }

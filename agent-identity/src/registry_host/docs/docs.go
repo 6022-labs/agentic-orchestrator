@@ -36,9 +36,9 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -70,16 +70,22 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.AgentResponse"
                         }
                     },
-                    "404": {
-                        "description": "Agent not found",
+                    "400": {
+                        "description": "invalid_params",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
+                        }
+                    },
+                    "404": {
+                        "description": "agent_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -119,21 +125,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid_params",
                         "schema": {
-                            "$ref": "#/definitions/errors.ValidationError"
+                            "$ref": "#/definitions/errors.BadRequestError"
                         }
                     },
                     "404": {
-                        "description": "Agent not found",
+                        "description": "agent_not_found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.NotFoundError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal_error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -188,10 +194,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.ListAgentsResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "invalid_query",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/errors.BadRequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -199,6 +211,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "errors.BadRequestError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.NotFoundError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "errors.ValidationError": {
             "type": "object",
             "properties": {

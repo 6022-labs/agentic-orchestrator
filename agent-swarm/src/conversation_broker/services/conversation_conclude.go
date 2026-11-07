@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/errors"
+	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/repositories"
@@ -29,7 +29,10 @@ func (s *ConversationConclude) Conclude(ctx context.Context, conversationId uuid
 		return false, fmt.Errorf("failed to load conversation: %w", err)
 	}
 	if conversation == nil {
-		return false, cb_errors.NewNotFoundError("conversation", conversationId.String())
+		return false, cb_errors.NewNotFoundError(
+			"conversation_not_found",
+			"conversation not found: "+conversationId.String(),
+		)
 	}
 	return s.concludeConversation(ctx, conversation)
 }
