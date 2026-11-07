@@ -22,7 +22,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
   const { walletProvider } = useAppKitProvider("eip155")
   const eip1193Provider = (walletProvider as Eip1193Provider) ?? null
   const { address, isConnected } = useAppKitAccount()
-  const { user, signOut } = useAuth()
+  const { user, releaseSession } = useAuth()
   const wasConnected = React.useRef(false)
 
   // A session is bound to the address that signed in. If the wallet switches
@@ -33,20 +33,20 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({
       address &&
       address.toLowerCase() !== user.address.toLowerCase()
     ) {
-      signOut()
-      toast.info("Wallet account changed. Please sign in again.")
+      if (releaseSession())
+        toast.info("Wallet account changed. Please sign in again.")
     }
-  }, [address, user, signOut])
+  }, [address, user, releaseSession])
 
   // Disconnecting the wallet ends the session (mirrors the orchestrator UX).
   // Guarded on a prior connection so a page refresh doesn't drop the JWT before
   // the wallet has had a chance to reconnect.
   React.useEffect(() => {
     if (wasConnected.current && !isConnected && user) {
-      signOut()
+      releaseSession()
     }
     wasConnected.current = isConnected
-  }, [isConnected, user, signOut])
+  }, [isConnected, user, releaseSession])
 
   return (
     <WalletProviderContext.Provider
