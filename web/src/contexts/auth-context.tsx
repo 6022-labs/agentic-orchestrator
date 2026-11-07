@@ -20,8 +20,8 @@ type AuthContextType = {
   jwt: string | null
   signIn: (token: string, refreshToken: string) => void
   signOut: () => void
-  // releaseSession ends the session when the wallet no longer matches it; returns true when it signed out.
-  releaseSession: () => boolean
+  // endedElsewhere is true once another tab ended this tab's session, so the login page doesn't auto-prompt.
+  endedElsewhere: boolean
 }
 
 const AuthContext = React.createContext<AuthContextType | null>(null)
@@ -40,36 +40,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return !!exp && exp * 1000 <= Date.now() && !!getRefreshToken()
   })
   const clockSkewMs = React.useRef(0)
+  // Kept in step with every setJwt so a storage event never compares against a stale address.
   const userAddress = React.useRef(user?.address)
-  // Address of a session another tab signed in, and of one this tab left: another wallet's session is never revoked from here.
-  const foreignAddress = React.useRef<string | null>(null)
-  const ignoredAddress = React.useRef<string | null>(null)
+  const [endedElsewhere, setEndedElsewhere] = React.useState(false)
 
-  React.useEffect(() => {
-    userAddress.current = user?.address
-  }, [user])
-
-  const storeSession = React.useCallback(
-    (token: string, refreshToken: string) => {
-      const issuedAt = decodeJwt(token)?.iat
-      clockSkewMs.current = issuedAt ? Date.now() - issuedAt * 1000 : 0
-      saveTokens(token, refreshToken)
-      setJwt(token)
-    },
-    []
-  )
-
-  const signIn = React.useCallback(
-    (token: string, refreshToken: string) => {
-      foreignAddress.current = null
-      ignoredAddress.current = null
-      storeSession(token, refreshToken)
-    },
-    [storeSession]
-  )
+  const signIn = React.useCallback((token: string, refreshToken: string) => {
+    const decoded = decodeJwt(token)
+    clockSkewMs.current = decoded?.iat ? Date.now() - decoded.iat * 1000 : 0
+    saveTokens(token, refreshToken)
+    userAddress.current = decoded?.address
+    setEndedElsewhere(false)
+    setJwt(token)
+  }, [])
 
   const clearSession = React.useCallback(() => {
     clearTokens()
+    userAddress.current = undefined
     setJwt(null)
   }, [])
 
@@ -79,42 +65,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (refreshToken) logoutAuth(refreshToken).catch(() => undefined)
   }, [clearSession])
 
-  const releaseSession = React.useCallback(() => {
-    if (user && user.address === foreignAddress.current) {
-      ignoredAddress.current = user.address
-      setJwt(null)
-      setRestoring(false)
-      return false
-    }
-    signOut()
-    return true
-  }, [user, signOut])
-
   const endRestoring = React.useCallback(() => setRestoring(false), [])
+
+  const endSessionHere = React.useCallback(() => {
+    userAddress.current = undefined
+    setEndedElsewhere(true)
+    setRestoring(false)
+    setJwt(null)
+  }, [])
 
   useSessionRefresh({
     jwt,
     clockSkewMs,
-    onRefreshed: storeSession,
+    onRefreshed: signIn,
+    onCleared: clearSession,
+    onSuperseded: endSessionHere,
     onExpired: clearSession,
     onSettled: endRestoring,
   })
 
-  // Another tab signed in, rotated the token or signed out: follow it.
+  // Another tab rotated this session or signed out; another wallet's sign-in there ends this tab's session without revoking it.
   React.useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (!isJwtStorageEvent(event)) return
+      if (!isJwtStorageEvent(event) || !userAddress.current) return
       const next = getJwt()
-      const nextAddress = decodeJwt(next)?.address
-      if (nextAddress && nextAddress === ignoredAddress.current) return
-      if (nextAddress && nextAddress !== userAddress.current)
-        foreignAddress.current = nextAddress
+      if (decodeJwt(next)?.address !== userAddress.current) {
+        endSessionHere()
+        return
+      }
       setRestoring(false)
       setJwt(next)
     }
     window.addEventListener("storage", onStorage)
     return () => window.removeEventListener("storage", onStorage)
-  }, [])
+  }, [endSessionHere])
 
   React.useEffect(() => {
     if (restoring) return
@@ -133,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, jwt, signIn, signOut, releaseSession }}
+      value={{ user, jwt, signIn, signOut, endedElsewhere }}
     >
       {restoring ? (
         <div className="flex h-svh flex-col items-center justify-center gap-3">

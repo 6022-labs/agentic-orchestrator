@@ -9,7 +9,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { jwt } = useAuth()
+  const { jwt, endedElsewhere } = useAuth()
   const { wallet, isConnected } = useWallet()
   const { authenticate, isAuthenticating } = useWalletAuth()
   const autoSigned = useRef(false)
@@ -23,7 +23,8 @@ export function LoginForm({
       wallet &&
       !jwt &&
       !isAuthenticating &&
-      !autoSigned.current
+      !autoSigned.current &&
+      !endedElsewhere
     ) {
       autoSigned.current = true
       authenticate()
@@ -31,7 +32,7 @@ export function LoginForm({
     if (!isConnected) {
       autoSigned.current = false
     }
-  }, [isConnected, wallet, jwt, isAuthenticating, authenticate])
+  }, [isConnected, wallet, jwt, isAuthenticating, authenticate, endedElsewhere])
 
   return (
     <form

@@ -26,9 +26,9 @@ createRoot(document.getElementById("root")!).render(
       <TooltipProvider>
         <ConfigGate>
           <BrowserRouter>
+            <Toaster />
             <AuthProvider>
               <WalletProvider>
-                <Toaster />
                 <App />
               </WalletProvider>
             </AuthProvider>

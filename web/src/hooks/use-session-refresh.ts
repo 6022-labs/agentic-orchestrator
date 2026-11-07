@@ -1,7 +1,7 @@
 import * as React from "react"
 import axios from "axios"
 
-import { decodeJwt, getRefreshToken } from "@/lib/session-tokens"
+import { decodeJwt, getJwt, getRefreshToken } from "@/lib/session-tokens"
 import { refreshAuth } from "@/queries/api/auth.queries"
 
 const REFRESH_LEAD_MS = 60_000
@@ -16,6 +16,9 @@ type SessionRefreshOptions = {
   // Client minus gateway clock, measured on fresh tokens, so a skewed clock can't loop refreshes.
   clockSkewMs: React.RefObject<number>
   onRefreshed: (token: string, refreshToken: string) => void
+  onCleared: () => void
+  // onSuperseded ends this tab's session only: storage holds another wallet's session.
+  onSuperseded: () => void
   onExpired: () => void
   onSettled: () => void
 }
@@ -25,6 +28,8 @@ export const useSessionRefresh = ({
   jwt,
   clockSkewMs,
   onRefreshed,
+  onCleared,
+  onSuperseded,
   onExpired,
   onSettled,
 }: SessionRefreshOptions) => {
@@ -50,10 +55,15 @@ export const useSessionRefresh = ({
       attempts += 1
       inFlight = true
       try {
-        // Read at call time: another tab may have rotated it.
+        // Read at call time: another tab may have rotated it; never spend a token stored for another address.
         const refreshToken = getRefreshToken()
-        if (!refreshToken) {
-          onExpired()
+        const storedAddress = decodeJwt(getJwt())?.address
+        if (!refreshToken || !storedAddress) {
+          onCleared()
+          return
+        }
+        if (storedAddress !== decoded.address) {
+          onSuperseded()
           return
         }
         const { data } = await refreshAuth(refreshToken)
@@ -61,7 +71,8 @@ export const useSessionRefresh = ({
         // Keep the successor while the spent token is still stored, even if cancelled: dropping it would leave a spent token behind.
         if (storedRefreshToken === refreshToken)
           onRefreshed(data.token, data.refreshToken)
-        else if (!storedRefreshToken && !cancelled) onExpired()
+        // Storage emptied mid-flight (sign-out, cleared site data): end quietly, nothing expired.
+        else if (!storedRefreshToken && !cancelled) onCleared()
       } catch (error) {
         if (cancelled) return
         if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -95,5 +106,13 @@ export const useSessionRefresh = ({
       window.clearTimeout(timeout)
       document.removeEventListener("visibilitychange", onVisibilityChange)
     }
-  }, [jwt, clockSkewMs, onRefreshed, onExpired, onSettled])
+  }, [
+    jwt,
+    clockSkewMs,
+    onRefreshed,
+    onCleared,
+    onSuperseded,
+    onExpired,
+    onSettled,
+  ])
 }
