@@ -162,9 +162,6 @@ export default function ConversationDetailSection() {
                     <span className="truncate font-medium">
                       {participantLabel(participant)}
                     </span>
-                    {participant.role ? (
-                      <Badge variant="outline">{participant.role}</Badge>
-                    ) : null}
                   </li>
                 ))}
               </ul>

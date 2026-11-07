@@ -317,9 +317,6 @@
                     },
                     "id": {
                         "type": "string"
-                    },
-                    "role": {
-                        "type": "string"
                     }
                 },
                 "type": "object"

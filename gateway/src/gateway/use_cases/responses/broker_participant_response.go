@@ -8,6 +8,5 @@ type BrokerParticipantResponse struct {
 	CollectionAddress *string   `json:"collectionAddress,omitempty"`
 	CollectionTokenId *uint64   `json:"collectionTokenId,omitempty"`
 	EnsDomain         *string   `json:"ensDomain,omitempty"`
-	Role              *string   `json:"role,omitempty"`
 	DisplayName       *string   `json:"displayName,omitempty"`
 }

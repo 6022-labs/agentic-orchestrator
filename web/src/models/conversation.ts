@@ -30,6 +30,5 @@ export type ConversationParticipant = {
   collectionAddress?: string
   collectionTokenId?: number
   ensDomain?: string
-  role?: string
   displayName?: string
 }

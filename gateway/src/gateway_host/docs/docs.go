@@ -1404,9 +1404,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "role": {
-                    "type": "string"
                 }
             }
         },
