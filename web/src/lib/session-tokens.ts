@@ -7,28 +7,40 @@ export type UserData = {
   exp?: number
 }
 
+// Only the refresh token and its owner are stored; the access JWT stays in memory (the refresh token is still readable by XSS).
 type StoredSession = {
-  jwt: string
+  address: string
   refreshToken: string
 }
 
-// getSession reads both tokens at once: one key means no tab ever sees half a sign-in.
+let accessToken: string | null = null
+
+export const getAccessToken = () => accessToken
+
+export const setAccessToken = (token: string | null) => {
+  accessToken = token
+}
+
 export const getSession = (): StoredSession | null => {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
-    return raw ? (JSON.parse(raw) as StoredSession) : null
+    const session = raw ? (JSON.parse(raw) as Partial<StoredSession>) : null
+    if (
+      typeof session?.address !== "string" ||
+      typeof session.refreshToken !== "string"
+    )
+      return null
+    return { address: session.address, refreshToken: session.refreshToken }
   } catch {
     return null
   }
 }
 
-export const getJwt = () => getSession()?.jwt ?? null
-
-export const saveTokens = (jwt: string, refreshToken: string) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ jwt, refreshToken }))
+export const saveSession = (session: StoredSession) => {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
-export const clearTokens = () => {
+export const clearStoredSession = () => {
   localStorage.removeItem(SESSION_KEY)
 }
 

@@ -1,6 +1,6 @@
 import axios from "axios"
 
-import { getJwt } from "@/lib/session-tokens"
+import { getAccessToken } from "@/lib/session-tokens"
 
 import { config as envConfig } from "./env"
 
@@ -13,7 +13,7 @@ export const initAxiosDefaults = () => {
   axios.defaults.baseURL = envConfig.gatewayApiBaseUrl
 
   axios.interceptors.request.use((config) => {
-    const jwt = getJwt()
+    const jwt = getAccessToken()
     if (jwt && !config.headers?.Authorization) {
       config.headers = config.headers ?? {}
       config.headers.Authorization = `Bearer ${jwt}`

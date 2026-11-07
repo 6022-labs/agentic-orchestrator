@@ -3,14 +3,15 @@ import * as React from "react"
 import { Loader2 } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 
+import { Button } from "@/components/ui/button"
 import { useSessionRefresh } from "@/hooks/use-session-refresh"
 import {
-  clearTokens,
+  clearStoredSession,
   decodeJwt,
-  getJwt,
   getSession,
   isSessionStorageEvent,
-  saveTokens,
+  saveSession,
+  setAccessToken,
   type UserData,
 } from "@/lib/session-tokens"
 import { logoutAuth } from "@/queries/api/auth.queries"
@@ -36,47 +37,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [jwt, setJwt] = React.useState<string | null>(getJwt)
+  const [initialSession] = React.useState(getSession)
+  const [jwt, setJwt] = React.useState<string | null>(null)
   const user = React.useMemo(() => decodeJwt(jwt), [jwt])
-  // An expired stored token would render the dashboard into a burst of 401s; hold it until the first refresh settles.
-  const [restoring, setRestoring] = React.useState(() => {
-    const exp = user?.exp
-    return !!exp && exp * 1000 <= Date.now() && !!getSession()
-  })
-  const clockSkewMs = React.useRef(0)
-  // Kept in step with every setJwt so a storage event never compares against a stale address.
-  const userAddress = React.useRef(user?.address)
+  // A stored session has no access token yet: hold the app until the first refresh settles.
+  const [restoring, setRestoring] = React.useState(!!initialSession)
+  const [sessionAddress, setSessionAddress] = React.useState(
+    initialSession?.address
+  )
+  const [storedAddress, setStoredAddress] = React.useState(
+    initialSession?.address
+  )
   const [endedElsewhere, setEndedElsewhere] = React.useState(false)
-  const [storedAddress, setStoredAddress] = React.useState(user?.address)
+  // Mirrors sessionAddress synchronously so a storage event never compares against a stale owner.
+  const owner = React.useRef(initialSession?.address)
+  const clockSkewMs = React.useRef(0)
 
-  const signIn = React.useCallback((token: string, refreshToken: string) => {
-    const decoded = decodeJwt(token)
-    clockSkewMs.current = decoded?.iat ? Date.now() - decoded.iat * 1000 : 0
-    saveTokens(token, refreshToken)
-    userAddress.current = decoded?.address
-    setStoredAddress(decoded?.address)
-    setEndedElsewhere(false)
+  const setOwner = React.useCallback((address: string | undefined) => {
+    owner.current = address
+    setSessionAddress(address)
+  }, [])
+
+  const setToken = React.useCallback((token: string | null) => {
+    setAccessToken(token)
     setJwt(token)
   }, [])
 
+  const signIn = React.useCallback(
+    (token: string, refreshToken: string) => {
+      const decoded = decodeJwt(token)
+      if (!decoded) return
+      clockSkewMs.current = decoded.iat ? Date.now() - decoded.iat * 1000 : 0
+      saveSession({ address: decoded.address, refreshToken })
+      setOwner(decoded.address)
+      setStoredAddress(decoded.address)
+      setEndedElsewhere(false)
+      setToken(token)
+    },
+    [setOwner, setToken]
+  )
+
+  const keepAccessToken = React.useCallback(
+    (token: string) => {
+      const issuedAt = decodeJwt(token)?.iat
+      clockSkewMs.current = issuedAt ? Date.now() - issuedAt * 1000 : 0
+      setToken(token)
+    },
+    [setToken]
+  )
+
   const clearSession = React.useCallback(() => {
-    clearTokens()
-    userAddress.current = undefined
+    clearStoredSession()
+    setOwner(undefined)
     setStoredAddress(undefined)
-    setJwt(null)
-  }, [])
+    setRestoring(false)
+    setToken(null)
+  }, [setOwner, setToken])
 
   const endSessionHere = React.useCallback(() => {
-    userAddress.current = undefined
+    setOwner(undefined)
     setEndedElsewhere(true)
     setRestoring(false)
-    setJwt(null)
-  }, [])
+    setToken(null)
+  }, [setOwner, setToken])
 
   const signOut = React.useCallback(() => {
     const session = getSession()
     // Storage may already hold another wallet's session whose event hasn't arrived: never revoke it from here.
-    if (decodeJwt(session?.jwt)?.address !== userAddress.current) {
+    if (session?.address !== owner.current) {
       endSessionHere()
       return
     }
@@ -86,40 +114,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const endRestoring = React.useCallback(() => setRestoring(false), [])
 
-  const adoptStoredSession = React.useCallback((address: string) => {
-    const session = getSession()
-    const decoded = decodeJwt(session?.jwt)
-    if (!session || decoded?.address.toLowerCase() !== address.toLowerCase())
-      return false
-    userAddress.current = decoded.address
-    setRestoring(!!decoded.exp && decoded.exp * 1000 <= Date.now())
-    setJwt(session.jwt)
-    return true
-  }, [])
+  const adoptStoredSession = React.useCallback(
+    (address: string) => {
+      const session = getSession()
+      if (session?.address.toLowerCase() !== address.toLowerCase()) return false
+      setOwner(session.address)
+      setRestoring(true)
+      return true
+    },
+    [setOwner]
+  )
 
   useSessionRefresh({
     jwt,
+    address: sessionAddress,
+    restoring,
     clockSkewMs,
     onRefreshed: signIn,
+    onAccessToken: keepAccessToken,
     onEndedElsewhere: endSessionHere,
     onExpired: clearSession,
     onSettled: endRestoring,
   })
 
-  // Another tab rotated this session or signed out; another wallet's sign-in there ends this tab's session without revoking it.
+  // Another tab signed out or signed in another wallet: end this tab's session without revoking it. Same-address rotations need nothing: the next refresh reads the stored token.
   React.useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (!isSessionStorageEvent(event)) return
-      const next = getJwt()
-      setStoredAddress(decodeJwt(next)?.address)
-      if (!userAddress.current) return
-      if (decodeJwt(next)?.address !== userAddress.current) {
+      const next = getSession()
+      setStoredAddress(next?.address)
+      if (!owner.current) return
+      if (next?.address !== owner.current) {
         endSessionHere()
         return
       }
       setEndedElsewhere(false)
-      setRestoring(false)
-      setJwt(next)
     }
     window.addEventListener("storage", onStorage)
     return () => window.removeEventListener("storage", onStorage)
@@ -152,12 +181,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         adoptStoredSession,
       }}
     >
-      {restoring ? (
+      {/* The public wallet-verification page doesn't need the session, so it isn't held behind the restore. */}
+      {restoring && location.pathname !== "/verify-wallet" ? (
         <div className="flex h-svh flex-col items-center justify-center gap-3">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
             Restoring your session…
           </p>
+          {/* Retries continue while the gateway is down; this is the way out. */}
+          <Button variant="ghost" size="sm" onClick={signOut}>
+            Sign out
+          </Button>
         </div>
       ) : (
         children
