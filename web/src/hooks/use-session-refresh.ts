@@ -1,7 +1,7 @@
 import * as React from "react"
 import axios from "axios"
 
-import { decodeJwt, getJwt, getRefreshToken } from "@/lib/session-tokens"
+import { decodeJwt, getSession } from "@/lib/session-tokens"
 import { refreshAuth } from "@/queries/api/auth.queries"
 
 const REFRESH_LEAD_MS = 60_000
@@ -16,9 +16,8 @@ type SessionRefreshOptions = {
   // Client minus gateway clock, measured on fresh tokens, so a skewed clock can't loop refreshes.
   clockSkewMs: React.RefObject<number>
   onRefreshed: (token: string, refreshToken: string) => void
-  onCleared: () => void
-  // onSuperseded ends this tab's session only: storage holds another wallet's session.
-  onSuperseded: () => void
+  // onEndedElsewhere ends this tab's session only: storage is empty or holds another wallet's session.
+  onEndedElsewhere: () => void
   onExpired: () => void
   onSettled: () => void
 }
@@ -28,8 +27,7 @@ export const useSessionRefresh = ({
   jwt,
   clockSkewMs,
   onRefreshed,
-  onCleared,
-  onSuperseded,
+  onEndedElsewhere,
   onExpired,
   onSettled,
 }: SessionRefreshOptions) => {
@@ -54,29 +52,25 @@ export const useSessionRefresh = ({
     const refresh = async () => {
       attempts += 1
       inFlight = true
+      // Read at call time: another tab may have rotated it; never spend a token stored for another address.
+      const session = getSession()
       try {
-        // Read at call time: another tab may have rotated it; never spend a token stored for another address.
-        const refreshToken = getRefreshToken()
-        const storedAddress = decodeJwt(getJwt())?.address
-        if (!refreshToken || !storedAddress) {
-          onCleared()
+        if (!session || decodeJwt(session.jwt)?.address !== decoded.address) {
+          onEndedElsewhere()
           return
         }
-        if (storedAddress !== decoded.address) {
-          onSuperseded()
-          return
-        }
-        const { data } = await refreshAuth(refreshToken)
-        const storedRefreshToken = getRefreshToken()
+        const { data } = await refreshAuth(session.refreshToken)
+        const storedRefreshToken = getSession()?.refreshToken
         // Keep the successor while the spent token is still stored, even if cancelled: dropping it would leave a spent token behind.
-        if (storedRefreshToken === refreshToken)
+        if (storedRefreshToken === session.refreshToken)
           onRefreshed(data.token, data.refreshToken)
-        // Storage emptied mid-flight (sign-out, cleared site data): end quietly, nothing expired.
-        else if (!storedRefreshToken && !cancelled) onCleared()
+        else if (!storedRefreshToken && !cancelled) onEndedElsewhere()
       } catch (error) {
         if (cancelled) return
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          onExpired()
+          // Only expire what was spent: storage may already hold a newer session.
+          if (getSession()?.refreshToken === session?.refreshToken) onExpired()
+          else onEndedElsewhere()
           return
         }
         timeout = window.setTimeout(
@@ -106,13 +100,5 @@ export const useSessionRefresh = ({
       window.clearTimeout(timeout)
       document.removeEventListener("visibilitychange", onVisibilityChange)
     }
-  }, [
-    jwt,
-    clockSkewMs,
-    onRefreshed,
-    onCleared,
-    onSuperseded,
-    onExpired,
-    onSettled,
-  ])
+  }, [jwt, clockSkewMs, onRefreshed, onEndedElsewhere, onExpired, onSettled])
 }

@@ -9,30 +9,49 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { jwt, endedElsewhere } = useAuth()
-  const { wallet, isConnected } = useWallet()
+  const { jwt, endedElsewhere, storedAddress, adoptStoredSession } = useAuth()
+  const { wallet, address, isConnected } = useWallet()
   const { authenticate, isAuthenticating } = useWalletAuth()
   const autoSigned = useRef(false)
+  const loginRequested = useRef(false)
 
   // Mirror the orchestrator's one-shot flow: once the wallet is connected and
   // its provider is ready, prompt the signature automatically instead of
   // requiring a second click.
   useEffect(() => {
-    if (
-      isConnected &&
-      wallet &&
-      !jwt &&
-      !isAuthenticating &&
-      !autoSigned.current &&
-      !endedElsewhere
-    ) {
-      autoSigned.current = true
-      authenticate()
-    }
     if (!isConnected) {
       autoSigned.current = false
+      return
     }
-  }, [isConnected, wallet, jwt, isAuthenticating, authenticate, endedElsewhere])
+    if (!wallet || jwt || isAuthenticating) return
+    // Another tab already holds a session for this wallet: join it instead of signing again.
+    if (
+      address &&
+      address.toLowerCase() === storedAddress?.toLowerCase() &&
+      adoptStoredSession(address)
+    )
+      return
+    if (autoSigned.current) return
+    if (endedElsewhere && !loginRequested.current) return
+    autoSigned.current = true
+    authenticate()
+  }, [
+    isConnected,
+    wallet,
+    address,
+    jwt,
+    isAuthenticating,
+    authenticate,
+    endedElsewhere,
+    storedAddress,
+    adoptStoredSession,
+  ])
+
+  const login = () => {
+    loginRequested.current = true
+    if (wallet) autoSigned.current = true
+    authenticate()
+  }
 
   return (
     <form
@@ -51,7 +70,7 @@ export function LoginForm({
           type="button"
           className="w-full"
           loading={isAuthenticating}
-          onClick={authenticate}
+          onClick={login}
         >
           Login
         </Button>
