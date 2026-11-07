@@ -206,8 +206,6 @@ components:
           type: string
         id:
           type: string
-        role:
-          type: string
       type: object
     responses.ConfigResponse:
       properties:
