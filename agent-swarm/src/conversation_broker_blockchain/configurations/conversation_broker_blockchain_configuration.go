@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/transports"
+
 	service_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_blockchain/metrics"
@@ -48,12 +50,21 @@ func AddConversationBrokerBlockchainConfiguration(container *dig.Container) {
 		blockchainRpcMetrics metrics_interfaces.BlockchainRpcMetricsInterface,
 	) (clients.EthClientInterface, error) {
 		chainId := strconv.FormatInt(blockchainSettings.ChainId, 10)
+		rpcRoundTripper, err := transports.NewRpcRoundTripper(
+			http.DefaultTransport,
+			rpcNodeSettings.HttpUrl,
+			blockchainRpcMetrics,
+			chainId,
+		)
+		if err != nil {
+			return nil, err
+		}
 		rpcClient, err := rpc.DialOptions(
 			context.Background(),
-			rpcNodeSettings.HttpUrl,
+			rpcRoundTripper.Origin(),
 			rpc.WithHTTPClient(&http.Client{
 				Transport: otelhttp.NewTransport(
-					metrics.NewRpcRoundTripper(http.DefaultTransport, blockchainRpcMetrics, chainId),
+					rpcRoundTripper,
 					otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
 				),
 			}),

@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/transports"
+
 	common_settings "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/metrics"
@@ -97,17 +99,26 @@ func AddRegistrySynchronizerBlockchainConfiguration(container *dig.Container) {
 		blockchainRpcMetrics metrics_interfaces.BlockchainRpcMetricsInterface,
 	) (*ethclient.Client, error) {
 		chainId := strconv.FormatInt(blockchainSettings.ChainId, 10)
+		rpcRoundTripper, err := transports.NewRpcRoundTripper(
+			http.DefaultTransport,
+			rpcNodeSettings.HttpUrl,
+			blockchainRpcMetrics,
+			chainId,
+		)
+		if err != nil {
+			return nil, err
+		}
 		httpClient := &http.Client{
 			Timeout: time.Duration(rpcNodeSettings.RequestTimeoutSeconds) * time.Second,
 			Transport: otelhttp.NewTransport(
-				metrics.NewRpcRoundTripper(http.DefaultTransport, blockchainRpcMetrics, chainId),
+				rpcRoundTripper,
 				otelhttp.WithMeterProvider(metricnoop.NewMeterProvider()),
 			),
 		}
 
 		rpcClient, err := rpc.DialOptions(
 			context.Background(),
-			rpcNodeSettings.HttpUrl,
+			rpcRoundTripper.Origin(),
 			rpc.WithHTTPClient(httpClient),
 		)
 		if err != nil {
