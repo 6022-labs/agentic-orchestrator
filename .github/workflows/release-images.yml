@@ -1,0 +1,115 @@
+name: Release Images
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: release-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: agentic-orchestrator-gateway
+            dockerfile: gateway/src/gateway_host/Dockerfile
+            context: gateway
+          - image: agentic-orchestrator-registry
+            dockerfile: agent-identity/src/registry_host/Dockerfile
+            context: agent-identity
+          - image: agentic-orchestrator-registry-synchronizer
+            dockerfile: agent-identity/src/registry_synchronizer_host/Dockerfile
+            context: agent-identity
+          - image: agentic-orchestrator-conversation-broker
+            dockerfile: agent-swarm/src/conversation_broker_host/Dockerfile
+            context: agent-swarm
+          - image: agentic-orchestrator-slack-bridge-internal
+            dockerfile: channels-and-integrations/slack-bridge/src/slack_bridge_internal_host/Dockerfile
+            context: channels-and-integrations/slack-bridge
+          - image: agentic-orchestrator-slack-bridge-external
+            dockerfile: channels-and-integrations/slack-bridge/src/slack_bridge_external_host/Dockerfile
+            context: channels-and-integrations/slack-bridge
+          - image: agentic-orchestrator-web
+            dockerfile: web/Dockerfile
+            context: web
+          - image: agentic-orchestrator-grafana
+            dockerfile: grafana/Dockerfile
+            context: grafana
+          - image: agentic-orchestrator-alloy
+            dockerfile: grafana/alloy/Dockerfile
+            context: grafana/alloy
+          - image: agentic-orchestrator-loki
+            dockerfile: grafana/loki/Dockerfile
+            context: grafana/loki
+          - image: agentic-orchestrator-mimir
+            dockerfile: grafana/mimir/Dockerfile
+            context: grafana/mimir
+          - image: agentic-orchestrator-tempo
+            dockerfile: grafana/tempo/Dockerfile
+            context: grafana/tempo
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          push: true
+          provenance: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      - name: Write digest to summary
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### ${IMAGE}"
+            echo
+            echo "- Digest: \`${IMAGE}@${DIGEST}\`"
+            echo "- Tags:"
+            echo "${TAGS}" | sed 's/^/  - `/; s/$/`/'
+          } >> "$GITHUB_STEP_SUMMARY"
