@@ -21,10 +21,21 @@ export const setAccessToken = (token: string | null) => {
   accessToken = token
 }
 
+// Fallback for blocked storage, so the refresh loop can still read back the token it was given.
+let memorySession: StoredSession | null = null
+let memoryOnly = false
+
 export const getSession = (): StoredSession | null => {
+  if (memoryOnly) return memorySession
+  let raw: string | null
   try {
-    const raw = localStorage.getItem(SESSION_KEY)
-    const session = raw ? (JSON.parse(raw) as Partial<StoredSession>) : null
+    raw = localStorage.getItem(SESSION_KEY)
+  } catch {
+    return memorySession
+  }
+  if (raw === null) return null
+  try {
+    const session = JSON.parse(raw) as Partial<StoredSession> | null
     if (
       typeof session?.address !== "string" ||
       typeof session.refreshToken !== "string"
@@ -37,11 +48,30 @@ export const getSession = (): StoredSession | null => {
 }
 
 export const saveSession = (session: StoredSession) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+  memorySession = session
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    memoryOnly = false
+  } catch {
+    // Blocked storage only loses persistence; the in-memory session still works.
+    memoryOnly = true
+    // A full quota can still hold the previous, now spent, refresh token.
+    try {
+      localStorage.removeItem(SESSION_KEY)
+    } catch {
+      // Unreadable storage holds nothing to clear.
+    }
+  }
 }
 
 export const clearStoredSession = () => {
-  localStorage.removeItem(SESSION_KEY)
+  memorySession = null
+  memoryOnly = false
+  try {
+    localStorage.removeItem(SESSION_KEY)
+  } catch {
+    // Blocked storage: nothing was persisted to clear.
+  }
 }
 
 // A null key means another tab cleared the whole storage.

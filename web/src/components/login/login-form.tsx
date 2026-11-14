@@ -60,9 +60,9 @@ export function LoginForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <h1 className="text-2xl font-bold">Log in to your account</h1>
         <p className="text-sm text-balance text-muted-foreground">
-          Use your web3 wallet to login
+          Use your web3 wallet to log in
         </p>
       </div>
       <div className="grid gap-6">
@@ -72,7 +72,7 @@ export function LoginForm({
           loading={isAuthenticating}
           onClick={login}
         >
-          Login
+          Log in
         </Button>
       </div>
     </form>
