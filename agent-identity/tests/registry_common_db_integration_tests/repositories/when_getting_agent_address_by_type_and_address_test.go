@@ -36,7 +36,7 @@ func WhenGettingAgentAddressByTypeAndAddressBeforeEach(
 }
 
 func WhenGettingAgentAddressByTypeAndAddressAfterEach(suite *WhenGettingAgentAddressByTypeAndAddressTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingAgentAddressByTypeAndAddress(t *testing.T) {

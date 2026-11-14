@@ -36,7 +36,7 @@ func WhenGettingSlackConversationByBrokerConversationIdBeforeEach(
 func WhenGettingSlackConversationByBrokerConversationIdAfterEach(
 	s *WhenGettingSlackConversationByBrokerConversationIdTestingSuite,
 ) {
-	container_builders.DestroyPostgreSQLDatabase(s.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(s.dbName)
 }
 
 func TestWhenGettingSlackConversationByBrokerConversationId(t *testing.T) {

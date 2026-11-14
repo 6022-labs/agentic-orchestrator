@@ -32,7 +32,7 @@ func WhenSavingSlackMessageBeforeEach(t *testing.T) *WhenSavingSlackMessageTesti
 }
 
 func WhenSavingSlackMessageAfterEach(s *WhenSavingSlackMessageTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(s.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(s.dbName)
 }
 
 func TestWhenSavingSlackMessage(t *testing.T) {

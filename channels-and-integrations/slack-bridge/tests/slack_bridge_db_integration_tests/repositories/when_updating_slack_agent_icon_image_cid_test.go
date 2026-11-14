@@ -33,7 +33,7 @@ func WhenUpdatingSlackAgentIconImageCidBeforeEach(t *testing.T) *WhenUpdatingSla
 }
 
 func WhenUpdatingSlackAgentIconImageCidAfterEach(suite *WhenUpdatingSlackAgentIconImageCidTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenUpdatingSlackAgentIconImageCid(t *testing.T) {

@@ -35,7 +35,7 @@ func WhenGettingAllAgentsBeforeEach(t *testing.T) *WhenGettingAllAgentsTestingSu
 }
 
 func WhenGettingAllAgentsAfterEach(suite *WhenGettingAllAgentsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingAllAgents(t *testing.T) {

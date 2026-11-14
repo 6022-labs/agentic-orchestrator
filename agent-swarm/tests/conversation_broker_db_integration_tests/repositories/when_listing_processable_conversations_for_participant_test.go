@@ -45,7 +45,7 @@ func WhenListingProcessableConversationsForParticipantBeforeEach(
 func WhenListingProcessableConversationsForParticipantAfterEach(
 	suite *WhenListingProcessableConversationsForParticipantTestingSuite,
 ) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func (s *WhenListingProcessableConversationsForParticipantTestingSuite) seedConversation(

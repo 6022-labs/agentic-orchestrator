@@ -39,7 +39,7 @@ func WhenAddingAgentToChannelBeforeEach(t *testing.T) *WhenAddingAgentToChannelT
 }
 
 func WhenAddingAgentToChannelAfterEach(suite *WhenAddingAgentToChannelTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenAddingAgentToChannel(t *testing.T) {

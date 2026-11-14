@@ -34,7 +34,7 @@ func WhenGettingAllAgentAddressesByAgentIdBeforeEach(t *testing.T) *WhenGettingA
 }
 
 func WhenGettingAllAgentAddressesByAgentIdAfterEach(suite *WhenGettingAllAgentAddressesByAgentIdTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingAllAgentAddressesByAgentId(t *testing.T) {

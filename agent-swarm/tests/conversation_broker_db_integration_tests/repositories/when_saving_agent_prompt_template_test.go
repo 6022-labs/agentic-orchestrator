@@ -28,7 +28,7 @@ func WhenSavingAgentPromptTemplateBeforeEach(t *testing.T) *WhenSavingAgentPromp
 }
 
 func WhenSavingAgentPromptTemplateAfterEach(suite *WhenSavingAgentPromptTemplateTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingAgentPromptTemplate(t *testing.T) {

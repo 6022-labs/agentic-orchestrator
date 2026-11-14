@@ -22,7 +22,7 @@ type WhenMigratingMigrationsTestingSuite struct {
 }
 
 func WhenMigratingMigrationsBeforeEach(t *testing.T) *WhenMigratingMigrationsTestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+	dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
 	if err != nil {
@@ -54,7 +54,7 @@ func WhenMigratingMigrationsBeforeEach(t *testing.T) *WhenMigratingMigrationsTes
 }
 
 func WhenMigratingMigrationsAfterEach(suite *WhenMigratingMigrationsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenMigratingMigrations(t *testing.T) {

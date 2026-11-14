@@ -34,7 +34,7 @@ func WhenSavingEntityBeforeEach(t *testing.T) *WhenSavingEntityTestingSuite {
 }
 
 func WhenSavingEntityAfterEach(suite *WhenSavingEntityTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingEntity(t *testing.T) {

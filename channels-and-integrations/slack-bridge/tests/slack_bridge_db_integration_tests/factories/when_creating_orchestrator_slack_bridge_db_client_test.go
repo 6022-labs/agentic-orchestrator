@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/factories"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/src/slack_bridge_db/settings"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/certificate_builders"
 	"github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/common_tests/container_builders"
 	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge/tests/slack_bridge_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/knadh/koanf/providers/confmap"
@@ -62,7 +63,7 @@ func WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(
 func WhenCreatingOrchestratorSlackBridgeDbClientAfterEach(
 	suite *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite,
 ) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
@@ -72,7 +73,7 @@ func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(t *testing.T) *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
-			dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+			dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 			return WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(t, dbName, map[string]any{
 				"database.url": connectionString,
 			})
@@ -95,12 +96,12 @@ func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(t *testing.T) *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
-			dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+			dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 			return WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(t, dbName, map[string]any{
 				// prefer is the sslmode whose pgx fallback would retry in plaintext.
 				"database.url":             strings.Replace(connectionString, "sslmode=disable", "sslmode=prefer", 1),
-				"database.ca_certificate":  common_tests.NewCertificateAuthority().CertificatePEM,
-				"database.tls_server_name": container_builders.PostgresTLSServerName,
+				"database.ca_certificate":  string(certificate_builders.NewCertificateAuthority().CertificatePem),
+				"database.tls_server_name": container_builders.TlsServerName,
 			})
 		}
 
@@ -120,11 +121,11 @@ func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(t *testing.T) *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
-			dbName, connectionString, _ := container_builders.CreateTLSPostgreSQLDatabase()
+			dbName, connectionString, _ := container_builders.GetPostgresContainerBuilder().CreateTls()
 			return WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(t, dbName, map[string]any{
 				"database.url":             connectionString,
-				"database.ca_certificate":  common_tests.NewCertificateAuthority().CertificatePEM,
-				"database.tls_server_name": container_builders.PostgresTLSServerName,
+				"database.ca_certificate":  string(certificate_builders.NewCertificateAuthority().CertificatePem),
+				"database.tls_server_name": container_builders.TlsServerName,
 			})
 		}
 
@@ -145,12 +146,12 @@ func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(t *testing.T) *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
-			dbName, connectionString, caCertificatePEM := container_builders.CreateTLSPostgreSQLDatabase()
+			dbName, connectionString, caCertificatePem := container_builders.GetPostgresContainerBuilder().CreateTls()
 			return WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(t, dbName, map[string]any{
 				// direct negotiation is refused without the postgresql ALPN protocol.
 				"database.url":             connectionString + " sslnegotiation=direct",
-				"database.ca_certificate":  caCertificatePEM,
-				"database.tls_server_name": container_builders.PostgresTLSServerName,
+				"database.ca_certificate":  string(caCertificatePem),
+				"database.tls_server_name": container_builders.TlsServerName,
 			})
 		}
 
@@ -173,11 +174,11 @@ func TestWhenCreatingOrchestratorSlackBridgeDbClient(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(t *testing.T) *WhenCreatingOrchestratorSlackBridgeDbClientTestingSuite {
-			dbName, connectionString, caCertificatePEM := container_builders.CreateTLSPostgreSQLDatabase()
+			dbName, connectionString, caCertificatePem := container_builders.GetPostgresContainerBuilder().CreateTls()
 			return WhenCreatingOrchestratorSlackBridgeDbClientBeforeEach(t, dbName, map[string]any{
 				"database.url":             connectionString,
-				"database.ca_certificate":  caCertificatePEM,
-				"database.tls_server_name": container_builders.PostgresTLSServerName,
+				"database.ca_certificate":  string(caCertificatePem),
+				"database.tls_server_name": container_builders.TlsServerName,
 			})
 		}
 

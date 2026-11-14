@@ -33,7 +33,7 @@ func WhenUpdatingSlackAgentOwnerWalletBeforeEach(t *testing.T) *WhenUpdatingSlac
 }
 
 func WhenUpdatingSlackAgentOwnerWalletAfterEach(suite *WhenUpdatingSlackAgentOwnerWalletTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenUpdatingSlackAgentOwnerWallet(t *testing.T) {

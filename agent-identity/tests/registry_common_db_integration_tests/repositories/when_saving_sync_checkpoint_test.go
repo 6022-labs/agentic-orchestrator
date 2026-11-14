@@ -33,7 +33,7 @@ func WhenSavingSyncCheckpointBeforeEach(t *testing.T) *WhenSavingSyncCheckpointT
 }
 
 func WhenSavingSyncCheckpointAfterEach(suite *WhenSavingSyncCheckpointTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingSyncCheckpoint(t *testing.T) {

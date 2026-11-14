@@ -29,7 +29,7 @@ func WhenRemovingAgentBeforeEach(t *testing.T) *WhenRemovingAgentTestingSuite {
 }
 
 func WhenRemovingAgentAfterEach(suite *WhenRemovingAgentTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenRemovingAgent(t *testing.T) {

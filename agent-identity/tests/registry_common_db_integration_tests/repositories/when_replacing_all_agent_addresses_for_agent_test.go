@@ -36,7 +36,7 @@ func WhenReplacingAllAgentAddressesForAgentBeforeEach(
 }
 
 func WhenReplacingAllAgentAddressesForAgentAfterEach(suite *WhenReplacingAllAgentAddressesForAgentTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenReplacingAllAgentAddressesForAgent(t *testing.T) {

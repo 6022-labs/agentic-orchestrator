@@ -33,7 +33,7 @@ func WhenGettingSlackUserByIdBeforeEach(t *testing.T) *WhenGettingSlackUserByIdT
 }
 
 func WhenGettingSlackUserByIdAfterEach(suite *WhenGettingSlackUserByIdTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingSlackUserById(t *testing.T) {

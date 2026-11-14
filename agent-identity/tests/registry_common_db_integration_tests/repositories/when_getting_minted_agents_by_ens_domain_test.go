@@ -35,7 +35,7 @@ func WhenGettingMintedAgentsByEnsBeforeEach(t *testing.T) *WhenGettingMintedAgen
 }
 
 func WhenGettingMintedAgentsByEnsAfterEach(suite *WhenGettingMintedAgentsByEnsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingMintedAgentsByEns(t *testing.T) {

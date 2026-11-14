@@ -29,7 +29,7 @@ type When<Behavior>TestingSuite struct {
 }
 
 func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+	dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 
 	migrationFolderPath, err := test_helpers.FindMigrationFolderPath()
 	if err != nil {
@@ -61,7 +61,7 @@ func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestingSuite {
 }
 
 func When<Behavior>AfterEach(suite *When<Behavior>TestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhen<Behavior>(t *testing.T) {
@@ -108,7 +108,7 @@ type When<Behavior>TestingSuite struct {
 }
 
 func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestingSuite {
-	redisClient := container_builders.GetRedisConnection()
+	redisClient := container_builders.GetRedisContainerBuilder().Create()
 
 	mockController := gomock.NewController(t)
 	cacheMetricsMock := metrics_mocks.NewMockCacheMetricsInterface(mockController)
@@ -124,7 +124,7 @@ func When<Behavior>BeforeEach(t *testing.T) *When<Behavior>TestingSuite {
 }
 
 func When<Behavior>AfterEach(suite *When<Behavior>TestingSuite) {
-	container_builders.CloseRedisConnection(suite.redisClient)
+	container_builders.GetRedisContainerBuilder().DropConnection(suite.redisClient)
 }
 
 func TestWhen<Behavior>(t *testing.T) {
@@ -166,7 +166,7 @@ type When<Behavior>TestingSuite struct {
 }
 
 func When<Behavior>BeforeEach() *When<Behavior>TestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+	dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 
 	sut := factories.New<FactoryType>(
 		zap.NewNop(),
@@ -180,7 +180,7 @@ func When<Behavior>BeforeEach() *When<Behavior>TestingSuite {
 }
 
 func When<Behavior>AfterEach(suite *When<Behavior>TestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhen<Behavior>(t *testing.T) {

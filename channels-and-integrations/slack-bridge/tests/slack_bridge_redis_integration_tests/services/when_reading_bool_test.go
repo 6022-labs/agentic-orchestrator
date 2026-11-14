@@ -20,7 +20,7 @@ type WhenReadingBoolTestingSuite struct {
 }
 
 func WhenReadingBoolBeforeEach(t *testing.T) *WhenReadingBoolTestingSuite {
-	redisClient := container_builders.GetRedisConnection()
+	redisClient := container_builders.GetRedisContainerBuilder().Create()
 
 	redisMetrics := redis_metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
 	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
@@ -37,7 +37,7 @@ func WhenReadingBoolBeforeEach(t *testing.T) *WhenReadingBoolTestingSuite {
 }
 
 func WhenReadingBoolAfterEach(suite *WhenReadingBoolTestingSuite) {
-	container_builders.CloseRedisConnection(suite.redisClient)
+	container_builders.GetRedisContainerBuilder().DropConnection(suite.redisClient)
 }
 
 func TestWhenReadingBool(t *testing.T) {

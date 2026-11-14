@@ -35,7 +35,7 @@ func WhenSavingEntityUsingTransactionBeforeEach(t *testing.T) *WhenSavingEntityU
 }
 
 func WhenSavingEntityUsingTransactionAfterEach(suite *WhenSavingEntityUsingTransactionTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingEntityUsingTransaction(t *testing.T) {

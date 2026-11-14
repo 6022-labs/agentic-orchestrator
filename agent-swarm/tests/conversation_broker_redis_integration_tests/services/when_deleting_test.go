@@ -20,7 +20,7 @@ type WhenDeletingTestingSuite struct {
 }
 
 func WhenDeletingBeforeEach(t *testing.T) *WhenDeletingTestingSuite {
-	redisClient := container_builders.GetRedisConnection()
+	redisClient := container_builders.GetRedisContainerBuilder().Create()
 
 	redisMetrics := redis_metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
 	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
@@ -37,7 +37,7 @@ func WhenDeletingBeforeEach(t *testing.T) *WhenDeletingTestingSuite {
 }
 
 func WhenDeletingAfterEach(suite *WhenDeletingTestingSuite) {
-	container_builders.CloseRedisConnection(suite.redisClient)
+	container_builders.GetRedisContainerBuilder().DropConnection(suite.redisClient)
 }
 
 func TestWhenDeleting(t *testing.T) {

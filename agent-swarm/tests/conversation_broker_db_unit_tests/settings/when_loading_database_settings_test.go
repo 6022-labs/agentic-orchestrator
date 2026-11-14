@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	db_settings "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_db/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/certificate_builders"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
@@ -99,11 +99,11 @@ func TestWhenLoadingDatabaseSettings(t *testing.T) {
 	t.Run("Given a CA certificate", func(t *testing.T) {
 		t.Parallel()
 
-		caCertificatePEM := common_tests.NewCertificateAuthority().CertificatePEM
+		caCertificatePem := certificate_builders.NewCertificateAuthority().CertificatePem
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"database.url":            "postgres://user:pass@db.example.com:5432/db",
-			"database.ca_certificate": caCertificatePEM,
+			"database.ca_certificate": string(caCertificatePem),
 		}, "."), nil)
 
 		t.Run("Should trust only it", func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestWhenLoadingDatabaseSettings(t *testing.T) {
 			settings := db_settings.NewConversationBrokerDatabaseSettings(zap.NewNop(), k)
 
 			expectedRootCAs := x509.NewCertPool()
-			expectedRootCAs.AppendCertsFromPEM([]byte(caCertificatePEM))
+			expectedRootCAs.AppendCertsFromPEM(caCertificatePem)
 			assert.True(t, expectedRootCAs.Equal(settings.TlsConfig.RootCAs))
 		})
 
@@ -139,7 +139,7 @@ func TestWhenLoadingDatabaseSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"database.url":             "postgres://user:pass@proxy.example.com:5432/db",
-			"database.ca_certificate":  common_tests.NewCertificateAuthority().CertificatePEM,
+			"database.ca_certificate":  string(certificate_builders.NewCertificateAuthority().CertificatePem),
 			"database.tls_server_name": "postgres.internal",
 		}, "."), nil)
 

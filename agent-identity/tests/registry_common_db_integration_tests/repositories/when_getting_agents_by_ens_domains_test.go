@@ -33,7 +33,7 @@ func WhenGettingAgentsByEnsDomainsBeforeEach(t *testing.T) *WhenGettingAgentsByE
 }
 
 func WhenGettingAgentsByEnsDomainsAfterEach(suite *WhenGettingAgentsByEnsDomainsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingAgentsByEnsDomains(t *testing.T) {

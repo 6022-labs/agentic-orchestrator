@@ -21,7 +21,7 @@ type chainFixture struct {
 }
 
 func newChainFixture(t *testing.T) *chainFixture {
-	anvilAccountSettings := container_builders.CreateAnvilAccount()
+	anvilAccountSettings := container_builders.GetAnvilContainerBuilder().Create()
 
 	client, err := ethclient.Dial(anvilAccountSettings.HttpUrl)
 	if err != nil {

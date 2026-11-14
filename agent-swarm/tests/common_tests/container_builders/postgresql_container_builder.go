@@ -1,216 +1,184 @@
 package container_builders
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 
 	_ "github.com/lib/pq"
 
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/agent-swarm/tests/common_tests/certificate_builders"
 	"github.com/google/uuid"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 var (
-	postgresContainer       testcontainers.Container
-	postgresConnStrTemplate string
-	postgresContainerMu     sync.Mutex
-	postgresDatabasesMu     sync.Mutex
-	postgresDatabases       []string
+	postgresContainer   *PostgresContainerBuilder
+	postgresContainerMu sync.Mutex
 )
 
-// Start the container once for all test packages
-func startPostgres() string {
+type PostgresContainerBuilder struct {
+	container       testcontainers.Container
+	connStrTemplate string
+	containerMu     sync.Mutex
+
+	tlsContainer       testcontainers.Container
+	tlsConnStrTemplate string
+	caCertificatePem   []byte
+	tlsContainerMu     sync.Mutex
+
+	databasesMu sync.Mutex
+	databases   []string
+}
+
+func GetPostgresContainerBuilder() *PostgresContainerBuilder {
 	postgresContainerMu.Lock()
 	defer postgresContainerMu.Unlock()
 
 	if postgresContainer == nil {
-		ctx := context.Background()
-		req := testcontainers.ContainerRequest{
-			Image:        "postgres:18-alpine",
-			ExposedPorts: []string{"5432/tcp"},
-			Env: map[string]string{
-				"POSTGRES_USER":     "postgres",
-				"POSTGRES_PASSWORD": "postgres",
-				"POSTGRES_DB":       "postgres",
-			},
-			WaitingFor: wait.ForListeningPort("5432/tcp"),
-		}
-
-		container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		})
-		if err != nil {
-			log.Fatalf("Failed to start container: %v", err)
-		}
-		postgresContainer = container
-
-		host, _ := container.Host(ctx)
-		port, _ := container.MappedPort(ctx, "5432")
-
-		postgresConnStrTemplate = fmt.Sprintf(
-			"host=%s port=%s dbname=%s user=postgres password=postgres sslmode=disable",
-			host,
-			port.Port(),
-			"%s",
-		)
-
-		log.Println("PostgreSQL container started and ready")
+		postgresContainer = &PostgresContainerBuilder{}
 	}
-
-	return postgresConnStrTemplate
+	return postgresContainer
 }
 
-// stopPostgres stops both the plaintext and the TLS containers after all tests.
-func stopPostgres() {
-	postgresContainerMu.Lock()
-	if postgresContainer != nil {
-		postgresContainer.Terminate(context.Background())
-		postgresContainer = nil
+func (b *PostgresContainerBuilder) start() string {
+	b.containerMu.Lock()
+	defer b.containerMu.Unlock()
 
+	if b.container == nil {
+		var connStrTemplate string
+		b.container, connStrTemplate = b.run(b.request())
+		b.connStrTemplate = connStrTemplate + " sslmode=disable"
+		log.Println("PostgreSQL container ready")
+	}
+	return b.connStrTemplate
+}
+
+func (b *PostgresContainerBuilder) startTls() (string, []byte) {
+	b.tlsContainerMu.Lock()
+	defer b.tlsContainerMu.Unlock()
+
+	if b.tlsContainer == nil {
+		certificateAuthority := certificate_builders.NewCertificateAuthority()
+		certificatePem, keyPem := certificateAuthority.IssueServerCertificate(TlsServerName)
+
+		req := b.request()
+		req.Files = []testcontainers.ContainerFile{
+			{Reader: bytes.NewReader(certificatePem), ContainerFilePath: "/certs/server.crt", FileMode: 0o644},
+			{Reader: bytes.NewReader(keyPem), ContainerFilePath: "/certs/server.key", FileMode: 0o644},
+		}
+		// postgres refuses a key file it does not own with group/other access.
+		req.Entrypoint = []string{
+			"sh",
+			"-c",
+			"install -o postgres -g postgres -m 600 /certs/server.key /tmp/server.key" +
+				" && exec docker-entrypoint.sh postgres -c ssl=on" +
+				" -c ssl_cert_file=/certs/server.crt -c ssl_key_file=/tmp/server.key",
+		}
+
+		var connStrTemplate string
+		b.tlsContainer, connStrTemplate = b.run(req)
+		b.tlsConnStrTemplate = connStrTemplate + " sslmode=require"
+		b.caCertificatePem = certificateAuthority.CertificatePem
+		log.Println("PostgreSQL TLS container ready")
+	}
+	return b.tlsConnStrTemplate, b.caCertificatePem
+}
+
+func (b *PostgresContainerBuilder) request() testcontainers.ContainerRequest {
+	return testcontainers.ContainerRequest{
+		Image:        "postgres:18-alpine",
+		ExposedPorts: []string{"5432/tcp"},
+		Env: map[string]string{
+			"POSTGRES_USER":     "postgres",
+			"POSTGRES_PASSWORD": "postgres",
+			"POSTGRES_DB":       "postgres",
+		},
+		WaitingFor: wait.ForListeningPort("5432/tcp"),
+	}
+}
+
+// run starts req and returns the container with a connection string template missing only its sslmode.
+func (b *PostgresContainerBuilder) run(req testcontainers.ContainerRequest) (testcontainers.Container, string) {
+	ctx := context.Background()
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		log.Fatalf("failed to start postgres container: %v", err)
+	}
+
+	host, _ := container.Host(ctx)
+	port, _ := container.MappedPort(ctx, "5432")
+	return container, fmt.Sprintf("host=%s port=%s dbname=%%s user=postgres password=postgres", host, port.Port())
+}
+
+func (b *PostgresContainerBuilder) stop() {
+	b.containerMu.Lock()
+	if b.container != nil {
+		_ = b.container.Terminate(context.Background())
+		b.container = nil
 		log.Println("PostgreSQL container stopped")
 	}
-	postgresContainerMu.Unlock()
+	b.containerMu.Unlock()
 
-	postgresTLSContainerMu.Lock()
-	if postgresTLSContainer != nil {
-		postgresTLSContainer.Terminate(context.Background())
-		postgresTLSContainer = nil
-
+	b.tlsContainerMu.Lock()
+	if b.tlsContainer != nil {
+		_ = b.tlsContainer.Terminate(context.Background())
+		b.tlsContainer = nil
 		log.Println("PostgreSQL TLS container stopped")
 	}
-	postgresTLSContainerMu.Unlock()
+	b.tlsContainerMu.Unlock()
+
+	postgresContainerMu.Lock()
+	postgresContainer = nil
+	postgresContainerMu.Unlock()
 }
 
-func CreatePostgreSQLDatabase() (string, string) {
-	// Connect as postgres user to create a new database
-	dnsTemplate := startPostgres()
-	mainDatabaseConnectionString := fmt.Sprintf(dnsTemplate, "postgres")
-
-	conn, err := sql.Open("postgres", mainDatabaseConnectionString)
-	if err != nil {
-		log.Fatalf("Failed to connect to PostgreSQL: %v", err)
-	}
-	defer conn.Close()
-
-	dbName := uuid.New().String()
-	_, err = conn.Exec(fmt.Sprintf(`CREATE DATABASE "%s";`, dbName))
-	if err != nil {
-		log.Fatalf("Failed to create database %s: %v", dbName, err)
-	}
-
-	postgresDatabasesMu.Lock()
-	postgresDatabases = append(postgresDatabases, dbName)
-	postgresDatabasesMu.Unlock()
-
+// Create returns (dbName, connectionString) for a scratch DB in the shared container, so tests run in parallel.
+func (b *PostgresContainerBuilder) Create() (string, string) {
+	dnsTemplate := b.start()
+	dbName := b.createDatabase(dnsTemplate)
 	return dbName, fmt.Sprintf(dnsTemplate, dbName)
 }
 
-func DestroyPostgreSQLDatabase(dbName string) {
-	// Don't need to remove the database because it will be removed when the container is stopped
-
-	// Just remove the database from the list
-	for i, db := range postgresDatabases {
-		if db == dbName {
-			postgresDatabasesMu.Lock()
-			postgresDatabases = append(postgresDatabases[:i], postgresDatabases[i+1:]...)
-			postgresDatabasesMu.Unlock()
-			break
-		}
-	}
-
-	log.Printf("Database %s dropped", dbName)
+func (b *PostgresContainerBuilder) CreateTls() (string, string, []byte) {
+	dnsTemplate, caCertificatePem := b.startTls()
+	dbName := b.createDatabase(dnsTemplate)
+	return dbName, fmt.Sprintf(dnsTemplate, dbName), caCertificatePem
 }
 
-// PostgresTLSServerName is the only name in the TLS container's certificate, never the host it is reached on.
-const PostgresTLSServerName = "postgres.internal"
-
-var (
-	postgresTLSContainer        testcontainers.Container
-	postgresTLSConnStrTemplate  string
-	postgresTLSCaCertificatePEM string
-	postgresTLSContainerMu      sync.Mutex
-)
-
-// Postgres refuses a key file it does not own, so the entrypoint copies the mounted pair before starting.
-const postgresTLSEntrypoint = "mkdir -p /etc/postgresql-tls && " +
-	"cp /tls/server.crt /tls/server.key /etc/postgresql-tls/ && " +
-	"chown postgres:postgres /etc/postgresql-tls/server.crt /etc/postgresql-tls/server.key && " +
-	"chmod 600 /etc/postgresql-tls/server.key && " +
-	"exec docker-entrypoint.sh postgres -c ssl=on " +
-	"-c ssl_cert_file=/etc/postgresql-tls/server.crt -c ssl_key_file=/etc/postgresql-tls/server.key"
-
-func startTLSPostgres() (string, string) {
-	postgresTLSContainerMu.Lock()
-	defer postgresTLSContainerMu.Unlock()
-
-	if postgresTLSContainer == nil {
-		ctx := context.Background()
-		certificateAuthority := common_tests.NewCertificateAuthority()
-		certificatePEM, privateKeyPEM := certificateAuthority.IssueServerCertificate(PostgresTLSServerName)
-
-		req := testcontainers.ContainerRequest{
-			Image:        "postgres:18-alpine",
-			ExposedPorts: []string{"5432/tcp"},
-			Env: map[string]string{
-				"POSTGRES_USER":     "postgres",
-				"POSTGRES_PASSWORD": "postgres",
-				"POSTGRES_DB":       "postgres",
-			},
-			Files: []testcontainers.ContainerFile{
-				{Reader: strings.NewReader(certificatePEM), ContainerFilePath: "/tls/server.crt", FileMode: 0o644},
-				{Reader: strings.NewReader(privateKeyPEM), ContainerFilePath: "/tls/server.key", FileMode: 0o600},
-			},
-			Entrypoint: []string{"sh", "-c", postgresTLSEntrypoint},
-			WaitingFor: wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
-		}
-
-		container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		})
-		if err != nil {
-			log.Fatalf("Failed to start TLS container: %v", err)
-		}
-		postgresTLSContainer = container
-		postgresTLSCaCertificatePEM = certificateAuthority.CertificatePEM
-
-		host, _ := container.Host(ctx)
-		port, _ := container.MappedPort(ctx, "5432")
-
-		postgresTLSConnStrTemplate = fmt.Sprintf(
-			"host=%s port=%s dbname=%s user=postgres password=postgres",
-			host,
-			port.Port(),
-			"%s",
-		)
-
-		log.Println("PostgreSQL TLS container started and ready")
-	}
-
-	return postgresTLSConnStrTemplate, postgresTLSCaCertificatePEM
-}
-
-// CreateTLSPostgreSQLDatabase returns a database name, its connection string and the CA that signed the server.
-func CreateTLSPostgreSQLDatabase() (string, string, string) {
-	dnsTemplate, caCertificatePEM := startTLSPostgres()
-
-	conn, err := sql.Open("postgres", fmt.Sprintf(dnsTemplate, "postgres")+" sslmode=require")
+func (b *PostgresContainerBuilder) createDatabase(dnsTemplate string) string {
+	conn, err := sql.Open("postgres", fmt.Sprintf(dnsTemplate, "postgres"))
 	if err != nil {
-		log.Fatalf("Failed to connect to PostgreSQL over TLS: %v", err)
+		log.Fatalf("failed to open postgres: %v", err)
 	}
 	defer conn.Close()
 
-	dbName := uuid.New().String()
-	if _, err = conn.Exec(fmt.Sprintf(`CREATE DATABASE "%s";`, dbName)); err != nil {
-		log.Fatalf("Failed to create database %s: %v", dbName, err)
+	dbName := "test_" + uuid.New().String()[:8]
+	if _, err := conn.Exec(fmt.Sprintf(`CREATE DATABASE "%s";`, dbName)); err != nil {
+		log.Fatalf("failed to create db %s: %v", dbName, err)
 	}
 
-	return dbName, fmt.Sprintf(dnsTemplate, dbName), caCertificatePEM
+	b.databasesMu.Lock()
+	b.databases = append(b.databases, dbName)
+	b.databasesMu.Unlock()
+
+	return dbName
+}
+
+func (b *PostgresContainerBuilder) DropDatabase(dbName string) {
+	b.databasesMu.Lock()
+	defer b.databasesMu.Unlock()
+	for i, db := range b.databases {
+		if db == dbName {
+			b.databases = append(b.databases[:i], b.databases[i+1:]...)
+			break
+		}
+	}
 }

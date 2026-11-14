@@ -34,7 +34,7 @@ func WhenListingSlackConversationsByChannelIdBeforeEach(
 }
 
 func WhenListingSlackConversationsByChannelIdAfterEach(s *WhenListingSlackConversationsByChannelIdTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(s.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(s.dbName)
 }
 
 func TestWhenListingSlackConversationsByChannelId(t *testing.T) {

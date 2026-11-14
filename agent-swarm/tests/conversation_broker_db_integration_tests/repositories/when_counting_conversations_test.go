@@ -30,7 +30,7 @@ func WhenCountingConversationsBeforeEach(t *testing.T) *WhenCountingConversation
 }
 
 func WhenCountingConversationsAfterEach(suite *WhenCountingConversationsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenCountingConversations(t *testing.T) {

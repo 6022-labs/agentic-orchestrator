@@ -19,8 +19,8 @@ Apply this workflow to keep integration tests consistent across repository packa
    - suite type: `When<Behavior>TestingSuite`
    - setup helpers: `When<Behavior>BeforeEach` and `When<Behavior>AfterEach`
 3. Use real infrastructure with shared helpers:
-   - PostgreSQL DB: `container_builders.CreatePostgreSQLDatabase()` + `DestroyPostgreSQLDatabase`
-   - Redis: `container_builders.GetRedisConnection()` + `CloseRedisConnection`
+   - PostgreSQL DB: `container_builders.GetPostgresContainerBuilder().Create()` (`CreateTls()` for a TLS server) + `DropDatabase`
+   - Redis: `container_builders.GetRedisContainerBuilder().Create()` + `DropConnection`
 4. Build scenario setup in `BeforeEach`, always clean up with `defer ...AfterEach(...)`.
 5. Keep scenario structure as nested `t.Run` blocks with `Given ...` then `Should ...`; call `t.Parallel()` at each level used by surrounding tests.
 6. For DB integration tests, run migrations after creating the DB client:

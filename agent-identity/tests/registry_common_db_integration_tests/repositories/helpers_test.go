@@ -15,7 +15,7 @@ import (
 
 // newMigratedDatabase creates a fresh migrated database and returns its name for teardown plus its client.
 func newMigratedDatabase(t *testing.T) (string, db_clients.DatabaseClientInterface) {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+	dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 
 	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
 	if err != nil {

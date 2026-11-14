@@ -31,7 +31,7 @@ func WhenGettingEntityByIdBeforeEach(t *testing.T) *WhenGettingEntityByIdTesting
 }
 
 func WhenGettingEntityByIdBeforeEachAfterEach(suite *WhenGettingEntityByIdTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingEntityById(t *testing.T) {

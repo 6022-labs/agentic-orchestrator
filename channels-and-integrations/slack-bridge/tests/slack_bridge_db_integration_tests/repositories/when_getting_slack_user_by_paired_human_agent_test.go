@@ -36,7 +36,7 @@ func WhenGettingSlackUserByPairedHumanAgentBeforeEach(
 }
 
 func WhenGettingSlackUserByPairedHumanAgentAfterEach(suite *WhenGettingSlackUserByPairedHumanAgentTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingSlackUserByPairedHumanAgent(t *testing.T) {

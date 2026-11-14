@@ -34,7 +34,7 @@ func WhenCheckingCollectionExistenceByAddressBeforeEach(
 }
 
 func WhenCheckingCollectionExistenceByAddressAfterEach(suite *WhenCheckingCollectionExistenceByAddressTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenCheckingCollectionExistenceByAddress(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 // TestMain stops every shared container once the test process exits.
 func TestMain(m *testing.M) {
 	code := m.Run()
-	stopPostgres()
-	stopRedis()
-	stopAnvil()
+	GetPostgresContainerBuilder().stop()
+	GetRedisContainerBuilder().stop()
+	GetAnvilContainerBuilder().stop()
 	os.Exit(code)
 }

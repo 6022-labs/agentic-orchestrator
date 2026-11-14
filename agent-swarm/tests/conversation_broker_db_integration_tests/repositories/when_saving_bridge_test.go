@@ -29,7 +29,7 @@ func WhenSavingBridgeBeforeEach(t *testing.T) *WhenSavingBridgeTestingSuite {
 }
 
 func WhenSavingBridgeAfterEach(suite *WhenSavingBridgeTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingBridge(t *testing.T) {
