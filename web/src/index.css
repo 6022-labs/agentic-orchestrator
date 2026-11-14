@@ -4,10 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-* {
-  font-family: "Geist", sans-serif;
-}
-
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -128,6 +124,8 @@
 }
 
 @theme {
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
   --animate-shake: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 
   @keyframes shake {

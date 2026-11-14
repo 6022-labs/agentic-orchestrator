@@ -29,6 +29,9 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
+            <p className="mb-6 text-center text-lg font-medium lg:hidden">
+              Agentic AI Platform
+            </p>
             <LoginForm />
           </div>
         </div>
