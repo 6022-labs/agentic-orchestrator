@@ -13,10 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// newMigratedDatabase spins up a fresh Postgres DB, runs migrations, and
-// returns the dbName for teardown plus the migrated client.
+// newMigratedDatabase creates a fresh migrated database and returns its name for teardown plus its client.
 func newMigratedDatabase(t *testing.T) (string, db_clients.DatabaseClientInterface) {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+	dbName, connectionString := container_builders.GetPostgresContainerBuilder().Create()
 
 	migrationFolderPath, err := common_tests.FindConversationBrokerMigrationFolderPath()
 	if err != nil {
@@ -29,7 +28,7 @@ func newMigratedDatabase(t *testing.T) (string, db_clients.DatabaseClientInterfa
 		AnyTimes()
 
 	dbClient, err := conversation_broker_db.NewConversationBrokerDbClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,

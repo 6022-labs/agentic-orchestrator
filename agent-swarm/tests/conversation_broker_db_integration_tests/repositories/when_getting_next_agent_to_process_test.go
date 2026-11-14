@@ -29,7 +29,7 @@ func WhenGettingNextAgentToProcessBeforeEach(t *testing.T) *WhenGettingNextAgent
 }
 
 func WhenGettingNextAgentToProcessAfterEach(suite *WhenGettingNextAgentToProcessTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingNextAgentToProcess(t *testing.T) {

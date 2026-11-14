@@ -41,7 +41,7 @@ func WhenListingProcessableMessagesForParticipantBeforeEach(
 func WhenListingProcessableMessagesForParticipantAfterEach(
 	suite *WhenListingProcessableMessagesForParticipantTestingSuite,
 ) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 // seed creates a conversation populated with one human author + one

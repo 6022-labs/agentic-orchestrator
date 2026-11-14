@@ -34,7 +34,7 @@ func WhenSavingConversationParticipantBeforeEach(t *testing.T) *WhenSavingConver
 }
 
 func WhenSavingConversationParticipantAfterEach(suite *WhenSavingConversationParticipantTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingConversationParticipant(t *testing.T) {

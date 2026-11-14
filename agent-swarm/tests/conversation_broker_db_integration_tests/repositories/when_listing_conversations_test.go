@@ -30,7 +30,7 @@ func WhenListingConversationsBeforeEach(t *testing.T) *WhenListingConversationsT
 }
 
 func WhenListingConversationsAfterEach(suite *WhenListingConversationsTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenListingConversations(t *testing.T) {

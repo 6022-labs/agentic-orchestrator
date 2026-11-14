@@ -7,15 +7,9 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
-	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
-	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,29 +22,7 @@ type WhenSavingEntityUsingTransactionTestingSuite struct {
 }
 
 func WhenSavingEntityUsingTransactionBeforeEach(t *testing.T) *WhenSavingEntityUsingTransactionTestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
-
-	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
-	if err != nil {
-		panic(err)
-	}
-
-	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
-	dbQueryMetrics.EXPECT().
-		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes()
-
-	dbClient, _ := registry_common_db.NewDatabaseClient(
-		connectionString,
-		zap.NewNop(),
-		&settings.MigrationsSettings{
-			MigrationsFolderPath: *migrationFolderPath,
-		},
-		dbQueryMetrics,
-	)
-	if err = dbClient.Migrate(); err != nil {
-		panic(err)
-	}
+	dbName, dbClient := newMigratedDatabase(t)
 
 	sut := repositories.NewAgentRepository(dbClient)
 
@@ -63,7 +35,7 @@ func WhenSavingEntityUsingTransactionBeforeEach(t *testing.T) *WhenSavingEntityU
 }
 
 func WhenSavingEntityUsingTransactionAfterEach(suite *WhenSavingEntityUsingTransactionTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenSavingEntityUsingTransaction(t *testing.T) {

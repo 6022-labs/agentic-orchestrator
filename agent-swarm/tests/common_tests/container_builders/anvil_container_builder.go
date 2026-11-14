@@ -16,12 +16,11 @@ import (
 )
 
 const (
-	AnvilChainId     = "31337"
-	AnvilChainIdUint = uint64(31337)
+	anvilChainId     = "31337"
+	anvilChainIdUint = uint64(31337)
 )
 
-// AnvilAccountSettings is a throwaway chain endpoint pair plus a pre-funded key
-// owned by a single test.
+// AnvilAccountSettings is what the builder hands a test: the shared anvil chain plus its own pre-funded key.
 type AnvilAccountSettings struct {
 	ChainId       string
 	ChainIdUint   uint64
@@ -32,19 +31,34 @@ type AnvilAccountSettings struct {
 }
 
 var (
-	anvilContainer   testcontainers.Container
-	anvilHttpUrl     string
-	anvilWsUrl       string
-	anvilRpcClient   *rpc.Client
+	anvilContainer   *AnvilContainerBuilder
 	anvilContainerMu sync.Mutex
 )
 
-// Start the container once for all test packages
-func startAnvil() *rpc.Client {
+type AnvilContainerBuilder struct {
+	container   testcontainers.Container
+	httpUrl     string
+	wsUrl       string
+	rpcClient   *rpc.Client
+	containerMu sync.Mutex
+}
+
+// GetAnvilContainerBuilder is called from parallel tests, so the singleton itself needs guarding.
+func GetAnvilContainerBuilder() *AnvilContainerBuilder {
 	anvilContainerMu.Lock()
 	defer anvilContainerMu.Unlock()
 
 	if anvilContainer == nil {
+		anvilContainer = &AnvilContainerBuilder{}
+	}
+	return anvilContainer
+}
+
+func (b *AnvilContainerBuilder) start() *rpc.Client {
+	b.containerMu.Lock()
+	defer b.containerMu.Unlock()
+
+	if b.container == nil {
 		ctx := context.Background()
 		req := testcontainers.ContainerRequest{
 			Image:        "ghcr.io/foundry-rs/foundry:v1.7.1",
@@ -59,75 +73,75 @@ func startAnvil() *rpc.Client {
 			Started:          true,
 		})
 		if err != nil {
-			log.Fatalf("Failed to start anvil container: %v", err)
+			log.Fatalf("failed to start anvil container: %v", err)
 		}
-		anvilContainer = container
+		b.container = container
 
 		host, _ := container.Host(ctx)
 		port, _ := container.MappedPort(ctx, "8545")
-		anvilHttpUrl = fmt.Sprintf("http://%s:%s", host, port.Port())
-		anvilWsUrl = fmt.Sprintf("ws://%s:%s", host, port.Port())
+		b.httpUrl = fmt.Sprintf("http://%s:%s", host, port.Port())
+		b.wsUrl = fmt.Sprintf("ws://%s:%s", host, port.Port())
 
-		client, err := rpc.DialContext(ctx, anvilHttpUrl)
+		rpcClient, err := rpc.DialContext(ctx, b.httpUrl)
 		if err != nil {
-			log.Fatalf("Failed to dial anvil at %s: %v", anvilHttpUrl, err)
+			log.Fatalf("failed to dial anvil at %s: %v", b.httpUrl, err)
 		}
 		var chainId string
-		if err := client.CallContext(ctx, &chainId, "eth_chainId"); err != nil {
-			log.Fatalf("Anvil did not answer eth_chainId: %v", err)
+		if err := rpcClient.CallContext(ctx, &chainId, "eth_chainId"); err != nil {
+			log.Fatalf("anvil did not answer eth_chainId: %v", err)
 		}
-		anvilRpcClient = client
+		b.rpcClient = rpcClient
 
-		log.Println("Anvil container started and ready")
+		log.Println("Anvil container ready")
 	}
-
-	return anvilRpcClient
+	return b.rpcClient
 }
 
-// Stop the container after all tests
-func stopAnvil() {
-	anvilContainerMu.Lock()
-	defer anvilContainerMu.Unlock()
+func (b *AnvilContainerBuilder) stop() {
+	b.containerMu.Lock()
+	defer b.containerMu.Unlock()
 
-	if anvilContainer != nil {
-		if anvilRpcClient != nil {
-			anvilRpcClient.Close()
-			anvilRpcClient = nil
+	if b.container != nil {
+		if b.rpcClient != nil {
+			b.rpcClient.Close()
+			b.rpcClient = nil
 		}
-		anvilContainer.Terminate(context.Background())
-		anvilContainer = nil
-
+		_ = b.container.Terminate(context.Background())
+		b.container = nil
 		log.Println("Anvil container stopped")
 	}
+
+	anvilContainerMu.Lock()
+	anvilContainer = nil
+	anvilContainerMu.Unlock()
 }
 
-// CreateAnvilAccount funds a freshly generated key so parallel tests never share
-// a nonce sequence (anvil_setBalance is nonce-free, unlike funding from a faucet).
-func CreateAnvilAccount() AnvilAccountSettings {
-	client := startAnvil()
+// Create generates a funded key so parallel tests never share a nonce sequence.
+func (b *AnvilContainerBuilder) Create() AnvilAccountSettings {
+	rpcClient := b.start()
 
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		log.Fatalf("Failed to generate anvil test key: %v", err)
+		log.Fatalf("failed to generate anvil test key: %v", err)
 	}
 	address := crypto.PubkeyToAddress(privateKey.PublicKey)
 
 	balance := new(big.Int).Exp(big.NewInt(10), big.NewInt(22), nil)
-	if err := client.CallContext(
+	if err := rpcClient.CallContext(
 		context.Background(),
 		nil,
 		"anvil_setBalance",
 		address,
 		hexutil.EncodeBig(balance),
 	); err != nil {
-		log.Fatalf("Failed to fund %s on anvil: %v", address.Hex(), err)
+		log.Fatalf("failed to fund %s on anvil: %v", address.Hex(), err)
 	}
 
 	return AnvilAccountSettings{
-		ChainId:       AnvilChainId,
-		ChainIdUint:   AnvilChainIdUint,
-		HttpUrl:       anvilHttpUrl,
-		WsUrl:         anvilWsUrl,
+		ChainId:       anvilChainId,
+		ChainIdUint:   anvilChainIdUint,
+		HttpUrl:       b.httpUrl,
+		WsUrl:         b.wsUrl,
 		PrivateKeyHex: common.Bytes2Hex(crypto.FromECDSA(privateKey)),
 		Address:       address,
 	}

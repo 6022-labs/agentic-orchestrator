@@ -70,7 +70,7 @@ func (s *stubCacheStorage) Read(_ context.Context, key string) (string, error) {
 func (s *stubCacheStorage) Delete(_ context.Context, key string) error { return nil }
 
 func newHttpSuite() *httpSuite {
-	dbName, connStr := container_builders.CreatePostgreSQLDatabase()
+	dbName, connStr := container_builders.GetPostgresContainerBuilder().Create()
 	migrationFolder, err := common_tests.FindConversationBrokerMigrationFolderPath()
 	if err != nil {
 		panic(err)
@@ -154,7 +154,7 @@ func (s *httpSuite) teardown() {
 	if s.registryStub != nil {
 		s.registryStub.Close()
 	}
-	container_builders.DestroyPostgreSQLDatabase(s.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(s.dbName)
 }
 
 func (s *httpSuite) do(method, path string, body any) (*http.Response, []byte) {

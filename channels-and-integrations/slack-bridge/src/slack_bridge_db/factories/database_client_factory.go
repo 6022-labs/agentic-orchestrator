@@ -30,7 +30,7 @@ func NewDatabaseClientFactory(
 
 func (factory *DatabaseClientFactory) CreateOrchestratorSlackBridgeDBClient() (*slack_bridge_db.DatabaseClient, error) {
 	return slack_bridge_db.NewDatabaseClient(
-		factory.orchestratorSlackBridgeDatabaseSettings.Url,
+		factory.orchestratorSlackBridgeDatabaseSettings,
 		factory.logger,
 		factory.migrationsSettings,
 		factory.dbQueryMetrics,

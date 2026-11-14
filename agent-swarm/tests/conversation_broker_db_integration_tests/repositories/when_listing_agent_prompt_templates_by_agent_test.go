@@ -31,7 +31,7 @@ func WhenListingAgentPromptTemplatesByAgentBeforeEach(
 }
 
 func WhenListingAgentPromptTemplatesByAgentAfterEach(suite *WhenListingAgentPromptTemplatesByAgentTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenListingAgentPromptTemplatesByAgent(t *testing.T) {

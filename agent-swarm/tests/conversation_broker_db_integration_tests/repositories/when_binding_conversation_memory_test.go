@@ -38,7 +38,7 @@ func WhenBindingConversationMemoryBeforeEach(t *testing.T) *WhenBindingConversat
 func WhenBindingConversationMemoryAfterEach(suite *WhenBindingConversationMemoryTestingSuite) {
 	// The pool outlives the dropped database otherwise.
 	_ = suite.dbClient.Close()
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 // seed creates the rows the binding's foreign keys require.

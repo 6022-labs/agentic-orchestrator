@@ -7,16 +7,10 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
-	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 type WhenGettingAllAgentAddressesByAgentIdTestingSuite struct {
@@ -27,29 +21,7 @@ type WhenGettingAllAgentAddressesByAgentIdTestingSuite struct {
 }
 
 func WhenGettingAllAgentAddressesByAgentIdBeforeEach(t *testing.T) *WhenGettingAllAgentAddressesByAgentIdTestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
-
-	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
-	if err != nil {
-		panic(err)
-	}
-
-	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
-	dbQueryMetrics.EXPECT().
-		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes()
-
-	dbClient, _ := registry_common_db.NewDatabaseClient(
-		connectionString,
-		zap.NewNop(),
-		&settings.MigrationsSettings{
-			MigrationsFolderPath: *migrationFolderPath,
-		},
-		dbQueryMetrics,
-	)
-	if err = dbClient.Migrate(); err != nil {
-		panic(err)
-	}
+	dbName, dbClient := newMigratedDatabase(t)
 
 	sut := repositories.NewAgentAddressRepository(dbClient)
 
@@ -62,7 +34,7 @@ func WhenGettingAllAgentAddressesByAgentIdBeforeEach(t *testing.T) *WhenGettingA
 }
 
 func WhenGettingAllAgentAddressesByAgentIdAfterEach(suite *WhenGettingAllAgentAddressesByAgentIdTestingSuite) {
-	container_builders.DestroyPostgreSQLDatabase(suite.dbName)
+	container_builders.GetPostgresContainerBuilder().DropDatabase(suite.dbName)
 }
 
 func TestWhenGettingAllAgentAddressesByAgentId(t *testing.T) {

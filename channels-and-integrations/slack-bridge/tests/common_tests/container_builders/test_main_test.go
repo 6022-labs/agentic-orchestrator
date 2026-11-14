@@ -5,12 +5,10 @@ import (
 	"testing"
 )
 
-// TestMain ensures containers are stopped once this test
-// package process finishes running tests. Each test package/process
-// should manage stopping its own container lifecycle.
+// TestMain stops every shared container once the test process exits.
 func TestMain(m *testing.M) {
 	code := m.Run()
-	stopRedis()
-	stopPostgres()
+	GetRedisContainerBuilder().stop()
+	GetPostgresContainerBuilder().stop()
 	os.Exit(code)
 }
