@@ -6,17 +6,12 @@ import (
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/repositories"
-	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/model_builders"
-	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 type WhenGettingMintedAgentsByEnsTestingSuite struct {
@@ -27,29 +22,7 @@ type WhenGettingMintedAgentsByEnsTestingSuite struct {
 }
 
 func WhenGettingMintedAgentsByEnsBeforeEach(t *testing.T) *WhenGettingMintedAgentsByEnsTestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
-
-	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
-	if err != nil {
-		panic(err)
-	}
-
-	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
-	dbQueryMetrics.EXPECT().
-		RecordQuery(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		AnyTimes()
-
-	dbClient, _ := registry_common_db.NewDatabaseClient(
-		&settings.DatabaseSettings{Url: connectionString},
-		zap.NewNop(),
-		&settings.MigrationsSettings{
-			MigrationsFolderPath: *migrationFolderPath,
-		},
-		dbQueryMetrics,
-	)
-	if err = dbClient.Migrate(); err != nil {
-		panic(err)
-	}
+	dbName, dbClient := newMigratedDatabase(t)
 
 	sut := repositories.NewAgentRepository(dbClient)
 

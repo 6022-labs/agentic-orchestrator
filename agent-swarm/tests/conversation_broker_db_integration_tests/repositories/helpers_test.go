@@ -13,8 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newMigratedDatabase spins up a fresh Postgres DB, runs migrations, and
-// returns the dbName for teardown plus the migrated client.
+// newMigratedDatabase creates a fresh migrated database and returns its name for teardown plus its client.
 func newMigratedDatabase(t *testing.T) (string, db_clients.DatabaseClientInterface) {
 	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
 
