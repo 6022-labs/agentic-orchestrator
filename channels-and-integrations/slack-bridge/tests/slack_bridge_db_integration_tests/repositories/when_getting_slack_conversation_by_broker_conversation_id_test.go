@@ -41,7 +41,7 @@ func WhenGettingSlackConversationByBrokerConversationIdBeforeEach(
 		AnyTimes()
 
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
-		connStr,
+		&db_settings.DatabaseSettings{Url: connStr},
 		zap.NewNop(),
 		&db_settings.MigrationsSettings{MigrationsFolderPath: *folder},
 		dbQueryMetrics,

@@ -1,13 +1,19 @@
 package factories_test
 
 import (
+	"crypto/x509"
+	"strings"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/factories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/common_tests/container_builders"
 	db_metrics_mocks "github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_common_db_mocks/metrics_mocks/interfaces_mocks"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 )
@@ -15,19 +21,24 @@ import (
 type WhenCreatingOrchestratorDbClientTestingSuite struct {
 	dbName string
 
-	migrationsSettings           *settings.MigrationsSettings
-	orchestratorDatabaseSettings *settings.DatabaseSettings
-	sut                          *factories.DatabaseClientFactory
+	sut *factories.DatabaseClientFactory
 }
 
-func WhenCreatingOrchestratorDbClientBeforeEach(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
-	dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+func WhenCreatingOrchestratorDbClientBeforeEach(
+	t *testing.T,
+	dbName string,
+	databaseConfiguration map[string]any,
+) *WhenCreatingOrchestratorDbClientTestingSuite {
+	k := koanf.New(".")
+	_ = k.Load(confmap.Provider(databaseConfiguration, "."), nil)
+	databaseSettings := settings.NewDatabaseSettings(zap.NewNop(), k)
 
-	databaseSettings := &settings.DatabaseSettings{
-		Url: connectionString,
+	migrationFolderPath, err := common_tests.FindMigrationFolderPath()
+	if err != nil {
+		panic(err)
 	}
 	migrationsSettings := &settings.MigrationsSettings{
-		MigrationsFolderPath: "",
+		MigrationsFolderPath: *migrationFolderPath,
 	}
 
 	dbQueryMetrics := db_metrics_mocks.NewMockDbQueryMetricsInterface(gomock.NewController(t))
@@ -45,9 +56,6 @@ func WhenCreatingOrchestratorDbClientBeforeEach(t *testing.T) *WhenCreatingOrche
 	return &WhenCreatingOrchestratorDbClientTestingSuite{
 		sut:    sut,
 		dbName: dbName,
-
-		migrationsSettings:           migrationsSettings,
-		orchestratorDatabaseSettings: databaseSettings,
 	}
 }
 
@@ -58,15 +66,143 @@ func WhenCreatingOrchestratorDbClientAfterEach(suite *WhenCreatingOrchestratorDb
 func TestWhenCreatingOrchestratorDbClient(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Should return a new orchestrator db client", func(t *testing.T) {
+	t.Run("Given no CA certificate", func(t *testing.T) {
 		t.Parallel()
 
-		suite := WhenCreatingOrchestratorDbClientBeforeEach(t)
-		defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+		initSuite := func(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
+			dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+			return WhenCreatingOrchestratorDbClientBeforeEach(t, dbName, map[string]any{
+				"database.url": connectionString,
+			})
+		}
 
-		dbClient, err := suite.sut.CreateDatabaseClient()
+		t.Run("Should return a new orchestrator db client", func(t *testing.T) {
+			t.Parallel()
 
-		assert.Nil(t, err)
-		assert.NotNil(t, dbClient)
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			dbClient, err := suite.sut.CreateDatabaseClient()
+
+			assert.Nil(t, err)
+			assert.NotNil(t, dbClient)
+		})
+	})
+
+	t.Run("Given a database without TLS", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
+			dbName, connectionString := container_builders.CreatePostgreSQLDatabase()
+			return WhenCreatingOrchestratorDbClientBeforeEach(t, dbName, map[string]any{
+				// prefer is the sslmode whose pgx fallback would retry in plaintext.
+				"database.url":             strings.Replace(connectionString, "sslmode=disable", "sslmode=prefer", 1),
+				"database.ca_certificate":  common_tests.NewCertificateAuthority().CertificatePEM,
+				"database.tls_server_name": container_builders.PostgresTLSServerName,
+			})
+		}
+
+		t.Run("Should refuse to connect in plaintext", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			_, err := suite.sut.CreateDatabaseClient()
+
+			assert.ErrorContains(t, err, "server refused TLS connection")
+		})
+	})
+
+	t.Run("Given another CA certificate", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
+			dbName, connectionString, _ := container_builders.CreateTLSPostgreSQLDatabase()
+			return WhenCreatingOrchestratorDbClientBeforeEach(t, dbName, map[string]any{
+				"database.url":             connectionString,
+				"database.ca_certificate":  common_tests.NewCertificateAuthority().CertificatePEM,
+				"database.tls_server_name": container_builders.PostgresTLSServerName,
+			})
+		}
+
+		t.Run("Should refuse the server certificate", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			_, err := suite.sut.CreateDatabaseClient()
+
+			var unknownAuthorityError x509.UnknownAuthorityError
+			assert.ErrorAs(t, err, &unknownAuthorityError)
+		})
+	})
+
+	t.Run("Given direct TLS negotiation", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
+			dbName, connectionString, caCertificatePEM := container_builders.CreateTLSPostgreSQLDatabase()
+			return WhenCreatingOrchestratorDbClientBeforeEach(t, dbName, map[string]any{
+				// direct negotiation is refused without the postgresql ALPN protocol.
+				"database.url":             connectionString + " sslnegotiation=direct",
+				"database.ca_certificate":  caCertificatePEM,
+				"database.tls_server_name": container_builders.PostgresTLSServerName,
+			})
+		}
+
+		t.Run("Should connect over TLS", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			dbClient, err := suite.sut.CreateDatabaseClient()
+			require.NoError(t, err)
+
+			var ssl bool
+			dbClient.GetDB().Raw("SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()").Scan(&ssl)
+			assert.True(t, ssl)
+		})
+	})
+
+	t.Run("Given the CA certificate of the database", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(t *testing.T) *WhenCreatingOrchestratorDbClientTestingSuite {
+			dbName, connectionString, caCertificatePEM := container_builders.CreateTLSPostgreSQLDatabase()
+			return WhenCreatingOrchestratorDbClientBeforeEach(t, dbName, map[string]any{
+				"database.url":             connectionString,
+				"database.ca_certificate":  caCertificatePEM,
+				"database.tls_server_name": container_builders.PostgresTLSServerName,
+			})
+		}
+
+		t.Run("Should connect over TLS", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			dbClient, err := suite.sut.CreateDatabaseClient()
+			require.NoError(t, err)
+
+			var ssl bool
+			dbClient.GetDB().Raw("SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()").Scan(&ssl)
+			assert.True(t, ssl)
+		})
+
+		t.Run("Should apply the migrations", func(t *testing.T) {
+			t.Parallel()
+
+			suite := initSuite(t)
+			defer WhenCreatingOrchestratorDbClientAfterEach(suite)
+
+			dbClient, err := suite.sut.CreateDatabaseClient()
+			require.NoError(t, err)
+
+			assert.NoError(t, dbClient.Migrate())
+		})
 	})
 }

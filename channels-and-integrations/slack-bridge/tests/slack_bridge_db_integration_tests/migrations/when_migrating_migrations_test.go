@@ -39,7 +39,7 @@ func WhenMigratingMigrationsBeforeEach(t *testing.T) *WhenMigratingMigrationsTes
 		AnyTimes()
 
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		migrationsSettings,
 		dbQueryMetrics,

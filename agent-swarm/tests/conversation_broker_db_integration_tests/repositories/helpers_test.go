@@ -29,7 +29,7 @@ func newMigratedDatabase(t *testing.T) (string, db_clients.DatabaseClientInterfa
 		AnyTimes()
 
 	dbClient, err := conversation_broker_db.NewConversationBrokerDbClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,

@@ -39,7 +39,7 @@ func WhenMigratingMigrationsBeforeEach(t *testing.T) *WhenMigratingMigrationsTes
 		AnyTimes()
 
 	dbClient, _ := conversation_broker_db.NewConversationBrokerDbClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		migrationsSettings,
 		dbQueryMetrics,

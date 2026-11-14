@@ -43,7 +43,7 @@ func WhenGettingAgentByCollectionAddressAndCollectionTokenIdBeforeEach(
 		AnyTimes()
 
 	dbClient, _ := registry_common_db.NewDatabaseClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,

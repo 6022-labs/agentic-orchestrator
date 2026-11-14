@@ -38,7 +38,7 @@ func WhenUpdatingSlackAgentIconImageCidBeforeEach(t *testing.T) *WhenUpdatingSla
 		AnyTimes()
 
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
-		connectionString,
+		&db_settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		&db_settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,

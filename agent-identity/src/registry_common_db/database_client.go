@@ -7,6 +7,8 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common_db/settings"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -23,12 +25,31 @@ type DatabaseClient struct {
 var gooseMigrationMu sync.Mutex
 
 func NewDatabaseClient(
-	connStr string,
+	databaseSettings *settings.DatabaseSettings,
 	logger *zap.Logger,
 	migrationsSettings *settings.MigrationsSettings,
 	dbQueryMetrics metrics_interfaces.DbQueryMetricsInterface,
 ) (*DatabaseClient, error) {
-	dialector := postgres.Open(connStr)
+	dialector := postgres.Open(databaseSettings.Url)
+	if databaseSettings.TlsConfig != nil {
+		pgxConfig, err := pgx.ParseConfig(databaseSettings.Url)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse database url: %w", err)
+		}
+		tlsConfig := databaseSettings.TlsConfig.Clone()
+		// Keep what pgx derived from the url: ALPN for sslnegotiation=direct, sslcert/sslkey client certificates.
+		if pgxConfig.TLSConfig != nil {
+			tlsConfig.NextProtos = pgxConfig.TLSConfig.NextProtos
+			tlsConfig.Certificates = pgxConfig.TLSConfig.Certificates
+			tlsConfig.GetClientCertificate = pgxConfig.TLSConfig.GetClientCertificate
+		} else if pgxConfig.SSLNegotiation == "direct" {
+			tlsConfig.NextProtos = []string{"postgresql"}
+		}
+		pgxConfig.TLSConfig = tlsConfig
+		// sslmode prefer/allow fallbacks would retry in plaintext.
+		pgxConfig.Fallbacks = nil
+		dialector = postgres.New(postgres.Config{Conn: stdlib.OpenDB(*pgxConfig)})
+	}
 
 	gormLogger := zapgorm2.New(logger)
 	gormLogger.IgnoreRecordNotFoundError = true

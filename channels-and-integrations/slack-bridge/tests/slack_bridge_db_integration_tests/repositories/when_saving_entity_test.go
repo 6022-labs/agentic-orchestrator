@@ -39,7 +39,7 @@ func WhenSavingEntityBeforeEach(t *testing.T) *WhenSavingEntityTestingSuite {
 		AnyTimes()
 
 	dbClient, _ := slack_bridge_db.NewDatabaseClient(
-		connectionString,
+		&settings.DatabaseSettings{Url: connectionString},
 		zap.NewNop(),
 		&settings.MigrationsSettings{
 			MigrationsFolderPath: *migrationFolderPath,

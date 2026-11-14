@@ -31,7 +31,7 @@ func NewDatabaseClientFactory(
 
 func (factory *DatabaseClientFactory) CreateDatabaseClient() (db_clients.DatabaseClientInterface, error) {
 	return conversation_broker_db.NewConversationBrokerDbClient(
-		factory.databaseSettings.Url,
+		factory.databaseSettings,
 		factory.logger,
 		factory.migrationsSettings,
 		factory.dbQueryMetrics,

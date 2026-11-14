@@ -31,7 +31,7 @@ func NewDatabaseClientFactory(
 
 func (factory *DatabaseClientFactory) CreateDatabaseClient() (db_clients.DatabaseClientInterface, error) {
 	return orchestrator_db_orchestrator.NewDatabaseClient(
-		factory.databaseSettings.Url,
+		factory.databaseSettings,
 		factory.logger,
 		factory.migrationsSettings,
 		factory.dbQueryMetrics,
