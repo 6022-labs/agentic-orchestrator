@@ -35,3 +35,11 @@ Every Postgres-backed service (agent-identity, agent-swarm, slack-bridge) can ve
 - `DATABASE__TLS_SERVER_NAME` (optional): the name to verify in the server certificate, for a proxy whose host differs from that name. Defaults to the `DATABASE__URL` host.
 
 Leave both empty to keep the `sslmode` of `DATABASE__URL` in charge.
+
+## Git hooks
+
+```bash
+make hooks
+```
+
+On commit: formats staged Go/TS files and scans for secrets. On push: builds, lints and runs the unit tests.
