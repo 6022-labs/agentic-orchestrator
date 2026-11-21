@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer_blockchain/settings"
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -75,7 +75,14 @@ func (r *AbstractRpcRequester) filterEventLogs(
 }
 
 func (r *AbstractRpcRequester) retryRpc(ctx context.Context, call func() error) error {
-	return retry.Do(
+	return retry.New(
+		retry.Context(ctx),
+		retry.Attempts(rpcRetryAttempts),
+		retry.Delay(rpcRetryDelay),
+		retry.MaxDelay(rpcRetryMaxDelay),
+		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
+		retry.LastErrorOnly(true),
+	).Do(
 		func() error {
 			if err := call(); err != nil {
 				if r.isRetryableRpcError(err) {
@@ -85,12 +92,6 @@ func (r *AbstractRpcRequester) retryRpc(ctx context.Context, call func() error) 
 			}
 			return nil
 		},
-		retry.Context(ctx),
-		retry.Attempts(rpcRetryAttempts),
-		retry.Delay(rpcRetryDelay),
-		retry.MaxDelay(rpcRetryMaxDelay),
-		retry.DelayType(retry.CombineDelay(retry.BackOffDelay, retry.RandomDelay)),
-		retry.LastErrorOnly(true),
 	)
 }
 
