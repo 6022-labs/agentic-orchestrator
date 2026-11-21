@@ -12,7 +12,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/repositories"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/traces/interfaces"
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	"github.com/google/uuid"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -224,12 +224,13 @@ func (p *BlockEventsProcessor) ProcessBlock(
 		return nil
 	}
 
-	if err = retry.Do(
-		operation,
+	if err = retry.New(
 		retry.Attempts(blockEventsRetryAttempts),
 		retry.Delay(blockEventsRetryDelay),
 		retry.DelayType(retry.FixedDelay),
 		retry.Context(ctx),
+	).Do(
+		operation,
 	); err != nil {
 		return fmt.Errorf("block %d: failed to process block events: %w", blockNumber, err)
 	}
