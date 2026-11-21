@@ -1,6 +1,6 @@
 module github.com/6022-labs/agentic-orchestrator/gateway
 
-go 1.26.2
+go 1.27.4
 
 require (
 	github.com/6022-labs/zapext v1.0.1

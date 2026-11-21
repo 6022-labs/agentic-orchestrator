@@ -1,6 +1,6 @@
 module github.com/6022-labs/agentic-orchestrator/channels-and-integrations/slack-bridge
 
-go 1.26.2
+go 1.27.4
 
 require (
 	ariga.io/atlas-provider-gorm v0.6.0
