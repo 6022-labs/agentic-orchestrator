@@ -43,3 +43,7 @@ make hooks
 ```
 
 On commit: formats staged Go/TS files and scans for secrets. On push: builds, lints and runs the unit tests.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
