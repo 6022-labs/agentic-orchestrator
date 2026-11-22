@@ -5,9 +5,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/use_cases/requests"
-	"github.com/6022-labs/zapext"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -21,7 +19,6 @@ const (
 )
 
 type AgentController struct {
-	logger                  *zap.Logger
 	errorWriter             *mvc.ErrorWriter
 	getAgent                use_cases.GetAgentInterface
 	listAgents              use_cases.ListAgentsInterface
@@ -32,7 +29,6 @@ type AgentController struct {
 }
 
 func NewAgentController(
-	logger *zap.Logger,
 	errorWriter *mvc.ErrorWriter,
 	getAgent use_cases.GetAgentInterface,
 	listAgents use_cases.ListAgentsInterface,
@@ -42,7 +38,6 @@ func NewAgentController(
 	saveAgentPromptTemplate use_cases.SaveAgentPromptTemplateInterface,
 ) *AgentController {
 	return &AgentController{
-		logger:                  logger,
 		errorWriter:             errorWriter,
 		getAgent:                getAgent,
 		listAgents:              listAgents,
@@ -119,13 +114,6 @@ func (controller *AgentController) ListAgents(c fiber.Ctx) error {
 	if err != nil {
 		return controller.errorWriter.Write(c, err)
 	}
-
-	controller.logger.Debug(
-		"List agents response",
-		zap.Any("page", resp.Page),
-		zap.Any("totalElements", resp.TotalElements),
-		zapext.ArrayTruncateEnd("agents", resp.Agents, 20),
-	)
 
 	return c.JSON(resp)
 }
