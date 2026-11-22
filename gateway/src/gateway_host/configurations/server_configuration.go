@@ -31,11 +31,19 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
+func newHttpServer(
+	hostSettings *settings.HostSettings,
+	proxySettings *gateway_settings.ProxySettings,
+	errorWriter *mvc.ErrorWriter,
+) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:      AppName,
-		BodyLimit:    hostSettings.BodyLimitBytes,
-		ErrorHandler: errorWriter.Write,
+		AppName:            AppName,
+		BodyLimit:          hostSettings.BodyLimitBytes,
+		ErrorHandler:       errorWriter.Write,
+		ProxyHeader:        proxySettings.Header,
+		TrustProxy:         proxySettings.Header != "",
+		TrustProxyConfig:   fiber.TrustProxyConfig{Proxies: proxySettings.TrustedProxies},
+		EnableIPValidation: true,
 	})
 }
 

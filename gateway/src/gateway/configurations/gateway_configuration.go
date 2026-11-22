@@ -38,6 +38,11 @@ func AddGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	err = container.Provide(settings.NewProxySettings)
+	if err != nil {
+		panic(err)
+	}
+
 	err = container.Provide(settings.NewIpfsGatewaysSettings)
 	if err != nil {
 		panic(err)
