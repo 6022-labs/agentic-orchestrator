@@ -163,10 +163,6 @@ func TestWhenVerifyingAuth(t *testing.T) {
 				Recover(siweMessage, request.Signature).
 				Return(wallet, nil).
 				Times(1)
-			suite.mockJwtManager.EXPECT().
-				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
-				Return("jwt-token", time.Now().Add(time.Hour), nil).
-				Times(1)
 			suite.mockRefreshTokenManager.EXPECT().
 				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
 				Return("", nil, depErr).
@@ -190,15 +186,16 @@ func TestWhenVerifyingAuth(t *testing.T) {
 		})
 	})
 
-	t.Run("Given the signed nonce is valid", func(t *testing.T) {
+	t.Run("Given the access token creation fails", func(t *testing.T) {
 		t.Parallel()
 
-		expiresAt := time.Now().Add(time.Hour)
+		depErr := errors.New("sign failed")
 		refreshClaims := &interfaces.RefreshClaims{
-			Address:   "0x4bca9e17a8326d283d1fc68a725b46b42c2d9146",
-			SessionId: "session-1",
-			TokenId:   "token-1",
-			ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+			Address:          "0x4bca9e17a8326d283d1fc68a725b46b42c2d9146",
+			SessionId:        "session-1",
+			TokenId:          "token-1",
+			ExpiresAt:        time.Now().Add(7 * 24 * time.Hour),
+			SessionExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 		}
 
 		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
@@ -208,13 +205,56 @@ func TestWhenVerifyingAuth(t *testing.T) {
 				Recover(siweMessage, request.Signature).
 				Return(wallet, nil).
 				Times(1)
+			suite.mockRefreshTokenManager.EXPECT().
+				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
+				Return("refresh-token", refreshClaims, nil).
+				Times(1)
 			suite.mockJwtManager.EXPECT().
-				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
-				Return("jwt-token", expiresAt, nil).
+				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146", "session-1", refreshClaims.SessionExpiresAt).
+				Return("", time.Time{}, depErr).
+				Times(1)
+		}
+
+		t.Run("Should return the error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAuthBeforeEach(t)
+			request := generateValidVerifyAuthRequest()
+			initSuite(suite, request)
+
+			response, err := suite.sut.Execute(context.Background(), request)
+
+			assert.ErrorIs(t, err, depErr)
+			assert.Nil(t, response)
+		})
+	})
+
+	t.Run("Given the signed nonce is valid", func(t *testing.T) {
+		t.Parallel()
+
+		expiresAt := time.Now().Add(time.Hour)
+		refreshClaims := &interfaces.RefreshClaims{
+			Address:          "0x4bca9e17a8326d283d1fc68a725b46b42c2d9146",
+			SessionId:        "session-1",
+			TokenId:          "token-1",
+			ExpiresAt:        time.Now().Add(7 * 24 * time.Hour),
+			SessionExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		}
+
+		initSuite := func(suite *WhenVerifyingAuthTestingSuite, request *requests.VerifyAuthRequest) {
+			suite.mockNonceStore.EXPECT().Consume(gomock.Any(), wallet).Return(entry).Times(1)
+			expectSiweMessage(suite)
+			suite.mockSignatureVerifier.EXPECT().
+				Recover(siweMessage, request.Signature).
+				Return(wallet, nil).
 				Times(1)
 			suite.mockRefreshTokenManager.EXPECT().
 				Issue("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146").
 				Return("refresh-token", refreshClaims, nil).
+				Times(1)
+			suite.mockJwtManager.EXPECT().
+				CreateJwtToken("0x4bca9e17a8326d283d1fc68a725b46b42c2d9146", "session-1", refreshClaims.SessionExpiresAt).
+				Return("jwt-token", expiresAt, nil).
 				Times(1)
 		}
 

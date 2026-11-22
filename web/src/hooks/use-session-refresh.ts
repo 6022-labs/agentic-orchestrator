@@ -1,6 +1,10 @@
 import * as React from "react"
 import axios from "axios"
 
+import {
+  registerRefreshNow,
+  settleFreshAccessToken,
+} from "@/lib/fresh-access-token"
 import { decodeJwt, getSession } from "@/lib/session-tokens"
 import { refreshAuth } from "@/queries/api/auth.queries"
 
@@ -63,6 +67,7 @@ export const useSessionRefresh = ({
       attempts += 1
       inFlight = true
       let settled = true
+      let fresh: string | null = null
       // Read at call time: another tab may have rotated it; never spend a token stored for another address.
       const session = getSession()
       try {
@@ -73,12 +78,15 @@ export const useSessionRefresh = ({
         const { data } = await refreshAuth(session.refreshToken)
         const storedRefreshToken = getSession()?.refreshToken
         // Keep the successor while the spent token is still stored, even if cancelled: dropping it would leave a spent token behind.
-        if (storedRefreshToken === session.refreshToken)
+        if (storedRefreshToken === session.refreshToken) {
           onRefreshed(data.token, data.refreshToken)
-        else if (!storedRefreshToken) {
+          fresh = data.token
+        } else if (!storedRefreshToken) {
           if (!cancelled) onEndedElsewhere()
-        } else if (getSession()?.address === address && !cancelled)
+        } else if (getSession()?.address === address && !cancelled) {
           onAccessToken(data.token)
+          fresh = data.token
+        }
       } catch (error) {
         if (cancelled) return
         if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -97,6 +105,7 @@ export const useSessionRefresh = ({
         )
       } finally {
         inFlight = false
+        settleFreshAccessToken(fresh)
         if (settled && !cancelled) onSettled()
       }
     }
@@ -111,7 +120,18 @@ export const useSessionRefresh = ({
 
     timeout = window.setTimeout(refresh, Math.max(dueAtMs - gatewayNow(), 0))
     document.addEventListener("visibilitychange", onVisibilityChange)
+    const unregisterRefreshNow = registerRefreshNow(() => {
+      if (inFlight) return
+      // A failed attempt already has its retry scheduled; spending more would push it past the reuse grace.
+      if (attempts > 0) {
+        settleFreshAccessToken(null)
+        return
+      }
+      window.clearTimeout(timeout)
+      refresh()
+    })
     return () => {
+      unregisterRefreshNow()
       cancelled = true
       window.clearTimeout(timeout)
       document.removeEventListener("visibilitychange", onVisibilityChange)

@@ -13,16 +13,12 @@ import (
 )
 
 const (
-	refreshTokenType     = "refresh"
-	refreshKeyDomain     = ":refresh"
-	refreshIdByteLength  = 32
-	refreshTypeClaim     = "typ"
-	refreshSessionClaim  = "sid"
-	refreshTokenIdClaim  = "jti"
-	refreshSubjectClaim  = "sub"
-	refreshIssuedAtClaim = "iat"
-	refreshExpiryClaim   = "exp"
-	sessionExpiryClaim   = "sxp"
+	refreshTokenType    = "refresh"
+	refreshKeyDomain    = ":refresh"
+	refreshIdByteLength = 32
+	refreshTypeClaim    = "typ"
+	refreshTokenIdClaim = "jti"
+	sessionExpiryClaim  = "sxp"
 )
 
 var ErrRefreshTokenMalformed = errors.New("refresh token is malformed")
@@ -70,13 +66,13 @@ func (m *RefreshTokenManager) Reissue(
 		claims.ExpiresAt = claims.SessionExpiresAt
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		refreshTypeClaim:     refreshTokenType,
-		refreshSubjectClaim:  claims.Address,
-		refreshSessionClaim:  claims.SessionId,
-		refreshTokenIdClaim:  claims.TokenId,
-		refreshIssuedAtClaim: now.Unix(),
-		refreshExpiryClaim:   claims.ExpiresAt.Unix(),
-		sessionExpiryClaim:   claims.SessionExpiresAt.Unix(),
+		refreshTypeClaim:    refreshTokenType,
+		subjectClaim:        claims.Address,
+		sessionIdClaim:      claims.SessionId,
+		refreshTokenIdClaim: claims.TokenId,
+		issuedAtClaim:       now.Unix(),
+		expiresAtClaim:      claims.ExpiresAt.Unix(),
+		sessionExpiryClaim:  claims.SessionExpiresAt.Unix(),
 	})
 
 	signed, err := token.SignedString(m.signingKey)
@@ -109,8 +105,8 @@ func (m *RefreshTokenManager) Parse(token string) (*interfaces.RefreshClaims, er
 	}
 
 	typ, _ := claims[refreshTypeClaim].(string)
-	sub, _ := claims[refreshSubjectClaim].(string)
-	sid, _ := claims[refreshSessionClaim].(string)
+	sub, _ := claims[subjectClaim].(string)
+	sid, _ := claims[sessionIdClaim].(string)
 	jti, _ := claims[refreshTokenIdClaim].(string)
 	sxp, _ := claims[sessionExpiryClaim].(float64)
 	if typ != refreshTokenType || sub == "" || sid == "" || jti == "" || sxp <= 0 {

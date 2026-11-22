@@ -73,7 +73,10 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			Times(1)
 	}
 	expectIssued := func(suite *WhenRefreshingAuthTestingSuite, successorId string) {
-		suite.mockJwtManager.EXPECT().CreateJwtToken(claims.Address).Return("jwt-token", accessExpiresAt, nil).Times(1)
+		suite.mockJwtManager.EXPECT().
+			CreateJwtToken(claims.Address, "session-1", claims.SessionExpiresAt).
+			Return("jwt-token", accessExpiresAt, nil).
+			Times(1)
 		suite.mockRefreshTokenManager.EXPECT().
 			Reissue(*claims, successorId).
 			Return("next-refresh-token", &interfaces.RefreshClaims{ExpiresAt: claims.ExpiresAt}, nil).
@@ -366,7 +369,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			expectSuccessorId(suite)
 			expectSpent(suite)
 			suite.mockJwtManager.EXPECT().
-				CreateJwtToken(claims.Address).
+				CreateJwtToken(claims.Address, "session-1", claims.SessionExpiresAt).
 				Return("", time.Time{}, depErr).
 				Times(1)
 		}
@@ -396,7 +399,7 @@ func TestWhenRefreshingAuth(t *testing.T) {
 			expectSuccessorId(suite)
 			expectSpent(suite)
 			suite.mockJwtManager.EXPECT().
-				CreateJwtToken(claims.Address).
+				CreateJwtToken(claims.Address, "session-1", claims.SessionExpiresAt).
 				Return("jwt-token", accessExpiresAt, nil).
 				Times(1)
 			suite.mockRefreshTokenManager.EXPECT().

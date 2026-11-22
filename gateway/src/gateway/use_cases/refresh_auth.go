@@ -86,7 +86,7 @@ func (uc *RefreshAuth) Execute(
 		successorId = prior.SuccessorId
 	}
 
-	token, expiresAt, err := uc.jwtManager.CreateJwtToken(claims.Address)
+	token, expiresAt, err := uc.jwtManager.CreateJwtToken(claims.Address, claims.SessionId, claims.SessionExpiresAt)
 	if err != nil {
 		return nil, errors.NewInternalError("refresh_failed", err)
 	}
