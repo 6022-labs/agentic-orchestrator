@@ -10,6 +10,7 @@
 package interfaces_mocks
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -41,9 +42,9 @@ func (m *MockJwtManagerInterface) EXPECT() *MockJwtManagerInterfaceMockRecorder 
 }
 
 // CreateJwtToken mocks base method.
-func (m *MockJwtManagerInterface) CreateJwtToken(address string) (string, time.Time, error) {
+func (m *MockJwtManagerInterface) CreateJwtToken(address, sessionId string, sessionExpiresAt time.Time) (string, time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateJwtToken", address)
+	ret := m.ctrl.Call(m, "CreateJwtToken", address, sessionId, sessionExpiresAt)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(time.Time)
 	ret2, _ := ret[2].(error)
@@ -51,22 +52,22 @@ func (m *MockJwtManagerInterface) CreateJwtToken(address string) (string, time.T
 }
 
 // CreateJwtToken indicates an expected call of CreateJwtToken.
-func (mr *MockJwtManagerInterfaceMockRecorder) CreateJwtToken(address any) *gomock.Call {
+func (mr *MockJwtManagerInterfaceMockRecorder) CreateJwtToken(address, sessionId, sessionExpiresAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).CreateJwtToken), address)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).CreateJwtToken), address, sessionId, sessionExpiresAt)
 }
 
 // VerifyJwtToken mocks base method.
-func (m *MockJwtManagerInterface) VerifyJwtToken(token string) (string, error) {
+func (m *MockJwtManagerInterface) VerifyJwtToken(ctx context.Context, token string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyJwtToken", token)
+	ret := m.ctrl.Call(m, "VerifyJwtToken", ctx, token)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VerifyJwtToken indicates an expected call of VerifyJwtToken.
-func (mr *MockJwtManagerInterfaceMockRecorder) VerifyJwtToken(token any) *gomock.Call {
+func (mr *MockJwtManagerInterfaceMockRecorder) VerifyJwtToken(ctx, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).VerifyJwtToken), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyJwtToken", reflect.TypeOf((*MockJwtManagerInterface)(nil).VerifyJwtToken), ctx, token)
 }

@@ -1,6 +1,6 @@
 const SESSION_KEY = "session"
 
-// The gateway JWT carries { sub, iat, nbf, exp }. There is no chain claim — the chain is fixed per deployment (see config.chainId).
+// The gateway JWT carries { sub, iat, nbf, exp, sid }. There is no chain claim — the chain is fixed per deployment (see config.chainId).
 export type UserData = {
   address: string
   iat?: number

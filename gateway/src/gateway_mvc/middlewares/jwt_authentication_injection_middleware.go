@@ -59,7 +59,7 @@ func (m *JWTAuthenticationInjectionMiddleware) Handle(c fiber.Ctx) error {
 		return c.Next()
 	}
 
-	authenticatedWalletStr, err := m.jwtManager.VerifyJwtToken(jwtStr)
+	authenticatedWalletStr, err := m.jwtManager.VerifyJwtToken(c.Context(), jwtStr)
 	if err != nil {
 		m.logger.Error("Invalid JWT", zap.Error(err))
 		return c.Next()

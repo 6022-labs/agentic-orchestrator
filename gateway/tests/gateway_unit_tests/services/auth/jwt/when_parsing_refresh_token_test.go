@@ -9,8 +9,10 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/gateway/src/gateway/settings"
 	"github.com/6022-labs/agentic-orchestrator/gateway/tests/common_tests"
+	"github.com/6022-labs/agentic-orchestrator/gateway/tests/gateway_mocks/services_mocks/interfaces_mocks"
 	gojwt "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 type WhenParsingRefreshTokenTestingSuite struct {
@@ -72,8 +74,9 @@ func TestWhenParsingRefreshToken(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenParsingRefreshTokenBeforeEach()
-			accessToken, _, _ := jwt.NewJwtManager(suite.jwtSettings).
-				CreateJwtToken(common_tests.RandomEthAddress().Hex())
+			mockRefreshSessionStore := interfaces_mocks.NewMockRefreshSessionStoreInterface(gomock.NewController(t))
+			accessToken, _, _ := jwt.NewJwtManager(suite.jwtSettings, mockRefreshSessionStore).
+				CreateJwtToken(common_tests.RandomEthAddress().Hex(), "session-1", time.Now().Add(time.Hour))
 
 			claims, err := suite.sut.Parse(accessToken)
 

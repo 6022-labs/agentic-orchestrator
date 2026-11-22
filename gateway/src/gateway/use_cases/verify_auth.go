@@ -58,14 +58,18 @@ func (uc *VerifyAuth) Execute(
 		return nil, errors.NewUnauthorizedError("signature_mismatch", "signature does not match address")
 	}
 
-	token, expiresAt, err := uc.jwtManager.CreateJwtToken(request.Address)
-	if err != nil {
-		return nil, err
-	}
-
 	refreshToken, refreshClaims, err := uc.refreshTokenManager.Issue(request.Address)
 	if err != nil {
 		return nil, errors.NewInternalError("refresh_token_issue_failed", err)
+	}
+
+	token, expiresAt, err := uc.jwtManager.CreateJwtToken(
+		request.Address,
+		refreshClaims.SessionId,
+		refreshClaims.SessionExpiresAt,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return &responses.VerifyAuthResponse{
