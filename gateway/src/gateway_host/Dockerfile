@@ -22,9 +22,9 @@ FROM scratch AS final
 COPY --from=builder /app /app
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
-# Client IP for the rate limiter: trust loopback and private-network edges; keep 127.0.0.1 when overriding.
+# Client IP for the rate limiter: trust loopback, private and shared-range edges; keep 127.0.0.1 when overriding.
 ENV PROXY__HEADER=X-Forwarded-For \
-    PROXY__TRUSTED_PROXIES=127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7
+    PROXY__TRUSTED_PROXIES=127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10,fc00::/7
 
 EXPOSE 8000
 
