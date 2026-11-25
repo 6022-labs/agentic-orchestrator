@@ -14,11 +14,14 @@ import (
 	"go.uber.org/zap"
 )
 
+const participantReleaseTimeout = 5 * time.Second
+
 type ConversationProcessorDaemon struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 	startOnce    sync.Once
 	stopOnce     sync.Once
+	loopWg       sync.WaitGroup
 	processingWg sync.WaitGroup
 
 	logger                 *zap.Logger
@@ -58,6 +61,7 @@ func (d *ConversationProcessorDaemon) Start(ctx context.Context) {
 		d.ctx, d.cancel = context.WithCancel(ctx)
 
 		d.logger.Info("Starting conversation processor daemon")
+		d.loopWg.Add(1)
 		go d.runLoop(d.ctx)
 	})
 }
@@ -68,6 +72,7 @@ func (d *ConversationProcessorDaemon) Stop() {
 		if d.cancel != nil {
 			d.cancel()
 		}
+		d.loopWg.Wait()
 		d.processingWg.Wait()
 		d.logger.Info("Conversation processor daemon stopped cleanly")
 	})
@@ -86,6 +91,7 @@ func (d *ConversationProcessorDaemon) WaitForInFlight() {
 }
 
 func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
+	defer d.loopWg.Done()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -133,9 +139,12 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	ctx context.Context,
 	participant *models.Participant,
 ) {
+	defer d.processingWg.Done()
 	defer func() {
-		d.processingWg.Done()
-		if err := d.setParticipantIsNotProcessing(ctx, participant); err != nil {
+		// Stop cancels ctx; the release must still reach the database or the participant is never picked again.
+		releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), participantReleaseTimeout)
+		defer cancel()
+		if err := d.setParticipantIsNotProcessing(releaseCtx, participant); err != nil {
 			d.logger.Error("Failed to mark participant as not processing",
 				d.participantLogFields(participant, zap.Error(err))...,
 			)
