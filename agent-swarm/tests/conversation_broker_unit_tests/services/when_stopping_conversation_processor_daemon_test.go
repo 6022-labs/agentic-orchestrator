@@ -50,6 +50,7 @@ func WhenStoppingConversationProcessorDaemonBeforeEach(
 			&settings.ProcessingSettings{
 				ParticipantProcessingInterval: 20,
 				FacilitatorTickInterval:       30,
+				TickInterval:                  10 * time.Millisecond,
 				LeaseDuration:                 time.Minute,
 			},
 			mockConversationProcessor,

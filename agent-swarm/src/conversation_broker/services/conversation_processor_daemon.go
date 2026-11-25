@@ -99,7 +99,7 @@ func (d *ConversationProcessorDaemon) WaitForInFlight() {
 
 func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 	defer d.loopWg.Done()
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(d.processingSettings.TickInterval)
 	defer ticker.Stop()
 
 	for {
@@ -108,7 +108,10 @@ func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 			d.logger.Info("Shutting down conversation processor daemon")
 			return
 		case <-ticker.C:
-			d.processNextParticipant(ctx)
+			// select picks at random when Stop and a tick are both ready; a stopped daemon never ticks again.
+			if ctx.Err() == nil {
+				d.processNextParticipant(ctx)
+			}
 		}
 	}
 }
