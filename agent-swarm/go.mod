@@ -4,6 +4,7 @@ go 1.27.4
 
 require (
 	ariga.io/atlas-provider-gorm v0.6.1
+	github.com/avast/retry-go/v5 v5.1.1
 	github.com/ethereum/go-ethereum v1.17.10
 	github.com/go-faker/faker/v4 v4.12.0
 	github.com/gofiber/contrib/v3/otel v1.3.5

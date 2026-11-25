@@ -17,7 +17,15 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/clients"
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/metrics/interfaces"
 	http_node_models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/models"
+	"github.com/avast/retry-go/v5"
 	"go.uber.org/zap"
+)
+
+const (
+	rateLimitAttempts     = 3
+	rateLimitDefaultDelay = time.Second
+	// Past this, the next processing tick retries instead of this turn waiting.
+	rateLimitMaxDelay = 10 * time.Second
 )
 
 // knownPaymentNetworks bounds the cardinality of the settlement network label.
@@ -88,17 +96,17 @@ func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
 	cachedChallenge, _ := r.x402PaymentChallengeCache.Read(ctx, ensDomain)
 
 	presignedHeader := r.freeCallHeader(ensDomain, cachedChallenge)
-	completions, err := request(presignedHeader)
+	completions, err := r.retryRateLimited(ctx, func() ([]string, error) { return request(presignedHeader) })
 
 	var paymentRequired *cb_errors.PaymentRequiredError
 	if err == nil || !errors.As(err, &paymentRequired) {
 		// Without this the counter would only ever see challenge-cache misses.
 		if presignedHeader != "" {
-			outcome := metrics_interfaces.PaymentOutcomeSettled
-			if err != nil {
-				outcome = metrics_interfaces.PaymentOutcomeRejected
-			}
-			r.remoteAgentMetrics.RecordPaymentSettlement(ctx, outcome, r.challengeNetwork(cachedChallenge))
+			r.remoteAgentMetrics.RecordPaymentSettlement(
+				ctx,
+				r.paymentOutcome(err),
+				r.challengeNetwork(cachedChallenge),
+			)
 		}
 		return completions, err
 	}
@@ -125,14 +133,51 @@ func (r *RemoteAgentCompletionsRequester) requestWithFreeCallRetry(
 		return nil, err
 	}
 
-	retried, retryErr := request(signatureHeader)
-	outcome := metrics_interfaces.PaymentOutcomeSettled
-	if retryErr != nil {
-		outcome = metrics_interfaces.PaymentOutcomeRejected
-	}
-	r.remoteAgentMetrics.RecordPaymentSettlement(ctx, outcome, network)
+	retried, retryErr := r.retryRateLimited(ctx, func() ([]string, error) { return request(signatureHeader) })
+	r.remoteAgentMetrics.RecordPaymentSettlement(ctx, r.paymentOutcome(retryErr), network)
 
 	return retried, retryErr
+}
+
+// retryRateLimited leaves a 502, 503 or 504 alone: the agent may already have done the work.
+func (r *RemoteAgentCompletionsRequester) retryRateLimited(
+	ctx context.Context,
+	request func() ([]string, error),
+) ([]string, error) {
+	return retry.NewWithData[[]string](
+		retry.Context(ctx),
+		retry.Attempts(rateLimitAttempts),
+		retry.DelayType(func(_ uint, err error, _ retry.DelayContext) time.Duration {
+			return r.rateLimitDelay(err)
+		}),
+		retry.LastErrorOnly(true),
+		retry.RetryIf(func(err error) bool {
+			var unavailable *cb_errors.RemoteAgentUnavailableError
+			return errors.As(err, &unavailable) && unavailable.IsRateLimited() &&
+				unavailable.RetryAfter <= rateLimitMaxDelay
+		}),
+	).Do(request)
+}
+
+func (r *RemoteAgentCompletionsRequester) rateLimitDelay(err error) time.Duration {
+	var unavailable *cb_errors.RemoteAgentUnavailableError
+	if errors.As(err, &unavailable) && unavailable.RetryAfter > 0 {
+		return unavailable.RetryAfter
+	}
+	return rateLimitDefaultDelay
+}
+
+// paymentOutcome counts an unavailable agent as skipped: it may never have looked at the payment.
+func (r *RemoteAgentCompletionsRequester) paymentOutcome(err error) string {
+	var unavailable *cb_errors.RemoteAgentUnavailableError
+	switch {
+	case err == nil:
+		return metrics_interfaces.PaymentOutcomeSettled
+	case errors.As(err, &unavailable):
+		return metrics_interfaces.PaymentOutcomeSkipped
+	default:
+		return metrics_interfaces.PaymentOutcomeRejected
+	}
 }
 
 // challengeNetwork collapses unknown values to "other": the label comes from the remote agent.

@@ -5,7 +5,10 @@ import (
 
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
 	"testing"
+	"testing/synctest"
+	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -84,6 +87,10 @@ func completedResponseForTest() *http_node_models.ExternalResponse {
 			},
 		},
 	}
+}
+
+func unavailableForTest(status int, retryAfter time.Duration) error {
+	return cb_errors.NewRemoteAgentUnavailableError("agent.eth", status, retryAfter, "")
 }
 
 func encodeForTest(t *testing.T, value any) string {
@@ -589,6 +596,471 @@ func TestWhenRequestingRemoteAgentCompletions(t *testing.T) {
 			var paymentRequired *cb_errors.PaymentRequiredError
 			assert.ErrorAs(t, err, &paymentRequired)
 			assert.Equal(t, "retry-header", paymentRequired.PaymentRequirements)
+		})
+	})
+
+	t.Run("Given the node is rate limiting then answers", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, 3*time.Second)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(completedResponseForTest(), nil),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+		}
+
+		t.Run("Should retry after the delay the node asked for", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				assert.NoError(t, err)
+				assert.Equal(t, []string{"answer"}, completions)
+				assert.Equal(t, 3*time.Second, time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node asks to wait exactly ten seconds then answers", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, 10*time.Second)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(completedResponseForTest(), nil),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+		}
+
+		t.Run("Should retry after the delay the node asked for", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				assert.NoError(t, err)
+				assert.Equal(t, []string{"answer"}, completions)
+				assert.Equal(t, 10*time.Second, time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node is rate limiting without a delay then answers", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, 0)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(completedResponseForTest(), nil),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+		}
+
+		t.Run("Should retry after one second", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				assert.NoError(t, err)
+				assert.Equal(t, []string{"answer"}, completions)
+				assert.Equal(t, time.Second, time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node keeps rate limiting", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, time.Second)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, time.Second)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, time.Second)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should return the unavailable error after three attempts", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				var unavailable *cb_errors.RemoteAgentUnavailableError
+				assert.ErrorAs(t, err, &unavailable)
+				assert.Nil(t, completions)
+				assert.Equal(t, 2*time.Second, time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node asks to wait longer than ten seconds", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, 10*time.Second+time.Millisecond)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should return the unavailable error without waiting", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				var unavailable *cb_errors.RemoteAgentUnavailableError
+				assert.ErrorAs(t, err, &unavailable)
+				assert.Nil(t, completions)
+				assert.Equal(t, time.Duration(0), time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node answers 502", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusBadGateway, 0)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should return the unavailable error without retrying", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				var unavailable *cb_errors.RemoteAgentUnavailableError
+				assert.ErrorAs(t, err, &unavailable)
+				assert.Nil(t, completions)
+				assert.Equal(t, time.Duration(0), time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node answers 503", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusServiceUnavailable, 0)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should return the unavailable error without retrying", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				var unavailable *cb_errors.RemoteAgentUnavailableError
+				assert.ErrorAs(t, err, &unavailable)
+				assert.Nil(t, completions)
+				assert.Equal(t, time.Duration(0), time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node answers 504", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, unavailableForTest(http.StatusGatewayTimeout, 0)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should return the unavailable error without retrying", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				start := time.Now()
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				var unavailable *cb_errors.RemoteAgentUnavailableError
+				assert.ErrorAs(t, err, &unavailable)
+				assert.Nil(t, completions)
+				assert.Equal(t, time.Duration(0), time.Since(start))
+			})
+		})
+	})
+
+	t.Run("Given the node answers 502 to a pre-signed call", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
+
+			suite.x402PaymentChallengeCache.EXPECT().Read(gomock.Any(), "agent.eth").Return(challenge, true)
+			suite.x402PaymentPayloadSigner.EXPECT().Sign(challenge, "0").Return(&models.X402PaymentPayload{}, nil)
+			suite.mockRemoteAgentClient.EXPECT().
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Not(gomock.Nil())).
+				Return(nil, unavailableForTest(http.StatusBadGateway, 0))
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSkipped, gomock.Any())
+		}
+
+		t.Run("Should record the payment as skipped", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+			var unavailable *cb_errors.RemoteAgentUnavailableError
+			assert.ErrorAs(t, err, &unavailable)
+		})
+	})
+
+	t.Run("Given the node rate limits the signed call after a 402", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
+
+			suite.noCachedChallenge()
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", gomock.Any())
+			suite.x402PaymentPayloadSigner.EXPECT().Sign(gomock.Any(), "0").Return(&models.X402PaymentPayload{}, nil)
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Not(gomock.Nil())).
+					Return(nil, unavailableForTest(http.StatusTooManyRequests, time.Second)),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Not(gomock.Nil())).
+					Return(completedResponseForTest(), nil),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Nil())
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSettled, gomock.Any())
+		}
+
+		t.Run("Should retry the signed call", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(t, suite)
+
+				completions, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+				assert.NoError(t, err)
+				assert.Equal(t, []string{"answer"}, completions)
+			})
+		})
+	})
+
+	t.Run("Given the node answers 502 to the signed call after a 402", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(t *testing.T, suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			challenge := &models.X402PaymentChallenge{X402Version: models.X402Version}
+
+			suite.noCachedChallenge()
+			suite.x402PaymentChallengeCache.EXPECT().Store(gomock.Any(), "agent.eth", gomock.Any())
+			suite.x402PaymentPayloadSigner.EXPECT().Sign(gomock.Any(), "0").Return(&models.X402PaymentPayload{}, nil)
+			gomock.InOrder(
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+					Return(nil, cb_errors.NewPaymentRequiredError("agent.eth", encodeForTest(t, challenge))),
+				suite.mockRemoteAgentClient.EXPECT().
+					CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Not(gomock.Nil())).
+					Return(nil, unavailableForTest(http.StatusBadGateway, 0)),
+			)
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordPaymentSettlement(gomock.Any(), metrics_interfaces.PaymentOutcomeSkipped, gomock.Any())
+		}
+
+		t.Run("Should record the payment as skipped", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+			initSuite(t, suite)
+
+			_, err := suite.sut.RequestCompletions(context.Background(), card, turnForTest())
+
+			var unavailable *cb_errors.RemoteAgentUnavailableError
+			assert.ErrorAs(t, err, &unavailable)
+		})
+	})
+
+	t.Run("Given the broker stops while waiting to retry", func(t *testing.T) {
+		t.Parallel()
+
+		card := &models.RemoteAgentCard{
+			Protocol:  "6022",
+			Endpoints: models.RemoteAgentCardEndpoints{Responses: "https://node.example/api/responses"},
+		}
+
+		initSuite := func(suite *WhenRequestingRemoteAgentCompletionsTestingSuite) {
+			suite.noCachedChallenge()
+			suite.mockRemoteAgentClient.EXPECT().
+				CreateResponse(gomock.Any(), card.Endpoints.Responses, "agent.eth", gomock.Any(), gomock.Nil()).
+				Return(nil, unavailableForTest(http.StatusTooManyRequests, 9*time.Second))
+			suite.mockRemoteAgentMetrics.EXPECT().
+				RecordInvocation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Not(gomock.Nil()))
+		}
+
+		t.Run("Should stop waiting at once", func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				suite := WhenRequestingRemoteAgentCompletionsBeforeEach(t)
+				initSuite(suite)
+				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+				defer cancel()
+				start := time.Now()
+
+				_, err := suite.sut.RequestCompletions(ctx, card, turnForTest())
+
+				assert.ErrorIs(t, err, context.DeadlineExceeded)
+				assert.Equal(t, 2*time.Second, time.Since(start))
+			})
 		})
 	})
 }
