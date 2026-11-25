@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/host_configurations"
-	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/services/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/configurations"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_host/settings"
 	"github.com/gofiber/fiber/v3"
@@ -42,7 +41,6 @@ func main() {
 		app *fiber.App,
 		logger *zap.Logger,
 		hostSettings *settings.HostSettings,
-		daemon interfaces.ConversationProcessorDaemonInterface,
 	) error {
 		port := fmt.Sprintf(":%d", hostSettings.ApiPort)
 		logger.Info("Starting server", zap.String("port", port))
@@ -58,8 +56,6 @@ func main() {
 		select {
 		case sig := <-sigCh:
 			logger.Info("Shutdown signal received", zap.String("signal", sig.String()))
-
-			daemon.Stop()
 
 			if err := app.Shutdown(); err != nil {
 				logger.Warn("Fiber shutdown returned an error", zap.Error(err))
