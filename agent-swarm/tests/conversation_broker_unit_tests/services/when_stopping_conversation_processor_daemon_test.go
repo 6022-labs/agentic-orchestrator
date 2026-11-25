@@ -47,7 +47,11 @@ func WhenStoppingConversationProcessorDaemonBeforeEach(
 		sut: services.NewConversationProcessorDaemon(
 			zap.NewNop(),
 			mockBrokerMetrics,
-			&settings.ProcessingSettings{ParticipantProcessingInterval: 20, FacilitatorTickInterval: 30},
+			&settings.ProcessingSettings{
+				ParticipantProcessingInterval: 20,
+				FacilitatorTickInterval:       30,
+				LeaseDuration:                 time.Minute,
+			},
 			mockConversationProcessor,
 			mockParticipantRepository,
 			mockConversationRepository,
@@ -90,11 +94,11 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 
 			suite.mockBrokerMetrics.EXPECT().RecordDaemonTick(gomock.Any(), gomock.Any()).AnyTimes()
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 			suite.mockParticipantRoleResolver.EXPECT().
@@ -114,15 +118,14 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 				}).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(ctx context.Context, p *models.Participant) (*models.Participant, error) {
-					assert.False(t, p.IsProcessing)
+				ReleaseLease(gomock.Any(), participant).
+				DoAndReturn(func(ctx context.Context, _ *models.Participant) error {
 					assert.NoError(t, ctx.Err())
 					_, bounded := ctx.Deadline()
 					assert.True(t, bounded)
 					time.Sleep(20 * time.Millisecond)
 					released.Store(true)
-					return p, nil
+					return nil
 				}).
 				Times(1)
 
@@ -145,8 +148,8 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 			finished := &atomic.Bool{}
 
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(context.Context, uint64) (*models.Participant, error) {
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(context.Context, uint64, time.Duration) (*models.Participant, error) {
 					close(entered)
 					time.Sleep(20 * time.Millisecond)
 					return nil, nil

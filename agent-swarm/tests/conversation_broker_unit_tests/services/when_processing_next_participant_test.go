@@ -5,6 +5,7 @@ import (
 
 	"errors"
 	"testing"
+	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/metrics/interfaces"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -31,7 +32,10 @@ type WhenProcessingNextParticipantTestingSuite struct {
 	mockParticipantRoleResolver *interfaces_mocks.MockParticipantRoleResolverInterface
 }
 
-func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextParticipantTestingSuite {
+func WhenProcessingNextParticipantBeforeEach(
+	t *testing.T,
+	leaseDuration time.Duration,
+) *WhenProcessingNextParticipantTestingSuite {
 	mockController := gomock.NewController(t)
 
 	mockBrokerMetrics := broker_metrics_mocks.NewMockBrokerMetricsInterface(mockController)
@@ -46,6 +50,7 @@ func WhenProcessingNextParticipantBeforeEach(t *testing.T) *WhenProcessingNextPa
 		FacilitatorTickInterval:                     30,
 		ConversationForceConcludeByFacilitatorAfter: 300,
 		ConversationForceConcludeAfter:              600,
+		LeaseDuration:                               leaseDuration,
 	}
 
 	sut := services.NewConversationProcessorDaemon(
@@ -79,7 +84,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), uint64(20), time.Minute).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -87,7 +92,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 		t.Run("Should do nothing", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenProcessingNextParticipantBeforeEach(t)
+			suite := WhenProcessingNextParticipantBeforeEach(t, time.Minute)
 			initSuite(suite)
 
 			// No panics, no further interactions — mock controller enforces it.
@@ -109,27 +114,20 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), uint64(20), time.Minute).
 				Return(participant, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return(nil, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
-					assert.False(t, p.IsProcessing)
-					assert.NotNil(t, p.LastProcessedAt)
-					return p, nil
-				}).
-				Times(1)
+			suite.mockParticipantRepository.EXPECT().ReleaseLease(gomock.Any(), participant).Return(nil).Times(1)
 		}
 
 		t.Run("Should find nothing, then release it", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenProcessingNextParticipantBeforeEach(t)
+			suite := WhenProcessingNextParticipantBeforeEach(t, time.Minute)
 			initSuite(suite)
 
 			suite.mockBrokerMetrics.EXPECT().
@@ -153,7 +151,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), uint64(20), time.Minute).
 				Return(participant, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
@@ -168,13 +166,13 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				ProcessConversation(gomock.Any(), participant, conv2).
 				Return(nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().ReleaseLease(gomock.Any(), participant).Return(nil).Times(1)
 		}
 
 		t.Run("Should dispatch each conversation to the processor", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenProcessingNextParticipantBeforeEach(t)
+			suite := WhenProcessingNextParticipantBeforeEach(t, time.Minute)
 			initSuite(suite)
 
 			suite.mockBrokerMetrics.EXPECT().
@@ -197,7 +195,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), uint64(20), time.Minute).
 				Return(participant, nil).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
@@ -208,17 +206,100 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				ProcessConversation(gomock.Any(), participant, conv).
 				Return(errors.New("boom")).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
+			suite.mockParticipantRepository.EXPECT().ReleaseLease(gomock.Any(), participant).Return(nil).Times(1)
 		}
 
 		t.Run("Should still release the participant cleanly", func(t *testing.T) {
 			t.Parallel()
 
-			suite := WhenProcessingNextParticipantBeforeEach(t)
+			suite := WhenProcessingNextParticipantBeforeEach(t, time.Minute)
 			initSuite(suite)
 
 			suite.mockBrokerMetrics.EXPECT().
 				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeProcessed)
+
+			suite.sut.Tick(context.Background())
+			suite.sut.WaitForInFlight()
+		})
+	})
+
+	t.Run("Given a conversation outlasting its lease", func(t *testing.T) {
+		t.Parallel()
+
+		participant := model_builders.NewAgentParticipantBuilder().Build()
+		conv := model_builders.NewConversationBuilder().Build()
+		leaseDuration := 300 * time.Millisecond
+
+		initSuite := func(
+			suite *WhenProcessingNextParticipantTestingSuite,
+			process func(ctx context.Context, _ *models.Participant, _ *models.Conversation) error,
+		) {
+			suite.mockBrokerMetrics.EXPECT().
+				RecordDaemonTick(gomock.Any(), metrics_interfaces.DaemonTickOutcomeProcessed)
+			suite.mockParticipantRepository.EXPECT().
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), leaseDuration).
+				Return(participant, nil).
+				Times(1)
+			suite.mockParticipantRoleResolver.EXPECT().
+				Resolve(gomock.Any(), participant).
+				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
+				Times(1)
+			suite.mockConversationRepository.EXPECT().
+				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), gomock.Any()).
+				Return([]*models.Conversation{conv}, nil).
+				Times(1)
+			suite.mockConversationProcessor.EXPECT().
+				ProcessConversation(gomock.Any(), participant, conv).
+				DoAndReturn(process).
+				Times(1)
+			suite.mockParticipantRepository.EXPECT().ReleaseLease(gomock.Any(), participant).Return(nil).Times(1)
+		}
+		untilCancelled := func(ctx context.Context, _ *models.Participant, _ *models.Conversation) error {
+			<-ctx.Done()
+			return ctx.Err()
+		}
+
+		t.Run("Should keep renewing it", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingNextParticipantBeforeEach(t, leaseDuration)
+			initSuite(suite, func(ctx context.Context, _ *models.Participant, _ *models.Conversation) error {
+				time.Sleep(2 * leaseDuration)
+				assert.NoError(t, ctx.Err())
+				return nil
+			})
+			suite.mockParticipantRepository.EXPECT().
+				RenewLease(gomock.Any(), participant, leaseDuration).
+				Return(true, nil).
+				MinTimes(3)
+
+			suite.sut.Tick(context.Background())
+			suite.sut.WaitForInFlight()
+		})
+
+		t.Run("Should cancel it once the lease is lost", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingNextParticipantBeforeEach(t, leaseDuration)
+			initSuite(suite, untilCancelled)
+			suite.mockParticipantRepository.EXPECT().
+				RenewLease(gomock.Any(), participant, leaseDuration).
+				Return(false, nil).
+				Times(1)
+
+			suite.sut.Tick(context.Background())
+			suite.sut.WaitForInFlight()
+		})
+
+		t.Run("Should cancel it once renewals failed for the whole lease", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenProcessingNextParticipantBeforeEach(t, leaseDuration)
+			initSuite(suite, untilCancelled)
+			suite.mockParticipantRepository.EXPECT().
+				RenewLease(gomock.Any(), participant, leaseDuration).
+				Return(false, errors.New("db down")).
+				MinTimes(2)
 
 			suite.sut.Tick(context.Background())
 			suite.sut.WaitForInFlight()

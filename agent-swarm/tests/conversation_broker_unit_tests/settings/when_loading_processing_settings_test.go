@@ -2,6 +2,7 @@ package settings_test
 
 import (
 	"testing"
+	"time"
 
 	processing_settings "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/settings"
 	"github.com/knadh/koanf/providers/confmap"
@@ -22,6 +23,7 @@ func TestWhenLoadingProcessingSettings(t *testing.T) {
 			"processing.facilitator_tick_interval":                        uint64(45),
 			"processing.conversation_force_conclude_by_facilitator_after": uint64(120),
 			"processing.conversation_force_conclude_after":                uint64(900),
+			"processing.lease_duration_seconds":                           "30",
 		}, "."), nil)
 
 		t.Run("Should load them", func(t *testing.T) {
@@ -34,6 +36,24 @@ func TestWhenLoadingProcessingSettings(t *testing.T) {
 			assert.Equal(t, uint64(45), settings.FacilitatorTickInterval)
 			assert.Equal(t, uint64(120), settings.ConversationForceConcludeByFacilitatorAfter)
 			assert.Equal(t, uint64(900), settings.ConversationForceConcludeAfter)
+			assert.Equal(t, 30*time.Second, settings.LeaseDuration)
+		})
+	})
+
+	t.Run("Given non-positive values", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"processing.lease_duration_seconds": "0",
+		}, "."), nil)
+
+		t.Run("Should fall back to defaults", func(t *testing.T) {
+			t.Parallel()
+
+			settings := processing_settings.NewProcessingSettings(zap.NewNop(), k)
+
+			assert.Equal(t, time.Minute, settings.LeaseDuration)
 		})
 	})
 
@@ -52,6 +72,7 @@ func TestWhenLoadingProcessingSettings(t *testing.T) {
 			assert.Equal(t, uint64(30), settings.FacilitatorTickInterval)
 			assert.Equal(t, uint64(300), settings.ConversationForceConcludeByFacilitatorAfter)
 			assert.Equal(t, uint64(600), settings.ConversationForceConcludeAfter)
+			assert.Equal(t, time.Minute, settings.LeaseDuration)
 		})
 	})
 }

@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -14,7 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
-const participantReleaseTimeout = 5 * time.Second
+const (
+	participantReleaseTimeout = 5 * time.Second
+	// Two renewals may fail before the lease is lost.
+	leaseRenewalsPerDuration = 3
+)
 
 type ConversationProcessorDaemon struct {
 	ctx          context.Context
@@ -107,8 +110,11 @@ func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context) {
+	// The database starts the lease when it runs the claim, so the local clock starts it no later.
+	claimedAt := time.Now()
 	participant, err := d.participantRepository.ClaimNextAgentToProcess(ctx,
 		d.processingSettings.ParticipantProcessingInterval,
+		d.processingSettings.LeaseDuration,
 	)
 	if err != nil {
 		d.logger.Error("Failed to claim next participant to process", zap.Error(err))
@@ -124,24 +130,31 @@ func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context
 	d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeProcessed)
 
 	d.processingWg.Add(1)
-	go d.processConversationsForParticipant(ctx, participant)
+	go d.processConversationsForParticipant(ctx, participant, claimedAt)
 }
 
 func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	ctx context.Context,
 	participant *models.Participant,
+	claimedAt time.Time,
 ) {
 	defer d.processingWg.Done()
 	defer func() {
-		// Stop cancels ctx; the release must still reach the database or the participant is never picked again.
+		// Stop cancels ctx; the release must still reach the database or the participant waits for its lease to expire.
 		releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), participantReleaseTimeout)
 		defer cancel()
-		if err := d.setParticipantIsNotProcessing(releaseCtx, participant); err != nil {
-			d.logger.Error("Failed to mark participant as not processing",
+		if err := d.participantRepository.ReleaseLease(releaseCtx, participant); err != nil {
+			d.logger.Error("Failed to release participant",
 				d.participantLogFields(participant, zap.Error(err))...,
 			)
 		}
 	}()
+
+	leaseWg := &sync.WaitGroup{}
+	defer leaseWg.Wait()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	leaseWg.Go(func() { d.keepLease(ctx, cancel, participant, claimedAt) })
 
 	role, err := d.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
@@ -204,18 +217,44 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	wg.Wait()
 }
 
-func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(
+// keepLease renews the lease until ctx is done; losing it cancels the work, which another replica may redo.
+func (d *ConversationProcessorDaemon) keepLease(
 	ctx context.Context,
+	cancel context.CancelFunc,
 	participant *models.Participant,
-) error {
-	participant.IsProcessing = false
-	now := time.Now()
-	participant.LastProcessedAt = &now
-
-	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
-		return fmt.Errorf("failed to set participant %s as not processing: %w", participant.ID, err)
+	claimedAt time.Time,
+) {
+	leaseDuration := d.processingSettings.LeaseDuration
+	loseLease := func() {
+		d.logger.Warn("Lost participant lease", d.participantLogFields(participant)...)
+		cancel()
 	}
-	return nil
+	expiry := time.AfterFunc(leaseDuration-time.Since(claimedAt), loseLease)
+	defer expiry.Stop()
+	ticker := time.NewTicker(leaseDuration / leaseRenewalsPerDuration)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+
+		renewedAt := time.Now()
+		held, err := d.participantRepository.RenewLease(ctx, participant, leaseDuration)
+		switch {
+		case ctx.Err() != nil:
+			return
+		case err != nil:
+			d.logger.Warn("Failed to renew participant lease", d.participantLogFields(participant, zap.Error(err))...)
+		case !held:
+			loseLease()
+			return
+		default:
+			expiry.Reset(leaseDuration - time.Since(renewedAt))
+		}
+	}
 }
 
 func (d *ConversationProcessorDaemon) participantLogFields(

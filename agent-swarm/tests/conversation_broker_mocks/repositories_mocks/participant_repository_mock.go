@@ -12,6 +12,7 @@ package repositories_mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	uuid "github.com/google/uuid"
@@ -43,18 +44,18 @@ func (m *MockParticipantRepositoryInterface) EXPECT() *MockParticipantRepository
 }
 
 // ClaimNextAgentToProcess mocks base method.
-func (m *MockParticipantRepositoryInterface) ClaimNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64) (*models.Participant, error) {
+func (m *MockParticipantRepositoryInterface) ClaimNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64, leaseDuration time.Duration) (*models.Participant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClaimNextAgentToProcess", ctx, processingIntervalSeconds)
+	ret := m.ctrl.Call(m, "ClaimNextAgentToProcess", ctx, processingIntervalSeconds, leaseDuration)
 	ret0, _ := ret[0].(*models.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ClaimNextAgentToProcess indicates an expected call of ClaimNextAgentToProcess.
-func (mr *MockParticipantRepositoryInterfaceMockRecorder) ClaimNextAgentToProcess(ctx, processingIntervalSeconds any) *gomock.Call {
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) ClaimNextAgentToProcess(ctx, processingIntervalSeconds, leaseDuration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimNextAgentToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ClaimNextAgentToProcess), ctx, processingIntervalSeconds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimNextAgentToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ClaimNextAgentToProcess), ctx, processingIntervalSeconds, leaseDuration)
 }
 
 // GetByCollectionAddressAndCollectionTokenId mocks base method.
@@ -100,6 +101,35 @@ func (m *MockParticipantRepositoryInterface) ListByConversationId(ctx context.Co
 func (mr *MockParticipantRepositoryInterfaceMockRecorder) ListByConversationId(ctx, conversationId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByConversationId", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ListByConversationId), ctx, conversationId)
+}
+
+// ReleaseLease mocks base method.
+func (m *MockParticipantRepositoryInterface) ReleaseLease(ctx context.Context, participant *models.Participant) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReleaseLease", ctx, participant)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReleaseLease indicates an expected call of ReleaseLease.
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) ReleaseLease(ctx, participant any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseLease", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ReleaseLease), ctx, participant)
+}
+
+// RenewLease mocks base method.
+func (m *MockParticipantRepositoryInterface) RenewLease(ctx context.Context, participant *models.Participant, leaseDuration time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RenewLease", ctx, participant, leaseDuration)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RenewLease indicates an expected call of RenewLease.
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) RenewLease(ctx, participant, leaseDuration any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewLease", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).RenewLease), ctx, participant, leaseDuration)
 }
 
 // Save mocks base method.

@@ -47,14 +47,14 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			suite := WhenClaimingNextAgentToProcessBeforeEach(t)
 			defer WhenClaimingNextAgentToProcessAfterEach(suite)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
 		})
 	})
 
-	t.Run("Given an agent participant is currently processing", func(t *testing.T) {
+	t.Run("Given a leased agent participant", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("Should not return it", func(t *testing.T) {
@@ -63,10 +63,10 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			suite := WhenClaimingNextAgentToProcessBeforeEach(t)
 			defer WhenClaimingNextAgentToProcessAfterEach(suite)
 
-			p := model_builders.NewAgentParticipantBuilder().WithIsProcessing(true).Build()
+			p := model_builders.NewAgentParticipantBuilder().WithLease(uuid.New(), time.Now().Add(time.Minute)).Build()
 			_, _ = suite.sut.Save(context.Background(), p)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -86,7 +86,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			p := model_builders.NewAgentParticipantBuilder().WithLastProcessedAt(recent).Build()
 			_, _ = suite.sut.Save(context.Background(), p)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -111,7 +111,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			_, _ = suite.sut.Save(context.Background(), pRecent)
 			_, _ = suite.sut.Save(context.Background(), pOld)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.NoError(t, err)
 			assert.Equal(t, pOld.ID, next.ID)
@@ -135,7 +135,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			_, _ = suite.sut.Save(context.Background(), pOld)
 			_, _ = suite.sut.Save(context.Background(), pNeverRun)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.NoError(t, err)
 			assert.Equal(t, pNeverRun.ID, next.ID)
@@ -154,7 +154,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			human := model_builders.NewUserParticipantBuilder().Build()
 			_, _ = suite.sut.Save(context.Background(), human)
 
-			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			next, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 
 			assert.Nil(t, err)
 			assert.Nil(t, next)
@@ -164,7 +164,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 	t.Run("Given an eligible agent participant", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should mark it processing and not return it again", func(t *testing.T) {
+		t.Run("Should lease it and not return it again", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenClaimingNextAgentToProcessBeforeEach(t)
@@ -173,15 +173,38 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			p := model_builders.NewAgentParticipantBuilder().Build()
 			_, _ = suite.sut.Save(context.Background(), p)
 
-			claimed, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			claimed, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 			assert.NoError(t, err)
 			assert.Equal(t, p.ID, claimed.ID)
-			assert.True(t, claimed.IsProcessing)
+			assert.True(t, claimed.IsProcessing())
+			assert.NotNil(t, claimed.LeaseID)
+			assert.WithinDuration(t, time.Now().Add(time.Minute), *claimed.LeaseUntil, 10*time.Second)
 			assert.Equal(t, *p.EnsDomain, *claimed.EnsDomain)
 
-			again, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+			again, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 			assert.NoError(t, err)
 			assert.Nil(t, again)
+		})
+	})
+
+	t.Run("Given an agent participant whose lease expired", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should claim it under a new lease", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenClaimingNextAgentToProcessBeforeEach(t)
+			defer WhenClaimingNextAgentToProcessAfterEach(suite)
+
+			expired := uuid.New()
+			p := model_builders.NewAgentParticipantBuilder().WithLease(expired, time.Now().Add(-time.Second)).Build()
+			_, _ = suite.sut.Save(context.Background(), p)
+
+			claimed, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
+
+			assert.NoError(t, err)
+			assert.Equal(t, p.ID, claimed.ID)
+			assert.NotEqual(t, expired, *claimed.LeaseID)
 		})
 	})
 
@@ -206,7 +229,7 @@ func TestWhenClaimingNextAgentToProcess(t *testing.T) {
 			for range 3 * agents {
 				wg.Go(func() {
 					<-start
-					claimed, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20)
+					claimed, err := suite.sut.ClaimNextAgentToProcess(context.Background(), 20, time.Minute)
 					assert.NoError(t, err)
 					if claimed == nil {
 						return

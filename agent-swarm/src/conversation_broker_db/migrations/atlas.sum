@@ -1,3 +1,4 @@
-h1:Hb8aH2ngNgx+HzW38rKSqAOCukz9MhTPdtdD9XIbQBE=
+h1:0QlBcFzYRbQrWfd4ZLbmccTtdffRzP8cLho7/aL07YQ=
 20260704211003_initial.sql h1:x0q/xFT/7qGjvyjA9oyyNh6hNQiqdV5tunbP+6Z24Rg=
 20260823201846_add_conversation_memory_bindings.sql h1:lyonaN/gNoAqO/QHnaOuxZmBEg8oKgobD7443sVZbe8=
+20261125185957_add_participant_leases.sql h1:yeNUqcJbM3mbdVQjdLnBYXEaYBYZ5adNVYudVP05sK4=
