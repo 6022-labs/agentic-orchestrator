@@ -98,7 +98,11 @@ func (b *PostgresContainerBuilder) request() testcontainers.ContainerRequest {
 			"POSTGRES_PASSWORD": "postgres",
 			"POSTGRES_DB":       "postgres",
 		},
-		WaitingFor: wait.ForListeningPort("5432/tcp"),
+		// postgres logs ready twice: the init server, then the real one.
+		WaitingFor: wait.ForAll(
+			wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
+			wait.ForListeningPort("5432/tcp"),
+		),
 	}
 }
 
