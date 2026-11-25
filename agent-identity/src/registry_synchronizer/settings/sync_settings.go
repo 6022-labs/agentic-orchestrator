@@ -12,7 +12,10 @@ import (
 
 const SyncSettingsKey = "sync"
 
-const defaultBlockFinalizationDelay = 2 * time.Second
+const (
+	defaultBlockFinalizationDelay  = 2 * time.Second
+	defaultBlockEventsPollInterval = 200 * time.Millisecond
+)
 
 // Public RPCs cap eth_getLogs at 10k blocks.
 const defaultGapWindowBlocks = 10_000
@@ -33,7 +36,9 @@ type syncStartBlocksFile struct {
 type SyncSettings struct {
 	StartBlock             uint64
 	BlockFinalizationDelay time.Duration
-	GapWindowBlocks        uint64
+	// BlockEventsPollInterval spaces the blocks taken from the queue, at most one each time.
+	BlockEventsPollInterval time.Duration
+	GapWindowBlocks         uint64
 }
 
 func NewSyncSettings(
@@ -68,6 +73,11 @@ func NewSyncSettings(
 		blockFinalizationDelay = defaultBlockFinalizationDelay
 	}
 
+	blockEventsPollInterval := k.Duration(SyncSettingsKey + ".block_events_poll_interval")
+	if blockEventsPollInterval <= 0 {
+		blockEventsPollInterval = defaultBlockEventsPollInterval
+	}
+
 	gapWindowBlocks := uint64(defaultGapWindowBlocks)
 	if k.Exists(SyncSettingsKey + ".gap_window_blocks") {
 		windowBlocks := k.Int64(SyncSettingsKey + ".gap_window_blocks")
@@ -80,8 +90,9 @@ func NewSyncSettings(
 	}
 
 	return &SyncSettings{
-		StartBlock:             uint64(startBlockInt),
-		BlockFinalizationDelay: blockFinalizationDelay,
-		GapWindowBlocks:        gapWindowBlocks,
+		StartBlock:              uint64(startBlockInt),
+		BlockFinalizationDelay:  blockFinalizationDelay,
+		BlockEventsPollInterval: blockEventsPollInterval,
+		GapWindowBlocks:         gapWindowBlocks,
 	}
 }

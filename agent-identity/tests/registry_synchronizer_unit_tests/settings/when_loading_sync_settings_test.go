@@ -23,8 +23,9 @@ func TestWhenLoadingSyncSettings(t *testing.T) {
 
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
-			"sync.start_block":              "12345678",
-			"sync.block_finalization_delay": "3s",
+			"sync.start_block":                "12345678",
+			"sync.block_finalization_delay":   "3s",
+			"sync.block_events_poll_interval": "50ms",
 		}, "."), nil)
 
 		t.Run("Should load them", func(t *testing.T) {
@@ -35,6 +36,7 @@ func TestWhenLoadingSyncSettings(t *testing.T) {
 			assert.NotNil(t, settings)
 			assert.Equal(t, uint64(12345678), settings.StartBlock)
 			assert.Equal(t, 3*time.Second, settings.BlockFinalizationDelay)
+			assert.Equal(t, 50*time.Millisecond, settings.BlockEventsPollInterval)
 		})
 	})
 
@@ -54,6 +56,7 @@ func TestWhenLoadingSyncSettings(t *testing.T) {
 			assert.NotNil(t, settings)
 			assert.Equal(t, uint64(12345678), settings.StartBlock)
 			assert.Equal(t, 2*time.Second, settings.BlockFinalizationDelay)
+			assert.Equal(t, 200*time.Millisecond, settings.BlockEventsPollInterval)
 		})
 	})
 

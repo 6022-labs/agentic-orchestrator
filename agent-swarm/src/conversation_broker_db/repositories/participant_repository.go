@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"errors"
-
-	"fmt"
+	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ParticipantRepository struct {
@@ -57,32 +57,52 @@ func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 	return &entity, nil
 }
 
-// GetNextAgentToProcess returns the oldest agent participant (role IS NOT
-// NULL) that is not currently processing and whose last run is older than
-// processingIntervalSeconds. User participants (display-name only) are never
-// returned.
-func (r *ParticipantRepository) GetNextAgentToProcess(
+func (r *ParticipantRepository) ClaimNextAgentToProcess(
 	ctx context.Context,
 	processingIntervalSeconds uint64,
+	leaseDuration time.Duration,
 ) (*models.Participant, error) {
-	var entity models.Participant
-	err := r.client.GetDB().WithContext(ctx).
+	db := r.client.GetDB().WithContext(ctx)
+	next := db.Model(&models.Participant{}).
+		Select("id").
+		Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).
 		Where("collection_address IS NOT NULL AND collection_token_id IS NOT NULL").
-		Where("is_processing = ?", false).
-		Where(fmt.Sprintf(
-			"last_processed_at IS NULL OR last_processed_at < NOW() - INTERVAL '%d seconds'",
+		Where("lease_until IS NULL OR lease_until < NOW()").
+		Where(
+			"last_processed_at IS NULL OR last_processed_at < NOW() - make_interval(secs => ?)",
 			processingIntervalSeconds,
-		)).
+		).
 		Order("last_processed_at ASC NULLS FIRST").
-		First(&entity).
+		Limit(1)
+
+	var claimed []*models.Participant
+	err := db.Model(&claimed).
+		Clauses(clause.Returning{}).
+		Where("id = (?)", next).
+		Updates(map[string]any{"lease_id": uuid.New(), "lease_until": r.leaseUntil(leaseDuration)}).
 		Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
 	if err != nil {
 		return nil, err
 	}
-	return &entity, nil
+	if len(claimed) == 0 {
+		return nil, nil
+	}
+	return claimed[0], nil
+}
+
+func (r *ParticipantRepository) RenewLease(
+	ctx context.Context,
+	participant *models.Participant,
+	leaseDuration time.Duration,
+) (bool, error) {
+	result := r.leased(ctx, participant).Update("lease_until", r.leaseUntil(leaseDuration))
+	return result.RowsAffected == 1, result.Error
+}
+
+func (r *ParticipantRepository) ReleaseLease(ctx context.Context, participant *models.Participant) error {
+	return r.leased(ctx, participant).
+		Updates(map[string]any{"lease_id": nil, "lease_until": nil, "last_processed_at": gorm.Expr("NOW()")}).
+		Error
 }
 
 func (r *ParticipantRepository) ListByConversationId(
@@ -100,4 +120,15 @@ func (r *ParticipantRepository) ListByConversationId(
 		return nil, err
 	}
 	return entities, nil
+}
+
+func (r *ParticipantRepository) leased(ctx context.Context, participant *models.Participant) *gorm.DB {
+	return r.client.GetDB().WithContext(ctx).
+		Model(&models.Participant{}).
+		Where("id = ? AND lease_id = ?", participant.ID, participant.LeaseID)
+}
+
+// leaseUntil uses the database clock, which every replica shares.
+func (r *ParticipantRepository) leaseUntil(leaseDuration time.Duration) clause.Expr {
+	return gorm.Expr("NOW() + make_interval(secs => ?)", leaseDuration.Seconds())
 }

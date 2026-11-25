@@ -16,7 +16,8 @@ type ParticipantBuilder struct {
 	collectionTokenId *uint64
 	ensDomain         *string
 	displayName       *string
-	isProcessing      bool
+	leaseId           *uuid.UUID
+	leaseUntil        *time.Time
 	lastProcessedAt   *time.Time
 	createdAt         time.Time
 	updatedAt         time.Time
@@ -53,8 +54,9 @@ func (b *ParticipantBuilder) WithID(id uuid.UUID) *ParticipantBuilder {
 	return b
 }
 
-func (b *ParticipantBuilder) WithIsProcessing(v bool) *ParticipantBuilder {
-	b.isProcessing = v
+func (b *ParticipantBuilder) WithLease(leaseId uuid.UUID, leaseUntil time.Time) *ParticipantBuilder {
+	b.leaseId = &leaseId
+	b.leaseUntil = &leaseUntil
 	return b
 }
 
@@ -75,7 +77,8 @@ func (b *ParticipantBuilder) Build() *models.Participant {
 		CollectionTokenId: b.collectionTokenId,
 		EnsDomain:         b.ensDomain,
 		DisplayName:       b.displayName,
-		IsProcessing:      b.isProcessing,
+		LeaseID:           b.leaseId,
+		LeaseUntil:        b.leaseUntil,
 		LastProcessedAt:   b.lastProcessedAt,
 		CreatedAt:         b.createdAt,
 		UpdatedAt:         b.updatedAt,

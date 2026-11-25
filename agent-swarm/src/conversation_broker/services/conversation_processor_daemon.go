@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -14,7 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
-const participantReleaseTimeout = 5 * time.Second
+const (
+	participantReleaseTimeout = 5 * time.Second
+	// Two renewals may fail before the lease is lost.
+	leaseRenewalsPerDuration = 3
+)
 
 type ConversationProcessorDaemon struct {
 	ctx          context.Context
@@ -23,6 +26,8 @@ type ConversationProcessorDaemon struct {
 	stopOnce     sync.Once
 	loopWg       sync.WaitGroup
 	processingWg sync.WaitGroup
+	// slots holds one token per participant in flight; one is only claimed for a free slot.
+	slots chan struct{}
 
 	logger                 *zap.Logger
 	brokerMetrics          metrics_interfaces.BrokerMetricsInterface
@@ -44,6 +49,8 @@ func NewConversationProcessorDaemon(
 	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *ConversationProcessorDaemon {
 	return &ConversationProcessorDaemon{
+		slots: make(chan struct{}, max(processingSettings.MaxConcurrentParticipants, 1)),
+
 		logger:                 logger,
 		brokerMetrics:          brokerMetrics,
 		processingSettings:     processingSettings,
@@ -92,7 +99,7 @@ func (d *ConversationProcessorDaemon) WaitForInFlight() {
 
 func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 	defer d.loopWg.Done()
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(d.processingSettings.TickInterval)
 	defer ticker.Stop()
 
 	for {
@@ -101,55 +108,71 @@ func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 			d.logger.Info("Shutting down conversation processor daemon")
 			return
 		case <-ticker.C:
-			d.processNextParticipant(ctx)
+			// select picks at random when Stop and a tick are both ready; a stopped daemon never ticks again.
+			if ctx.Err() == nil {
+				d.processNextParticipant(ctx)
+			}
 		}
 	}
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context) {
-	participant, err := d.participantRepository.GetNextAgentToProcess(ctx,
+	select {
+	case d.slots <- struct{}{}:
+	default:
+		d.logger.Debug("Too many participants in flight")
+		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeSaturated)
+		return
+	}
+
+	// The database starts the lease when it runs the claim, so the local clock starts it no later.
+	claimedAt := time.Now()
+	participant, err := d.participantRepository.ClaimNextAgentToProcess(ctx,
 		d.processingSettings.ParticipantProcessingInterval,
+		d.processingSettings.LeaseDuration,
 	)
 	if err != nil {
-		d.logger.Error("Failed to fetch next participant to process", zap.Error(err))
+		<-d.slots
+		d.logger.Error("Failed to claim next participant to process", zap.Error(err))
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 	if participant == nil {
+		<-d.slots
 		d.logger.Debug("No participants to process at the moment")
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeIdle)
-		return
-	}
-
-	if err := d.setParticipantIsProcessing(ctx, participant); err != nil {
-		d.logger.Error("Failed to mark participant as processing",
-			d.participantLogFields(participant, zap.Error(err))...,
-		)
-		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 
 	d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeProcessed)
 
 	d.processingWg.Add(1)
-	go d.processConversationsForParticipant(ctx, participant)
+	go d.processConversationsForParticipant(ctx, participant, claimedAt)
 }
 
 func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	ctx context.Context,
 	participant *models.Participant,
+	claimedAt time.Time,
 ) {
 	defer d.processingWg.Done()
+	defer func() { <-d.slots }()
 	defer func() {
-		// Stop cancels ctx; the release must still reach the database or the participant is never picked again.
+		// Stop cancels ctx; the release must still reach the database or the participant waits for its lease to expire.
 		releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), participantReleaseTimeout)
 		defer cancel()
-		if err := d.setParticipantIsNotProcessing(releaseCtx, participant); err != nil {
-			d.logger.Error("Failed to mark participant as not processing",
+		if err := d.participantRepository.ReleaseLease(releaseCtx, participant); err != nil {
+			d.logger.Error("Failed to release participant",
 				d.participantLogFields(participant, zap.Error(err))...,
 			)
 		}
 	}()
+
+	leaseWg := &sync.WaitGroup{}
+	defer leaseWg.Wait()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	leaseWg.Go(func() { d.keepLease(ctx, cancel, participant, claimedAt) })
 
 	role, err := d.participantRoleResolver.Resolve(ctx, participant)
 	if err != nil {
@@ -182,11 +205,18 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(len(conversations))
+	defer wg.Wait()
+	slots := make(chan struct{}, max(d.processingSettings.MaxConcurrentConversations, 1))
 
-	for _, conversation := range conversations {
-		go func(conv *models.Conversation) {
-			defer wg.Done()
+	for _, conv := range conversations {
+		select {
+		case <-ctx.Done():
+			return
+		case slots <- struct{}{}:
+		}
+
+		wg.Go(func() {
+			defer func() { <-slots }()
 
 			d.logger.Info("Processing conversation for participant",
 				d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()))...,
@@ -206,36 +236,48 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 			d.logger.Info("Successfully processed conversation for participant",
 				d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()))...,
 			)
-		}(conversation)
+		})
 	}
-
-	wg.Wait()
 }
 
-func (d *ConversationProcessorDaemon) setParticipantIsProcessing(
+// keepLease renews the lease until ctx is done; losing it cancels the work, which another replica may redo.
+func (d *ConversationProcessorDaemon) keepLease(
 	ctx context.Context,
+	cancel context.CancelFunc,
 	participant *models.Participant,
-) error {
-	participant.IsProcessing = true
-
-	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
-		return fmt.Errorf("failed to set participant %s as processing: %w", participant.ID, err)
+	claimedAt time.Time,
+) {
+	leaseDuration := d.processingSettings.LeaseDuration
+	loseLease := func() {
+		d.logger.Warn("Lost participant lease", d.participantLogFields(participant)...)
+		cancel()
 	}
-	return nil
-}
+	expiry := time.AfterFunc(leaseDuration-time.Since(claimedAt), loseLease)
+	defer expiry.Stop()
+	ticker := time.NewTicker(leaseDuration / leaseRenewalsPerDuration)
+	defer ticker.Stop()
 
-func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(
-	ctx context.Context,
-	participant *models.Participant,
-) error {
-	participant.IsProcessing = false
-	now := time.Now()
-	participant.LastProcessedAt = &now
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
 
-	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
-		return fmt.Errorf("failed to set participant %s as not processing: %w", participant.ID, err)
+		renewedAt := time.Now()
+		held, err := d.participantRepository.RenewLease(ctx, participant, leaseDuration)
+		switch {
+		case ctx.Err() != nil:
+			return
+		case err != nil:
+			d.logger.Warn("Failed to renew participant lease", d.participantLogFields(participant, zap.Error(err))...)
+		case !held:
+			loseLease()
+			return
+		default:
+			expiry.Reset(leaseDuration - time.Since(renewedAt))
+		}
 	}
-	return nil
 }
 
 func (d *ConversationProcessorDaemon) participantLogFields(

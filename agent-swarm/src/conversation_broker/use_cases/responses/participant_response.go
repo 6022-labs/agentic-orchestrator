@@ -29,7 +29,7 @@ func ParticipantResponseFromModel(participant *models.Participant) *ParticipantR
 		CollectionTokenId: participant.CollectionTokenId,
 		EnsDomain:         participant.EnsDomain,
 		DisplayName:       participant.DisplayName,
-		IsProcessing:      participant.IsProcessing,
+		IsProcessing:      participant.IsProcessing(),
 		LastProcessedAt:   participant.LastProcessedAt,
 		CreatedAt:         participant.CreatedAt,
 		UpdatedAt:         participant.UpdatedAt,

@@ -3,92 +3,95 @@ package services
 import (
 	"context"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"go.uber.org/zap"
 )
 
-const (
-	defaultBlockEventsPollInterval = 200 * time.Millisecond
-)
-
 type BlockEventsDequeueDaemon struct {
+	ctx       context.Context
+	cancel    context.CancelFunc
+	startOnce sync.Once
+	stopOnce  sync.Once
+	loopWg    sync.WaitGroup
+	failed    chan error
+
 	logger *zap.Logger
+
+	syncSettings *settings.SyncSettings
 
 	blockEventsQueue interfaces.BlockEventsQueueInterface
 
 	blockEventsProcessor interfaces.BlockEventsProcessorInterface
-
-	cancel  context.CancelFunc
-	running bool
 }
 
 func NewBlockEventsDequeueDaemon(
 	logger *zap.Logger,
+	syncSettings *settings.SyncSettings,
 	blockEventsQueue interfaces.BlockEventsQueueInterface,
 	blockEventsProcessor interfaces.BlockEventsProcessorInterface,
 ) *BlockEventsDequeueDaemon {
 	return &BlockEventsDequeueDaemon{
+		failed:               make(chan error, 1),
 		logger:               logger,
+		syncSettings:         syncSettings,
 		blockEventsQueue:     blockEventsQueue,
 		blockEventsProcessor: blockEventsProcessor,
 	}
 }
 
-func (d *BlockEventsDequeueDaemon) Start(ctx context.Context) error {
-	if d.running {
-		return errors.New("block events dequeue synchronizer daemon already running")
-	}
-	ctx, cancel := context.WithCancel(ctx)
-	d.cancel = cancel
-	d.running = true
+func (d *BlockEventsDequeueDaemon) Start(ctx context.Context) {
+	d.startOnce.Do(func() {
+		d.ctx, d.cancel = context.WithCancel(ctx)
 
-	d.logger.Info("Starting block event dequeue synchronizer daemon...")
-
-	defer func() {
-		d.cancel = nil
-		d.running = false
-	}()
-
-	err := d.run(ctx)
-	if errors.Is(err, context.Canceled) {
-		return nil
-	}
-
-	return err
+		d.logger.Info("Starting block event dequeue synchronizer daemon...")
+		d.loopWg.Add(1)
+		go d.runLoop()
+	})
 }
 
-func (d *BlockEventsDequeueDaemon) Stop() error {
-	if !d.running || d.cancel == nil {
-		return nil
-	}
-	cancel := d.cancel
-
-	d.logger.Info("Stopping block event dequeue synchronizer daemon...")
-	cancel()
-
-	return nil
+func (d *BlockEventsDequeueDaemon) Stop() {
+	d.stopOnce.Do(func() {
+		d.logger.Info("Stopping block event dequeue synchronizer daemon...")
+		if d.cancel != nil {
+			d.cancel()
+		}
+		d.loopWg.Wait()
+		d.logger.Info("Block event dequeue synchronizer daemon stopped")
+	})
 }
 
-func (d *BlockEventsDequeueDaemon) run(ctx context.Context) error {
-	ticker := time.NewTicker(defaultBlockEventsPollInterval)
+func (d *BlockEventsDequeueDaemon) Failed() <-chan error {
+	return d.failed
+}
+
+func (d *BlockEventsDequeueDaemon) runLoop() {
+	defer d.loopWg.Done()
+	ticker := time.NewTicker(d.syncSettings.BlockEventsPollInterval)
 	defer ticker.Stop()
 
 	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
+		if d.ctx.Err() != nil {
+			return
 		}
 
-		if err := d.DequeueAndProcess(ctx); err != nil {
-			return err
+		if err := d.DequeueAndProcess(d.ctx); err != nil {
+			if d.ctx.Err() != nil {
+				if !errors.Is(err, context.Canceled) {
+					d.logger.Error("Block failed during shutdown", zap.Error(err))
+				}
+				return
+			}
+			d.failed <- err
+			return
 		}
 
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
+		case <-d.ctx.Done():
+			return
 		case <-ticker.C:
 		}
 	}

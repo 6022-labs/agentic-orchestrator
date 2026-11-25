@@ -26,8 +26,10 @@ type Participant struct {
 
 	DisplayName *string `gorm:"type:text" json:"displayName,omitempty"`
 
-	IsProcessing    bool       `gorm:"type:boolean;not null;default:false;index:idx_participants_processing,priority:1" json:"isProcessing"`
-	LastProcessedAt *time.Time `gorm:"type:timestamptz;index:idx_participants_processing,priority:2"                    json:"lastProcessedAt,omitempty"`
+	// LeaseID names one claim, so a broker that outlived its lease cannot touch the next one.
+	LeaseID         *uuid.UUID `gorm:"type:uuid"                                                     json:"leaseId,omitempty"`
+	LeaseUntil      *time.Time `gorm:"type:timestamptz;index:idx_participants_processing,priority:1" json:"leaseUntil,omitempty"`
+	LastProcessedAt *time.Time `gorm:"type:timestamptz;index:idx_participants_processing,priority:2" json:"lastProcessedAt,omitempty"`
 
 	CreatedAt time.Time `gorm:"type:timestamptz;not null" json:"createdAt"`
 	UpdatedAt time.Time `gorm:"type:timestamptz;not null" json:"updatedAt"`
@@ -36,6 +38,11 @@ type Participant struct {
 // IsAgent reports whether the participant has an on-chain identity rather than being a user.
 func (entity *Participant) IsAgent() bool {
 	return entity.CollectionAddress != nil && entity.CollectionTokenId != nil
+}
+
+// IsProcessing reports whether a broker holds the participant's lease.
+func (entity *Participant) IsProcessing() bool {
+	return entity.LeaseUntil != nil && time.Now().Before(*entity.LeaseUntil)
 }
 
 func (entity *Participant) BeforeCreate(tx *gorm.DB) (err error) {

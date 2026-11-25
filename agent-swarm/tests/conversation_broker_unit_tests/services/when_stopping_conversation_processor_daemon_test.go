@@ -47,7 +47,12 @@ func WhenStoppingConversationProcessorDaemonBeforeEach(
 		sut: services.NewConversationProcessorDaemon(
 			zap.NewNop(),
 			mockBrokerMetrics,
-			&settings.ProcessingSettings{ParticipantProcessingInterval: 20, FacilitatorTickInterval: 30},
+			&settings.ProcessingSettings{
+				ParticipantProcessingInterval: 20,
+				FacilitatorTickInterval:       30,
+				TickInterval:                  10 * time.Millisecond,
+				LeaseDuration:                 time.Minute,
+			},
 			mockConversationProcessor,
 			mockParticipantRepository,
 			mockConversationRepository,
@@ -90,11 +95,11 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 
 			suite.mockBrokerMetrics.EXPECT().RecordDaemonTick(gomock.Any(), gomock.Any()).AnyTimes()
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				AnyTimes()
 			suite.mockParticipantRoleResolver.EXPECT().
@@ -113,25 +118,17 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 					return ctx.Err()
 				}).
 				Times(1)
-			gomock.InOrder(
-				suite.mockParticipantRepository.EXPECT().
-					Save(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
-						assert.True(t, p.IsProcessing)
-						return p, nil
-					}),
-				suite.mockParticipantRepository.EXPECT().
-					Save(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, p *models.Participant) (*models.Participant, error) {
-						assert.False(t, p.IsProcessing)
-						assert.NoError(t, ctx.Err())
-						_, bounded := ctx.Deadline()
-						assert.True(t, bounded)
-						time.Sleep(20 * time.Millisecond)
-						released.Store(true)
-						return p, nil
-					}),
-			)
+			suite.mockParticipantRepository.EXPECT().
+				ReleaseLease(gomock.Any(), participant).
+				DoAndReturn(func(ctx context.Context, _ *models.Participant) error {
+					assert.NoError(t, ctx.Err())
+					_, bounded := ctx.Deadline()
+					assert.True(t, bounded)
+					time.Sleep(20 * time.Millisecond)
+					released.Store(true)
+					return nil
+				}).
+				Times(1)
 
 			suite.sut.Start(context.Background())
 			<-entered
@@ -152,8 +149,8 @@ func TestWhenStoppingConversationProcessorDaemon(t *testing.T) {
 			finished := &atomic.Bool{}
 
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(context.Context, uint64) (*models.Participant, error) {
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(context.Context, uint64, time.Duration) (*models.Participant, error) {
 					close(entered)
 					time.Sleep(20 * time.Millisecond)
 					return nil, nil
