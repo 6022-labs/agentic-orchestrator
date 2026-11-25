@@ -62,5 +62,13 @@ func (app *Synchronizer) Start(ctx context.Context) error {
 		return err
 	}
 
-	return app.blockEventsDequeueDaemon.Start(ctx)
+	app.blockEventsDequeueDaemon.Start(ctx)
+	defer app.blockEventsDequeueDaemon.Stop()
+
+	select {
+	case <-ctx.Done():
+		return nil
+	case err := <-app.blockEventsDequeueDaemon.Failed():
+		return err
+	}
 }

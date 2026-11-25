@@ -40,12 +40,24 @@ func (m *MockBlockEventsDequeueDaemonInterface) EXPECT() *MockBlockEventsDequeue
 	return m.recorder
 }
 
-// Start mocks base method.
-func (m *MockBlockEventsDequeueDaemonInterface) Start(ctx context.Context) error {
+// Failed mocks base method.
+func (m *MockBlockEventsDequeueDaemonInterface) Failed() <-chan error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx)
-	ret0, _ := ret[0].(error)
+	ret := m.ctrl.Call(m, "Failed")
+	ret0, _ := ret[0].(<-chan error)
 	return ret0
+}
+
+// Failed indicates an expected call of Failed.
+func (mr *MockBlockEventsDequeueDaemonInterfaceMockRecorder) Failed() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failed", reflect.TypeOf((*MockBlockEventsDequeueDaemonInterface)(nil).Failed))
+}
+
+// Start mocks base method.
+func (m *MockBlockEventsDequeueDaemonInterface) Start(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Start", ctx)
 }
 
 // Start indicates an expected call of Start.
@@ -55,11 +67,9 @@ func (mr *MockBlockEventsDequeueDaemonInterfaceMockRecorder) Start(ctx any) *gom
 }
 
 // Stop mocks base method.
-func (m *MockBlockEventsDequeueDaemonInterface) Stop() error {
+func (m *MockBlockEventsDequeueDaemonInterface) Stop() {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stop")
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "Stop")
 }
 
 // Stop indicates an expected call of Stop.

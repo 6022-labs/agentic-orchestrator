@@ -3,9 +3,11 @@ package services_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/services/interfaces"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_synchronizer/settings"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -27,6 +29,7 @@ func WhenDequeuingBlockEventsBeforeEach(t *testing.T) *WhenDequeuingBlockEventsT
 
 	sut := services.NewBlockEventsDequeueDaemon(
 		zap.NewNop(),
+		&settings.SyncSettings{BlockEventsPollInterval: 200 * time.Millisecond},
 		mockBlockEventsQueue,
 		mockBlockEventsProcessor,
 	)
