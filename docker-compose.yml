@@ -201,6 +201,8 @@ services:
         VITE_APP_KIT_PROJECT_ID: ""
         VITE_ENVIRONMENT: local
     container_name: web-ui
+    environment:
+      - GATEWAY__BASE_URL=http://gateway-host:5000
     ports:
       - "3000:80"
     networks:

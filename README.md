@@ -12,7 +12,7 @@ docker compose up
 
 This runs the APIs on Polygon Amoy (public RPC), with Postgres, pgAdmin, Redis and a Grafana observability stack.
 
-- Web console: `http://localhost:3000/`
+- Web console: `http://localhost:3000/` (its nginx forwards `/api/*` to the gateway set in `GATEWAY__BASE_URL`, prefix stripped)
 - Gateway API: `http://localhost:5000/`
 - pgAdmin: `http://localhost:5050/` (password `root`)
 - Grafana: `http://localhost:3001/`

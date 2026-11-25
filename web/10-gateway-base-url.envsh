@@ -1,0 +1,16 @@
+#!/bin/sh
+# A path in the URL would replace every proxied request URI, so only scheme and host are accepted.
+GATEWAY__BASE_URL="${GATEWAY__BASE_URL%/}"
+case "$GATEWAY__BASE_URL" in
+    http://*/* | https://*/*)
+        echo "GATEWAY__BASE_URL must not carry a path: $GATEWAY__BASE_URL" >&2
+        exit 1
+        ;;
+    http://?* | https://?*)
+        export GATEWAY__BASE_URL
+        ;;
+    *)
+        echo "GATEWAY__BASE_URL must be set to http(s)://host[:port]" >&2
+        exit 1
+        ;;
+esac
