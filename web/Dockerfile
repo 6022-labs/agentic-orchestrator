@@ -19,7 +19,11 @@ RUN npm run build
 
 FROM nginx:1.31-alpine
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY --chmod=755 10-gateway-base-url.envsh /docker-entrypoint.d/
+# Fills the resolver from resolv.conf and limits envsubst to the template's own variables.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    NGINX_ENVSUBST_FILTER=^(GATEWAY__BASE_URL|NGINX_LOCAL_RESOLVERS)$
 COPY --from=build /app/dist /var/www/html
 
 EXPOSE 80
