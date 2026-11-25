@@ -79,7 +79,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 
 		initSuite := func(suite *WhenProcessingNextParticipantTestingSuite) {
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(nil, nil).
 				Times(1)
 		}
@@ -109,15 +109,8 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
-				Times(1)
-			suite.mockParticipantRepository.EXPECT().
-				Save(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(_ context.Context, p *models.Participant) (*models.Participant, error) {
-					assert.True(t, p.IsProcessing)
-					return p, nil
-				}).
 				Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
@@ -133,7 +126,7 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Times(1)
 		}
 
-		t.Run("Should mark it processing, find nothing, then release it", func(t *testing.T) {
+		t.Run("Should find nothing, then release it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenProcessingNextParticipantBeforeEach(t)
@@ -160,10 +153,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv1, conv2}, nil).
@@ -205,10 +197,9 @@ func TestWhenProcessingNextParticipant(t *testing.T) {
 				Return(lo.ToPtr(enums.ParticipantRoleClone), nil).
 				Times(1)
 			suite.mockParticipantRepository.EXPECT().
-				GetNextAgentToProcess(gomock.Any(), gomock.Any()).
+				ClaimNextAgentToProcess(gomock.Any(), gomock.Any()).
 				Return(participant, nil).
 				Times(1)
-			suite.mockParticipantRepository.EXPECT().Save(gomock.Any(), gomock.Any()).Return(participant, nil).Times(1)
 			suite.mockConversationRepository.EXPECT().
 				ListProcessableForParticipant(gomock.Any(), participant, gomock.Any(), uint64(30)).
 				Return([]*models.Conversation{conv}, nil).

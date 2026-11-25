@@ -15,6 +15,8 @@ type ParticipantRepositoryInterface interface {
 		collectionAddress string,
 		collectionTokenId uint64,
 	) (*models.Participant, error)
-	GetNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64) (*models.Participant, error)
+	// ClaimNextAgentToProcess marks the agent least recently processed as processing and returns it, nil when none
+	// is due; two replicas never claim the same one.
+	ClaimNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64) (*models.Participant, error)
 	ListByConversationId(ctx context.Context, conversationId uuid.UUID) ([]*models.Participant, error)
 }

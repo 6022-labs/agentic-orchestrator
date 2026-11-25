@@ -107,25 +107,17 @@ func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context) {
-	participant, err := d.participantRepository.GetNextAgentToProcess(ctx,
+	participant, err := d.participantRepository.ClaimNextAgentToProcess(ctx,
 		d.processingSettings.ParticipantProcessingInterval,
 	)
 	if err != nil {
-		d.logger.Error("Failed to fetch next participant to process", zap.Error(err))
+		d.logger.Error("Failed to claim next participant to process", zap.Error(err))
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 	if participant == nil {
 		d.logger.Debug("No participants to process at the moment")
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeIdle)
-		return
-	}
-
-	if err := d.setParticipantIsProcessing(ctx, participant); err != nil {
-		d.logger.Error("Failed to mark participant as processing",
-			d.participantLogFields(participant, zap.Error(err))...,
-		)
-		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 
@@ -210,18 +202,6 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	}
 
 	wg.Wait()
-}
-
-func (d *ConversationProcessorDaemon) setParticipantIsProcessing(
-	ctx context.Context,
-	participant *models.Participant,
-) error {
-	participant.IsProcessing = true
-
-	if _, err := d.participantRepository.Save(ctx, participant); err != nil {
-		return fmt.Errorf("failed to set participant %s as processing: %w", participant.ID, err)
-	}
-	return nil
 }
 
 func (d *ConversationProcessorDaemon) setParticipantIsNotProcessing(

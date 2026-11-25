@@ -42,6 +42,21 @@ func (m *MockParticipantRepositoryInterface) EXPECT() *MockParticipantRepository
 	return m.recorder
 }
 
+// ClaimNextAgentToProcess mocks base method.
+func (m *MockParticipantRepositoryInterface) ClaimNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64) (*models.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClaimNextAgentToProcess", ctx, processingIntervalSeconds)
+	ret0, _ := ret[0].(*models.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ClaimNextAgentToProcess indicates an expected call of ClaimNextAgentToProcess.
+func (mr *MockParticipantRepositoryInterfaceMockRecorder) ClaimNextAgentToProcess(ctx, processingIntervalSeconds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimNextAgentToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).ClaimNextAgentToProcess), ctx, processingIntervalSeconds)
+}
+
 // GetByCollectionAddressAndCollectionTokenId mocks base method.
 func (m *MockParticipantRepositoryInterface) GetByCollectionAddressAndCollectionTokenId(ctx context.Context, collectionAddress string, collectionTokenId uint64) (*models.Participant, error) {
 	m.ctrl.T.Helper()
@@ -70,21 +85,6 @@ func (m *MockParticipantRepositoryInterface) GetById(ctx context.Context, id uui
 func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetById), ctx, id)
-}
-
-// GetNextAgentToProcess mocks base method.
-func (m *MockParticipantRepositoryInterface) GetNextAgentToProcess(ctx context.Context, processingIntervalSeconds uint64) (*models.Participant, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNextAgentToProcess", ctx, processingIntervalSeconds)
-	ret0, _ := ret[0].(*models.Participant)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNextAgentToProcess indicates an expected call of GetNextAgentToProcess.
-func (mr *MockParticipantRepositoryInterfaceMockRecorder) GetNextAgentToProcess(ctx, processingIntervalSeconds any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNextAgentToProcess", reflect.TypeOf((*MockParticipantRepositoryInterface)(nil).GetNextAgentToProcess), ctx, processingIntervalSeconds)
 }
 
 // ListByConversationId mocks base method.

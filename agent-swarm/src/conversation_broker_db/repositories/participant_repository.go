@@ -5,12 +5,11 @@ import (
 
 	"errors"
 
-	"fmt"
-
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ParticipantRepository struct {
@@ -57,32 +56,36 @@ func (r *ParticipantRepository) GetByCollectionAddressAndCollectionTokenId(
 	return &entity, nil
 }
 
-// GetNextAgentToProcess returns the oldest agent participant (role IS NOT
-// NULL) that is not currently processing and whose last run is older than
-// processingIntervalSeconds. User participants (display-name only) are never
-// returned.
-func (r *ParticipantRepository) GetNextAgentToProcess(
+func (r *ParticipantRepository) ClaimNextAgentToProcess(
 	ctx context.Context,
 	processingIntervalSeconds uint64,
 ) (*models.Participant, error) {
-	var entity models.Participant
-	err := r.client.GetDB().WithContext(ctx).
+	db := r.client.GetDB().WithContext(ctx)
+	next := db.Model(&models.Participant{}).
+		Select("id").
+		Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).
 		Where("collection_address IS NOT NULL AND collection_token_id IS NOT NULL").
 		Where("is_processing = ?", false).
-		Where(fmt.Sprintf(
-			"last_processed_at IS NULL OR last_processed_at < NOW() - INTERVAL '%d seconds'",
+		Where(
+			"last_processed_at IS NULL OR last_processed_at < NOW() - make_interval(secs => ?)",
 			processingIntervalSeconds,
-		)).
+		).
 		Order("last_processed_at ASC NULLS FIRST").
-		First(&entity).
+		Limit(1)
+
+	var claimed []*models.Participant
+	err := db.Model(&claimed).
+		Clauses(clause.Returning{}).
+		Where("id = (?)", next).
+		Update("is_processing", true).
 		Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
 	if err != nil {
 		return nil, err
 	}
-	return &entity, nil
+	if len(claimed) == 0 {
+		return nil, nil
+	}
+	return claimed[0], nil
 }
 
 func (r *ParticipantRepository) ListByConversationId(
