@@ -26,6 +26,8 @@ type ConversationProcessorDaemon struct {
 	stopOnce     sync.Once
 	loopWg       sync.WaitGroup
 	processingWg sync.WaitGroup
+	// slots holds one token per participant in flight; one is only claimed for a free slot.
+	slots chan struct{}
 
 	logger                 *zap.Logger
 	brokerMetrics          metrics_interfaces.BrokerMetricsInterface
@@ -47,6 +49,8 @@ func NewConversationProcessorDaemon(
 	participantRoleResolver interfaces.ParticipantRoleResolverInterface,
 ) *ConversationProcessorDaemon {
 	return &ConversationProcessorDaemon{
+		slots: make(chan struct{}, max(processingSettings.MaxConcurrentParticipants, 1)),
+
 		logger:                 logger,
 		brokerMetrics:          brokerMetrics,
 		processingSettings:     processingSettings,
@@ -110,6 +114,14 @@ func (d *ConversationProcessorDaemon) runLoop(ctx context.Context) {
 }
 
 func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context) {
+	select {
+	case d.slots <- struct{}{}:
+	default:
+		d.logger.Debug("Too many participants in flight")
+		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeSaturated)
+		return
+	}
+
 	// The database starts the lease when it runs the claim, so the local clock starts it no later.
 	claimedAt := time.Now()
 	participant, err := d.participantRepository.ClaimNextAgentToProcess(ctx,
@@ -117,11 +129,13 @@ func (d *ConversationProcessorDaemon) processNextParticipant(ctx context.Context
 		d.processingSettings.LeaseDuration,
 	)
 	if err != nil {
+		<-d.slots
 		d.logger.Error("Failed to claim next participant to process", zap.Error(err))
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeFailed)
 		return
 	}
 	if participant == nil {
+		<-d.slots
 		d.logger.Debug("No participants to process at the moment")
 		d.brokerMetrics.RecordDaemonTick(ctx, metrics_interfaces.DaemonTickOutcomeIdle)
 		return
@@ -139,6 +153,7 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	claimedAt time.Time,
 ) {
 	defer d.processingWg.Done()
+	defer func() { <-d.slots }()
 	defer func() {
 		// Stop cancels ctx; the release must still reach the database or the participant waits for its lease to expire.
 		releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), participantReleaseTimeout)
@@ -187,11 +202,18 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 	)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(len(conversations))
+	defer wg.Wait()
+	slots := make(chan struct{}, max(d.processingSettings.MaxConcurrentConversations, 1))
 
-	for _, conversation := range conversations {
-		go func(conv *models.Conversation) {
-			defer wg.Done()
+	for _, conv := range conversations {
+		select {
+		case <-ctx.Done():
+			return
+		case slots <- struct{}{}:
+		}
+
+		wg.Go(func() {
+			defer func() { <-slots }()
 
 			d.logger.Info("Processing conversation for participant",
 				d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()))...,
@@ -211,10 +233,8 @@ func (d *ConversationProcessorDaemon) processConversationsForParticipant(
 			d.logger.Info("Successfully processed conversation for participant",
 				d.participantLogFields(participant, zap.String("conversationId", conv.ID.String()))...,
 			)
-		}(conversation)
+		})
 	}
-
-	wg.Wait()
 }
 
 // keepLease renews the lease until ctx is done; losing it cancels the work, which another replica may redo.

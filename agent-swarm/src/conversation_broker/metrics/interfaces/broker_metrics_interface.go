@@ -16,6 +16,7 @@ const (
 	DaemonTickOutcomeProcessed = "processed"
 	DaemonTickOutcomeIdle      = "idle"
 	DaemonTickOutcomeFailed    = "failed"
+	DaemonTickOutcomeSaturated = "saturated"
 
 	MemorySessionOutcomeBound  = "bound"
 	MemorySessionOutcomeMissed = "missed"
