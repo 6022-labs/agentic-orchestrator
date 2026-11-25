@@ -5,11 +5,14 @@ import (
 
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 
 	cb_errors "github.com/6022-labs/agentic-orchestrator/agent-swarm/src/common/errors"
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker_http_remote_agent/models"
@@ -181,6 +184,20 @@ func (client *RemoteAgentClient) post(
 
 	if httpResponse.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(httpResponse.Body)
+
+		switch httpResponse.StatusCode {
+		case http.StatusTooManyRequests,
+			http.StatusBadGateway,
+			http.StatusServiceUnavailable,
+			http.StatusGatewayTimeout:
+			return cb_errors.NewRemoteAgentUnavailableError(
+				ensDomain,
+				httpResponse.StatusCode,
+				client.retryAfter(httpResponse.Header),
+				string(body),
+			)
+		}
+
 		return fmt.Errorf("unexpected status code: %d, response: %s", httpResponse.StatusCode, string(body))
 	}
 
@@ -189,4 +206,21 @@ func (client *RemoteAgentClient) post(
 	}
 
 	return nil
+}
+
+// retryAfter reads both forms, seconds and HTTP date; 0 when absent, invalid or past.
+func (client *RemoteAgentClient) retryAfter(header http.Header) time.Duration {
+	value := header.Get("Retry-After")
+
+	// Out of range still parses to the highest value, so a huge delay never passes for an absent one.
+	seconds, err := strconv.ParseUint(value, 10, 16)
+	if err == nil || errors.Is(err, strconv.ErrRange) {
+		return time.Duration(seconds) * time.Second
+	}
+
+	date, err := http.ParseTime(value)
+	if err != nil {
+		return 0
+	}
+	return max(time.Until(date), 0)
 }
