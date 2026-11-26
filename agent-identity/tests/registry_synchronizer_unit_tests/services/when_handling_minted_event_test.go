@@ -18,6 +18,7 @@ import (
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/tests/registry_synchronizer_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -79,17 +80,98 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		}
 	}
 
+	// expectAgentInformation returns "Alice" with one evm address from the chain.
+	expectAgentInformation := func(
+		suite *WhenHandlingMintedEventTestingSuite,
+		collectionAddress common.Address,
+		wallet common.Address,
+	) {
+		suite.agentCollectionBlockchainRequester.
+			EXPECT().
+			GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
+			Return(&abi.AgentInformation{
+				Name:      "Alice",
+				Creator:   common_tests.RandomEthAddress(),
+				Addresses: []abi.AgentAddress{{AddressType: "evm", Value: wallet.Hex()}},
+			}, nil)
+	}
+
+	// expectTokenRow returns the given row for the token's own lookup.
+	expectTokenRow := func(
+		suite *WhenHandlingMintedEventTestingSuite,
+		collectionAddress common.Address,
+		tokenID uint64,
+		agent *models.Agent,
+	) {
+		suite.agentRepositoryMock.
+			EXPECT().
+			GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), tokenID).
+			Return(agent, nil)
+	}
+
+	// expectProposal returns the given proposal for "Alice" holding the wallet.
+	expectProposal := func(
+		suite *WhenHandlingMintedEventTestingSuite,
+		collectionAddress common.Address,
+		wallet common.Address,
+		proposal *models.Agent,
+	) {
+		suite.agentRepositoryMock.
+			EXPECT().
+			GetNotYetMintedByCollectionAddressNameAndAddresses(
+				gomock.Any(),
+				strings.ToLower(collectionAddress.Hex()),
+				"Alice",
+				map[enums.AddressType]string{enums.AddressTypeEvm: strings.ToLower(wallet.Hex())},
+			).
+			Return(proposal, nil)
+	}
+
+	// expectAgentSaved expects the rest of the sync for "Alice" with one evm address.
+	expectAgentSaved := func(
+		suite *WhenHandlingMintedEventTestingSuite,
+		collectionAddress common.Address,
+		wallet common.Address,
+		assertSaved func(saved *models.Agent),
+	) {
+		owner := common_tests.RandomEthAddress()
+		suite.agentCollectionBlockchainRequester.
+			EXPECT().
+			GetAgentOwner(gomock.Any(), collectionAddress, gomock.Any()).
+			Return(&owner, nil)
+		suite.agentCollectionRepositoryMock.
+			EXPECT().
+			GetByAddress(gomock.Any(), strings.ToLower(collectionAddress.Hex())).
+			Return(model_builders.NewAgentCollectionBuilder().WithName("Genesis").Build(), nil)
+		suite.decentralizedDomainNameBuilder.
+			EXPECT().
+			BuildDomainName("Alice", "Genesis").
+			Return("alice.genesis.eth")
+		suite.agentRepositoryMock.
+			EXPECT().
+			Save(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, saved *models.Agent) (*models.Agent, error) {
+				assertSaved(saved)
+				return saved, nil
+			})
+		suite.agentAddressRepositoryMock.
+			EXPECT().
+			ReplaceAllForAgent(gomock.Any(), gomock.Any(), map[enums.AddressType]string{
+				enums.AddressTypeEvm: strings.ToLower(wallet.Hex()),
+			}).
+			Return(nil)
+	}
+
 	t.Run("Given fetching agent information fails", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
 			collectionAddress := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 1)
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
 				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
 				Return(nil, assert.AnError)
-			return event
+			return newEvent(collectionAddress, 1)
 		}
 
 		t.Run("Should return wrapped info error", func(t *testing.T) {
@@ -100,38 +182,25 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 
 			err := suite.sut.Handle(context.Background(), event)
 
-			assert.Error(t, err)
+			assert.ErrorIs(t, err, assert.AnError)
 			assert.ErrorContains(t, err, "failed to get agent information")
 		})
 	})
 
-	t.Run("Given agent address lookup fails with unexpected error", func(t *testing.T) {
+	t.Run("Given the token lookup fails", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
 			collectionAddress := common_tests.RandomEthAddress()
-			wallet := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 2)
-			suite.agentCollectionBlockchainRequester.
+			expectAgentInformation(suite, collectionAddress, common_tests.RandomEthAddress())
+			suite.agentRepositoryMock.
 				EXPECT().
-				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
-				Return(&abi.AgentInformation{
-					Name:       "Agent",
-					Attributes: []abi.KeyValue{{Key: "role", Value: "expert"}},
-					Creator:    common_tests.RandomEthAddress(),
-					Addresses: []abi.AgentAddress{
-						{AddressType: "btc", Value: "bc1qexampleonly"},
-						{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
-					},
-				}, nil)
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(wallet.Hex())).
+				GetByCollectionAddressAndCollectionTokenId(gomock.Any(), strings.ToLower(collectionAddress.Hex()), uint64(3)).
 				Return(nil, assert.AnError)
-			return event
+			return newEvent(collectionAddress, 3)
 		}
 
-		t.Run("Should return wrapped address lookup error", func(t *testing.T) {
+		t.Run("Should return wrapped token lookup error", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingMintedEventBeforeEach(t)
@@ -139,8 +208,101 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 
 			err := suite.sut.Handle(context.Background(), event)
 
-			assert.Error(t, err)
-			assert.ErrorContains(t, err, "failed to find agent by addresses")
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "failed to get agent by collection and token id")
+		})
+	})
+
+	t.Run("Given the token is already synced", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) (*abi.AgentCollectionV1Minted, *models.Agent) {
+			collectionAddress := common_tests.RandomEthAddress()
+			wallet := common_tests.RandomEthAddress()
+			existing := model_builders.NewAgentBuilder().
+				WithCollectionAddress(strings.ToLower(collectionAddress.Hex())).
+				WithCollectionTokenId(lo.ToPtr(uint64(7))).
+				Build()
+			expectAgentInformation(suite, collectionAddress, wallet)
+			expectTokenRow(suite, collectionAddress, 7, existing)
+			expectAgentSaved(suite, collectionAddress, wallet, func(saved *models.Agent) {
+				assert.Same(t, existing, saved)
+			})
+			return newEvent(collectionAddress, 7), existing
+		}
+
+		t.Run("Should update the token's own agent", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintedEventBeforeEach(t)
+			event, existing := initSuite(suite)
+
+			err := suite.sut.Handle(context.Background(), event)
+
+			assert.NoError(t, err)
+			assert.Equal(t, "Alice", existing.Name)
+		})
+	})
+
+	t.Run("Given the proposal lookup fails", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
+			collectionAddress := common_tests.RandomEthAddress()
+			expectAgentInformation(suite, collectionAddress, common_tests.RandomEthAddress())
+			expectTokenRow(suite, collectionAddress, 2, nil)
+			suite.agentRepositoryMock.
+				EXPECT().
+				GetNotYetMintedByCollectionAddressNameAndAddresses(
+					gomock.Any(),
+					strings.ToLower(collectionAddress.Hex()),
+					"Alice",
+					gomock.Any(),
+				).
+				Return(nil, assert.AnError)
+			return newEvent(collectionAddress, 2)
+		}
+
+		t.Run("Should return wrapped proposal lookup error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintedEventBeforeEach(t)
+			event := initSuite(suite)
+
+			err := suite.sut.Handle(context.Background(), event)
+
+			assert.ErrorIs(t, err, assert.AnError)
+			assert.ErrorContains(t, err, "failed to get proposal by name and addresses")
+		})
+	})
+
+	t.Run("Given no proposal of the collection matches", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
+			collectionAddress := common_tests.RandomEthAddress()
+			wallet := common_tests.RandomEthAddress()
+			expectAgentInformation(suite, collectionAddress, wallet)
+			expectTokenRow(suite, collectionAddress, 1, nil)
+			expectProposal(suite, collectionAddress, wallet, nil)
+			expectAgentSaved(suite, collectionAddress, wallet, func(saved *models.Agent) {
+				assert.Equal(t, strings.ToLower(collectionAddress.Hex()), saved.CollectionAddress)
+				if assert.NotNil(t, saved.CollectionTokenId) {
+					assert.Equal(t, uint64(1), *saved.CollectionTokenId)
+				}
+			})
+			return newEvent(collectionAddress, 1)
+		}
+
+		t.Run("Should save a new agent for the token", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingMintedEventBeforeEach(t)
+			event := initSuite(suite)
+
+			err := suite.sut.Handle(context.Background(), event)
+
+			assert.NoError(t, err)
 		})
 	})
 
@@ -149,7 +311,6 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 
 		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
 			collectionAddress := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 6)
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
 				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
@@ -161,9 +322,15 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 						{AddressType: "btc", Value: "bc1qexampleonly"},
 					},
 				}, nil)
-			suite.agentAddressRepositoryMock.
+			expectTokenRow(suite, collectionAddress, 6, nil)
+			suite.agentRepositoryMock.
 				EXPECT().
-				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeBtc, "bc1qexampleonly").
+				GetNotYetMintedByCollectionAddressNameAndAddresses(
+					gomock.Any(),
+					strings.ToLower(collectionAddress.Hex()),
+					"Agent",
+					map[enums.AddressType]string{enums.AddressTypeBtc: "bc1qexampleonly"},
+				).
 				Return(nil, nil)
 
 			owner := common_tests.RandomEthAddress()
@@ -196,7 +363,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				}).
 				Return(nil)
 
-			return event
+			return newEvent(collectionAddress, 6)
 		}
 
 		t.Run("Should sync the agent with the btc entry only", func(t *testing.T) {
@@ -217,27 +384,9 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
 			collectionAddress := common_tests.RandomEthAddress()
 			wallet := common_tests.RandomEthAddress()
-			event := newEvent(collectionAddress, 4)
-			suite.agentCollectionBlockchainRequester.
-				EXPECT().
-				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
-				Return(&abi.AgentInformation{
-					Name:       "Agent",
-					Attributes: []abi.KeyValue{{Key: "role", Value: "expert"}},
-					Creator:    common_tests.RandomEthAddress(),
-					Addresses: []abi.AgentAddress{
-						{AddressType: "btc", Value: "bc1qexampleonly"},
-						{AddressType: "evm", Value: strings.ToLower(wallet.Hex())},
-					},
-				}, nil)
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(wallet.Hex())).
-				Return(nil, nil)
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeBtc, "bc1qexampleonly").
-				Return(nil, nil)
+			expectAgentInformation(suite, collectionAddress, wallet)
+			expectTokenRow(suite, collectionAddress, 4, nil)
+			expectProposal(suite, collectionAddress, wallet, nil)
 
 			owner := common_tests.RandomEthAddress()
 			suite.agentCollectionBlockchainRequester.
@@ -250,7 +399,7 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 				GetByAddress(gomock.Any(), strings.ToLower(collectionAddress.Hex())).
 				Return(nil, nil)
 
-			return event
+			return newEvent(collectionAddress, 4)
 		}
 
 		t.Run("Should return collection not found error", func(t *testing.T) {
@@ -261,12 +410,11 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 
 			err := suite.sut.Handle(context.Background(), event)
 
-			assert.Error(t, err)
 			assert.ErrorContains(t, err, "agent collection with address")
 		})
 	})
 
-	t.Run("Given event is valid", func(t *testing.T) {
+	t.Run("Given the mint executes a proposal of the collection", func(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingMintedEventTestingSuite) *abi.AgentCollectionV1Minted {
@@ -276,10 +424,12 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 			creator := common_tests.RandomEthAddress()
 			owner := common_tests.RandomEthAddress()
 			agent := model_builders.NewAgentBuilder().
+				WithName("Alice").
+				WithCollectionAddress(strings.ToLower(collectionAddress.Hex())).
+				WithCollectionTokenId(nil).
 				WithImages(nil).
 				WithAttributes(nil).
 				Build()
-			event := newEvent(collectionAddress, tokenID)
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
 				GetAgentInformation(gomock.Any(), collectionAddress, gomock.Any()).
@@ -296,16 +446,18 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 						{Key: "skill", Value: "analysis"},
 					},
 				}, nil)
-			suite.agentAddressRepositoryMock.
-				EXPECT().
-				GetByTypeAndAddress(gomock.Any(), enums.AddressTypeEvm, strings.ToLower(wallet.Hex())).
-				Return(model_builders.NewAgentAddressBuilder().
-					WithAgentId(agent.ID).
-					WithAddress(strings.ToLower(wallet.Hex())).
-					Build(), nil)
+			expectTokenRow(suite, collectionAddress, tokenID, nil)
 			suite.agentRepositoryMock.
 				EXPECT().
-				GetById(gomock.Any(), agent.ID).
+				GetNotYetMintedByCollectionAddressNameAndAddresses(
+					gomock.Any(),
+					strings.ToLower(collectionAddress.Hex()),
+					"Alice",
+					map[enums.AddressType]string{
+						enums.AddressTypeEvm: strings.ToLower(wallet.Hex()),
+						enums.AddressTypeBtc: "bc1qexampleonly",
+					},
+				).
 				Return(agent, nil)
 			suite.agentCollectionBlockchainRequester.
 				EXPECT().
@@ -346,10 +498,10 @@ func TestWhenHandlingMintedEvent(t *testing.T) {
 					enums.AddressTypeBtc: "bc1qexampleonly",
 				}).
 				Return(nil)
-			return event
+			return newEvent(collectionAddress, tokenID)
 		}
 
-		t.Run("Should update and save agent from blockchain information", func(t *testing.T) {
+		t.Run("Should update and save the proposal agent from blockchain information", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingMintedEventBeforeEach(t)

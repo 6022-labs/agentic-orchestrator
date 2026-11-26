@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	enums "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	repositories "github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -147,6 +148,21 @@ func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressAndProp
 func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressAndProposalId(ctx, collectionAddress, proposalId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressAndProposalId", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressAndProposalId), ctx, collectionAddress, proposalId)
+}
+
+// GetNotYetMintedByCollectionAddressNameAndAddresses mocks base method.
+func (m *MockAgentRepositoryInterface) GetNotYetMintedByCollectionAddressNameAndAddresses(ctx context.Context, collectionAddress, name string, addresses map[enums.AddressType]string) (*models.Agent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotYetMintedByCollectionAddressNameAndAddresses", ctx, collectionAddress, name, addresses)
+	ret0, _ := ret[0].(*models.Agent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotYetMintedByCollectionAddressNameAndAddresses indicates an expected call of GetNotYetMintedByCollectionAddressNameAndAddresses.
+func (mr *MockAgentRepositoryInterfaceMockRecorder) GetNotYetMintedByCollectionAddressNameAndAddresses(ctx, collectionAddress, name, addresses any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotYetMintedByCollectionAddressNameAndAddresses", reflect.TypeOf((*MockAgentRepositoryInterface)(nil).GetNotYetMintedByCollectionAddressNameAndAddresses), ctx, collectionAddress, name, addresses)
 }
 
 // Remove mocks base method.
