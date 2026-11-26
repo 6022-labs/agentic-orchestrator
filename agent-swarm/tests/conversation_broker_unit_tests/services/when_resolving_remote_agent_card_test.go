@@ -94,6 +94,7 @@ const rawCardBody = `{"protocol":"6022","endpoints":{"responses":"https://node.e
 // signedCard is a node that made an integrity claim; cardWithResponses is one that made none.
 func signedCard() *models.RemoteAgentCard {
 	card := cardWithResponses()
+	card.EnsDomain = "agent.eth"
 	card.Signatures = []models.AgentCardSignature{{Protected: "protected", Signature: "signature"}}
 	return card
 }
@@ -402,6 +403,54 @@ func TestWhenResolvingRemoteAgentCard(t *testing.T) {
 			card, err := suite.sut.ResolveCard(context.Background(), "agent.eth")
 
 			assert.Error(t, err)
+			assert.Nil(t, card)
+		})
+	})
+
+	t.Run("Given a card whose verified signature names another agent", func(t *testing.T) {
+		t.Parallel()
+
+		foreignCard := signedCard()
+		foreignCard.EnsDomain = "victim.eth"
+
+		initSuite := func(suite *WhenResolvingRemoteAgentCardTestingSuite) {
+			suite.mockCacheStorage.EXPECT().
+				Read(gomock.Any(), "remote-agent-cards/agent.eth").
+				Return("", errors.New("miss")).
+				Times(2)
+			suite.mockAgentUrlResolver.EXPECT().
+				ResolveUrl(gomock.Any(), "agent.eth").
+				Return("https://node.example", nil).
+				Times(1)
+			suite.mockRemoteAgentCardRequester.EXPECT().
+				GetCard(gomock.Any(), "https://node.example").
+				Return(foreignCard, []byte(rawCardBody), nil).
+				Times(1)
+			suite.mockRegistryAgentResolver.EXPECT().
+				ResolveByEnsDomain(gomock.Any(), "agent.eth").
+				Return(
+					model_builders.NewRegistryAgentBuilder().
+						WithAddress(models.EvmAddressType, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").
+						Build(),
+					nil,
+				).
+				Times(1)
+			suite.mockAgentCardSignatureVerifier.EXPECT().
+				Verify(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil).
+				Times(1)
+		}
+
+		t.Run("Should fail and cache nothing", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingRemoteAgentCardBeforeEach(t)
+			initSuite(suite)
+			suite.mockCacheStorage.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			card, err := suite.sut.ResolveCard(context.Background(), "agent.eth")
+
+			assert.ErrorContains(t, err, `names "victim.eth"`)
 			assert.Nil(t, card)
 		})
 	})
