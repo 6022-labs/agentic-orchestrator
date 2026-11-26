@@ -169,6 +169,12 @@ func (r *RemoteAgentCardResolver) verifySignatures(
 			zap.String("ensDomain", ensDomain), zap.String("result", "invalid_signature"), zap.Error(err))
 		return fmt.Errorf("invalid 6022 card signature for %s: %w", ensDomain, err)
 	}
+	// The signature only vouches for the agent the card names: another agent may list the signer's address too.
+	if !strings.EqualFold(card.EnsDomain, ensDomain) {
+		r.logger.Error("Remote agent card names another agent",
+			zap.String("ensDomain", ensDomain), zap.String("result", "foreign_card"))
+		return fmt.Errorf("6022 card served for %s names %q", ensDomain, card.EnsDomain)
+	}
 
 	r.logger.Debug("Remote agent card signature verified",
 		zap.String("ensDomain", ensDomain), zap.String("result", "ok"))
