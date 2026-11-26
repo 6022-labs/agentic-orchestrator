@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-swarm/src/conversation_broker/models"
@@ -68,6 +69,22 @@ func TestWhenVerifyingAgentCardSignature(t *testing.T) {
 				assert.NoError(t, err)
 			},
 		)
+	})
+
+	t.Run("Given the card carries more than 16 signatures", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should refuse it before verifying any", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenVerifyingAgentCardSignatureBeforeEach()
+
+			raw := signedCardBytes(vectorCardBody, vectorProtected, vectorSignature)
+			signature := models.AgentCardSignature{Protected: vectorProtected, Signature: vectorSignature}
+			signatures := slices.Repeat([]models.AgentCardSignature{signature}, 17)
+
+			assert.ErrorContains(t, suite.sut.Verify(raw, signatures, vectorSigner), "at most 16 are checked")
+		})
 	})
 
 	t.Run("Given the card is not a JSON object", func(t *testing.T) {
