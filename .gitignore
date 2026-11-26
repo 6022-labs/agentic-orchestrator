@@ -41,6 +41,7 @@
 
 # Go workspace file
 go.work
+go.work.sum
 
 ### macOS ###
 # General
