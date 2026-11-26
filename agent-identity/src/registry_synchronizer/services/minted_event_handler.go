@@ -154,17 +154,14 @@ func (handler *MintedEventHandler) findAgentToMint(
 		return agent, nil
 	}
 
-	agent, err = handler.findAgentByAddresses(ctx, addresses)
+	agent, err = handler.agentRepository.GetNotYetMintedByCollectionAddressNameAndAddresses(
+		ctx,
+		collectionAddress,
+		name,
+		addresses,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find agent by addresses: %w", err)
-	}
-
-	// Agents of other collections, minted agents and other proposals may declare the same address.
-	if agent == nil ||
-		agent.CollectionTokenId != nil ||
-		agent.CollectionAddress != collectionAddress ||
-		agent.Name != name {
-		return nil, nil
+		return nil, fmt.Errorf("failed to get proposal by name and addresses: %w", err)
 	}
 
 	return agent, nil

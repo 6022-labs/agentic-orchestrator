@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/google/uuid"
 )
 
@@ -37,6 +38,14 @@ type AgentRepositoryInterface interface {
 		ctx context.Context,
 		collectionAddress string,
 		proposalId uint64,
+	) (*models.Agent, error)
+	// GetNotYetMintedByCollectionAddressNameAndAddresses returns the collection's proposal with that name
+	// holding one of the typed addresses, or nil.
+	GetNotYetMintedByCollectionAddressNameAndAddresses(
+		ctx context.Context,
+		collectionAddress string,
+		name string,
+		addresses map[enums.AddressType]string,
 	) (*models.Agent, error)
 	ExistsByCollectionAddressAndCollectionTokenId(ctx context.Context, address string, tokenId uint64) (bool, error)
 }

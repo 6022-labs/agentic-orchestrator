@@ -7,6 +7,7 @@ import (
 
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/db_clients"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models"
+	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/models/enums"
 	"github.com/6022-labs/agentic-orchestrator/agent-identity/src/registry_common/repositories"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -180,6 +181,41 @@ func (r *AgentRepository) GetNotYetMintedByCollectionAddressAndProposalId(ctx co
 		"collection_token_id IS NULL AND collection_address = ? AND proposal_id = ?",
 		collectionAddress,
 		proposalId,
+	).First(agent)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return agent, nil
+}
+
+func (r *AgentRepository) GetNotYetMintedByCollectionAddressNameAndAddresses(
+	ctx context.Context,
+	collectionAddress string,
+	name string,
+	addresses map[enums.AddressType]string,
+) (*models.Agent, error) {
+	if len(addresses) == 0 {
+		return nil, nil
+	}
+
+	pairs := make([][]any, 0, len(addresses))
+	for addressType, address := range addresses {
+		pairs = append(pairs, []any{addressType, address})
+	}
+
+	db := r.client.GetDB().WithContext(ctx)
+	holders := db.Model(&models.AgentAddress{}).Select("agent_id").Where("(type, address) IN ?", pairs)
+
+	agent := &models.Agent{}
+	tx := db.Where(
+		"collection_token_id IS NULL AND collection_address = ? AND name = ? AND id IN (?)",
+		collectionAddress,
+		name,
+		holders,
 	).First(agent)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
