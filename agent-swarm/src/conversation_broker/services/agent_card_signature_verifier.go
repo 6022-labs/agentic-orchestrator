@@ -18,6 +18,8 @@ const (
 	cardSignaturesMember   = "signatures"
 	secp256k1CoordinateLen = 32
 	ecdsaSignatureLen      = 64
+	// maxCardSignatures bounds the verifications one hostile card can make us run; rotation needs a couple.
+	maxCardSignatures = 16
 )
 
 type jwsProtectedHeader struct {
@@ -49,6 +51,13 @@ func (v *AgentCardSignatureVerifier) Verify(
 	// No claim made — integrity is the node's responsibility, not ours to enforce.
 	if len(signatures) == 0 {
 		return nil
+	}
+	if len(signatures) > maxCardSignatures {
+		return fmt.Errorf(
+			"agent card carries %d signatures, at most %d are checked",
+			len(signatures),
+			maxCardSignatures,
+		)
 	}
 
 	canonical, err := v.canonicalizeWithoutSignatures(raw)
